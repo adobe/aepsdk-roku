@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<component name="AdobeEdgeTask" extends="Task">
+  <interface>
+    <field id="requestEvent" type="assocarray"/>
+    <field id="responseEvent" type="assocarray"/>
+  </interface>
+  <script type="text/brightscript" uri="pkg:/components/adobe/AdobeEdgeTask.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/AdobeEdge.brs"/>
+</component>
