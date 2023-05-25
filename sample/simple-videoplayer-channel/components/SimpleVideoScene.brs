@@ -12,6 +12,25 @@ sub init()
   setContent()
   m.ButtonGroup.setFocus(true)
   m.ButtonGroup.observeField("buttonSelected", "onButtonSelected")
+
+
+  '------------------------------------
+  m.adobeEdgeSdk = AdobeSDKInit({ key: "value", }, "xxx-yyy-zzz")
+  ADB_CONSTANTS = AdobeSDKConstants()
+  m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
+  m.adobeEdgeSdk.getIdentifiers(sub(context, result)
+    print "callback result: "
+    print result
+    print context
+    context.backgroundURI = "pkg:/images/rde_splash_hd.jpg"
+  end sub, m.top)
+  m.adobeEdgeSdk.sendEdgeEvent({
+    a: {
+      a1: "a1",
+    }
+  })
+  '------------------------------------
+
 end sub
 
 sub onButtonSelected()
