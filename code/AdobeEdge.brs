@@ -97,10 +97,6 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
 
             setLogLevel: function(level as integer) as void
                 print "setDebugLogging"
-                data = {}
-                data.level = level
-                event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.SET_LOG_LEVEL, data)
-                m._adb_internal.dispatchEvent(event)
             end function,
 
             ' ********************************
@@ -111,8 +107,6 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
 
             shutdown: function() as void
                 print "shutdown"
-                event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.SHUTDOWN)
-                m._adb_internal.dispatchEvent(event)
             end function,
 
             ' ********************************
@@ -124,8 +118,7 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
             ' ********************************
 
             setConfiguration: function(configuration as object) as void
-                event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.SET_CONFIGURATION, configuration)
-                m._adb_internal.dispatchEvent(event)
+                print "setConfiguration"
             end function,
 
             ' ********************************
@@ -147,8 +140,6 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
 
             sendEdgeEvent: function(xdmData as object) as void
                 print "sendEdgeEvent"
-                event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.SEND_EDGE_EVENT, xdmData)
-                m._adb_internal.dispatchEvent(event)
             end function,
 
             ' ********************************************************************
@@ -175,14 +166,6 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
 
             sendEdgeEventWithCallback: function(data as object, callback as function, context = invalid as dynamic) as void
                 print "sendEdgeEventWithCallback"
-                event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.SEND_EDGE_EVENT_WITH_CALLBACK, data)
-                ' store callback function
-                callbackInfo = {}
-                callbackInfo.cb = callback
-                callbackInfo.context = context
-                m._adb_internal.cachedCallbackInfo[event.uuid] = callbackInfo
-                ' send event
-                m._adb_internal.dispatchEvent(event)
             end function,
 
             ' ********************************************************************
@@ -206,10 +189,6 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
 
             updateIdentities: function(identifier as object) as void
                 print "setIdentifier"
-                data = {}
-                data.identifier = identifier
-                event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.UPDATE_IDENTITIES, data)
-                m._adb_internal.dispatchEvent(event)
             end function,
 
             ' ********************************************************************
@@ -221,71 +200,9 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
             ' ********************************************************************
 
             getIdentities: function(callback as function, context = invalid as dynamic) as void
-                event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.GET_IDENTITIES, {})
-                ' store callback function
-                callbackInfo = {}
-                callbackInfo.cb = callback
-                callbackInfo.context = context
-                m._adb_internal.cachedCallbackInfo[event.uuid] = callbackInfo
-                ' send event
-                m._adb_internal.dispatchEvent(event)
+                print "getIdentities"
             end function,
-
-            ' ********************************
-            ' Add private memebers below
-            ' ********************************
-            _adb_internal: {
-                ' constants
-                internalConstants: _adb_internal_constants(),
-                ' build an Adobe Event
-                ' @param apiName : string
-                ' @param data    : object
-                ' @return event  : object
-                '
-                ' Example:
-                ' event = {
-                '   uuid: string,
-                '   timestamp: string,
-                '   apiName: string,
-                '   data: object
-                ' }
-                buildEvent: function(apiName as string, data = {} as object) as object
-                    event = {
-                        apiName: apiName,
-                        data: data,
-                    }
-                    event.uuid = CreateObject("roDeviceInfo").GetRandomUUID()
-                    event.timestamp = _adb_timestampInMillis()
-                    return event
-                end function,
-                ' set experience cloud id
-                setExperienceCloudId: function(ecid as string) as void
-                    print "setExperienceCloudId"
-                    data = {}
-                    data.ecid = ecid
-                    event = m.buildEvent(m.internalConstants.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID, data)
-                    m.dispatchEvent(event)
-                end function
-                ' dispatch events to the task node
-                dispatchEvent: function(event as object) as void
-                    print "dispatchEvent"
-                    m.taskNode[m.internalConstants.TASK.REQUEST_EVENT] = event
-                end function,
-                ' private memeber
-                taskNode: GetGlobalAA()._adb_edge_task_node,
-                ' API callbacks to be called later
-                ' CallbackInfo = {cb: function, context: dynamic}
-                cachedCallbackInfo: {},
-                ' private memeber
-                config: {},
-                ' log level
-                logLevel: 4,
-            }
-
         }
-        ' listen response events
-        tmp_taskNode = GetGlobalAA()._adb_edge_task_node
-        tmp_taskNode.observeField("responseEvent", "_adb_handle_response_event")
     end if
 
     ' start the event loop on task node
@@ -301,63 +218,3 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
 
     return GetGlobalAA()._adb_public_api
 end function
-
-' ***************************************
-' Below functions are internal use only
-' ***************************************
-
-function _adb_internal_constants() as object
-    return {
-        VERSION: "1.0.0-alpha.1",
-        PUBLIC_API: {
-            SET_CONFIGURATION: "setConfiguration",
-            GET_IDENTITIES: "getIdentities",
-            UPDATE_IDENTITIES: "updateIdentities",
-            SET_EXPERIENCE_CLOUD_ID: "setExperienceCloudId",
-            SYNC_IDENTIFIERS: "syncIdentifiers",
-            SEND_EDGE_EVENT: "sendEdgeEvent",
-            SEND_EDGE_EVENT_WITH_CALLBACK: "sendEdgeEventWithCallback",
-            SHUTDOWN: "shutdown",
-            SET_LOG_LEVEL: "setLogLevel",
-        },
-        TASK: {
-            REQUEST_EVENT: "requestEvent",
-            RESPONSE_EVENT: "responseEvent",
-        },
-    }
-end function
-
-function _adb_handle_response_event() as void
-    sdk = GetGlobalAA()._adb_public_api
-    if sdk <> invalid then
-        responseEvent = sdk._adb_internal.taskNode["responseEvent"]
-        if responseEvent <> invalid
-            print "responseEvent:"
-            print responseEvent
-            uuid = responseEvent.uuid
-            if sdk._adb_internal.cachedCallbackInfo[uuid] <> invalid
-                context = sdk._adb_internal.cachedCallbackInfo[uuid].context
-                sdk._adb_internal.cachedCallbackInfo[uuid].cb(context, responseEvent)
-                sdk._adb_internal.cachedCallbackInfo[uuid] = invalid
-            end if
-        end if
-    end if
-end function
-
-function _adb_timestampInMillis() as string
-    dateTime = CreateObject("roDateTime")
-    currMS = dateTime.GetMilliseconds()
-    timeInSeconds = dateTime.AsSeconds()
-
-    timeInMillis = timeInSeconds.ToStr()
-    if currMS > 99
-        timeInMillis = timeInMillis + currMS.ToStr()
-    else if currMS > 9 and currMS < 100
-        timeInMillis = timeInMillis + "0" + currMS.ToStr()
-    else if currMS >= 0 and currMS < 10
-        timeInMillis = timeInMillis + "00" + currMS.ToStr()
-    end if
-
-    return timeInMillis
-end function
-

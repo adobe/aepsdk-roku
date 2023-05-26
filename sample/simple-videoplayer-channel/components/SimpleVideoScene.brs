@@ -14,44 +14,30 @@ sub init()
   m.ButtonGroup.observeField("buttonSelected", "onButtonSelected")
 
 
-  '------------------------------------
+  '------------------- Adobe Edge SDK Example --------------------
   mid = "1234567890"
   edge_config = {
-    configId: "f6a0164d-4d36-48b5-bb29-264f14fbf57c"
+    configId: "1234-567-890"
   }
   m.adobeEdgeSdk = AdobeSDKInit({ edge: edge_config })
   ADB_CONSTANTS = AdobeSDKConstants()
   m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
-  ' m.adobeEdgeSdk.getIdentifiers(sub(context, result)
-  '   print "callback result: "
-  '   print result
-  '   print context
-  '   context.backgroundURI = "pkg:/images/rde_splash_hd.jpg"
-  ' end sub, m.top)
-  m.adobeEdgeSdk.sendEdgeEvent({
-    a: {
-      a1: "a1",
-    }
+  m.adobeEdgeSdk.updateIdentities({
+    Email: [
+      {
+        id: "user@example.com",
+        authenticatedState: "authenticated",
+        primary: false
+      }
+    ]
   })
-  ' m.adobeEdgeSdk.sendEdgeEventWithCallback({
-  '   a: {
-  '     a1: "a1",
-  '   }
-  ' }, sub(context, result)
-  '   print "callback result: "
-  '   print result
-  '   print context
-  ' end sub, m.top)
-  '------------------------------------
-  ' m.adobeEdgeSdk.updateIdentities({
-  '   Email: [
-  '     {
-  '       id: "user@example.com",
-  '       authenticatedState: "authenticated",
-  '       primary: false
-  '     }
-  '   ]
-  ' })
+  m.adobeEdgeSdk.sendEdgeEvent({
+    eventType: "commerce.orderPlaced",
+    commerce: {
+    },
+  })
+  '---------------------------------------------------------------
+
 end sub
 
 sub onButtonSelected()
