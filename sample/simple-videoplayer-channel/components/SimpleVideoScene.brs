@@ -15,22 +15,43 @@ sub init()
 
 
   '------------------------------------
-  m.adobeEdgeSdk = AdobeSDKInit({ key: "value", }, "xxx-yyy-zzz")
+  mid = "1234567890"
+  edge_config = {
+    configId: "f6a0164d-4d36-48b5-bb29-264f14fbf57c"
+  }
+  m.adobeEdgeSdk = AdobeSDKInit({ edge: edge_config })
   ADB_CONSTANTS = AdobeSDKConstants()
   m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
-  m.adobeEdgeSdk.getIdentifiers(sub(context, result)
-    print "callback result: "
-    print result
-    print context
-    context.backgroundURI = "pkg:/images/rde_splash_hd.jpg"
-  end sub, m.top)
+  ' m.adobeEdgeSdk.getIdentifiers(sub(context, result)
+  '   print "callback result: "
+  '   print result
+  '   print context
+  '   context.backgroundURI = "pkg:/images/rde_splash_hd.jpg"
+  ' end sub, m.top)
   m.adobeEdgeSdk.sendEdgeEvent({
     a: {
       a1: "a1",
     }
   })
+  ' m.adobeEdgeSdk.sendEdgeEventWithCallback({
+  '   a: {
+  '     a1: "a1",
+  '   }
+  ' }, sub(context, result)
+  '   print "callback result: "
+  '   print result
+  '   print context
+  ' end sub, m.top)
   '------------------------------------
-
+  ' m.adobeEdgeSdk.updateIdentities({
+  '   Email: [
+  '     {
+  '       id: "user@example.com",
+  '       authenticatedState: "authenticated",
+  '       primary: false
+  '     }
+  '   ]
+  ' })
 end sub
 
 sub onButtonSelected()

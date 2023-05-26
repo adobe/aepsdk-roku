@@ -103,6 +103,6 @@ dist
 # TernJS port file
 .tern-port
 /.vscode
-/out
+out/
 sample/simple-videoplayer-channel/components/adobe
 sample/simple-videoplayer-channel/source/AdobeEdge.brs

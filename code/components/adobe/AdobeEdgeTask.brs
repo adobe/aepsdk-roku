@@ -1,3 +1,16 @@
+' ********************** Copyright 2022 Adobe. All rights reserved. **********************
+
+' This file is licensed to you under the Apache License, Version 2.0 (the "License");
+' you may not use this file except in compliance with the License. You may obtain a copy
+' of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+' Unless required by applicable law or agreed to in writing, software distributed under
+' the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+' OF ANY KIND, either express or implied. See the License for the specific language
+' governing permissions and limitations under the License.
+
+' *****************************************************************************************
+
 sub init()
     m.port = createObject("roMessagePort")
     m.top.observeField("requestEvent", m.port)
@@ -39,22 +52,35 @@ function EventProcessor(internalConstants as object, task as object, serviceProv
 
         handleEvent: function(event as dynamic) as void
             if event <> invalid
-                print "handle event"
+                _adb_log_info("[handleEvent] - handle event")
                 print event
                 if event.apiname = m.ADB_CONSTANTS.PUBLIC_API.SEND_EDGE_EVENT
                     m._sendEvent(event)
                 else if event.apiname = m.ADB_CONSTANTS.PUBLIC_API.SET_CONFIGURATION
                     m._setConfiguration(event)
+                else if event.apiname = m.ADB_CONSTANTS.PUBLIC_API.SET_LOG_LEVEL
+                    m._setLogLevel(event)
                 else if event.apiname = m.ADB_CONSTANTS.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID
                     m._setECID(event)
-                else if event.apiname = m.ADB_CONSTANTS.PUBLIC_API.GET_IDENTIFIERS
+                else if event.apiname = m.ADB_CONSTANTS.PUBLIC_API.GET_IDENTITIES
+                    ' test ...
+                    sleep(5000)
+                    m.task[m.ADB_CONSTANTS.TASK.RESPONSE_EVENT] = event
+                else if event.apiname = m.ADB_CONSTANTS.PUBLIC_API.UPDATE_IDENTITIES
                     ' test ...
                     sleep(5000)
                     m.task[m.ADB_CONSTANTS.TASK.RESPONSE_EVENT] = event
                 end if
             else
-                print "event is invalid"
+                _adb_log_warning("[handleEvent] - event is invalid")
             end if
+        end function,
+
+        _setLogLevel: function(event as object) as void
+            _adb_log_info(" [_setLogLevel] - set log level")
+            logLevel = event.data.level
+            loggingService = _adb_serviceProvider().loggingService
+            loggingService.setLogLevel(logLevel)
         end function,
 
         _setConfiguration: function(event as object) as void
@@ -70,36 +96,68 @@ function EventProcessor(internalConstants as object, task as object, serviceProv
             ' persist ecid in registry !!!!
         end function,
 
+        _queryECID: function() as string
+            url = m._buildEdgeRequestURL(m.configuration.edge.configId, "")
+            jsonBody = {
+                events: [
+                    {
+                        query: {
+                            identity: { fetch: [
+                                    "ECID"
+                            ] }
+
+                        }
+                    }
+                ]
+            }
+            response = m.networkService.syncPostRequest(url, jsonBody)
+            responseJson = ParseJson(response.message)
+            print responseJson
+            return responseJson.handle[0].payload[0].id
+        end function,
+
         _sendEvent: function(event as object) as void
             print "set event"
-            if m._isReadyToProcessEdgeEvent()
-                edgeEventData = event.data
-                print edgeEventData
-            else
+            if m._isNotReadyToProcessEdgeEvent()
                 print "not ready to process edge event"
-                'queue event
-                requestId = event.uuid
-                url = m._buildEdgeRequestURL(m.configuration.edge.configId, requestId)
-                ' jsonBody = m._buildEdgeRequestJSONBody(edgeEventData)
-                jsonBody = {
-                    xdm: {
-                        identityMap: {
-                            ECID: [
-                                {
-                                    id: "",
-                                    primary: false,
-                                    authenticatedState: "ambiguous"
-                                }
-                            ]
-                        }
-                    },
-                    events: []
-                }
-                jsonBody.events[0] = event.data
-                ' syncPostRequest: function(url as string, jsonObj as object, headers = [] as object) as object
-                response = m.networkService.syncPostRequest(url, jsonBody)
-                ' handle repsone code and data ....
+                return
             end if
+
+            if m.ecid = invalid then
+                ecid = m._queryECID()
+                if ecid = invalid then
+                    print "no ecid available"
+                    return
+                else
+                    m.ecid = ecid
+                end if
+            end if
+            edgeEventData = event.data
+            print edgeEventData
+            'queue event
+            requestId = event.uuid
+            url = m._buildEdgeRequestURL(m.configuration.edge.configId, requestId)
+            jsonBody = {
+                xdm: {
+                    identityMap: {
+                        ECID: [
+                            {
+                                id: invalid,
+                                primary: false,
+                                authenticatedState: "ambiguous"
+                            }
+                        ]
+                    }
+                },
+                events: []
+            }
+            jsonBody.events[0] = event.data
+            jsonBody.xdm.identityMap.ECID[0].id = m.ecid
+            ' syncPostRequest: function(url as string, jsonObj as object, headers = [] as object) as object
+            response = m.networkService.syncPostRequest(url, jsonBody)
+
+            print response.message
+            ' handle repsone code and data ....
         end function,
         ' ************************************************************
         '
@@ -111,6 +169,9 @@ function EventProcessor(internalConstants as object, task as object, serviceProv
         '
         ' ************************************************************
         _buildEdgeRequestURL: function(configId as string, requestId as string) as string
+            if requestId.Len() < 1
+                return "https://edge.adobedc.net/ee/v1/interact?configId=" + configId
+            end if
             return "https://edge.adobedc.net/ee/v1/interact?configId=" + configId + "&requestId=" + requestId
         end function,
 
@@ -127,8 +188,8 @@ function EventProcessor(internalConstants as object, task as object, serviceProv
         ' }
         '
         ' ************************************************************
-        _isReadyToProcessEdgeEvent: function() as boolean
-            return m.configuration <> invalid and m.configuration.DoesExist("edge") and m.configuration.edge.DoesExist("configId") and m.configuration.edge.orgId <> invalid and m.configuration.edge.orgId.Len() > 0
+        _isNotReadyToProcessEdgeEvent: function() as boolean
+            return m.configuration = invalid or m.configuration.edge = invalid or m.configuration.edge.configId = invalid or m.configuration.edge.configId.Len() < 1
         end function,
     }
 end function
@@ -143,102 +204,104 @@ function _adb_isAdobeEvent(msgPayload as dynamic) as boolean
     end if
 end function
 
-function _adb_loggingService() as object
-    return {
-        _logLevel: 0,
-        warning: function(message as string) as void
-            if m._logLevel <= 3 then
-                print "[ADB-EDGE Warning] " + message
-            end if
-        end function,
-
-        error: function(message as string) as void
-            print "[ADB-EDGE Warning] " + message
-        end function,
-
-        debug: function(message as string) as void
-            if m._logLevel <= 1 then
-                print "[ADB-EDGE Debug] " + message
-            end if
-        end function,
-
-        info: function(message as string) as void
-            if m._logLevel <= 2 then
-                print "[ADB-EDGE Info] " + message
-            end if
-        end function,
-
-        verbose: function(message as string) as void
-            if m._logLevel <= 0 then
-                print "[ADB-EDGE Verbose] " + message
-            end if
-        end function,
-    }
-end function
-
-function _adb_networkService() as object
-    return {
-        ' **************************************************************
-        '
-        ' Sned POST request to the given URL with the given JSON object
-        '
-        ' @param url: the URL to send the request to
-        ' @param jsonObj: the JSON object to send
-        ' @param headers: the headers to send with the request
-        ' @return the response object
-        '
-        ' **************************************************************
-        syncPostRequest: function(url as string, jsonObj as object, headers = [] as object) as object
-            request = CreateObject("roUrlTransfer")
-            port = CreateObject("roMessagePort")
-            request.SetPort(port)
-            request.SetCertificatesFile("common:/certs/ca-bundle.crt")
-            ' request.InitClientCertificates()
-            request.SetUrl(url)
-            request.AddHeader("Content-Type", "application/json")
-            request.AddHeader("accept", "application/json")
-            request.AddHeader("Accept-Language", "en-US")
-            for each header in headers
-                request.AddHeader(header.key, header.value)
-            end for
-            ' request.EnableEncodings(true)
-            if (request.AsyncPostFromString(FormatJson(jsonObj)))
-                while (true)
-                    msg = wait(0, port)
-                    if (type(msg) = "roUrlEvent")
-                        code = msg.GetResponseCode()
-                        return msg.getString()
-                    end if
-                    if (msg = invalid)
-                        request.AsyncCancel()
-                        return invalid
-                    end if
-                end while
-            end if
-            return invalid
-        end function,
-        ' **************************************************************
-        '
-        ' Sned POST request to the given URL with the given JSON object
-        '
-        ' @param url: the URL to send the request to
-        ' @param jsonObj: the JSON object to send
-        ' @param headers: the headers to send with the request
-        ' @param port: the port to send the response to
-        ' @return the response object
-        '
-        ' **************************************************************
-        asyncPostRequest: function(url as string, jsonObj as object, port as object, headers = [] as object) as void
-            ' network response will be sent to the port
-        end function,
-    }
-end function
-
 function _adb_serviceProvider() as object
     if GetGlobalAA()._adb_serviceProvider_instance = invalid then
         instance = {
-            loggingService: _adb_loggingService(),
-            networkService: _adb_networkService(),
+            loggingService: {
+                ' (VERBOSE: 0, DEBUG: 1, INFO: 2, WARNING: 3, ERROR: 4)
+                _logLevel: 0,
+
+                setLogLevel: function(logLevel as integer) as void
+                    m._logLevel = logLevel
+                end function,
+
+                warning: function(message as string) as void
+                    if m._logLevel <= 3 then
+                        print "[ADB-EDGE Warning] " + message
+                    end if
+                end function,
+
+                error: function(message as string) as void
+                    print "[ADB-EDGE Warning] " + message
+                end function,
+
+                debug: function(message as string) as void
+                    if m._logLevel <= 1 then
+                        print "[ADB-EDGE Debug] " + message
+                    end if
+                end function,
+
+                info: function(message as string) as void
+                    if m._logLevel <= 2 then
+                        print "[ADB-EDGE Info] " + message
+                    end if
+                end function,
+
+                verbose: function(message as string) as void
+                    if m._logLevel <= 0 then
+                        print "[ADB-EDGE Verbose] " + message
+                    end if
+                end function,
+            },
+            networkService: {
+                ' **************************************************************
+                '
+                ' Sned POST request to the given URL with the given JSON object
+                '
+                ' @param url: the URL to send the request to
+                ' @param jsonObj: the JSON object to send
+                ' @param headers: the headers to send with the request
+                ' @return the response object
+                '
+                ' **************************************************************
+                syncPostRequest: function(url as string, jsonObj as object, headers = [] as object) as object
+                    request = CreateObject("roUrlTransfer")
+                    port = CreateObject("roMessagePort")
+                    request.SetPort(port)
+                    request.SetCertificatesFile("common:/certs/ca-bundle.crt")
+                    ' request.InitClientCertificates()
+                    request.SetUrl(url)
+                    request.AddHeader("Content-Type", "application/json")
+                    request.AddHeader("accept", "application/json")
+                    request.AddHeader("Accept-Language", "en-US")
+                    for each header in headers
+                        request.AddHeader(header.key, header.value)
+                    end for
+                    ' request.EnableEncodings(true)
+                    if (request.AsyncPostFromString(FormatJson(jsonObj)))
+                        while (true)
+                            msg = wait(0, port)
+                            if (type(msg) = "roUrlEvent")
+                                code = msg.GetResponseCode()
+                                repMessage = msg.getString()
+                                return {
+                                    code: code,
+                                    message: repMessage
+                                }
+                            end if
+                            if (msg = invalid)
+                                request.AsyncCancel()
+                                return invalid
+                            end if
+                        end while
+                    end if
+                    return invalid
+                end function,
+                ' **************************************************************
+                '
+                ' Sned POST request to the given URL with the given JSON object
+                '
+                ' @param url: the URL to send the request to
+                ' @param jsonObj: the JSON object to send
+                ' @param headers: the headers to send with the request
+                ' @param port: the port to send the response to
+                ' @return the response object
+                '
+                ' **************************************************************
+                asyncPostRequest: function(url as string, jsonObj as object, port as object, headers = [] as object) as void
+                    ' network response will be sent to the port
+                end function,
+            },
         }
         GetGlobalAA()["_adb_serviceProvider_instance"] = instance
     end if
@@ -270,8 +333,6 @@ function _adb_log_verbose(message as string) as object
     log = _adb_serviceProvider().loggingService
     log.verbose(message)
 end function
-
-
 
 
 ' return {
