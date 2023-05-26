@@ -1,4 +1,4 @@
-# aepsdk-roku
+# Adobe Experience Platform Roku SDK
 
 ## About this project
 
