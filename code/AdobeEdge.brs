@@ -140,6 +140,7 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
 
             sendEdgeEvent: function(xdmData as object) as void
                 print "sendEdgeEvent"
+                print xdmData
             end function,
 
             ' ********************************************************************
@@ -172,7 +173,7 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
             '
             ' Update identities
             '
-            ' @param identifier as object : xmd identity map
+            ' @param identities as object : xmd identity map
             '
             ' Example:
             '
@@ -187,8 +188,9 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
             ' })
             ' ********************************************************************
 
-            updateIdentities: function(identifier as object) as void
-                print "setIdentifier"
+            updateIdentities: function(identities as object) as void
+                print "updateIdentities"
+                print identities
             end function,
 
             ' ********************************************************************

@@ -31,11 +31,6 @@ sub init()
       }
     ]
   })
-  m.adobeEdgeSdk.sendEdgeEvent({
-    eventType: "commerce.orderPlaced",
-    commerce: {
-    },
-  })
   '---------------------------------------------------------------
 
 end sub
@@ -48,7 +43,11 @@ sub onButtonSelected()
     m.Video.setFocus(true)
     'Exit button pressed'
   else if m.ButtonGroup.buttonSelected = 1
-    print "------ [send Edge event] ------"
+    m.adobeEdgeSdk.sendEdgeEvent({
+      eventType: "commerce.orderPlaced",
+      commerce: {
+      },
+    })
   else
     m.Exiter.control = "RUN"
   end if
