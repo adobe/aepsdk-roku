@@ -75,10 +75,12 @@ setConfiguration: function(configuration as object) as void
 ##### Example 
 
 ```javascript
-  edge_config = {
-    configId: "f6a0164d-4d36-48b5-bb29-264f14fbf57c"
+  configuration = {
+    edge: {
+      configId: "123-abc-xyz"
+    }
   }
-  m.adobeEdgeSdk.updateConfiguration({ edge: edge_config })
+  m.adobeEdgeSdk.updateConfiguration(configuration)
 ```
 
 ### sendEdgeEvent
