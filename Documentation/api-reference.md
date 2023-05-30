@@ -44,7 +44,7 @@ getVersion: function() as string
 ##### Example 
 
 ```javascript
-  m.adobeEdgeSdk.getVersion()
+  sdkVersion = m.adobeEdgeSdk.getVersion()
 ```
 
 ### setLogLevel
