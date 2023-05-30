@@ -15,7 +15,7 @@ sub init()
 
 
   '------------------------------------
-  mid = "1234567890"
+  mid = "12340203495818708474263889316984678123"
   edge_config = {
     configId: "f6a0164d-4d36-48b5-bb29-264f14fbf57c"
   }
@@ -41,7 +41,9 @@ sub init()
   '   print "callback result: "
   '   print result
   '   print context
-  ' end sub, m.top)
+  '   context.Warning.visible = "true"
+  '   context.Warning.message = result.data.message
+  ' end sub, m)
   '------------------------------------
   ' m.adobeEdgeSdk.updateIdentities({
   '   Email: [
@@ -63,6 +65,17 @@ sub onButtonSelected()
     'Exit button pressed'
   else if m.ButtonGroup.buttonSelected = 1
     print "------ [send Edge event] ------"
+    m.adobeEdgeSdk.sendEdgeEventWithCallback({
+      a: {
+        a1: "a1",
+      }
+    }, sub(context, result)
+      print "callback result: "
+      ' print result
+      ' print context
+      context.Warning.visible = "true"
+      context.Warning.message = result.data.message
+    end sub, m)
   else
     m.Exiter.control = "RUN"
   end if

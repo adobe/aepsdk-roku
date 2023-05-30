@@ -11,6 +11,7 @@
             "host": "192.168.1.253",
             "password": "1111",
             "rootDir": "${workspaceFolder}",
+            "injectRdbOnDeviceComponent": true,
         }
     ]
 }

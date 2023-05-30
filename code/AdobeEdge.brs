@@ -58,10 +58,11 @@ end function
 
 function AdobeSDKInit(configuration as object, ecid = "" as string) as object
     ' create the edge task node
+    _adb_log_api("start to initialize the Adobe SDK")
     if GetGlobalAA()._adb_edge_task_node = invalid then
         edgeTask = CreateObject("roSGNode", "AdobeEdgeTask")
         if edgeTask = invalid then
-            print "AdobeSDKInit() failed"
+            _adb_log_api("AdobeSDKInit() failed")
             return invalid
         end if
         GetGlobalAA()._adb_edge_task_node = edgeTask
@@ -96,7 +97,7 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
             ' ********************************************************************************************************
 
             setLogLevel: function(level as integer) as void
-                print "setDebugLogging"
+                _adb_log_api("setLogLevel")
                 data = {}
                 data.level = level
                 event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.SET_LOG_LEVEL, data)
@@ -110,7 +111,7 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
             ' ********************************
 
             shutdown: function() as void
-                print "shutdown"
+                _adb_log_api("shutdown")
                 event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.SHUTDOWN)
                 m._adb_internal.dispatchEvent(event)
             end function,
@@ -146,7 +147,7 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
             ' ********************************
 
             sendEdgeEvent: function(xdmData as object) as void
-                print "sendEdgeEvent"
+                _adb_log_api("sendEdgeEvent")
                 event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.SEND_EDGE_EVENT, xdmData)
                 m._adb_internal.dispatchEvent(event)
             end function,
@@ -174,8 +175,8 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
             ' ********************************************************************
 
             sendEdgeEventWithCallback: function(data as object, callback as function, context = invalid as dynamic) as void
-                print "sendEdgeEventWithCallback"
-                event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.SEND_EDGE_EVENT_WITH_CALLBACK, data)
+                _adb_log_api("sendEdgeEventWithCallback")
+                event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.SEND_EDGE_EVENT, data)
                 ' store callback function
                 callbackInfo = {}
                 callbackInfo.cb = callback
@@ -205,10 +206,25 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
             ' ********************************************************************
 
             updateIdentities: function(identifier as object) as void
-                print "setIdentifier"
+                _adb_log_api("setIdentifier")
                 data = {}
                 data.identifier = identifier
                 event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.UPDATE_IDENTITIES, data)
+                m._adb_internal.dispatchEvent(event)
+            end function,
+
+            ' **********************************************************************
+            '
+            ' This is used to set the advertising identifier for the SDK
+            '
+            ' @param advertisingIdentifier as string : the advertising identifier
+            '
+            ' **********************************************************************
+            setAdvertisingIdentifier: function(advertisingIdentifier as string) as void
+                _adb_log_api("setAdvertisingIdentifier")
+                data = {}
+                data.aid = advertisingIdentifier
+                event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.SET_ADVERTISING_IDENTIFIER, data)
                 m._adb_internal.dispatchEvent(event)
             end function,
 
@@ -260,7 +276,7 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
                 end function,
                 ' set experience cloud id
                 setExperienceCloudId: function(ecid as string) as void
-                    print "setExperienceCloudId"
+                    _adb_log_api("setExperienceCloudId")
                     data = {}
                     data.ecid = ecid
                     event = m.buildEvent(m.internalConstants.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID, data)
@@ -268,7 +284,7 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
                 end function
                 ' dispatch events to the task node
                 dispatchEvent: function(event as object) as void
-                    print "dispatchEvent"
+                    _adb_log_api("dispatchEvent: " + FormatJson(event))
                     m.taskNode[m.internalConstants.TASK.REQUEST_EVENT] = event
                 end function,
                 ' private memeber
@@ -291,6 +307,11 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
     ' start the event loop on task node
     GetGlobalAA()._adb_edge_task_node.control = "RUN"
     _adb_public_api = GetGlobalAA()._adb_public_api
+    if _adb_public_api = invalid
+        _adb_log_api("failed to initialize the SDK")
+        return invalid
+    end if
+    _adb_log_api("successfully initialized the SDK")
     ' set ecid if provided
     if ecid.len() > 0
         _adb_public_api._adb_internal.setExperienceCloudId(ecid)
@@ -313,10 +334,10 @@ function _adb_internal_constants() as object
             SET_CONFIGURATION: "setConfiguration",
             GET_IDENTITIES: "getIdentities",
             UPDATE_IDENTITIES: "updateIdentities",
+            SET_ADVERTISING_IDENTIFIER: "setAdvertisingIdentifier",
             SET_EXPERIENCE_CLOUD_ID: "setExperienceCloudId",
             SYNC_IDENTIFIERS: "syncIdentifiers",
             SEND_EDGE_EVENT: "sendEdgeEvent",
-            SEND_EDGE_EVENT_WITH_CALLBACK: "sendEdgeEventWithCallback",
             SHUTDOWN: "shutdown",
             SET_LOG_LEVEL: "setLogLevel",
         },
@@ -332,8 +353,7 @@ function _adb_handle_response_event() as void
     if sdk <> invalid then
         responseEvent = sdk._adb_internal.taskNode["responseEvent"]
         if responseEvent <> invalid
-            print "responseEvent:"
-            print responseEvent
+            _adb_log_api("responseEvent:" + FormatJson(responseEvent))
             uuid = responseEvent.uuid
             if sdk._adb_internal.cachedCallbackInfo[uuid] <> invalid
                 context = sdk._adb_internal.cachedCallbackInfo[uuid].context
@@ -361,3 +381,6 @@ function _adb_timestampInMillis() as string
     return timeInMillis
 end function
 
+function _adb_log_api(message as string) as void
+    print "[ADB-EDGE API]" + message
+end function

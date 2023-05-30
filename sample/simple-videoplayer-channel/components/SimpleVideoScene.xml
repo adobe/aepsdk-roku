@@ -28,7 +28,7 @@
 
     <Dialog
       id="WarningDialog"
-      title="Warning"
+      title="Message"
       message="PUT A WARNING MESSAGE HERE"
       visible="false" />
 
