@@ -11,7 +11,7 @@ This document lists the APIs provided by Adobe Roku SDK, along with sample code 
 TBD 
 - [setAdvertisingIdentifier](#setAdvertisingIdentifier)
 - [updateIdentities](#updateIdentities)
-- [setConfiguration](#setConfiguration)
+- [updateConfiguration](#updateConfiguration)
 
 ---
 
