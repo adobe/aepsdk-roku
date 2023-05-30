@@ -14,16 +14,17 @@ This document lists the APIs provided by Adobe Roku SDK, along with sample code 
 
 ### AdobeSDKInit
 
+Initialize the Adobe SDK and return the public API instance. `*` The following variables are reserved to hold SDK instances in GetGlobalAA():
+- `GetGlobalAA()._adb_public_api`
+- `GetGlobalAA()._adb_edge_task_node`
+
 ##### Syntax
 
 ```javascript
 function AdobeSDKInit() as object
 ```
-Initialize the Adobe SDK and return the public API instance.
 
 - `@return instance as object : public API instance`
-
-> The following variables are reserved to hold SDK instances in GetGlobalAA(): GetGlobalAA()._adb_public_api, GetGlobalAA()._adb_edge_task_node
 
 ##### Example
 
@@ -119,7 +120,7 @@ sendEdgeEvent: function(xdmData as object, callback = _adb_default_callback as f
 
 ### setExperienceCloudId
 
-> By default, the Edge SDK automatically generates an ECID (Experience Cloud ID) when first used. If the Edge SDK and the previous [media SDK](https://experienceleague.adobe.com/docs/media-analytics/using/media-use-cases/sdk-track-scenegraph.html?lang=en#global-methods-for-mediaheartbeat) are running in the same channel, calling this function can keep both SDKs running with the same ECID.
+> By default, the Edge SDK automatically generates an ECID (Experience Cloud ID) when first used. If the Edge SDK and the previous [media SDK](https://experienceleague.adobe.com/docs/media-analytics/using/media-use-cases/sdk-track-scenegraph.html?lang=en#global-methods-for-mediaheartbeat) are initialized in the same channel, calling this function can keep both SDKs running with the same ECID.
 
 ##### Syntax
 
