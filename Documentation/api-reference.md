@@ -144,6 +144,8 @@ setExperienceCloudId: function(ecid as string) as void
 
 ### shutdown 
 
+Call this function to shutdown the SDK and drop the further API calls.
+
 ##### Syntax
 
 ```javascript
