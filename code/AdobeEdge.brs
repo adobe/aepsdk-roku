@@ -192,6 +192,19 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
                 print "updateIdentities"
                 print identities
             end function,
+            
+            ' **********************************************************************
+            '
+            ' This is used to set the advertising identifier for the SDK
+            '
+            ' @param advertisingIdentifier as string : the advertising identifier
+            '
+            ' **********************************************************************
+            
+            setAdvertisingIdentifier: function(advertisingIdentifier as string) as void
+                print "setAdvertisingIdentifier"
+                print advertisingIdentifier
+            end function,
 
             ' ********************************************************************
             '
