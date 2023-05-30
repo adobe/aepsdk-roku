@@ -7,7 +7,7 @@ This document lists the APIs provided by Adobe Roku SDK, along with sample code 
 - [setLogLevel](#setLogLevel)
 - [updateConfiguration](#updateConfiguration)
 - [sendEdgeEvent](#sendEdgeEvent)
-- [setExperienceCloudId](#setExperienceCloudId)
+- [(optional) setExperienceCloudId](#setExperienceCloudId)
 - [shutdown](#shutdown)
 
 ---
