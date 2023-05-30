@@ -7,7 +7,11 @@ This document lists the APIs provided by Adobe Roku SDK, along with sample code 
 - [setLogLevel](#setLogLevel)
 - [shutdown](#shutdown)
 - [sendEdgeEvent](#sendEdgeEvent)
-- [TBD setConfiguration](#setConfiguration)
+
+TBD 
+- [setAdvertisingIdentifier](#setAdvertisingIdentifier)
+- [updateIdentities](#updateIdentities)
+- [setConfiguration](#setConfiguration)
 
 
 
@@ -117,24 +121,6 @@ sendEdgeEvent: function(xdmData as object, callback = _adb_default_callback as f
 
 ## TBM
 
-### setConfiguration
-
-##### Syntax
-
-```javascript
-setConfiguration: function(configuration as object) as void
-```
-- `@param configuration as object`
-
-##### Example 
-
-```javascript
-  edge_config = {
-    configId: "f6a0164d-4d36-48b5-bb29-264f14fbf57c"
-  }
-  m.adobeEdgeSdk.setConfiguration({ edge: edge_config })
-```
-
 ### setAdvertisingIdentifier
 
 ##### Syntax
@@ -169,6 +155,23 @@ updateIdentities: function(identifier as object) as void
               primary: false
             }]
   })
+```
+### setConfiguration
+
+##### Syntax
+
+```javascript
+setConfiguration: function(configuration as object) as void
+```
+- `@param configuration as object`
+
+##### Example 
+
+```javascript
+  edge_config = {
+    configId: "f6a0164d-4d36-48b5-bb29-264f14fbf57c"
+  }
+  m.adobeEdgeSdk.setConfiguration({ edge: edge_config })
 ```
 
 
