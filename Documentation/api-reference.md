@@ -13,7 +13,7 @@ TBD
 - [updateIdentities](#updateIdentities)
 - [setConfiguration](#setConfiguration)
 
-
+---
 
 ### AdobeSDKInit
 
