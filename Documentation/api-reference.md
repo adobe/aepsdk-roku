@@ -23,19 +23,30 @@ TBD
 function AdobeSDKInit(configuration as object, ecid = "" as string) as object
 ```
 Initialize the Adobe SDK and return the public API instance.
+
 - `@param configuration as object      : configuration for the SDK`
-- `@param (optional) ecid as string    : experience cloud id`
+- `@param [optional] ecid as string    : experience cloud id`
 - `@return instance as object          : public API instance`
 
-> The Adobe Roku SDK will automatically generate an ECID (expericence cloud ID), if not provided. 
+> By default, this SDK automatically generates an ECID (Experience Cloud ID) when first used. If you are running this Edge SDK with the previous [media SDK](https://experienceleague.adobe.com/docs/media-analytics/using/media-use-cases/sdk-track-scenegraph.html?lang=en#global-methods-for-mediaheartbeat), you can manually set one to keep both SDKs running with the same ECID.
 
-##### Example 
+##### Example 1
 
 ```javascript
   edge_config = {
     configId: "f6a0164d-4d36-48b5-bb29-264f14fbf57c"
   }
   m.adobeEdgeSdk = AdobeSDKInit({ edge: edge_config })
+```
+
+##### Example 2
+
+```javascript
+  mid_from_media_sdk = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+  edge_config = {
+    configId: "f6a0164d-4d36-48b5-bb29-264f14fbf57c"
+  }
+  m.adobeEdgeSdk = AdobeSDKInit({ edge: edge_config }, mid_from_media_sdk)
 ```
 
 ### getVersion
@@ -69,7 +80,7 @@ setLogLevel: function(level as integer) as void
   m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
 ```
 
-### shutdown
+### shutdown 
 
 ##### Syntax
 
@@ -84,6 +95,8 @@ shutdown: function() as void
 ```
 
 ### sendEdgeEvent
+
+Sends an Experience event to Edge Network.
 
 ##### Syntax
 
@@ -106,7 +119,7 @@ sendEdgeEvent: function(xdmData as object, callback = _adb_default_callback as f
 ```
 ##### Example 2
 ```javascript
-  m.adobeEdgeSdk.sendEdgeEventWithCallback({
+  m.adobeEdgeSdk.sendEdgeEvent({
       eventType: "commerce.orderPlaced",
       commerce: {
         .....
@@ -122,6 +135,8 @@ sendEdgeEvent: function(xdmData as object, callback = _adb_default_callback as f
 ## TBM
 
 ### setAdvertisingIdentifier
+
+This is used to set the advertising identifier for the SDK
 
 ##### Syntax
 
@@ -156,7 +171,7 @@ updateIdentities: function(identifier as object) as void
             }]
   })
 ```
-### setConfiguration
+### updateConfiguration
 
 ##### Syntax
 
@@ -171,7 +186,7 @@ setConfiguration: function(configuration as object) as void
   edge_config = {
     configId: "f6a0164d-4d36-48b5-bb29-264f14fbf57c"
   }
-  m.adobeEdgeSdk.setConfiguration({ edge: edge_config })
+  m.adobeEdgeSdk.updateConfiguration({ edge: edge_config })
 ```
 
 
