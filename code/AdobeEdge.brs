@@ -18,8 +18,6 @@ function AdobeSDKConstants() as object
     return {
         CONFIGURATION: {
             CONFIG_ID: "configId",
-            EDGE_DOMAIN: "edgeDomain",
-            EDGE_ENVIRONMENT: "edgeEnvironment",
         },
         LOG_LEVEL: {
             VERBOSE: 0,
@@ -39,23 +37,15 @@ end function
 '   - GetGlobalAA()._adb_public_api
 '   - GetGlobalAA()._adb_edge_task_node
 '
-' @param configuration as object      : configuration for the SDK
-' @param (optional) ecid as string    : experience cloud id
-' @return instance as object          : public API instance
-'
+' @return instance as object : public API instance
 '
 ' Example:
 '
-' config = {
-'   edge = {
-'     configId: "0123456789"
-'   }
-' }
-' m.adobeEdgeSdk = AdobeSDKInit(config)
+' m.adobeEdgeSdk = AdobeSDKInit()
 '
 ' *****************************************************************************
 
-function AdobeSDKInit(configuration as object, ecid = "" as string) as object
+function AdobeSDKInit() as object
     ' create the edge task node
     if GetGlobalAA()._adb_edge_task_node = invalid then
         edgeTask = CreateObject("roSGNode", "AdobeEdgeTask")
@@ -95,12 +85,13 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
             ' ********************************************************************************************************
 
             setLogLevel: function(level as integer) as void
-                print "setDebugLogging"
+                print "setDebugLogging: "
+                print level
             end function,
 
             ' ********************************
             '
-            ' Shut down the SDK
+            ' Call this function to shutdown the SDK and drop the further API calls.
             '
             ' ********************************
 
@@ -127,7 +118,7 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
             '
             ' Example 2:
             '
-            ' m.adobeEdgeSdk.sendEdgeEventWithCallback({
+            ' m.adobeEdgeSdk.sendEdgeEvent({
             '     eventType: "commerce.orderPlaced",
             '     commerce: {
             '        .....
@@ -142,69 +133,61 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
 
             sendEdgeEvent: function(xdmData as object, callback = _adb_default_callback as function, context = invalid as dynamic) as void
                 print "sendEdgeEvent"
+                print FormatJson(xdmData)
             end function,
 
-            ' ********************************************************************
+            ' *********************************************************
             '
-            ' Update identities
-            '
-            ' @param identities as object : xmd identity map
-            '
-            ' Example:
-            '
-            ' m.adobeEdgeSdk.updateIdentities({
-            '   Email: [
-            '     {
-            '       id: "user@example.com",
-            '       authenticatedState: "authenticated",
-            '       primary: false
-            '     }
-            '   ]
-            ' })
-            ' ********************************************************************
-
-            updateIdentities: function(identities as object) as void
-                print "updateIdentities"
-                print identities
-            end function,
-            
-            ' **********************************************************************
-            '
-            ' This is used to set the advertising identifier for the SDK
-            '
-            ' @param advertisingIdentifier as string : the advertising identifier
-            '
-            ' **********************************************************************
-            
-            setAdvertisingIdentifier: function(advertisingIdentifier as string) as void
-                print "setAdvertisingIdentifier"
-                print advertisingIdentifier
-            end function,
-
-            ' ********************************
-            '
-            ' Update configuration
+            ' Call this function before using any other public APIs.
+            ' For example, if calling sendEdgeEvent() without a valid configuration in the SDK, the SDK will drop the Edge event.
             '
             ' @param configuration as object
             '
-            ' ********************************
+            ' Example:
+            '
+            ' config = {
+            '   edge = {
+            '     configId: "123-abc-xyz"
+            '   }
+            ' }
+            ' m.adobeEdgeSdk.updateConfiguration(config)
+            '
+            ' *********************************************************
 
             updateConfiguration: function(configuration as object) as void
-                print "updateConfiguration"
+                print "updateConfiguration:"
+                print FormatJson(configuration)
             end function,
+
+            ' ****************************************************************************************************
+            '
+            ' By default, the Edge SDK automatically generates an ECID (Experience Cloud ID) when first used.
+            ' If the Edge SDK and the previous media SDK are running in the same channel, calling this function
+            ' can keep both SDKs running with the same ECID.
+            ' Call this function before using other public APIs. Otherwise, an automatically generated ECID will be assigned.
+            '
+            ' @param ecid as string : the ECID generated by the previous media SDK
+            '
+            ' Example:
+            '
+            ' mid_from_media_sdk = "0123456789"
+            ' m.adobeEdgeSdk.setExperienceCloudId(mid_from_media_sdk)
+            '
+            ' ****************************************************************************************************
+
+            setExperienceCloudId: function(ecid as string) as void
+                print "setExperienceCloudId: "
+                print ecid
+            end function
         }
     end if
 
     ' start the event loop on task node
     GetGlobalAA()._adb_edge_task_node.control = "RUN"
     _adb_public_api = GetGlobalAA()._adb_public_api
-    ' set ecid if provided
-    if ecid.len() > 0
-        _adb_public_api._adb_internal.setExperienceCloudId(ecid)
-    end if
-
-    ' set configuration
-    _adb_public_api.setConfiguration(configuration)
 
     return GetGlobalAA()._adb_public_api
+end function
+
+function _adb_default_callback(context, result) as void
 end function

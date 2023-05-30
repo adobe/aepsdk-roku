@@ -14,24 +14,23 @@ sub init()
   m.ButtonGroup.observeField("buttonSelected", "onButtonSelected")
 
 
-  '------------------- Adobe Edge SDK Example --------------------
-  mid = "1234567890"
-  edge_config = {
-    configId: "1234-567-890"
+  '------------------- Initialize Adobe Edge SDK --------------------
+
+  configuration = {
+    edge: {
+      configId: "123-abc-xyz"
+    }
   }
-  m.adobeEdgeSdk = AdobeSDKInit({ edge: edge_config })
+  m.adobeEdgeSdk = AdobeSDKInit()
+  m.adobeEdgeSdk.updateConfiguration(configuration)
+
   ADB_CONSTANTS = AdobeSDKConstants()
   m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
-  m.adobeEdgeSdk.updateIdentities({
-    Email: [
-      {
-        id: "user@example.com",
-        authenticatedState: "authenticated",
-        primary: false
-      }
-    ]
-  })
-  '---------------------------------------------------------------
+
+  mid_from_media_sdk = "0123456789"
+  m.adobeEdgeSdk.setExperienceCloudId(mid_from_media_sdk)
+
+  '-------------------------------------------------------------------
 
 end sub
 
@@ -41,13 +40,17 @@ sub onButtonSelected()
     m.Video.visible = "true"
     m.Video.control = "play"
     m.Video.setFocus(true)
-    'Exit button pressed'
+    'SendEvent button pressed'
   else if m.ButtonGroup.buttonSelected = 1
+    '------------------- Send Edge Event --------------------
+
     m.adobeEdgeSdk.sendEdgeEvent({
       eventType: "commerce.orderPlaced",
       commerce: {
       },
     })
+
+    '---------------------------------------------------------
   else
     m.Exiter.control = "RUN"
   end if
