@@ -2,6 +2,15 @@
 
 This document lists the APIs provided by Adobe Roku SDK, along with sample code snippets on how to properly use the APIs.
 
+- [AdobeSDKInit](#AdobeSDKInit)
+- [getVersion](#getVersion)
+- [setLogLevel](#setLogLevel)
+- [shutdown](#shutdown)
+- [sendEdgeEvent](#sendEdgeEvent)
+- [TBD setConfiguration](#setConfiguration)
+
+
+
 ### AdobeSDKInit
 
 ##### Syntax
