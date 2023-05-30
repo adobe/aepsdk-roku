@@ -75,11 +75,13 @@ shutdown: function() as void
 ##### Syntax
 
 ```javascript
-sendEdgeEvent: function(xdmData as object) as void
+sendEdgeEvent: function(xdmData as object, callback = _adb_default_callback as function, context = invalid as dynamic) as void
 ```
 - `@param data as object : xdm data`
+- `@param [optional] callback as function(context, result) : handle Edge response`
+- `@param [optional] context as dynamic : context to be passed to the callback function`
 
-##### Example 
+##### Example 1
 
 ```javascript
   m.adobeEdgeSdk.sendEdgeEvent({
@@ -89,7 +91,19 @@ sendEdgeEvent: function(xdmData as object) as void
       }
   })
 ```
-
+##### Example 2
+```javascript
+  m.adobeEdgeSdk.sendEdgeEventWithCallback({
+      eventType: "commerce.orderPlaced",
+      commerce: {
+        .....
+      }
+  }, sub(context, result)
+      print "callback result: "
+      print result
+      print context
+  end sub, context)
+```
 ---
 
 ## TBM
@@ -110,31 +124,6 @@ setConfiguration: function(configuration as object) as void
     configId: "f6a0164d-4d36-48b5-bb29-264f14fbf57c"
   }
   m.adobeEdgeSdk.setConfiguration({ edge: edge_config })
-```
-
-### sendEdgeEventWithCallback
-
-##### Syntax
-
-```javascript
-sendEdgeEventWithCallback: function(data as object, callback as function, context = invalid as dynamic) as void
-```
-- `@param data as object : xdm data`
-- `@param callback as function(context, result) : handle Edge response`
-
-##### Example 
-
-```javascript
-  m.adobeEdgeSdk.sendEdgeEventWithCallback({
-      eventType: "commerce.orderPlaced",
-      commerce: {
-        .....
-      }
-  }, sub(context, result)
-      print "callback result: "
-      print result
-      print context
-  end sub, context)
 ```
 
 ### setAdvertisingIdentifier
