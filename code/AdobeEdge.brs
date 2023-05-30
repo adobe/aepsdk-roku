@@ -20,7 +20,6 @@ function AdobeSDKConstants() as object
             CONFIG_ID: "configId",
             EDGE_DOMAIN: "edgeDomain",
             EDGE_ENVIRONMENT: "edgeEnvironment",
-            ' ORG_ID: "orgId", ?????
         },
         LOG_LEVEL: {
             VERBOSE: 0,
@@ -109,25 +108,15 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
                 print "shutdown"
             end function,
 
-            ' ********************************
-            '
-            ' Set configuration
-            '
-            ' @param configuration as object
-            '
-            ' ********************************
-
-            setConfiguration: function(configuration as object) as void
-                print "setConfiguration"
-            end function,
-
-            ' ********************************
+            ' *************************************************************************************
             '
             ' Send edge event
             '
             ' @param data as object : xdm data
+            ' @param [optional] callback as function(context, result) : handle Edge response
+            ' @param [optional] context as dynamic : context to be passed to the callback function
             '
-            ' Example:
+            ' Example 1:
             '
             ' m.adobeEdgeSdk.sendEdgeEvent({
             '   eventType: "commerce.orderPlaced",
@@ -136,21 +125,7 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
             '   }
             ' })
             '
-            ' ********************************
-
-            sendEdgeEvent: function(xdmData as object) as void
-                print "sendEdgeEvent"
-                print xdmData
-            end function,
-
-            ' ********************************************************************
-            '
-            ' Send edge event and handle the response
-            '
-            ' @param data as object : xdm data
-            ' @param callback as function(context, result) : handle Edge response
-            '
-            ' Example:
+            ' Example 2:
             '
             ' m.adobeEdgeSdk.sendEdgeEventWithCallback({
             '     eventType: "commerce.orderPlaced",
@@ -163,10 +138,10 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
             '     print context
             '   end sub, context)
             '
-            ' ********************************************************************
+            ' *************************************************************************************
 
-            sendEdgeEventWithCallback: function(data as object, callback as function, context = invalid as dynamic) as void
-                print "sendEdgeEventWithCallback"
+            sendEdgeEvent: function(xdmData as object, callback = _adb_default_callback as function, context = invalid as dynamic) as void
+                print "sendEdgeEvent"
             end function,
 
             ' ********************************************************************
@@ -206,16 +181,16 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
                 print advertisingIdentifier
             end function,
 
-            ' ********************************************************************
+            ' ********************************
             '
-            ' Retrieve identities (??????)
+            ' Update configuration
             '
-            ' @param callback as function(context, result) : handle SDK response
+            ' @param configuration as object
             '
-            ' ********************************************************************
+            ' ********************************
 
-            getIdentities: function(callback as function, context = invalid as dynamic) as void
-                print "getIdentities"
+            updateConfiguration: function(configuration as object) as void
+                print "updateConfiguration"
             end function,
         }
     end if
