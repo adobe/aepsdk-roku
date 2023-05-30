@@ -84,6 +84,7 @@ setConfiguration: function(configuration as object) as void
   }
   m.adobeEdgeSdk.updateConfiguration(configuration)
 ```
+The `configId` value is presented as `Datastream ID` in the [satastream details](https://experienceleague.adobe.com/docs/experience-platform/edge/datastreams/configure.html?lang=en#view-details) page.
 
 ### sendEdgeEvent
 
