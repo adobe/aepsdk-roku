@@ -65,7 +65,7 @@ setLogLevel: function(level as integer) as void
 
 ### updateConfiguration
 
-> Call this function before using any other public APIs. For example, if calling sendEdgeEvent() without a valid configuration in the SDK, the SDK will drop the Edge event.
+> Call this function before using any other public APIs. For example, if calling sendEdgeEvent() without a valid configuration in the SDK, the SDK will drop the API call.
 
 ##### Syntax
 
