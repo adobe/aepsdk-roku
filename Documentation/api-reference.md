@@ -124,7 +124,7 @@ sendEdgeEvent: function(xdmData as object, callback = _adb_default_callback as f
 
 ### setExperienceCloudId
 
-> By default, the Edge SDK automatically generates an ECID (Experience Cloud ID) when first used. If the Edge SDK and the previous [media SDK](https://experienceleague.adobe.com/docs/media-analytics/using/media-use-cases/sdk-track-scenegraph.html?lang=en#global-methods-for-mediaheartbeat) are initialized in the same channel, calling this function can keep both SDKs running with the same ECID.
+> By default, the Edge SDK automatically generates an ECID (Experience Cloud ID) when first used. If the Edge SDK and the previous [media SDK](https://experienceleague.adobe.com/docs/media-analytics/using/media-use-cases/sdk-track-scenegraph.html?lang=en#global-methods-for-mediaheartbeat) are initialized in the same channel, calling this function can keep both SDKs running with the same ECID. `*` Call this function before using other public APIs. Otherwise, an automatically generated ECID will be assigned.
 
 ##### Syntax
 
