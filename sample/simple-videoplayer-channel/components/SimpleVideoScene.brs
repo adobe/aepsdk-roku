@@ -16,10 +16,13 @@ sub init()
 
   '------------------------------------
   mid = "12340203495818708474263889316984678123"
-  edge_config = {
-    configId: "f6a0164d-4d36-48b5-bb29-264f14fbf57c"
+  configuration = {
+    edge: {
+      configId: "f6a0164d-4d36-48b5-bb29-264f14fbf57c"
+    }
   }
-  m.adobeEdgeSdk = AdobeSDKInit({ edge: edge_config })
+  m.adobeEdgeSdk = AdobeSDKInit()
+  m.adobeEdgeSdk.updateConfiguration(configuration)
   ADB_CONSTANTS = AdobeSDKConstants()
   m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
   ' m.adobeEdgeSdk.getIdentifiers(sub(context, result)
@@ -63,9 +66,10 @@ sub onButtonSelected()
     m.Video.control = "play"
     m.Video.setFocus(true)
     'Exit button pressed'
+    'SendEvent button pressed
   else if m.ButtonGroup.buttonSelected = 1
     print "------ [send Edge event] ------"
-    m.adobeEdgeSdk.sendEdgeEventWithCallback({
+    m.adobeEdgeSdk.sendEdgeEvent({
       a: {
         a1: "a1",
       }

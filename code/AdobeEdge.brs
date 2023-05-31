@@ -18,9 +18,8 @@ function AdobeSDKConstants() as object
     return {
         CONFIGURATION: {
             CONFIG_ID: "configId",
-            EDGE_DOMAIN: "edgeDomain",
-            EDGE_ENVIRONMENT: "edgeEnvironment",
-            ' ORG_ID: "orgId", ?????
+            ' EDGE_DOMAIN: "edgeDomain",
+            ' EDGE_ENVIRONMENT: "edgeEnvironment",
         },
         LOG_LEVEL: {
             VERBOSE: 0,
@@ -40,23 +39,15 @@ end function
 '   - GetGlobalAA()._adb_public_api
 '   - GetGlobalAA()._adb_edge_task_node
 '
-' @param configuration as object      : configuration for the SDK
-' @param (optional) ecid as string    : experience cloud id
-' @return instance as object          : public API instance
-'
+' @return instance as object : public API instance
 '
 ' Example:
 '
-' config = {
-'   edge = {
-'     configId: "0123456789"
-'   }
-' }
-' m.adobeEdgeSdk = AdobeSDKInit(config)
+' m.adobeEdgeSdk = AdobeSDKInit()
 '
 ' *****************************************************************************
 
-function AdobeSDKInit(configuration as object, ecid = "" as string) as object
+function AdobeSDKInit() as object
     ' create the edge task node
     _adb_log_api("start to initialize the Adobe SDK")
     if GetGlobalAA()._adb_edge_task_node = invalid then
@@ -106,7 +97,7 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
 
             ' ********************************
             '
-            ' Shut down the SDK
+            ' Call this function to shutdown the SDK and drop the further API calls.
             '
             ' ********************************
 
@@ -116,26 +107,38 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
                 m._adb_internal.dispatchEvent(event)
             end function,
 
-            ' ********************************
+            ' *********************************************************
             '
-            ' Set configuration
+            ' Call this function before using any other public APIs.
+            ' For example, if calling sendEdgeEvent() without a valid configuration in the SDK, the SDK will drop the Edge event.
             '
             ' @param configuration as object
             '
-            ' ********************************
+            ' Example:
+            '
+            ' config = {
+            '   edge = {
+            '     configId: "123-abc-xyz"
+            '   }
+            ' }
+            ' m.adobeEdgeSdk.updateConfiguration(config)
+            '
+            ' *********************************************************
 
-            setConfiguration: function(configuration as object) as void
+            updateConfiguration: function(configuration as object) as void
                 event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.SET_CONFIGURATION, configuration)
                 m._adb_internal.dispatchEvent(event)
             end function,
 
-            ' ********************************
+            ' *************************************************************************************
             '
             ' Send edge event
             '
             ' @param data as object : xdm data
+            ' @param [optional] callback as function(context, result) : handle Edge response
+            ' @param [optional] context as dynamic : context to be passed to the callback function
             '
-            ' Example:
+            ' Example 1:
             '
             ' m.adobeEdgeSdk.sendEdgeEvent({
             '   eventType: "commerce.orderPlaced",
@@ -144,22 +147,7 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
             '   }
             ' })
             '
-            ' ********************************
-
-            sendEdgeEvent: function(xdmData as object) as void
-                _adb_log_api("sendEdgeEvent")
-                event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.SEND_EDGE_EVENT, xdmData)
-                m._adb_internal.dispatchEvent(event)
-            end function,
-
-            ' ********************************************************************
-            '
-            ' Send edge event and handle the response
-            '
-            ' @param data as object : xdm data
-            ' @param callback as function(context, result) : handle Edge response
-            '
-            ' Example:
+            ' Example 2:
             '
             ' m.adobeEdgeSdk.sendEdgeEventWithCallback({
             '     eventType: "commerce.orderPlaced",
@@ -172,80 +160,42 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
             '     print context
             '   end sub, context)
             '
-            ' ********************************************************************
+            ' *************************************************************************************
 
-            sendEdgeEventWithCallback: function(data as object, callback as function, context = invalid as dynamic) as void
-                _adb_log_api("sendEdgeEventWithCallback")
-                event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.SEND_EDGE_EVENT, data)
+            sendEdgeEvent: function(xdmData as object, callback = _adb_default_callback as function, context = invalid as dynamic) as void
+                _adb_log_api("sendEdgeEvent")
+                event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.SEND_EDGE_EVENT, xdmData)
                 ' store callback function
                 callbackInfo = {}
                 callbackInfo.cb = callback
                 callbackInfo.context = context
                 m._adb_internal.cachedCallbackInfo[event.uuid] = callbackInfo
-                ' send event
                 m._adb_internal.dispatchEvent(event)
             end function,
 
-            ' ********************************************************************
+            ' ****************************************************************************************************
             '
-            ' Update identities
+            ' By default, the Edge SDK automatically generates an ECID (Experience Cloud ID) when first used.
+            ' If the Edge SDK and the previous media SDK are running in the same channel, calling this function
+            ' can keep both SDKs running with the same ECID.
+            ' Call this function before using other public APIs. Otherwise, an automatically generated ECID will be assigned.
             '
-            ' @param identifier as object : xmd identity map
+            ' @param ecid as string : the ECID generated by the previous media SDK
             '
             ' Example:
             '
-            ' m.adobeEdgeSdk.updateIdentities({
-            '   Email: [
-            '     {
-            '       id: "user@example.com",
-            '       authenticatedState: "authenticated",
-            '       primary: false
-            '     }
-            '   ]
-            ' })
-            ' ********************************************************************
+            ' mid_from_media_sdk = "0123456789"
+            ' m.adobeEdgeSdk.setExperienceCloudId(mid_from_media_sdk)
+            '
+            ' ****************************************************************************************************
 
-            updateIdentities: function(identifier as object) as void
-                _adb_log_api("setIdentifier")
+            setExperienceCloudId: function(ecid as string) as void
+                _adb_log_api("setExperienceCloudId")
                 data = {}
-                data.identifier = identifier
-                event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.UPDATE_IDENTITIES, data)
-                m._adb_internal.dispatchEvent(event)
-            end function,
-
-            ' **********************************************************************
-            '
-            ' This is used to set the advertising identifier for the SDK
-            '
-            ' @param advertisingIdentifier as string : the advertising identifier
-            '
-            ' **********************************************************************
-            setAdvertisingIdentifier: function(advertisingIdentifier as string) as void
-                _adb_log_api("setAdvertisingIdentifier")
-                data = {}
-                data.aid = advertisingIdentifier
-                event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.SET_ADVERTISING_IDENTIFIER, data)
-                m._adb_internal.dispatchEvent(event)
-            end function,
-
-            ' ********************************************************************
-            '
-            ' Retrieve identities (??????)
-            '
-            ' @param callback as function(context, result) : handle SDK response
-            '
-            ' ********************************************************************
-
-            getIdentities: function(callback as function, context = invalid as dynamic) as void
-                event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.GET_IDENTITIES, {})
-                ' store callback function
-                callbackInfo = {}
-                callbackInfo.cb = callback
-                callbackInfo.context = context
-                m._adb_internal.cachedCallbackInfo[event.uuid] = callbackInfo
-                ' send event
-                m._adb_internal.dispatchEvent(event)
-            end function,
+                data.ecid = ecid
+                event = m.buildEvent(m.internalConstants.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID, data)
+                m.dispatchEvent(event)
+            end function
 
             ' ********************************
             ' Add private memebers below
@@ -274,14 +224,6 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
                     event.timestamp = _adb_timestampInMillis()
                     return event
                 end function,
-                ' set experience cloud id
-                setExperienceCloudId: function(ecid as string) as void
-                    _adb_log_api("setExperienceCloudId")
-                    data = {}
-                    data.ecid = ecid
-                    event = m.buildEvent(m.internalConstants.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID, data)
-                    m.dispatchEvent(event)
-                end function
                 ' dispatch events to the task node
                 dispatchEvent: function(event as object) as void
                     _adb_log_api("dispatchEvent: " + FormatJson(event))
@@ -312,13 +254,6 @@ function AdobeSDKInit(configuration as object, ecid = "" as string) as object
         return invalid
     end if
     _adb_log_api("successfully initialized the SDK")
-    ' set ecid if provided
-    if ecid.len() > 0
-        _adb_public_api._adb_internal.setExperienceCloudId(ecid)
-    end if
-
-    ' set configuration
-    _adb_public_api.setConfiguration(configuration)
 
     return GetGlobalAA()._adb_public_api
 end function
@@ -383,4 +318,7 @@ end function
 
 function _adb_log_api(message as string) as void
     print "[ADB-EDGE API]" + message
+end function
+
+function _adb_default_callback(context, result) as void
 end function

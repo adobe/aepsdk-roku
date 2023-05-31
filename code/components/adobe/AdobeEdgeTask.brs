@@ -24,7 +24,7 @@ sub eventLoop()
     processor = EventProcessor(internalConstants, m.top, serviceProvider)
     localDataStoreService = serviceProvider.localDataStoreService
     stored_ecid = localDataStoreService.readValue("ecid")
-    if stored_ecid <> ""
+    if stored_ecid <> invalid and stored_ecid <> ""
         processor.ecid = stored_ecid
         _adb_log_info("[eventLoop] - load ecid from registry: " + stored_ecid)
     end if
