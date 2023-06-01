@@ -80,6 +80,28 @@ sub onButtonSelected()
       context.Warning.visible = "true"
       context.Warning.message = result.data.message
     end sub, m)
+
+    m.adobeEdgeSdk.shutdown()
+    Sleep(50)
+    configuration = {
+      edge: {
+        configId: "f6a0164d-4d36-48b5-bb29-264f14fbf57c"
+      }
+    }
+    m._2_adobeEdgeSdk = AdobeSDKInit()
+    m._2_adobeEdgeSdk.updateConfiguration(configuration)
+    m._2_adobeEdgeSdk.sendEdgeEvent({
+      a: {
+        a1: "a1",
+      }
+    }, sub(context, result)
+      print "callback result 2: "
+      ' print result
+      ' print context
+      context.Warning.visible = "true"
+      context.Warning.message = result.data.message
+    end sub, m)
+
   else
     m.Exiter.control = "RUN"
   end if

@@ -103,8 +103,13 @@ function AdobeSDKInit() as object
 
             shutdown: function() as void
                 _adb_log_api("shutdown")
-                event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.SHUTDOWN)
-                m._adb_internal.dispatchEvent(event)
+                ' STOP and restart it later?????
+                GetGlobalAA()._adb_edge_task_node.control = "DONE"
+                m._adb_internal.cachedCallbackInfo = {}
+                GetGlobalAA()._adb_edge_task_node = invalid
+                GetGlobalAA()._adb_public_api = invalid
+                ' event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.SHUTDOWN)
+                ' m._adb_internal.dispatchEvent(event)
             end function,
 
             ' *********************************************************

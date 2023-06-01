@@ -15,10 +15,12 @@ sub init()
     m.port = createObject("roMessagePort")
     m.top.observeField("requestEvent", m.port)
     m.top.functionName = "eventLoop"
-    m.top.control = "STOP"
+    ' m.top.control = "STOP"
+    m.top.control = "INIT"
 end sub
 
 sub eventLoop()
+    _adb_log_info("start the event loop")
     internalConstants = _adb_internal_constants()
     serviceProvider = _adb_serviceProvider()
     processor = EventProcessor(internalConstants, m.top, serviceProvider)
