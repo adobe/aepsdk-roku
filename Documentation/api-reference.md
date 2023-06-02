@@ -99,7 +99,7 @@ sendEdgeEvent: function(xdmData as object, callback = _adb_default_callback as f
 - `@param [optional] callback as function(context, result) : handle Edge response`
 - `@param [optional] context as dynamic : context to be passed to the callback function`
 
->  This function will automatically add an identity property, the Experience Cloud Identifier (ECID), to each Edge network request. The Roku SDK will generate the ECID by default and send it out with the client provided XDM data within the Experience event's `XDM IdentityMap`. 
+>  This function will automatically add an identity property, the Experience Cloud Identifier (ECID), to each Edge network request within the Experience event's `XDM IdentityMap`. 
 
 ##### Example 1
 
