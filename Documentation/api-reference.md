@@ -95,9 +95,11 @@ Sends an Experience event to Edge Network.
 ```javascript
 sendEdgeEvent: function(xdmData as object, callback = _adb_default_callback as function, context = invalid as dynamic) as void
 ```
-- `@param data as object : xdm data`
+- `@param data as object : xdm data following the XDM schema that is defined in the Schema Editor`
 - `@param [optional] callback as function(context, result) : handle Edge response`
 - `@param [optional] context as dynamic : context to be passed to the callback function`
+
+>  This function will automatically add an identity property, the Experience Cloud Identifier (ECID), to each Edge network request. The Roku SDK will generate the ECID by default and send it out with the client provided XDM data within the Experience event's `XDM IdentityMap`. 
 
 ##### Example 1
 
@@ -125,7 +127,7 @@ sendEdgeEvent: function(xdmData as object, callback = _adb_default_callback as f
 
 ### setExperienceCloudId
 
-> By default, the Edge SDK automatically generates an ECID (Experience Cloud ID) when first used. If the Edge SDK and the previous [media SDK](https://experienceleague.adobe.com/docs/media-analytics/using/media-use-cases/sdk-track-scenegraph.html?lang=en#global-methods-for-mediaheartbeat) are initialized in the same channel, calling this function can keep both SDKs running with the same ECID. `*` Call this function before using other public APIs. Otherwise, an automatically generated ECID will be assigned.
+> Note: Please do not call this API if you do not have both the [Adobe Media SDK](https://experienceleague.adobe.com/docs/media-analytics/using/media-use-cases/sdk-track-scenegraph.html?lang=en#global-methods-for-mediaheartbeat) and the Edge SDK running in the same channel, and you need to use the same ECID in both SDKs. By default, the Edge SDK automatically generates an ECID (Experience Cloud ID) when first used. If the Edge SDK and the previous media SDK are initialized in the same channel, calling this function can keep both SDKs running with the same ECID. `*` Call this function before using other public APIs. Otherwise, an automatically generated ECID will be assigned. Whenever the ECID is changed in the Media SDK, this API needs to be called to synchronize it in both SDKs.
 
 ##### Syntax
 
