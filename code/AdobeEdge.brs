@@ -198,8 +198,8 @@ function AdobeSDKInit() as object
                 _adb_log_api("setExperienceCloudId")
                 data = {}
                 data.ecid = ecid
-                event = m.buildEvent(m.internalConstants.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID, data)
-                m.dispatchEvent(event)
+                event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID, data)
+                m._adb_internal.dispatchEvent(event)
             end function
 
             ' ********************************

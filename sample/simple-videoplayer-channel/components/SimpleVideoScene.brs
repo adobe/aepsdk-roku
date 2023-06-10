@@ -25,38 +25,13 @@ sub init()
   m.adobeEdgeSdk.updateConfiguration(configuration)
   ADB_CONSTANTS = AdobeSDKConstants()
   m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
-  ' m.adobeEdgeSdk.getIdentifiers(sub(context, result)
-  '   print "callback result: "
-  '   print result
-  '   print context
-  '   context.backgroundURI = "pkg:/images/rde_splash_hd.jpg"
-  ' end sub, m.top)
+  ' m.adobeEdgeSdk.setExperienceCloudId("012344545454809")
   m.adobeEdgeSdk.sendEdgeEvent({
     a: {
       a1: "a1",
     }
   })
-  ' m.adobeEdgeSdk.sendEdgeEventWithCallback({
-  '   a: {
-  '     a1: "a1",
-  '   }
-  ' }, sub(context, result)
-  '   print "callback result: "
-  '   print result
-  '   print context
-  '   context.Warning.visible = "true"
-  '   context.Warning.message = result.data.message
-  ' end sub, m)
-  '------------------------------------
-  ' m.adobeEdgeSdk.updateIdentities({
-  '   Email: [
-  '     {
-  '       id: "user@example.com",
-  '       authenticatedState: "authenticated",
-  '       primary: false
-  '     }
-  '   ]
-  ' })
+
 end sub
 
 sub onButtonSelected()
