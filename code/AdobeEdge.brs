@@ -288,7 +288,7 @@ function _adb_internal_constants() as object
 end function
 
 function _adb_handle_response_event() as void
-    sdk = GetGlobalAA()._adb_public_api
+    sdk = GetGlobalAAx()._adb_public_api
     if sdk <> invalid then
         responseEvent = sdk._adb_internal.taskNode["responseEvent"]
         if responseEvent <> invalid
