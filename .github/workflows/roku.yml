@@ -30,5 +30,4 @@ jobs:
         run: make link-sdk && make link-tests
 
       - name: Build Roku SDK with the sample app
-        working-directory: ./sample/simple-videoplayer-channel
         run: make build
