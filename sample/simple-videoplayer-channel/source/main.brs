@@ -15,6 +15,7 @@ sub Main(input as dynamic)
   ' the content details, or right data from feed for id
   if input <> invalid
     print "Received Input -- write code here to check it!"
+    print input
     if input.reason <> invalid
       if input.reason = "ad" then
         print "Channel launched from ad click"
@@ -25,6 +26,22 @@ sub Main(input as dynamic)
       m.contentID = input.contentID
       print "contentID is: " + input.contentID
       'launch/prep the content mapped to the contentID here
+    end if
+    if input.RunTests = "true" and type(TestRunner) = "Function" then
+      Runner = TestRunner()
+
+      Runner.SetFunctions([
+        AdobeEdgeTestSuite_SetUp
+        AdobeEdgeTestSuite_TearDown
+        TestCase_AdobeEdge_AdobeSDKConstants
+      ])
+
+      Runner.Logger.SetVerbosity(3)
+      Runner.Logger.SetEcho(false)
+      Runner.Logger.SetJUnit(false)
+      Runner.SetFailFast(true)
+
+      Runner.Run()
     end if
   end if
   showHeroScreen()
