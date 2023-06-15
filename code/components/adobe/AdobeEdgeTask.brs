@@ -1,4 +1,4 @@
-' ********************** Copyright 2022 Adobe. All rights reserved. **********************
+' ********************** Copyright 2023 Adobe. All rights reserved. **********************
 
 ' This file is licensed to you under the Apache License, Version 2.0 (the "License");
 ' you may not use this file except in compliance with the License. You may obtain a copy
@@ -23,7 +23,7 @@ sub eventLoop()
     _adb_log_info("start the event loop")
     internalConstants = _adb_internal_constants()
     serviceProvider = _adb_serviceProvider()
-    processor = EventProcessor(internalConstants, m.top, serviceProvider)
+    processor = _adb_EventProcessor(internalConstants, m.top, serviceProvider)
     localDataStoreService = serviceProvider.localDataStoreService
     stored_ecid = localDataStoreService.readValue("ecid")
     if stored_ecid <> invalid and stored_ecid <> ""

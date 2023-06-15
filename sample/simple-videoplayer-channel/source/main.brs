@@ -30,11 +30,9 @@ sub Main(input as dynamic)
     if input.RunTests = "true" and type(TestRunner) = "Function" then
       Runner = TestRunner()
 
-      Runner.SetFunctions([
-        AdobeEdgeTestSuite_SetUp
-        AdobeEdgeTestSuite_TearDown
-        TestCase_AdobeEdge_AdobeSDKConstants
-      ])
+      Runner.SetTestFilePrefix("adb_test_")
+
+      Runner.SetFunctions(_adb_test_functions())
 
       Runner.Logger.SetVerbosity(3)
       Runner.Logger.SetEcho(false)
@@ -66,3 +64,20 @@ sub showHeroScreen()
     end if
   end while
 end sub
+
+function _adb_test_functions() as dynamic
+  return [
+    ' adb_test_AdobeEdge.brs
+    AdobeEdgeTestSuite_SetUp
+    AdobeEdgeTestSuite_TearDown
+    TestCase_AdobeEdge_AdobeSDKConstants
+    TestCase_AdobeEdge_adb_generate_implementation_details
+    TestCase_AdobeEdge_adb_sdk_version
+    ' adb_test_AdobeEdge_AdobeSDKInit.brs
+    AdobeEdgeTestSuite_AdobeSDKInit_SetUp
+    AdobeEdgeTestSuite_AdobeSDKInit_TearDown
+    ' adb_test_AdobeEdge_loggingService.brs
+    AdobeEdgeTestSuite_loggingService_SetUp
+    AdobeEdgeTestSuite_loggingService_TearDown
+  ]
+end function

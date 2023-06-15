@@ -17,9 +17,8 @@ function AdobeSDKConstants() as object
     return {
         CONFIGURATION: {
             CONFIG_ID: "configId",
-            ' EDGE_DOMAIN: "edgeDomain",
+            EDGE_DOMAIN: "edgeDomain",
             ' EDGE_ENVIRONMENT: "edgeEnvironment",
-            ' org_ID: "orgId", ????
         },
         LOG_LEVEL: {
             VERBOSE: 0,
@@ -47,8 +46,9 @@ end function
 ' *****************************************************************************
 
 function AdobeSDKInit() as object
-    ' create the edge task node
     _adb_log_api("start to initialize the Adobe SDK")
+
+    ' create the edge task node
     if GetGlobalAA()._adb_edge_task_node = invalid then
         edgeTask = CreateObject("roSGNode", "AdobeEdgeTask")
         if edgeTask = invalid then
@@ -57,6 +57,7 @@ function AdobeSDKInit() as object
         end if
         GetGlobalAA()._adb_edge_task_node = edgeTask
     end if
+
     ' create the public API instance
     if GetGlobalAA()._adb_public_api = invalid then
         GetGlobalAA()._adb_public_api = {
@@ -70,7 +71,7 @@ function AdobeSDKInit() as object
             ' ********************************
 
             getVersion: function() as string
-                return m._adb_internal.internalConstants.VERSION
+                return _adb_sdk_version()
             end function,
 
             ' ********************************************************************************************************
@@ -177,6 +178,17 @@ function AdobeSDKInit() as object
                 m._adb_internal.dispatchEvent(event)
             end function,
 
+            sendEdgeEventWithNonXdmData: function(xdmData as object, nonXdmData as object, callback = _adb_default_callback as function, context = invalid as dynamic) as void
+                _adb_log_api("sendEdgeEvent")
+                event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.SEND_EDGE_EVENT, xdmData)
+                ' store callback function
+                callbackInfo = {}
+                callbackInfo.cb = callback
+                callbackInfo.context = context
+                m._adb_internal.cachedCallbackInfo[event.uuid] = callbackInfo
+                m._adb_internal.dispatchEvent(event)
+            end function,
+
             ' ****************************************************************************************************
             '
             ' By default, the Edge SDK automatically generates an ECID (Experience Cloud ID) when first used.
@@ -265,10 +277,12 @@ end function
 ' ***************************************
 ' Below functions are internal use only
 ' ***************************************
+function _adb_sdk_version() as string
+    return "1.0.0-alpha1"
+end function
 
 function _adb_internal_constants() as object
     return {
-        VERSION: "1.0.0-alpha.1",
         PUBLIC_API: {
             SET_CONFIGURATION: "setConfiguration",
             GET_IDENTITIES: "getIdentities",
@@ -284,6 +298,40 @@ function _adb_internal_constants() as object
             REQUEST_EVENT: "requestEvent",
             RESPONSE_EVENT: "responseEvent",
         },
+    }
+end function
+
+
+function _adb_log_error(message as string) as object
+    log = _adb_serviceProvider().loggingService
+    log.error(message)
+end function
+
+function _adb_log_warning(message as string) as object
+    log = _adb_serviceProvider().loggingService
+    log.warning(message)
+end function
+
+function _adb_log_info(message as string) as object
+    log = _adb_serviceProvider().loggingService
+    log.info(message)
+end function
+
+function _adb_log_debug(message as string) as object
+    log = _adb_serviceProvider().loggingService
+    log.debug(message)
+end function
+
+function _adb_log_verbose(message as string) as object
+    log = _adb_serviceProvider().loggingService
+    log.verbose(message)
+end function
+
+function _adb_generate_implementation_details() as object
+    return {
+        name: "https://ns.adobe.com/experience/mobilesdk/roku",
+        version: "roku sdk (" + _adb_sdk_version() + ")",
+        environment: "app"
     }
 end function
 
@@ -327,9 +375,7 @@ end function
 function _adb_default_callback(context, result) as void
 end function
 
-
-
-function EventProcessor(internalConstants as object, task as object, serviceProvider as object) as object
+function _adb_EventProcessor(internalConstants as object, task as object, serviceProvider as object) as object
     return {
         ADB_CONSTANTS: internalConstants,
         task: task,
@@ -703,30 +749,6 @@ function _adb_serviceProvider() as object
     return GetGlobalAA()._adb_serviceProvider_instance
 end function
 
-function _adb_log_error(message as string) as object
-    log = _adb_serviceProvider().loggingService
-    log.error(message)
-end function
-
-function _adb_log_warning(message as string) as object
-    log = _adb_serviceProvider().loggingService
-    log.warning(message)
-end function
-
-function _adb_log_info(message as string) as object
-    log = _adb_serviceProvider().loggingService
-    log.info(message)
-end function
-
-function _adb_log_debug(message as string) as object
-    log = _adb_serviceProvider().loggingService
-    log.debug(message)
-end function
-
-function _adb_log_verbose(message as string) as object
-    log = _adb_serviceProvider().loggingService
-    log.verbose(message)
-end function
 
 
 ' return {
