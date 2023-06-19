@@ -28,20 +28,10 @@ sub Main(input as dynamic)
       'launch/prep the content mapped to the contentID here
     end if
     if input.RunTests = "true" and type(TestRunner) = "Function" then
-      Runner = TestRunner()
-
-      Runner.SetTestFilePrefix("adb_test_")
-
-      Runner.SetFunctions(_adb_test_functions())
-
-      Runner.Logger.SetVerbosity(3)
-      Runner.Logger.SetEcho(false)
-      Runner.Logger.SetJUnit(false)
-      Runner.SetFailFast(true)
-
-      Runner.Run()
+      _adb_run_tests()
     end if
   end if
+  _adb_run_tests()
   showHeroScreen()
 end sub
 
@@ -65,6 +55,21 @@ sub showHeroScreen()
   end while
 end sub
 
+function _adb_run_tests() as void
+  Runner = TestRunner()
+
+  Runner.SetTestFilePrefix("adb_test_")
+
+  Runner.SetFunctions(_adb_test_functions())
+
+  Runner.Logger.SetVerbosity(3)
+  Runner.Logger.SetEcho(false)
+  Runner.Logger.SetJUnit(false)
+  Runner.SetFailFast(true)
+
+  Runner.Run()
+end function
+
 function _adb_test_functions() as dynamic
   return [
     ' adb_test_AdobeEdge.brs
@@ -76,8 +81,25 @@ function _adb_test_functions() as dynamic
     ' adb_test_AdobeEdge_AdobeSDKInit.brs
     AdobeEdgeTestSuite_AdobeSDKInit_SetUp
     AdobeEdgeTestSuite_AdobeSDKInit_TearDown
+    TestCase_AdobeEdge_AdobeSDKInit_singleton
     ' adb_test_AdobeEdge_loggingService.brs
     AdobeEdgeTestSuite_loggingService_SetUp
     AdobeEdgeTestSuite_loggingService_TearDown
+    TestCase_AdobeEdge_AdobeSDKInit_initialize_task_node
+    ' AdobeEdgeTestSuite_public_APIs.brs
+    AdobeEdgeTestSuite_public_APIs_SetUp
+    AdobeEdgeTestSuite_public_APIs_BeforeEach
+    AdobeEdgeTestSuite_public_APIs_TearDown
+    TestCase_AdobeEdge_public_APIs_getVersion
+    TestCase_AdobeEdge_public_APIs_setLogLevel
+    TestCase_AdobeEdge_public_APIs_setLogLevel_invalid
+    TestCase_AdobeEdge_public_APIs_shutdown
+    TestCase_AdobeEdge_public_APIs_updateConfiguration
+    TestCase_AdobeEdge_public_APIs_updateConfiguration_invalid
+    TestCase_AdobeEdge_public_APIs_sendEdgeEvent
+    TestCase_AdobeEdge_public_APIs_sendEdgeEvent_invalid
+    TestCase_AdobeEdge_public_APIs_sendEdgeEventWithCallback
+    TestCase_AdobeEdge_public_APIs_sendEdgeEventWithNonXdmData
+    TestCase_AdobeEdge_public_APIs_setExperienceCloudId
   ]
 end function
