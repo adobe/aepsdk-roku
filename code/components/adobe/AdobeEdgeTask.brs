@@ -23,7 +23,7 @@ sub eventLoop()
     _adb_log_info("start the event loop")
     internalConstants = _adb_internal_constants()
     serviceProvider = _adb_serviceProvider()
-    processor = _adb_EventProcessor(internalConstants, m.top, serviceProvider)
+    processor = _adb_task_node_EventProcessor(internalConstants, m.top, serviceProvider)
     localDataStoreService = serviceProvider.localDataStoreService
     stored_ecid = localDataStoreService.readValue("ecid")
     if stored_ecid <> invalid and stored_ecid <> ""
