@@ -488,6 +488,7 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
 
         _sendEvent: function(event as object) as void
             _adb_log_info("[_sendEvent] - set event")
+
             if m._isNotReadyToProcessEdgeEvent()
                 _adb_log_warning("not ready to process edge event")
                 return
@@ -503,7 +504,9 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
                     m._saveECID(ecid)
                 end if
             end if
+
             _adb_log_verbose("find a valid ecid: " + m.ecid)
+
             edgeEventData = event.data
             ' print edgeEventData
             'queue event
@@ -520,7 +523,8 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
                                 authenticatedState: "ambiguous"
                             }
                         ]
-                    }
+                    },
+                    implementationDetails: _adb_generate_implementation_details()
                 },
                 events: []
             }
@@ -545,16 +549,22 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
         '
         ' Build the URL to send the event to the Adobe Edge endpoint
         '
-        ' @param configId The Adobe Edge configuration ID
-        ' @param requestId The Adobe Edge request ID
+        ' @param configId    The Adobe Edge configuration ID
+        ' @param requestId   The Adobe Edge request ID
+        ' @param edgeDomain  The first-party domain for the Adobe Edge network request
+        '
         ' @return The URL to send the event to
         '
         ' ************************************************************
-        _buildEdgeRequestURL: function(configId as string, requestId as string) as string
+        _buildEdgeRequestURL: function(configId as string, requestId as string, edgeDomain = "" as string) as string
             if requestId.Len() < 1
-                return "https://edge.adobedc.net/ee/v1/interact?configId=" + configId
+                requestUrl = "https://edge.adobedc.net/ee/v1/interact?configId=" + configId
             end if
-            return "https://edge.adobedc.net/ee/v1/interact?configId=" + configId + "&requestId=" + requestId
+            requestUrl = "https://edge.adobedc.net/ee/v1/interact?configId=" + configId + "&requestId=" + requestId
+            if edgeDomain.Len() < 1
+                return requestUrl
+            end if
+            return requestUrl.Replace("edge.adobedc.net", edgeDomain + ".data.adobedc.net")
         end function,
 
         ' ************************************************************

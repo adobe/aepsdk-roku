@@ -18,7 +18,7 @@ sub init()
   mid = "12340203495818708474263889316984678123"
   configuration = {
     edge: {
-      configId: ""
+      configId: "f6a0164d-4d36-48b5-bb29-264f14fbf57c"
     }
   }
   m.adobeEdgeSdk = AdobeSDKInit()
