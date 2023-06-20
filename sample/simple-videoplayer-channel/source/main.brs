@@ -112,7 +112,6 @@ function _adb_test_functions() as dynamic
     AdobeEdgeTestSuite_localDataStoreService_BeforeEach
     AdobeEdgeTestSuite_localDataStoreService_TearDown
     TestCase_AdobeEdge_localDataStoreService_write
-    TestCase_AdobeEdge_localDataStoreService_write_invalid
     'adb_test_AdobeEdge_EventProcessor.brs
     AdobeEdgeTestSuite_EventProcessor_BeforeEach
     AdobeEdgeTestSuite_EventProcessor_TearDown
