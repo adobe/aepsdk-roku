@@ -60,3 +60,38 @@ sub TestCase_AdobeEdge_adb_serviceProvider()
     UTF_assertEqual(instance1.test, instance2.test)
     UTF_assertEqual(GetGlobalAA()._adb_serviceProvider_instance.test, instance1.test)
 end sub
+
+' target: _adb_ConfigurationManager()
+' @Test
+sub TestCase_AdobeEdge_adb_ConfigurationManager_init()
+    configurationManager = _adb_ConfigurationManager()
+    UTF_assertInvalid(configurationManager.getConfigId())
+    UTF_assertInvalid(configurationManager.getEdgeDomain())
+end sub
+
+' target: _adb_ConfigurationManager()
+' @Test
+sub TestCase_AdobeEdge_adb_ConfigurationManager_configId()
+    configurationManager = _adb_ConfigurationManager()
+    configurationManager.updateConfiguration({
+        edge: {
+            configId: "testConfigId"
+        }
+    })
+    UTF_assertEqual(configurationManager.getConfigId(), "testConfigId")
+    UTF_assertInvalid(configurationManager.getEdgeDomain())
+end sub
+
+' target: _adb_ConfigurationManager()
+' @Test
+sub TestCase_AdobeEdge_adb_ConfigurationManager_edgeDomain()
+    configurationManager = _adb_ConfigurationManager()
+    configurationManager.updateConfiguration({
+        edge: {
+            configId: "testConfigId",
+            edgeDomain: "abx"
+        }
+    })
+    UTF_assertEqual(configurationManager.getConfigId(), "testConfigId")
+    UTF_assertEqual(configurationManager.getEdgeDomain(), "abx")
+end sub

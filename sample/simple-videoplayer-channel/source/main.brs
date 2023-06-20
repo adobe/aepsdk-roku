@@ -79,6 +79,9 @@ function _adb_test_functions() as dynamic
     TestCase_AdobeEdge_adb_generate_implementation_details
     TestCase_AdobeEdge_adb_sdk_version
     TestCase_AdobeEdge_adb_serviceProvider
+    TestCase_AdobeEdge_adb_ConfigurationManager_init
+    TestCase_AdobeEdge_adb_ConfigurationManager_configId
+    TestCase_AdobeEdge_adb_ConfigurationManager_edgeDomain
     ' adb_test_AdobeEdge_AdobeSDKInit.brs
     AdobeEdgeTestSuite_AdobeSDKInit_SetUp
     AdobeEdgeTestSuite_AdobeSDKInit_TearDown
@@ -110,5 +113,11 @@ function _adb_test_functions() as dynamic
     AdobeEdgeTestSuite_localDataStoreService_TearDown
     TestCase_AdobeEdge_localDataStoreService_write
     TestCase_AdobeEdge_localDataStoreService_write_invalid
+    'adb_test_AdobeEdge_EventProcessor.brs
+    AdobeEdgeTestSuite_EventProcessor_BeforeEach
+    AdobeEdgeTestSuite_EventProcessor_TearDown
+    TestCase_AdobeEdge_EventProcessor_handleEvent_setLogLevel
+    TestCase_AdobeEdge_EventProcessor_handleEvent_setLogLevel_invalid
+    TestCase_AdobeEdge_EventProcessor_handleEvent_setConfiguration
   ]
 end function
