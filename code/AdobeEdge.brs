@@ -36,6 +36,7 @@ end function
 ' The following variables are reserved to hold SDK instances in GetGlobalAA():
 '   - GetGlobalAA()._adb_public_api
 '   - GetGlobalAA()._adb_edge_task_node
+'   - GetGlobalAA()._adb_serviceProvider_instance
 '
 ' @return instance as object : public API instance
 '
@@ -613,33 +614,37 @@ function _adb_serviceProvider() as object
                     m._logLevel = logLevel
                 end function,
 
-                warning: function(message as string) as void
-                    if m._logLevel <= 3 then
-                        print "[ADB-EDGE Warning] " + message
-                    end if
+                error: function(message as string) as void
+                    m._adb_print("[ADB-EDGE] (e) " + message)
                 end function,
 
-                error: function(message as string) as void
-                    print "[ADB-EDGE Warning] " + message
+                verbose: function(message as string) as void
+                    if m._logLevel <= 0 then
+                        m._adb_print("[ADB-EDGE] (v) " + message)
+                    end if
                 end function,
 
                 debug: function(message as string) as void
                     if m._logLevel <= 1 then
-                        print "[ADB-EDGE Debug] " + message
+                        m._adb_print("[ADB-EDGE] (d) " + message)
                     end if
                 end function,
 
                 info: function(message as string) as void
                     if m._logLevel <= 2 then
-                        print "[ADB-EDGE Info] " + message
+                        m._adb_print("[ADB-EDGE] (i) " + message)
                     end if
                 end function,
 
-                verbose: function(message as string) as void
-                    if m._logLevel <= 0 then
-                        print "[ADB-EDGE Verbose] " + message
+                warning: function(message as string) as void
+                    if m._logLevel <= 3 then
+                        m._adb_print("[ADB-EDGE] (w) " + message)
                     end if
                 end function,
+
+                _adb_print: function(message as string) as void
+                    print message
+                end function
             },
             networkService: {
                 ' **************************************************************
@@ -705,7 +710,7 @@ function _adb_serviceProvider() as object
                 _registry: CreateObject("roRegistrySection", "adb_edge_mobile"),
 
                 ''' public Functions
-                writeValue: function(key as string, value as dynamic) as dynamic
+                writeValue: function(key as string, value as string) as void
                     m._registry.Write(key, value)
                     m._registry.Flush()
                 end function,
