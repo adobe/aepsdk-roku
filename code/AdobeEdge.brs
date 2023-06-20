@@ -340,6 +340,9 @@ function _adb_internal_constants() as object
             LOG: { LEVEL: "level" },
             ECID: "ecid",
         },
+        STORAGE_KEY: {
+            ECID: "ecid"
+        },
         TASK: {
             REQUEST_EVENT: "requestEvent",
             RESPONSE_EVENT: "responseEvent",
@@ -427,13 +430,14 @@ function _adb_timestampInMillis() as string
 end function
 
 function _adb_task_node_EventProcessor(internalConstants as object, task as object, serviceProvider as object) as object
-    return {
+    eventProcessor = {
         ADB_CONSTANTS: internalConstants,
         task: task,
         configuration: {},
         configurationManager: _adb_ConfigurationManager(),
         ecid: invalid,
         networkService: serviceProvider.networkService,
+        localDataStoreService: serviceProvider.localDataStoreService,
 
         handleEvent: function(event as dynamic) as void
             if _adb_isAdobeEvent(event)
@@ -485,7 +489,7 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
             _adb_log_info("[_saveECID] - save ecid")
             m.ecid = ecid
             localDataStoreService = _adb_serviceProvider().localDataStoreService
-            localDataStoreService.writeValue("ecid", m.ecid)
+            localDataStoreService.writeValue(m.ADB_CONSTANTS.LOCAL_DATA_STORE_KEYS.ECID, m.ecid)
             _adb_log_verbose("save ecid to registry: " + FormatJson(m.ecid))
         end function,
 
@@ -544,7 +548,8 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
             'queue event
             requestId = event.uuid
             configId = m.configurationManager.getConfigId()
-            url = m._buildEdgeRequestURL(configId, requestId)
+            edgeDomain = m.configurationManager.getEdgeDomain()
+            url = m._buildEdgeRequestURL(configId, requestId, edgeDomain)
             _adb_log_verbose("url: " + url)
             jsonBody = {
                 xdm: {
@@ -589,12 +594,12 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
         ' @return The URL to send the event to
         '
         ' ************************************************************
-        _buildEdgeRequestURL: function(configId as string, requestId as string, edgeDomain = "" as string) as string
+        _buildEdgeRequestURL: function(configId as string, requestId as string, edgeDomain = invalid as dynamic) as string
             if requestId.Len() < 1
                 requestUrl = "https://edge.adobedc.net/ee/v1/interact?configId=" + configId
             end if
             requestUrl = "https://edge.adobedc.net/ee/v1/interact?configId=" + configId + "&requestId=" + requestId
-            if edgeDomain.Len() < 1
+            if edgeDomain = invalid
                 return requestUrl
             end if
             return requestUrl.Replace("edge.adobedc.net", edgeDomain + ".data.adobedc.net")
@@ -625,7 +630,17 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
             end if
             m.task[m.ADB_CONSTANTS.TASK.RESPONSE_EVENT] = event
         end function,
+
+        loadECIDFromStorage: function() as void
+            _adb_log_info("[loadECIDFromStorage] - load ecid from storage")
+            ecid = m.localDataStoreService.readValue(m.ADB_CONSTANTS.STORAGE_KEY.ECID)
+            if ecid <> invalid and ecid <> ""
+                m.ecid = ecid
+            end if
+        end function,
     }
+    eventProcessor.loadECIDFromStorage()
+    return eventProcessor
 end function
 
 function _adb_ConfigurationManager() as object
