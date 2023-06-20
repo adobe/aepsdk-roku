@@ -31,7 +31,7 @@ sub Main(input as dynamic)
       _adb_run_tests()
     end if
   end if
-  ' _adb_run_tests()
+  _adb_run_tests()
   showHeroScreen()
 end sub
 
@@ -78,14 +78,21 @@ function _adb_test_functions() as dynamic
     TestCase_AdobeEdge_AdobeSDKConstants
     TestCase_AdobeEdge_adb_generate_implementation_details
     TestCase_AdobeEdge_adb_sdk_version
+    TestCase_AdobeEdge_adb_serviceProvider
+    TestCase_AdobeEdge_adb_ConfigurationManager_init
+    TestCase_AdobeEdge_adb_ConfigurationManager_configId
+    TestCase_AdobeEdge_adb_ConfigurationManager_edgeDomain
     ' adb_test_AdobeEdge_AdobeSDKInit.brs
     AdobeEdgeTestSuite_AdobeSDKInit_SetUp
     AdobeEdgeTestSuite_AdobeSDKInit_TearDown
     TestCase_AdobeEdge_AdobeSDKInit_singleton
-    ' adb_test_AdobeEdge_loggingService.brs
-    AdobeEdgeTestSuite_loggingService_SetUp
-    AdobeEdgeTestSuite_loggingService_TearDown
     TestCase_AdobeEdge_AdobeSDKInit_initialize_task_node
+    ' adb_test_AdobeEdge_loggingService.brs
+    AdobeEdgeTestSuite_loggingService_BeforeEach
+    AdobeEdgeTestSuite_loggingService_TearDown
+    TestCase_AdobeEdge_loggingService_logLevel
+    TestCase_AdobeEdge_loggingService_logLevel_default
+    TestCase_AdobeEdge_loggingService_utility_functions
     ' AdobeEdgeTestSuite_public_APIs.brs
     AdobeEdgeTestSuite_public_APIs_SetUp
     AdobeEdgeTestSuite_public_APIs_BeforeEach
@@ -101,5 +108,15 @@ function _adb_test_functions() as dynamic
     TestCase_AdobeEdge_public_APIs_sendEdgeEventWithCallback
     TestCase_AdobeEdge_public_APIs_sendEdgeEventWithNonXdmData
     TestCase_AdobeEdge_public_APIs_setExperienceCloudId
+    ' adb_test_AdobeEdge_localDataStoreService.brs
+    AdobeEdgeTestSuite_localDataStoreService_BeforeEach
+    AdobeEdgeTestSuite_localDataStoreService_TearDown
+    TestCase_AdobeEdge_localDataStoreService_write
+    'adb_test_AdobeEdge_EventProcessor.brs
+    AdobeEdgeTestSuite_EventProcessor_BeforeEach
+    AdobeEdgeTestSuite_EventProcessor_TearDown
+    TestCase_AdobeEdge_EventProcessor_handleEvent_setLogLevel
+    TestCase_AdobeEdge_EventProcessor_handleEvent_setLogLevel_invalid
+    TestCase_AdobeEdge_EventProcessor_handleEvent_setConfiguration
   ]
 end function

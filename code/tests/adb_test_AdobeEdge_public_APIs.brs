@@ -43,10 +43,11 @@ end sub
 ' target: setLogLevel()
 ' @Test
 sub TestCase_AdobeEdge_public_APIs_setLogLevel()
+    _internal_const = _adb_internal_constants()
     sdkInstance = AdobeSDKInit()
     sdkInstance.setLogLevel(3)
     event = GetGlobalAA()._adb_edge_task_node["requestEvent"]
-    UTF_assertEqual(event.apiName, "setLogLevel")
+    UTF_assertEqual(event.apiName, _internal_const.PUBLIC_API.SET_LOG_LEVEL)
     UTF_assertEqual(event.data, { level: 3 })
     UTF_AssertNotInvalid(event.uuid)
     UTF_AssertNotInvalid(event.timestamp)
@@ -83,11 +84,12 @@ end sub
 ' target: updateConfiguration()
 ' @Test
 sub TestCase_AdobeEdge_public_APIs_updateConfiguration()
+    _internal_const = _adb_internal_constants()
     sdkInstance = AdobeSDKInit()
     configuration = { "edge.configId": "test-config-id" }
     sdkInstance.updateConfiguration(configuration)
     event = GetGlobalAA()._adb_edge_task_node["requestEvent"]
-    UTF_assertEqual(event.apiName, "setConfiguration")
+    UTF_assertEqual(event.apiName, _internal_const.PUBLIC_API.SET_CONFIGURATION)
     UTF_assertEqual(event.data, configuration)
     UTF_AssertNotInvalid(event.uuid)
     UTF_AssertNotInvalid(event.timestamp)
@@ -106,6 +108,7 @@ end sub
 ' target: sendEdgeEvent()
 ' @Test
 sub TestCase_AdobeEdge_public_APIs_sendEdgeEvent()
+    _internal_const = _adb_internal_constants()
     sdkInstance = AdobeSDKInit()
     xdmData = {
         eventType: "commerce.orderPlaced",
@@ -113,7 +116,7 @@ sub TestCase_AdobeEdge_public_APIs_sendEdgeEvent()
     } }
     sdkInstance.sendEdgeEvent(xdmData)
     event = GetGlobalAA()._adb_edge_task_node["requestEvent"]
-    UTF_assertEqual(event.apiName, "sendEdgeEvent")
+    UTF_assertEqual(event.apiName, _internal_const.PUBLIC_API.SEND_EDGE_EVENT)
     UTF_assertEqual(sdkInstance._adb_internal.cachedCallbackInfo.Count(), 0)
     UTF_assertEqual(event.data, { xdm: xdmData })
     UTF_AssertNotInvalid(event.uuid)
@@ -183,11 +186,12 @@ end sub
 ' target: setExperienceCloudId()
 ' @Test
 sub TestCase_AdobeEdge_public_APIs_setExperienceCloudId()
+    _internal_const = _adb_internal_constants()
     sdkInstance = AdobeSDKInit()
     test_id = "test-experience-cloud-id"
     sdkInstance.setExperienceCloudId(test_id)
     event = GetGlobalAA()._adb_edge_task_node["requestEvent"]
-    UTF_assertEqual(event.apiName, "setExperienceCloudId")
+    UTF_assertEqual(event.apiName, _internal_const.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID)
     UTF_assertEqual(event.data, { ecid: test_id })
     UTF_AssertNotInvalid(event.uuid)
     UTF_AssertNotInvalid(event.timestamp)

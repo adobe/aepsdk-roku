@@ -16,6 +16,7 @@
 function AdobeSDKConstants() as object
     return {
         CONFIGURATION: {
+            EDGE: "edge",
             CONFIG_ID: "configId",
             EDGE_DOMAIN: "edgeDomain",
             ' EDGE_ENVIRONMENT: "edgeEnvironment",
@@ -36,6 +37,7 @@ end function
 ' The following variables are reserved to hold SDK instances in GetGlobalAA():
 '   - GetGlobalAA()._adb_public_api
 '   - GetGlobalAA()._adb_edge_task_node
+'   - GetGlobalAA()._adb_serviceProvider_instance
 '
 ' @return instance as object : public API instance
 '
@@ -103,8 +105,8 @@ function AdobeSDKInit() as object
                     return
                 end if
                 data = {}
-                data.level = level
-                event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.SET_LOG_LEVEL, data)
+                data[m._adb_internal.cons.EVENT_DATA_KEY.LOG.LEVEL] = level
+                event = m._adb_internal.buildEvent(m._adb_internal.cons.PUBLIC_API.SET_LOG_LEVEL, data)
                 m._adb_internal.dispatchEvent(event)
             end function,
 
@@ -146,7 +148,7 @@ function AdobeSDKInit() as object
                     _adb_log_error("invalid configuration")
                     return
                 end if
-                event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.SET_CONFIGURATION, configuration)
+                event = m._adb_internal.buildEvent(m._adb_internal.cons.PUBLIC_API.SET_CONFIGURATION, configuration)
                 m._adb_internal.dispatchEvent(event)
             end function,
 
@@ -192,7 +194,8 @@ function AdobeSDKInit() as object
                 eventData = {
                     xdm: xdmData
                 }
-                event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.SEND_EDGE_EVENT, eventData)
+                event = m._adb_internal.buildEvent(m._adb_internal.cons.PUBLIC_API.SEND_EDGE_EVENT, eventData)
+                eventData.xdm.timestap = event.timestamp
                 if callback <> _adb_default_callback then
                     ' store callback function
                     callbackInfo = {}
@@ -209,7 +212,7 @@ function AdobeSDKInit() as object
                     xdm: xdmData,
                     data: nonXdmData
                 }
-                event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.SEND_EDGE_EVENT, eventData)
+                event = m._adb_internal.buildEvent(m._adb_internal.cons.PUBLIC_API.SEND_EDGE_EVENT, eventData)
                 if callback <> _adb_default_callback then
                     ' store callback function
                     callbackInfo = {}
@@ -243,8 +246,8 @@ function AdobeSDKInit() as object
                     return
                 end if
                 data = {}
-                data.ecid = ecid
-                event = m._adb_internal.buildEvent(m._adb_internal.internalConstants.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID, data)
+                data[m._adb_internal.cons.EVENT_DATA_KEY.ecid] = ecid
+                event = m._adb_internal.buildEvent(m._adb_internal.cons.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID, data)
                 m._adb_internal.dispatchEvent(event)
             end function
 
@@ -253,7 +256,7 @@ function AdobeSDKInit() as object
             ' ********************************
             _adb_internal: {
                 ' constants
-                internalConstants: _adb_internal_constants(),
+                cons: _adb_internal_constants(),
                 ' build an Adobe Event
                 ' @param apiName : string
                 ' @param data    : object
@@ -272,13 +275,15 @@ function AdobeSDKInit() as object
                         data: data,
                     }
                     event.uuid = CreateObject("roDeviceInfo").GetRandomUUID()
-                    event.timestamp = _adb_timestampInMillis()
+                    ' mobile -> 2021-08-09T14:09:20.859Z
+                    ' 2021-03-25T18:53:03+0000
+                    event.timestamp = _adb_ISO8601_timestamp()
                     return event
                 end function,
                 ' dispatch events to the task node
                 dispatchEvent: function(event as object) as void
                     _adb_log_debug("dispatchEvent: " + FormatJson(event))
-                    m.taskNode[m.internalConstants.TASK.REQUEST_EVENT] = event
+                    m.taskNode[m.cons.TASK.REQUEST_EVENT] = event
                 end function,
                 ' private memeber
                 taskNode: GetGlobalAA()._adb_edge_task_node,
@@ -330,6 +335,13 @@ function _adb_internal_constants() as object
             SYNC_IDENTIFIERS: "syncIdentifiers",
             SEND_EDGE_EVENT: "sendEdgeEvent",
             SET_LOG_LEVEL: "setLogLevel",
+        },
+        EVENT_DATA_KEY: {
+            LOG: { LEVEL: "level" },
+            ECID: "ecid",
+        },
+        STORAGE_KEY: {
+            ECID: "ecid"
         },
         TASK: {
             REQUEST_EVENT: "requestEvent",
@@ -395,6 +407,11 @@ function _adb_handle_response_event() as void
     end if
 end function
 
+function _adb_ISO8601_timestamp() as string
+    dateTime = createObject("roDateTime")
+    return dateTime.toIsoString()
+end function
+
 function _adb_timestampInMillis() as string
     dateTime = CreateObject("roDateTime")
     currMS = dateTime.GetMilliseconds()
@@ -413,16 +430,18 @@ function _adb_timestampInMillis() as string
 end function
 
 function _adb_task_node_EventProcessor(internalConstants as object, task as object, serviceProvider as object) as object
-    return {
+    eventProcessor = {
         ADB_CONSTANTS: internalConstants,
         task: task,
         configuration: {},
+        configurationManager: _adb_ConfigurationManager(),
         ecid: invalid,
         networkService: serviceProvider.networkService,
+        localDataStoreService: serviceProvider.localDataStoreService,
 
         handleEvent: function(event as dynamic) as void
-            if event <> invalid
-                _adb_log_info("[handleEvent] - handle event -> " + FormatJson(event))
+            if _adb_isAdobeEvent(event)
+                _adb_log_info("[handleEvent] - handle event: " + FormatJson(event))
                 if event.apiname = m.ADB_CONSTANTS.PUBLIC_API.SEND_EDGE_EVENT
                     m._sendEvent(event)
                 else if event.apiname = m.ADB_CONSTANTS.PUBLIC_API.SET_CONFIGURATION
@@ -433,41 +452,51 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
                     m._setECID(event)
                 end if
             else
-                _adb_log_warning("[handleEvent] - event is invalid")
+                _adb_log_warning("[handleEvent] - event is invalid: " + FormatJson(event))
             end if
         end function,
 
         _setLogLevel: function(event as object) as void
-            logLevel = event.data.level
-            loggingService = _adb_serviceProvider().loggingService
-            loggingService.setLogLevel(logLevel)
-            _adb_log_info("[_setLogLevel] - set log level: " + FormatJson(logLevel))
+            if event.data.DoesExist(m.ADB_CONSTANTS.EVENT_DATA_KEY.LOG.LEVEL)
+                logLevel = event.data[m.ADB_CONSTANTS.EVENT_DATA_KEY.LOG.LEVEL]
+                loggingService = _adb_serviceProvider().loggingService
+                loggingService.setLogLevel(logLevel)
+                _adb_log_info("[_setLogLevel] - set log level: " + FormatJson(logLevel))
+            else
+                _adb_log_warning("[_setLogLevel] - log level is not found in event data")
+            end if
         end function,
 
         _setConfiguration: function(event as object) as void
             _adb_log_info("[_setConfiguration] - set configuration")
-            _adb_log_verbose("configuration before: " + FormatJson(m.configuration))
-            m.configuration = event.data
-            _adb_log_verbose("configuration after: " + FormatJson(m.configuration))
+            _adb_log_verbose("configuration before: " + FormatJson(m.configurationManager.getAll()))
+            m.configurationManager.updateConfiguration(event.data)
+            _adb_log_verbose("configuration after: " + FormatJson(m.configurationManager.getAll()))
         end function,
 
         _setECID: function(event as object) as void
             _adb_log_info("[_setECID] - set ecid")
-            ' print event.data.ecid
-            m._saveECID(event.data.ecid)
+            if event.data.DoesExist(m.ADB_CONSTANTS.EVENT_DATA_KEY.ECID)
+                ecid = event.data[m.ADB_CONSTANTS.EVENT_DATA_KEY.ECID]
+                m._saveECID(ecid)
+            else
+                _adb_log_warning("[_setECID] - ecid is not found in event data")
+            end if
+
         end function,
 
         _saveECID: function(ecid as string) as void
             _adb_log_info("[_saveECID] - save ecid")
             m.ecid = ecid
             localDataStoreService = _adb_serviceProvider().localDataStoreService
-            localDataStoreService.writeValue("ecid", m.ecid)
+            localDataStoreService.writeValue(m.ADB_CONSTANTS.LOCAL_DATA_STORE_KEYS.ECID, m.ecid)
             _adb_log_verbose("save ecid to registry: " + FormatJson(m.ecid))
         end function,
 
         _queryECID: function() as string
             _adb_log_info("[_queryECID] - query ECID from service side")
-            url = m._buildEdgeRequestURL(m.configuration.edge.configId, "")
+            configId = m.configurationManager.getConfigId()
+            url = m._buildEdgeRequestURL(configId, "")
             jsonBody = {
                 events: [
                     {
@@ -487,10 +516,17 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
         end function,
 
         _sendEvent: function(event as object) as void
-            _adb_log_info("[_sendEvent] - set event")
+            _adb_log_info("[_sendEvent] - send event")
 
             if m._isNotReadyToProcessEdgeEvent()
                 _adb_log_warning("not ready to process edge event")
+                return
+            end if
+
+            if event.count() <> 0 and event.data.DoesExist("xdm") and event.data.xdm.Count() > 0 then
+                _adb_log_verbose("Edge event includes xdm data, start to process.")
+            else
+                _adb_log_error("xdm data is empty, do not send event to edge")
                 return
             end if
 
@@ -511,7 +547,9 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
             ' print edgeEventData
             'queue event
             requestId = event.uuid
-            url = m._buildEdgeRequestURL(m.configuration.edge.configId, requestId)
+            configId = m.configurationManager.getConfigId()
+            edgeDomain = m.configurationManager.getEdgeDomain()
+            url = m._buildEdgeRequestURL(configId, requestId, edgeDomain)
             _adb_log_verbose("url: " + url)
             jsonBody = {
                 xdm: {
@@ -556,12 +594,12 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
         ' @return The URL to send the event to
         '
         ' ************************************************************
-        _buildEdgeRequestURL: function(configId as string, requestId as string, edgeDomain = "" as string) as string
+        _buildEdgeRequestURL: function(configId as string, requestId as string, edgeDomain = invalid as dynamic) as string
             if requestId.Len() < 1
                 requestUrl = "https://edge.adobedc.net/ee/v1/interact?configId=" + configId
             end if
             requestUrl = "https://edge.adobedc.net/ee/v1/interact?configId=" + configId + "&requestId=" + requestId
-            if edgeDomain.Len() < 1
+            if edgeDomain = invalid
                 return requestUrl
             end if
             return requestUrl.Replace("edge.adobedc.net", edgeDomain + ".data.adobedc.net")
@@ -581,8 +619,9 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
         '
         ' ************************************************************
         _isNotReadyToProcessEdgeEvent: function() as boolean
-            return m.configuration = invalid or m.configuration.edge = invalid or m.configuration.edge.configId = invalid or m.configuration.edge.configId.Len() < 1
+            return m.configurationManager.getConfigId() = invalid
         end function,
+
         _sendResponseEvent: function(event as object) as void
             _adb_log_info("[_sendResponseEvent] - send response event" + FormatJson(event))
             if m.task = invalid
@@ -591,12 +630,71 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
             end if
             m.task[m.ADB_CONSTANTS.TASK.RESPONSE_EVENT] = event
         end function,
+
+        loadECIDFromStorage: function() as void
+            _adb_log_info("[loadECIDFromStorage] - load ecid from storage")
+            ecid = m.localDataStoreService.readValue(m.ADB_CONSTANTS.STORAGE_KEY.ECID)
+            if ecid <> invalid and ecid <> ""
+                m.ecid = ecid
+            end if
+        end function,
+    }
+    eventProcessor.loadECIDFromStorage()
+    return eventProcessor
+end function
+
+function _adb_ConfigurationManager() as object
+    return {
+        CONFIG_KEY: AdobeSDKConstants().CONFIGURATION
+        ' example : {configId:"1234567890", edgeDomain:"xyz"}
+        _edge: {}
+
+        ' example : {edge: {configId:"1234567890", edgeDomain:"xyz"}}
+        updateConfiguration: function(configuration as object) as void
+            ' find edge configuration and save it
+            if configuration.DoesExist(m.CONFIG_KEY.EDGE) and configuration.edge <> invalid then
+                if configuration.edge.DoesExist(m.CONFIG_KEY.CONFIG_ID) and Type(configuration.edge[m.CONFIG_KEY.CONFIG_ID]) = "roString"
+                    m._edge[m.CONFIG_KEY.CONFIG_ID] = configuration.edge[m.CONFIG_KEY.CONFIG_ID]
+                end if
+                if configuration.edge.DoesExist(m.CONFIG_KEY.EDGE_DOMAIN) and Type(configuration.edge[m.CONFIG_KEY.EDGE_DOMAIN]) = "roString"
+                    m._edge[m.CONFIG_KEY.EDGE_DOMAIN] = configuration.edge[m.CONFIG_KEY.EDGE_DOMAIN]
+                end if
+            end if
+        end function
+        getAll: function() as object
+            return {
+                edge: m._edge
+            }
+        end function
+        getConfigId: function() as dynamic
+            if m._edge.DoesExist(m.CONFIG_KEY.CONFIG_ID) then
+                return m._edge[m.CONFIG_KEY.CONFIG_ID]
+            else
+                return invalid
+            end if
+        end function
+        getEdgeDomain: function() as dynamic
+            if m._edge.DoesExist(m.CONFIG_KEY.EDGE_DOMAIN) then
+                return m._edge[m.CONFIG_KEY.EDGE_DOMAIN]
+            else
+                return invalid
+            end if
+        end function
     }
 end function
 
-function _adb_isAdobeEvent(msgPayload as dynamic) as boolean
-    if msgPayload <> invalid
-        return msgPayload.DoesExist("uuid") and msgPayload.DoesExist("apiname")
+function _adb_isAdobeEvent(event as dynamic) as boolean
+    if event = invalid
+        return false
+    end if
+
+    dataExist = event.DoesExist("data") and event.data <> invalid
+    apinameExist = event.DoesExist("apiname") and event.apiname <> invalid
+    uuidExist = event.DoesExist("uuid") and event.uuid <> invalid
+    timestampExist = event.DoesExist("timestamp") and event.timestamp <> invalid
+
+    if dataExist and apinameExist and uuidExist and uuidExist and timestampExist then
+        return true
     else
         return false
     end if
@@ -613,33 +711,37 @@ function _adb_serviceProvider() as object
                     m._logLevel = logLevel
                 end function,
 
-                warning: function(message as string) as void
-                    if m._logLevel <= 3 then
-                        print "[ADB-EDGE Warning] " + message
-                    end if
+                error: function(message as string) as void
+                    m._adb_print("[ADB-EDGE] (e) " + message)
                 end function,
 
-                error: function(message as string) as void
-                    print "[ADB-EDGE Warning] " + message
+                verbose: function(message as string) as void
+                    if m._logLevel <= 0 then
+                        m._adb_print("[ADB-EDGE] (v) " + message)
+                    end if
                 end function,
 
                 debug: function(message as string) as void
                     if m._logLevel <= 1 then
-                        print "[ADB-EDGE Debug] " + message
+                        m._adb_print("[ADB-EDGE] (d) " + message)
                     end if
                 end function,
 
                 info: function(message as string) as void
                     if m._logLevel <= 2 then
-                        print "[ADB-EDGE Info] " + message
+                        m._adb_print("[ADB-EDGE] (i) " + message)
                     end if
                 end function,
 
-                verbose: function(message as string) as void
-                    if m._logLevel <= 0 then
-                        print "[ADB-EDGE Verbose] " + message
+                warning: function(message as string) as void
+                    if m._logLevel <= 3 then
+                        m._adb_print("[ADB-EDGE] (w) " + message)
                     end if
                 end function,
+
+                _adb_print: function(message as string) as void
+                    print message
+                end function
             },
             networkService: {
                 ' **************************************************************
@@ -705,7 +807,7 @@ function _adb_serviceProvider() as object
                 _registry: CreateObject("roRegistrySection", "adb_edge_mobile"),
 
                 ''' public Functions
-                writeValue: function(key as string, value as dynamic) as dynamic
+                writeValue: function(key as string, value as string) as void
                     m._registry.Write(key, value)
                     m._registry.Flush()
                 end function,
