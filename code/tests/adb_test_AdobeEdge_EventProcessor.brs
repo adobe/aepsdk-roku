@@ -30,7 +30,7 @@ sub TestCase_AdobeEdge_EventProcessor_handleEvent_setLogLevel()
     loggingService.setLogLevel(1)
     UTF_assertEqual(loggingService._logLevel, 1)
 
-    eventProcesser = _adb_task_node_EventProcessor(_adb_internal_constants(), {}, serviceProvider)
+    eventProcesser = _adb_task_node_EventProcessor(_adb_internal_constants(), {})
     eventProcesser.handleEvent({
         apiName: "setLogLevel",
         data: {
@@ -50,7 +50,7 @@ sub TestCase_AdobeEdge_EventProcessor_handleEvent_setLogLevel_invalid()
     loggingService.setLogLevel(1)
     UTF_assertEqual(loggingService._logLevel, 1)
 
-    eventProcesser = _adb_task_node_EventProcessor(_adb_internal_constants(), {}, serviceProvider)
+    eventProcesser = _adb_task_node_EventProcessor(_adb_internal_constants(), {})
     eventProcesser.handleEvent({
         apiName: "setLogLevel",
         data: {

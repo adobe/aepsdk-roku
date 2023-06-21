@@ -22,8 +22,7 @@ end sub
 sub eventLoop()
     _adb_log_info("start the event loop")
     internalConstants = _adb_internal_constants()
-    serviceProvider = _adb_serviceProvider()
-    processor = _adb_task_node_EventProcessor(internalConstants, m.top, serviceProvider)
+    processor = _adb_task_node_EventProcessor(internalConstants, m.top)
     while true
         msg = wait(250, m.port)
         if msg <> invalid

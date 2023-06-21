@@ -429,15 +429,15 @@ function _adb_timestampInMillis() as string
     return timeInMillis
 end function
 
-function _adb_task_node_EventProcessor(internalConstants as object, task as object, serviceProvider as object) as object
+function _adb_task_node_EventProcessor(internalConstants as object, task as object) as object
     eventProcessor = {
         ADB_CONSTANTS: internalConstants,
         task: task,
         configuration: {},
         configurationManager: _adb_ConfigurationManager(),
         ecid: invalid,
-        networkService: serviceProvider.networkService,
-        localDataStoreService: serviceProvider.localDataStoreService,
+        networkService: _adb_serviceProvider().networkService,
+        localDataStoreService: _adb_serviceProvider().localDataStoreService,
 
         handleEvent: function(event as dynamic) as void
             if _adb_isAdobeEvent(event)
@@ -482,7 +482,6 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
             else
                 _adb_log_warning("[_setECID] - ecid is not found in event data")
             end if
-
         end function,
 
         _saveECID: function(ecid as string) as void
@@ -631,15 +630,15 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
             m.task[m.ADB_CONSTANTS.TASK.RESPONSE_EVENT] = event
         end function,
 
-        loadECIDFromStorage: function() as void
-            _adb_log_info("[loadECIDFromStorage] - load ecid from storage")
+        loadECID: function() as void
+            _adb_log_info("[loadECID] - load ecid from storage")
             ecid = m.localDataStoreService.readValue(m.ADB_CONSTANTS.STORAGE_KEY.ECID)
             if ecid <> invalid and ecid <> ""
                 m.ecid = ecid
             end if
         end function,
     }
-    eventProcessor.loadECIDFromStorage()
+    eventProcessor.loadECID()
     return eventProcessor
 end function
 
