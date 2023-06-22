@@ -900,6 +900,7 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
     instance = {
         _queue: [],
         _stateManager: stateManager
+        _queue_size_max: 100,
 
         queue: function(requestId as string, xdmData as object, timestamp as integer, configId = invalid as dynamic, ecid = invalid as dynamic, edgeDomain = invalid as dynamic) as void
             requestEntity = {
@@ -910,6 +911,10 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
                 ecid: ecid,
                 edgeDomain: edgeDomain
             }
+            ' remove the oldest entity if reaching the limit
+            if m._queue.count() >= m._queue_size_max
+                m._queue.Shift()
+            end if
             m._queue.Push(requestEntity)
         end function,
 
@@ -924,24 +929,36 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
                 if ecid = invalid
                     ecid = m._stateManager.getECID()
                 end if
+
                 configId = requestEntity.configId
                 if configId = invalid
                     configId = m._stateManager.getConfigId()
                 end if
+
                 requestId = requestEntity.requestId
+
                 edgeDomain = requestEntity.edgeDomain
                 if edgeDomain = invalid
                     edgeDomain = m._stateManager.getEdgeDomain()
                 end if
+
                 if ecid <> invalid and ecid.Len() > 0 and configId <> invalid and configId.Len() > 0 then
-                    response = m._precessRequest(xdmData, ecid, configId, requestId, edgeDomain)
-                    if response.code = 200 or response.code = 123 then
+                    response = m._processRequest(xdmData, ecid, configId, requestId, edgeDomain)
+                    ' TODO: handle response code properly
+
+                    if response.code >= 200 and response.code <= 299 then
                         if responseArray = invalid
                             responseArray = []
                         end if
                         responseArray.Push(response)
-                    else
+
+                    else if response.code = 408 or response.code = 504 or response.code = 503
+                        ' RECOVERABLE_ERROR_CODES = [408, 504, 503]
                         m._queue.Unshift(requestEntity)
+                        exit while
+                    else
+                        ' drop the request
+                        _adb_log_error("Edge request dropped. Response code: " + response.code.toStr() + " Response body: " + response.message)
                         exit while
                     end if
 
@@ -953,13 +970,13 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
             return responseArray
         end function,
 
-        _precessRequest: function(xdmData as object, ecid as string, configId as string, requestId as string, edgeDomain = invalid as dynamic) as object
+        _processRequest: function(xdmData as object, ecid as string, configId as string, requestId as string, edgeDomain = invalid as dynamic) as object
             jsonBody = {
                 xdm: {
                     identityMap: {
                         ECID: [
                             {
-                                id: invalid,
+                                id: ecid,
                                 primary: true,
                                 authenticatedState: "ambiguous"
                             }
@@ -970,7 +987,7 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
                 events: []
             }
             jsonBody.events[0] = xdmData
-            jsonBody.xdm.identityMap.ECID[0].id = ecid
+            ' jsonBody.xdm.identityMap.ECID[0].id = ecid
             url = _adb_buildEdgeRequestURL(configId, requestId, edgeDomain)
             _adb_log_verbose("request JSON: " + FormatJson(jsonBody))
             response = _adb_serviceProvider().networkService.syncPostRequest(url, jsonBody)
