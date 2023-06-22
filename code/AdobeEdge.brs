@@ -565,11 +565,6 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
                 return
             end if
 
-            ' if m._isNotReadyToProcessEdgeEvent()
-            '     _adb_log_warning("not ready to process edge event")
-            '     return
-            ' end if
-
             ecid = m.stateManager.getECID()
             if ecid = invalid then
                 ' fetch ecid from service side
@@ -588,11 +583,6 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
             edgeDomain = m.stateManager.getEdgeDomain()
             xdmData = event.data
 
-            ' url = m._buildEdgeRequestURL(configId, requestId, edgeDomain)
-            ' _adb_log_verbose("url: " + url)
-
-
-            ' queue: function(requestJson as object, timestamp as integer, configId = invalid as dynamic, ecid = invalid as dynamic, edgeDomain = invalid as dynamic) as void
             m.edgeRequestWorker.queue(requestId, xdmData, event.timestamp_in_millis, configId, ecid, edgeDomain)
             responses = m.edgeRequestWorker.processRequests()
             if Type(responses) = "roArray" then
@@ -816,12 +806,12 @@ function _adb_serviceProvider() as object
 
                 writeMap: function(mapName as string, map as dynamic) as dynamic
                     mapRegistry = CreateObject("roRegistrySection", "adbmobileMap_" + mapName)
-                    '_adb_logger().debug("Persistence - writeMap() writing to map: adbmobileMap_" + mapName)
+                    _adb_log_debug("Persistence - writeMap() writing to map: adbmobileMap_" + mapName)
 
                     if map <> invalid and map.Count() > 0
                         For each key in map
                             if map[key] <> invalid
-                                '_adb_logger().debug("Persistence - writeMap() writing " + key + ":" + map[key] + " to map: adbmobileMap_" + mapName)
+                                _adb_log_debug("Persistence - writeMap() writing " + key + ":" + map[key] + " to map: adbmobileMap_" + mapName)
                                 mapRegistry.Write(key, map[key])
                                 mapRegistry.Flush()
                             end if
@@ -834,7 +824,7 @@ function _adb_serviceProvider() as object
                     keyList = mapRegistry.GetKeyList()
                     result = {}
                     if keyList <> invalid
-                        '_adb_logger().debug("Persistence - readMap() reading from map: adbmobileMap_" + mapName + " with size:" + keyList.Count().toStr())
+                        _adb_log_debug("Persistence - readMap() reading from map: adbmobileMap_" + mapName + " with size:" + keyList.Count().toStr())
                         For each key in keyList
                             result[key] = mapRegistry.Read(key)
                         end for
@@ -845,24 +835,24 @@ function _adb_serviceProvider() as object
 
                 readValueFromMap: function(mapName as string, key as string) as dynamic
                     mapRegistry = CreateObject("roRegistrySection", "adbmobileMap_" + mapName)
-                    '_adb_logger().debug("Persistence - readValueFromMap() reading Value for key:" + key + " from map: adbmobileMap_" + mapName)
+                    _adb_log_debug("Persistence - readValueFromMap() reading Value for key:" + key + " from map: adbmobileMap_" + mapName)
                     if mapRegistry.Exists(key) and mapRegistry.Read(key).Len() > 0
                         return mapRegistry.Read(key)
                     end if
-                    '_adb_logger().debug("Persistence - readValueFromMap() did not get Value for key:" + key + " from map: adbmobileMap_" + mapName)
+                    _adb_log_debug("Persistence - readValueFromMap() did not get Value for key:" + key + " from map: adbmobileMap_" + mapName)
                     return invalid
                 end function,
 
                 removeValueFromMap: function(mapName as string, key as string) as void
                     mapRegistry = CreateObject("roRegistrySection", "adbmobileMap_" + mapName)
-                    '_adb_logger().debug("Persistence - removeValueFromMap() removing key:" + key + " from map: adbmobileMap_" + mapName)
+                    _adb_log_debug("Persistence - removeValueFromMap() removing key:" + key + " from map: adbmobileMap_" + mapName)
                     mapRegistry.Delete(key)
                     mapRegistry.Flush()
                 end function,
 
                 removeMap: function(mapName as string) as void
                     mapRegistry = CreateObject("roRegistrySection", "adbmobileMap_" + mapName)
-                    '_adb_logger().debug("Persistence - removeMap() deleting map: adbmobileMap_" + mapName)
+                    _adb_log_debug("Persistence - removeMap() deleting map: adbmobileMap_" + mapName)
                     keyList = mapRegistry.GetKeyList()
                     For each key in keyList
                         m.removeValueFromMap(mapName, key)
@@ -945,21 +935,27 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
                 if ecid <> invalid and ecid.Len() > 0 and configId <> invalid and configId.Len() > 0 then
                     response = m._processRequest(xdmData, ecid, configId, requestId, edgeDomain)
                     ' TODO: handle response code properly
-
-                    if response.code >= 200 and response.code <= 299 then
-                        if responseArray = invalid
-                            responseArray = []
-                        end if
-                        responseArray.Push(response)
-
-                    else if response.code = 408 or response.code = 504 or response.code = 503
-                        ' RECOVERABLE_ERROR_CODES = [408, 504, 503]
-                        m._queue.Unshift(requestEntity)
-                        exit while
-                    else
+                    if response = invalid
+                        _adb_log_error("Edge request dropped. Response is invalid.")
                         ' drop the request
-                        _adb_log_error("Edge request dropped. Response code: " + response.code.toStr() + " Response body: " + response.message)
-                        exit while
+                    else
+                        _adb_log_verbose("response code : " + FormatJson(response.code))
+                        _adb_log_verbose("response message :" + response.message)
+                        if response.code >= 200 and response.code <= 299 then
+                            if responseArray = invalid
+                                responseArray = []
+                            end if
+                            responseArray.Push(response)
+
+                        else if response.code = 408 or response.code = 504 or response.code = 503
+                            ' RECOVERABLE_ERROR_CODES = [408, 504, 503]
+                            m._queue.Unshift(requestEntity)
+                            exit while
+                        else
+                            ' drop the request
+                            _adb_log_error("Edge request dropped. Response code: " + response.code.toStr() + " Response body: " + response.message)
+                            exit while
+                        end if
                     end if
 
                 else
@@ -987,12 +983,9 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
                 events: []
             }
             jsonBody.events[0] = xdmData
-            ' jsonBody.xdm.identityMap.ECID[0].id = ecid
             url = _adb_buildEdgeRequestURL(configId, requestId, edgeDomain)
             _adb_log_verbose("request JSON: " + FormatJson(jsonBody))
             response = _adb_serviceProvider().networkService.syncPostRequest(url, jsonBody)
-            _adb_log_verbose("response code : " + FormatJson(response.code))
-            _adb_log_verbose("response message :" + response.message)
             return response
         end function
 
