@@ -76,12 +76,11 @@ function _adb_test_functions() as dynamic
     AdobeEdgeTestSuite_SetUp
     AdobeEdgeTestSuite_TearDown
     TestCase_AdobeEdge_AdobeSDKConstants
-    TestCase_AdobeEdge_adb_generate_implementation_details
     TestCase_AdobeEdge_adb_sdk_version
     TestCase_AdobeEdge_adb_serviceProvider
-    TestCase_AdobeEdge_adb_ConfigurationManager_init
-    TestCase_AdobeEdge_adb_ConfigurationManager_configId
-    TestCase_AdobeEdge_adb_ConfigurationManager_edgeDomain
+    TestCase_AdobeEdge_adb_StateManager_init
+    TestCase_AdobeEdge_adb_StateManager_configId
+    TestCase_AdobeEdge_adb_StateManager_edgeDomain
     ' adb_test_AdobeEdge_AdobeSDKInit.brs
     AdobeEdgeTestSuite_AdobeSDKInit_SetUp
     AdobeEdgeTestSuite_AdobeSDKInit_TearDown
@@ -108,15 +107,28 @@ function _adb_test_functions() as dynamic
     TestCase_AdobeEdge_public_APIs_sendEdgeEventWithCallback
     TestCase_AdobeEdge_public_APIs_sendEdgeEventWithNonXdmData
     TestCase_AdobeEdge_public_APIs_setExperienceCloudId
+    TestCase_AdobeEdge_public_APIs_buildEvent
     ' adb_test_AdobeEdge_localDataStoreService.brs
     AdobeEdgeTestSuite_localDataStoreService_BeforeEach
     AdobeEdgeTestSuite_localDataStoreService_TearDown
     TestCase_AdobeEdge_localDataStoreService_write
-    'adb_test_AdobeEdge_EventProcessor.brs
+    ' adb_test_AdobeEdge_EventProcessor.brs
     AdobeEdgeTestSuite_EventProcessor_BeforeEach
     AdobeEdgeTestSuite_EventProcessor_TearDown
+    TestCase_AdobeEdge_EventProcessor_init
     TestCase_AdobeEdge_EventProcessor_handleEvent_setLogLevel
     TestCase_AdobeEdge_EventProcessor_handleEvent_setLogLevel_invalid
     TestCase_AdobeEdge_EventProcessor_handleEvent_setConfiguration
+    TestCase_AdobeEdge_EventProcessor_handleEvent_setECID
+    TestCase_AdobeEdge_EventProcessor_handleEvent_queryECID
+    TestCase_AdobeEdge_EventProcessor_handleEvent_sendEvent
+    TestCase_AdobeEdge_EventProcessor_sendResponseEvent
+    TestCase_AdobeEdge_EventProcessor_loadECID
+    ' adb_test_AdobeEdge_Edge_utils.brs
+    AdobeEdgeTestSuite_Edge_utils_SetUp
+    AdobeEdgeTestSuite_Edge_utils_TearDown
+    TestCase_AdobeEdge_adb_generate_implementation_details
+    TestCase_AdobeEdge_adb_buildEdgeRequestURL
+    TestCase_AdobeEdge_adb_EdgeRequestWorker
   ]
 end function

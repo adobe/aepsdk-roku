@@ -30,13 +30,7 @@ sub eventLoop()
             if msg_type = "roSGNodeEvent"
                 ' get the payload of the observed field -> [requestEvent]
                 payload = msg.getData()
-                ' check if payload is an Adobe Event
-                if _adb_isAdobeEvent(payload)
-                    processor.handleEvent(payload)
-                else
-                    print "not an AdobeEvent"
-                    print payload
-                end if
+                processor.handleEvent(payload)
             end if
         end if
     end while

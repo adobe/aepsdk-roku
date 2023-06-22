@@ -18,7 +18,7 @@ sub init()
   mid = "12340203495818708474263889316984678123"
   configuration = {
     edge: {
-      configId: ""
+      configId: "291f33f7-8e3c-406c-b4a8-0b6a0e088323"
     }
   }
   m.adobeEdgeSdk = AdobeSDKInit()
@@ -27,10 +27,22 @@ sub init()
   m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
   ' m.adobeEdgeSdk.setExperienceCloudId("012344545454809")
   m.adobeEdgeSdk.sendEdgeEvent({
-    a: {
-      a1: "a1",
+    eventType: "commerce.orderPlaced",
+    commerce: {
+      key: "value"
     }
   })
+  ' m.adobeEdgeSdk.sendEdgeEvent({
+  '   a: {
+  '     a1: "a1",
+  '   }
+  ' }, sub(context, result)
+  '   print "callback result: "
+  '   ' print result
+  '   ' print context
+  '   context.Warning.visible = "true"
+  '   context.Warning.message = result.data.message
+  ' end sub, m)
 
 end sub
 
