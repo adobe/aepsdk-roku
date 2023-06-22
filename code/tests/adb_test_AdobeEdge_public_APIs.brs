@@ -163,6 +163,7 @@ sub TestCase_AdobeEdge_public_APIs_sendEdgeEventWithCallback()
     callbackInfo = sdkInstance._adb_internal.cachedCallbackInfo[event.uuid]
 
     UTF_assertEqual(callbackInfo.context, context)
+    UTF_AssertNotInvalid(callbackInfo.timestamp_in_millis)
     callbackInfo.cb(context, callback_result)
     UTF_assertEqual(event.apiName, "sendEdgeEvent")
     UTF_assertEqual(event.data, { xdm: xdmData })
@@ -195,4 +196,18 @@ sub TestCase_AdobeEdge_public_APIs_setExperienceCloudId()
     UTF_assertEqual(event.data, { ecid: test_id })
     UTF_AssertNotInvalid(event.uuid)
     UTF_AssertNotInvalid(event.timestamp)
+end sub
+
+' target: buildEvent()
+' @Test
+sub TestCase_AdobeEdge_public_APIs_buildEvent()
+    _internal_const = _adb_internal_constants()
+    sdkInstance = AdobeSDKInit()
+    event = sdkInstance._adb_internal.buildEvent("apiname_1")
+    UTF_assertEqual(event.apiName, "apiname_1")
+    UTF_assertEqual(event.owner, _internal_const.EVENT_OWNER)
+    UTF_assertEqual(event.data, {})
+    UTF_AssertNotInvalid(event.uuid)
+    UTF_AssertNotInvalid(event.timestamp)
+    UTF_AssertNotInvalid(event.timestamp_in_millis)
 end sub

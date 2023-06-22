@@ -36,15 +36,6 @@ sub TestCase_AdobeEdge_AdobeSDKConstants()
     UTF_assertEqual(cons.CONFIGURATION.EDGE_DOMAIN, "edgeDomain")
 end sub
 
-' target: _adb_generate_implementation_details()
-' @Test
-sub TestCase_AdobeEdge_adb_generate_implementation_details()
-    implementationDetails = _adb_generate_implementation_details()
-    UTF_assertEqual(implementationDetails["name"], "https://ns.adobe.com/experience/mobilesdk/roku")
-    UTF_assertEqual(implementationDetails["version"], "roku sdk (1.0.0-alpha1)")
-    UTF_assertEqual(implementationDetails["environment"], "app")
-end sub
-
 ' target: _adb_sdk_version()
 ' @Test
 sub TestCase_AdobeEdge_adb_sdk_version()
@@ -61,37 +52,37 @@ sub TestCase_AdobeEdge_adb_serviceProvider()
     UTF_assertEqual(GetGlobalAA()._adb_serviceProvider_instance.test, instance1.test)
 end sub
 
-' target: _adb_ConfigurationManager()
+' target: _adb_StateManager()
 ' @Test
-sub TestCase_AdobeEdge_adb_ConfigurationManager_init()
-    configurationManager = _adb_ConfigurationManager()
-    UTF_assertInvalid(configurationManager.getConfigId())
-    UTF_assertInvalid(configurationManager.getEdgeDomain())
+sub TestCase_AdobeEdge_adb_StateManager_init()
+    stateManager = _adb_StateManager()
+    UTF_assertInvalid(stateManager.getConfigId())
+    UTF_assertInvalid(stateManager.getEdgeDomain())
 end sub
 
-' target: _adb_ConfigurationManager()
+' target: _adb_StateManager()
 ' @Test
-sub TestCase_AdobeEdge_adb_ConfigurationManager_configId()
-    configurationManager = _adb_ConfigurationManager()
-    configurationManager.updateConfiguration({
+sub TestCase_AdobeEdge_adb_StateManager_configId()
+    stateManager = _adb_StateManager()
+    stateManager.updateConfiguration({
         edge: {
             configId: "testConfigId"
         }
     })
-    UTF_assertEqual(configurationManager.getConfigId(), "testConfigId")
-    UTF_assertInvalid(configurationManager.getEdgeDomain())
+    UTF_assertEqual(stateManager.getConfigId(), "testConfigId")
+    UTF_assertInvalid(stateManager.getEdgeDomain())
 end sub
 
-' target: _adb_ConfigurationManager()
+' target: _adb_StateManager()
 ' @Test
-sub TestCase_AdobeEdge_adb_ConfigurationManager_edgeDomain()
-    configurationManager = _adb_ConfigurationManager()
-    configurationManager.updateConfiguration({
+sub TestCase_AdobeEdge_adb_StateManager_edgeDomain()
+    stateManager = _adb_StateManager()
+    stateManager.updateConfiguration({
         edge: {
             configId: "testConfigId",
             edgeDomain: "abx"
         }
     })
-    UTF_assertEqual(configurationManager.getConfigId(), "testConfigId")
-    UTF_assertEqual(configurationManager.getEdgeDomain(), "abx")
+    UTF_assertEqual(stateManager.getConfigId(), "testConfigId")
+    UTF_assertEqual(stateManager.getEdgeDomain(), "abx")
 end sub

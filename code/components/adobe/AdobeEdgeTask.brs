@@ -22,8 +22,7 @@ end sub
 sub eventLoop()
     _adb_log_info("start the event loop")
     internalConstants = _adb_internal_constants()
-    serviceProvider = _adb_serviceProvider()
-    processor = _adb_task_node_EventProcessor(internalConstants, m.top, serviceProvider)
+    processor = _adb_task_node_EventProcessor(internalConstants, m.top)
     while true
         msg = wait(250, m.port)
         if msg <> invalid
@@ -31,13 +30,7 @@ sub eventLoop()
             if msg_type = "roSGNodeEvent"
                 ' get the payload of the observed field -> [requestEvent]
                 payload = msg.getData()
-                ' check if payload is an Adobe Event
-                if _adb_isAdobeEvent(payload)
-                    processor.handleEvent(payload)
-                else
-                    print "not an AdobeEvent"
-                    print payload
-                end if
+                processor.handleEvent(payload)
             end if
         end if
     end while

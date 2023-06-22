@@ -27,10 +27,22 @@ sub init()
   m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
   ' m.adobeEdgeSdk.setExperienceCloudId("012344545454809")
   m.adobeEdgeSdk.sendEdgeEvent({
-    a: {
-      a1: "a1",
+    eventType: "commerce.orderPlaced",
+    commerce: {
+      key: "value"
     }
   })
+  ' m.adobeEdgeSdk.sendEdgeEvent({
+  '   a: {
+  '     a1: "a1",
+  '   }
+  ' }, sub(context, result)
+  '   print "callback result: "
+  '   ' print result
+  '   ' print context
+  '   context.Warning.visible = "true"
+  '   context.Warning.message = result.data.message
+  ' end sub, m)
 
 end sub
 
