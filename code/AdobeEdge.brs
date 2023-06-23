@@ -106,33 +106,34 @@ function AdobeSDKInit() as object
                 end if
                 ' event data: { "level": level }
                 data = {}
-                data[m._adb_internal.cons.EVENT_DATA_KEY.LOG.LEVEL] = level
+                data[m._private.cons.EVENT_DATA_KEY.LOG.LEVEL] = level
 
-                event = m._adb_internal.buildEvent(m._adb_internal.cons.PUBLIC_API.SET_LOG_LEVEL, data)
-                m._adb_internal.dispatchEvent(event)
+                event = m._private.buildEvent(m._private.cons.PUBLIC_API.SET_LOG_LEVEL, data)
+                m._private.dispatchEvent(event)
             end function,
 
-            ' ********************************
+            ' ***********************************************************************
             '
             ' Call this function to shutdown the SDK and drop the further API calls.
             '
-            ' ********************************
+            ' ***********************************************************************
 
             shutdown: function() as void
                 _adb_log_debug("API: shutdown")
                 ' stop the task node
                 GetGlobalAA()._adb_edge_task_node.control = "DONE"
                 ' clear the cached callback functions
-                m._adb_internal.cachedCallbackInfo = {}
+                m._private.cachedCallbackInfo = {}
                 ' clear global references
                 GetGlobalAA()._adb_edge_task_node = invalid
                 GetGlobalAA()._adb_public_api = invalid
             end function,
 
-            ' *********************************************************
+            ' **********************************************************************************
             '
             ' Call this function before using any other public APIs.
-            ' For example, if calling sendEdgeEvent() without a valid configuration in the SDK, the SDK will drop the Edge event.
+            ' For example, if calling sendEdgeEvent() without a valid configuration in the SDK,
+            ' the SDK will drop the Edge event.
             '
             ' @param configuration as object
             '
@@ -145,7 +146,7 @@ function AdobeSDKInit() as object
             ' }
             ' m.adobeEdgeSdk.updateConfiguration(config)
             '
-            ' *********************************************************
+            ' **********************************************************************************
 
             updateConfiguration: function(configuration as object) as void
                 _adb_log_debug("API: updateConfiguration")
@@ -153,8 +154,8 @@ function AdobeSDKInit() as object
                     _adb_log_error("invalid configuration")
                     return
                 end if
-                event = m._adb_internal.buildEvent(m._adb_internal.cons.PUBLIC_API.SET_CONFIGURATION, configuration)
-                m._adb_internal.dispatchEvent(event)
+                event = m._private.buildEvent(m._private.cons.PUBLIC_API.SET_CONFIGURATION, configuration)
+                m._private.dispatchEvent(event)
             end function,
 
             ' *************************************************************************************
@@ -196,7 +197,7 @@ function AdobeSDKInit() as object
                     return
                 end if
                 ' event data: { "xdm": xdmData }
-                event = m._adb_internal.buildEvent(m._adb_internal.cons.PUBLIC_API.SEND_EDGE_EVENT, {
+                event = m._private.buildEvent(m._private.cons.PUBLIC_API.SEND_EDGE_EVENT, {
                     xdm: xdmData
                 })
                 ' add a timestamp to the XDM data
@@ -208,9 +209,9 @@ function AdobeSDKInit() as object
                         context: context,
                         timestamp_in_millis: event.timestamp_in_millis
                     }
-                    m._adb_internal.cachedCallbackInfo[event.uuid] = callbackInfo
+                    m._private.cachedCallbackInfo[event.uuid] = callbackInfo
                 end if
-                m._adb_internal.dispatchEvent(event)
+                m._private.dispatchEvent(event)
             end function,
 
             ' TDB
@@ -220,7 +221,7 @@ function AdobeSDKInit() as object
                     xdm: xdmData,
                     data: nonXdmData
                 }
-                event = m._adb_internal.buildEvent(m._adb_internal.cons.PUBLIC_API.SEND_EDGE_EVENT, eventData)
+                event = m._private.buildEvent(m._private.cons.PUBLIC_API.SEND_EDGE_EVENT, eventData)
                 if callback <> _adb_default_callback then
                     ' store callback function
                     callbackInfo = {
@@ -228,9 +229,9 @@ function AdobeSDKInit() as object
                         context: context,
                         timestamp_in_millis: event.timestamp_in_millis
                     }
-                    m._adb_internal.cachedCallbackInfo[event.uuid] = callbackInfo
+                    m._private.cachedCallbackInfo[event.uuid] = callbackInfo
                 end if
-                m._adb_internal.dispatchEvent(event)
+                m._private.dispatchEvent(event)
             end function,
 
             ' ****************************************************************************************************
@@ -258,15 +259,15 @@ function AdobeSDKInit() as object
                 _adb_log_debug("API: setExperienceCloudId")
                 ' event data: { "ecid": ecid }
                 data = {}
-                data[m._adb_internal.cons.EVENT_DATA_KEY.ecid] = ecid
-                event = m._adb_internal.buildEvent(m._adb_internal.cons.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID, data)
-                m._adb_internal.dispatchEvent(event)
+                data[m._private.cons.EVENT_DATA_KEY.ecid] = ecid
+                event = m._private.buildEvent(m._private.cons.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID, data)
+                m._private.dispatchEvent(event)
             end function
 
             ' ********************************
             ' Add private memebers below
             ' ********************************
-            _adb_internal: {
+            _private: {
                 ' constants
                 cons: _adb_internal_constants(),
                 ' ************************************
@@ -405,24 +406,24 @@ function _adb_handle_response_event() as void
     sdk = GetGlobalAA()._adb_public_api
     if sdk <> invalid then
         ' remove timeout callbacks
-        timeout_ms = sdk._adb_internal.cons.CALLBACK_TIMEOUT_MS
+        timeout_ms = sdk._private.cons.CALLBACK_TIMEOUT_MS
         current_time = _adb_timestampInMillis()
-        for each key in sdk._adb_internal.cachedCallbackInfo
-            if current_time - sdk._adb_internal.cachedCallbackInfo[key].timestamp_in_millis > timeout_ms
+        for each key in sdk._private.cachedCallbackInfo
+            if current_time - sdk._private.cachedCallbackInfo[key].timestamp_in_millis > timeout_ms
                 _adb_log_error("callback timeout, uuid: " + key)
-                sdk._adb_internal.cachedCallbackInfo.Delete(key)
+                sdk._private.cachedCallbackInfo.Delete(key)
             end if
         end for
 
-        responseEvent = sdk._adb_internal.taskNode[sdk._adb_internal.cons.TASK.RESPONSE_EVENT]
+        responseEvent = sdk._private.taskNode[sdk._private.cons.TASK.RESPONSE_EVENT]
         if responseEvent <> invalid
             _adb_log_info("start to hanlde response event")
             _adb_log_debug("responseEvent:" + FormatJson(responseEvent))
             uuid = responseEvent.uuid
-            if sdk._adb_internal.cachedCallbackInfo[uuid] <> invalid
-                context = sdk._adb_internal.cachedCallbackInfo[uuid].context
-                sdk._adb_internal.cachedCallbackInfo[uuid].cb(context, responseEvent)
-                sdk._adb_internal.cachedCallbackInfo[uuid] = invalid
+            if sdk._private.cachedCallbackInfo[uuid] <> invalid
+                context = sdk._private.cachedCallbackInfo[uuid].context
+                sdk._private.cachedCallbackInfo[uuid].cb(context, responseEvent)
+                sdk._private.cachedCallbackInfo[uuid] = invalid
             else
                 _adb_log_error("failed to handle response event, callback info is not found")
             end if
@@ -584,21 +585,27 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
             xdmData = event.data
 
             m.edgeRequestWorker.queue(requestId, xdmData, event.timestamp_in_millis, configId, ecid, edgeDomain)
-            responses = m.edgeRequestWorker.processRequests()
-            if Type(responses) = "roArray" then
-                for each response in responses
-                    m._sendResponseEvent({
-                        uuid: requestId,
-                        data: {
-                            code: response.code,
-                            message: response.message
-                        }
-                    })
-                next
-            else
-                m._sendResponseEvent(responses)
-            end if
+            m.processQueuedRequests()
         end function,
+
+        processQueuedRequests: function() as void
+            if m.edgeRequestWorker.isReadyToProcess() then
+                responses = m.edgeRequestWorker.processRequests()
+                if Type(responses) = "roArray" then
+                    for each response in responses
+                        m._sendResponseEvent({
+                            uuid: response.requestId,
+                            data: {
+                                code: response.code,
+                                message: response.message
+                            }
+                        })
+                    next
+                else
+                    m._sendResponseEvent(responses)
+                end if
+            end if
+        end function
 
         _sendResponseEvent: function(event as object) as void
             _adb_log_info("[_sendResponseEvent] - send response event" + FormatJson(event))
@@ -870,7 +877,7 @@ end function
 function _adb_generate_implementation_details() as object
     return {
         name: "https://ns.adobe.com/experience/mobilesdk/roku",
-        version: "roku sdk (" + _adb_sdk_version() + ")",
+        version: _adb_sdk_version(),
         environment: "app"
     }
 end function
@@ -906,6 +913,10 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
                 m._queue.Shift()
             end if
             m._queue.Push(requestEntity)
+        end function,
+
+        isReadyToProcess: function() as boolean
+            return m._queue.count() > 0
         end function,
 
         processRequests: function() as dynamic
@@ -986,6 +997,7 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
             url = _adb_buildEdgeRequestURL(configId, requestId, edgeDomain)
             _adb_log_verbose("request JSON: " + FormatJson(jsonBody))
             response = _adb_serviceProvider().networkService.syncPostRequest(url, jsonBody)
+            response.requestId = requestId
             return response
         end function
 
