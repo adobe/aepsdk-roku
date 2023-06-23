@@ -25,7 +25,7 @@ sub AdobeEdgeTestSuite_public_APIs_BeforeEach()
     }
     sdkInstance = AdobeSDKInit()
     GetGlobalAA()._adb_edge_task_node["requestEvent"] = {}
-    sdkInstance._adb_internal.cachedCallbackInfo = {}
+    sdkInstance._private.cachedCallbackInfo = {}
 end sub
 
 ' @AfterAll
@@ -67,7 +67,7 @@ end sub
 ' @Test
 sub TestCase_AdobeEdge_public_APIs_shutdown()
     sdkInstance = AdobeSDKInit()
-    sdkInstance._adb_internal.cachedCallbackInfo["xxx"] = {
+    sdkInstance._private.cachedCallbackInfo["xxx"] = {
         "callback": function() as void
         end function
     }
@@ -76,7 +76,7 @@ sub TestCase_AdobeEdge_public_APIs_shutdown()
     sdkInstance.shutdown()
 
     UTF_assertEqual(taskNode.control, "DONE")
-    UTF_assertEqual(sdkInstance._adb_internal.cachedCallbackInfo, {})
+    UTF_assertEqual(sdkInstance._private.cachedCallbackInfo, {})
     UTF_assertInvalid(GetGlobalAA()._adb_edge_task_node)
     UTF_assertInvalid(GetGlobalAA()._adb_public_api)
 end sub
@@ -117,7 +117,7 @@ sub TestCase_AdobeEdge_public_APIs_sendEdgeEvent()
     sdkInstance.sendEdgeEvent(xdmData)
     event = GetGlobalAA()._adb_edge_task_node["requestEvent"]
     UTF_assertEqual(event.apiName, _internal_const.PUBLIC_API.SEND_EDGE_EVENT)
-    UTF_assertEqual(sdkInstance._adb_internal.cachedCallbackInfo.Count(), 0)
+    UTF_assertEqual(sdkInstance._private.cachedCallbackInfo.Count(), 0)
     UTF_assertEqual(event.data, { xdm: xdmData })
     UTF_AssertNotInvalid(event.uuid)
     UTF_AssertNotInvalid(event.timestamp)
@@ -132,7 +132,7 @@ sub TestCase_AdobeEdge_public_APIs_sendEdgeEvent_invalid()
 
     UTF_assertEqual(0, event.Count())
 
-    UTF_assertEqual(sdkInstance._adb_internal.cachedCallbackInfo.Count(), 0)
+    UTF_assertEqual(sdkInstance._private.cachedCallbackInfo.Count(), 0)
 end sub
 
 ' target: sendEdgeEvent()
@@ -160,7 +160,7 @@ sub TestCase_AdobeEdge_public_APIs_sendEdgeEventWithCallback()
     end sub, context)
 
     event = GetGlobalAA()._adb_edge_task_node["requestEvent"]
-    callbackInfo = sdkInstance._adb_internal.cachedCallbackInfo[event.uuid]
+    callbackInfo = sdkInstance._private.cachedCallbackInfo[event.uuid]
 
     UTF_assertEqual(callbackInfo.context, context)
     UTF_AssertNotInvalid(callbackInfo.timestamp_in_millis)
@@ -203,7 +203,7 @@ end sub
 sub TestCase_AdobeEdge_public_APIs_buildEvent()
     _internal_const = _adb_internal_constants()
     sdkInstance = AdobeSDKInit()
-    event = sdkInstance._adb_internal.buildEvent("apiname_1")
+    event = sdkInstance._private.buildEvent("apiname_1")
     UTF_assertEqual(event.apiName, "apiname_1")
     UTF_assertEqual(event.owner, _internal_const.EVENT_OWNER)
     UTF_assertEqual(event.data, {})

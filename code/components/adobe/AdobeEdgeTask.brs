@@ -25,6 +25,9 @@ sub eventLoop()
     processor = _adb_task_node_EventProcessor(internalConstants, m.top)
     while true
         msg = wait(250, m.port)
+        ' kick off the queued requests
+        processor.processQueuedRequests()
+
         if msg <> invalid
             msg_type = type(msg)
             if msg_type = "roSGNodeEvent"
