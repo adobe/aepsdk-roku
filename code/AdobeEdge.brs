@@ -498,7 +498,7 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
 
         _hasValidConfig: function() as boolean
             print("###" + m.stateManager.getConfigId())
-            return (not _adb_isNullOrEmpty(m.stateManager.getConfigId()))
+            return (not _adb_isNullOrEmptyString(m.stateManager.getConfigId()))
         end function,
 
         _setConfiguration: function(event as object) as void
@@ -585,15 +585,8 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
 
             ecid = m.stateManager.getECID()
             if ecid = invalid then
-                ' fetch ecid from service side
-                ecid = m._queryECID()
-                if ecid = invalid then
-                    _adb_log_error("_sendEvent() - Unable to send event, no valid ECID was found or fetched from the service side.")
-                    return
-                else
-                    _adb_log_verbose("_sendEvent() - Save ECID to persistence.")
-                    m._saveECID(ecid)
-                end if
+                _adb_log_error("_sendEvent() - Unable to send event, no valid ECID was found or fetched from the service side.")
+                return
             end if
 
             requestId = event.uuid
@@ -632,19 +625,9 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
             end if
             m.task[m.ADB_CONSTANTS.TASK.RESPONSE_EVENT] = event
         end function,
-
-        _loadECID: function() as void
-            _adb_log_info("_loadECID() - Loading ECID from persistence.")
-            localDataStoreService = _adb_serviceProvider().localDataStoreService
-            ecid = localDataStoreService.readValue(m.ADB_CONSTANTS.LOCAL_DATA_STORE_KEYS.ECID)
-            if ecid <> invalid and ecid <> ""
-                m.stateManager.updateECID(ecid)
-            end if
-        end function,
     }
 
     eventProcessor.init()
-    eventProcessor._loadECID()
 
     return eventProcessor
 end function
@@ -667,22 +650,17 @@ function _adb_StateManager() as object
                     m._edge[m.CONFIG_KEY.EDGE_DOMAIN] = configuration.edge[m.CONFIG_KEY.EDGE_DOMAIN]
                 end if
             end if
-        end function
-
-        updateECID: function(ecid as string) as void
-            m._ecid = ecid
-        end function
-
-        getAll: function() as object
-            return {
-                edge: m._edge,
-                ecid: m._ecid
-            }
-        end function
+        end function,
 
         getECID: function() as dynamic
+            m._ecid = m._loadECID()
+            if m._ecid = invalid
+                m.updateECID(m._queryECID())
+            end if
+
+            _adb_log_info("getECID() - ecid: " + m._ecid)
             return m._ecid
-        end function
+        end function,
 
         getConfigId: function() as dynamic
             if m._edge.DoesExist(m.CONFIG_KEY.CONFIG_ID) then
@@ -690,7 +668,7 @@ function _adb_StateManager() as object
             else
                 return invalid
             end if
-        end function
+        end function,
 
         getEdgeDomain: function() as dynamic
             if m._edge.DoesExist(m.CONFIG_KEY.EDGE_DOMAIN) then
@@ -698,6 +676,66 @@ function _adb_StateManager() as object
             else
                 return invalid
             end if
+        end function
+
+        updateECID: function(ecid as string) as void
+            m._ecid = ecid
+            m._saveECID(m._ecid)
+        end function,
+
+        _saveECID: function(ecid as string) as void
+            _adb_log_info("_saveECID() - save ecid")
+            localDataStoreService = _adb_serviceProvider().localDataStoreService
+            localDataStoreService.writeValue(_adb_internal_constants().LOCAL_DATA_STORE_KEYS.ECID, ecid)
+            _adb_log_verbose("save ecid to registry: " + FormatJson(ecid))
+        end function,
+
+        _queryECID: function() as dynamic
+            _adb_log_info("_queryECID() - query ECID from service side")
+            configId = m.getConfigId()
+            edgeDomain = m.getEdgeDomain()
+
+            url = _adb_buildEdgeRequestURL(configId, _adb_generate_UUID(), edgeDomain)
+            jsonBody = {
+                events: [
+                    {
+                        query: {
+                            identity: { fetch: [
+                                    "ECID"
+                            ] }
+
+                        }
+                    }
+                ]
+            }
+            response = _adb_serviceProvider().networkService.syncPostRequest(url, jsonBody)
+            if response.code >= 200 and response.code < 300 and response.message <> invalid
+                responseJson = ParseJson(response.message)
+                if responseJson <>invalid and responseJson.handle[0] <> invalid and responseJson.handle[0].payload[0] <> invalid
+                    _adb_log_verbose("response json: " + response.message)
+                    return responseJson.handle[0].payload[0].id
+                else
+                    _adb_log_error("_queryECID() - Error extracting ECID, invalid response from server.")
+                    return invalid
+                end if
+            else
+                _adb_log_error("Error occured while quering ECID from service side. Please verify the edge configuration.")
+                return invalid
+            end if
+        end function,
+
+        _loadECID: function() as string
+            _adb_log_info("_loadECID() - Loading ECID from persistence.")
+            localDataStoreService = _adb_serviceProvider().localDataStoreService
+            ecid = localDataStoreService.readValue(_adb_internal_constants().LOCAL_DATA_STORE_KEYS.ECID)
+            return ecid
+        end function,
+
+        getAll: function() as object
+            return {
+                edge: m._edge,
+                ecid: m._ecid
+            }
         end function
     }
 end function
@@ -714,30 +752,30 @@ function _adb_serviceProvider() as object
                 end function,
 
                 error: function(message as string) as void
-                    m._adb_print("[ADB-EDGE-E] " + message)
+                    m._adb_print("[ADB-EDGE][E] " + message)
                 end function,
 
                 verbose: function(message as string) as void
                     if m._logLevel <= 0 then
-                        m._adb_print("[ADB-EDGE-V] " + message)
+                        m._adb_print("[ADB-EDGE][V] " + message)
                     end if
                 end function,
 
                 debug: function(message as string) as void
                     if m._logLevel <= 1 then
-                        m._adb_print("[ADB-EDGE-D] " + message)
+                        m._adb_print("[ADB-EDGE][D] " + message)
                     end if
                 end function,
 
                 info: function(message as string) as void
                     if m._logLevel <= 2 then
-                        m._adb_print("[ADB-EDGE-I] " + message)
+                        m._adb_print("[ADB-EDGE][I] " + message)
                     end if
                 end function,
 
                 warning: function(message as string) as void
                     if m._logLevel <= 3 then
-                        m._adb_print("[ADB-EDGE-W] " + message)
+                        m._adb_print("[ADB-EDGE][W] " + message)
                     end if
                 end function,
 
@@ -965,7 +1003,9 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
                     edgeDomain = m._stateManager.getEdgeDomain()
                 end if
 
-                if ecid <> invalid and ecid.Len() > 0 and configId <> invalid and configId.Len() > 0 then
+                _adb_log_verbose("ecid:" + ecid)
+                _adb_log_verbose("configid:" + configId)
+                if (not _adb_isNullOrEmptyString(ecid)) and (not _adb_isNullOrEmptyString(configId)) then
                     response = m._processRequest(xdmData, ecid, configId, requestId, edgeDomain)
                     ' TODO: handle response code properly
                     if response = invalid
@@ -1033,17 +1073,14 @@ end function
 ' *****************************
 
 ' ********** String utils ********
-function _adb_isNullOrEmpty(str as dynamic) as boolean
-    if str = invalid or type(str) <> "roString"
+function _adb_isNullOrEmptyString(str as dynamic) as boolean
+    if str = invalid or (type(str) <> "roString" and type(str) <> "String")
         return true
     end if
 
     if Len(str) = 0
-        print("### 4")
         return true
     end if
-
-    print("### 5")
 
     return false
 end function
