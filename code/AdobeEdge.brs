@@ -653,7 +653,10 @@ function _adb_StateManager() as object
         end function,
 
         getECID: function() as dynamic
-            m._ecid = m._loadECID()
+            if m._ecid = invalid
+                m._ecid = m._loadECID()
+            end if
+
             if m._ecid = invalid
                 m.updateECID(m._queryECID())
             end if
@@ -724,10 +727,12 @@ function _adb_StateManager() as object
             end if
         end function,
 
-        _loadECID: function() as string
+        _loadECID: function() as dynamic
             _adb_log_info("_loadECID() - Loading ECID from persistence.")
             localDataStoreService = _adb_serviceProvider().localDataStoreService
             ecid = localDataStoreService.readValue(_adb_internal_constants().LOCAL_DATA_STORE_KEYS.ECID)
+
+            _adb_log_info("_loadECID() - ECID loaded from persistence:("+ ecid +")")
             return ecid
         end function,
 
