@@ -911,14 +911,23 @@ function _adb_generate_implementation_details() as object
 end function
 
 function _adb_buildEdgeRequestURL(configId as string, requestId as string, edgeDomain = invalid as dynamic) as string
-    if requestId.Len() < 1
-        requestUrl = "https://edge.adobedc.net/ee/v1/interact?configId=" + configId
+    scheme = "https://"
+    host = "edge.adobedc.net"
+    path = "/ee/v1/interact"
+    query = "?configId=" + configId
+
+    if not _adb_isNullOrEmptyString(edgeDomain)
+        host = edgeDomain + "." + host
     end if
-    requestUrl = "https://edge.adobedc.net/ee/v1/interact?configId=" + configId + "&requestId=" + requestId
-    if edgeDomain = invalid
-        return requestUrl
+
+    if not _adb_isNullOrEmptyString(requestId)
+        query =  query + "&requestId=" + requestId
     end if
-    return requestUrl.Replace("edge.adobedc.net", edgeDomain + ".data.adobedc.net")
+
+    requestUrl = scheme + host + path + query
+
+    _adb_log_debug("requestURL: ("+ requestUrl +")")
+    return requestUrl
 end function
 
 function _adb_EdgeRequestWorker(stateManager as object) as object
