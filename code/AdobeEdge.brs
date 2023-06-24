@@ -189,7 +189,7 @@ function AdobeSDKInit() as object
             sendEdgeEvent: function(xdmData as object, callback = _adb_default_callback as function, context = invalid as dynamic) as void
                 _adb_log_debug("API: sendEdgeEvent")
                 if type(xdmData) <> "roAssociativeArray" then
-                    _adb_log_error("invalid xdm data")
+                    _adb_log_error("sendEdgeEvent() - Invalid XDM data")
                     return
                 end if
                 ' event data: { "xdm": xdmData }
@@ -497,8 +497,17 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
         end function,
 
         _hasValidConfig: function() as boolean
-            print("###" + m.stateManager.getConfigId())
-            return (not _adb_isNullOrEmptyString(m.stateManager.getConfigId()))
+            if _adb_isNullOrEmptyString(m.stateManager.getConfigId())
+                _adb_log_error("_hasValidConfig() - Missing edge config id, please check configuration")
+                return false
+            end if
+
+            if _adb_isNullOrEmptyString(m.stateManager.getECID())
+                _adb_log_error("_hasValidConfig() - Invalid ECID found.")
+                return false
+            end if
+
+            return true
         end function,
 
         _setConfiguration: function(event as object) as void
@@ -510,62 +519,21 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
 
         _setECID: function(event as object) as void
             _adb_log_info("_setECID() - set ecid")
+
             if event.data.DoesExist(m.ADB_CONSTANTS.EVENT_DATA_KEY.ECID)
                 ecid = event.data[m.ADB_CONSTANTS.EVENT_DATA_KEY.ECID]
-                m._saveECID(ecid)
+                m.stateManager.updateECID(ecid)
             else
                 _adb_log_warning("_setECID() - ecid is not found in event data")
             end if
         end function,
 
-        _saveECID: function(ecid as string) as void
-            _adb_log_info("_saveECID() - save ecid")
-            m.stateManager.updateECID(ecid)
-            localDataStoreService = _adb_serviceProvider().localDataStoreService
-            localDataStoreService.writeValue(m.ADB_CONSTANTS.LOCAL_DATA_STORE_KEYS.ECID, ecid)
-            _adb_log_verbose("save ecid to registry: " + FormatJson(ecid))
-        end function,
-
-        _queryECID: function() as dynamic
-            _adb_log_info("_queryECID() - query ECID from service side")
-            configId = m.stateManager.getConfigId()
-            edgeDomain = m.stateManager.getEdgeDomain()
-
-            url = _adb_buildEdgeRequestURL(configId, _adb_generate_UUID(), edgeDomain)
-            jsonBody = {
-                events: [
-                    {
-                        query: {
-                            identity: { fetch: [
-                                    "ECID"
-                            ] }
-
-                        }
-                    }
-                ]
-            }
-            response = m.networkService.syncPostRequest(url, jsonBody)
-            if response.code >= 200 and response.code < 300 and response.message <> invalid
-                responseJson = ParseJson(response.message)
-                if responseJson <>invalid and responseJson.handle[0] <> invalid and responseJson.handle[0].payload[0] <> invalid
-                    _adb_log_verbose("response json: " + response.message)
-                    return responseJson.handle[0].payload[0].id
-                else
-                    _adb_log_error("_queryECID() - Error extracting ECID, invalid response from server.")
-                    return invalid
-                end if
-            else
-                _adb_log_error("Error occured while quering ECID from service side. Please verify the edge configuration.")
-                return invalid
-            end if
-        end function,
-
-        _includeXDMData: function(event as object) as boolean
+        _hasXDMData: function(event as object) as boolean
             if event.count() <> 0 and event.data.DoesExist("xdm") and event.data.xdm.Count() > 0 then
                 return true
-            else
-                return false
             end if
+
+            return false
         end function,
 
         _sendEvent: function(event as object) as void
@@ -576,22 +544,17 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
                 return
             end if
 
-            if m._includeXDMData(event) then
-                _adb_log_verbose("_sendEvent() - Continue processing as XDM data is present.")
-            else
+            if not m._hasXDMData(event)
                 _adb_log_error("_sendEvent() - Not sending event, XDM data is empty.")
                 return
             end if
 
             ecid = m.stateManager.getECID()
-            if ecid = invalid then
-                _adb_log_error("_sendEvent() - Unable to send event, no valid ECID was found or fetched from the service side.")
-                return
-            end if
-
-            requestId = event.uuid
             configId = m.stateManager.getConfigId()
             edgeDomain = m.stateManager.getEdgeDomain()
+
+
+            requestId = event.uuid
             xdmData = event.data
 
             m.edgeRequestWorker.queue(requestId, xdmData, event.timestamp_in_millis, configId, ecid, edgeDomain)
