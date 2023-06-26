@@ -951,7 +951,7 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
                 return
             end if
 
-            if _adb_isEmptyOrInvalidObject(xdmData)
+            if isEmptyOrInvalidMap(xdmData)
                 _adb_log_debug("[EdgeRequestWorker.queue()] xdmData is invalid")
                 return
             end if
@@ -1073,7 +1073,7 @@ function _adb_isEmptyOrInvalidString(str as dynamic) as boolean
     return false
 end function
 
-function _adb_isEmptyOrInvalidObject(input as object) as boolean
+function isEmptyOrInvalidMap(input as object) as boolean
     if input = invalid or type(input) <> "roAssociativeArray"
         return true
     end if
