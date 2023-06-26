@@ -936,10 +936,6 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
         _adb_log_debug("stateManager is invalid")
         return invalid
     end if
-    ' if stateManager._type_ = invalid or stateManager._type_ <> "stateManager"
-    '     _adb_log_debug("not a StateManager object")
-    '     return invalid
-    ' end if
     instance = {
         _queue: [],
         _stateManager: stateManager
