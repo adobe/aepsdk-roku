@@ -81,6 +81,7 @@ function _adb_test_functions() as dynamic
     TestCase_AdobeEdge_adb_StateManager_init
     TestCase_AdobeEdge_adb_StateManager_configId
     TestCase_AdobeEdge_adb_StateManager_edgeDomain
+    TestCase_AdobeEdge_adb_isNullOrEmptyString
     ' adb_test_AdobeEdge_AdobeSDKInit.brs
     AdobeEdgeTestSuite_AdobeSDKInit_SetUp
     AdobeEdgeTestSuite_AdobeSDKInit_TearDown

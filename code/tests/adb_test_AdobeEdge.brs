@@ -86,3 +86,13 @@ sub TestCase_AdobeEdge_adb_StateManager_edgeDomain()
     UTF_assertEqual(stateManager.getConfigId(), "testConfigId")
     UTF_assertEqual(stateManager.getEdgeDomain(), "abx")
 end sub
+
+' target: _adb_isNullOrEmptyString()
+' @Test
+sub TestCase_AdobeEdge_adb_isNullOrEmptyString()
+    UTF_assertTrue(_adb_isNullOrEmptyString(invalid))
+    UTF_assertTrue(_adb_isNullOrEmptyString(""))
+    UTF_assertFalse(_adb_isNullOrEmptyString("test"))
+    UTF_assertTrue(_adb_isNullOrEmptyString(123))
+    UTF_assertTrue(_adb_isNullOrEmptyString({}))
+end sub
