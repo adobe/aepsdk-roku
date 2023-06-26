@@ -8,7 +8,7 @@ A datastream is a server-side configuration that tells the Adobe Experience Plat
 
 If no datastream was previously created, see [Configure datastreams](https://developer.adobe.com/client-sdks/documentation/getting-started/configure-datastreams/) before moving to the next step.
 
-## install the Roku SDK
+## Install the Roku SDK
 
 - Download the Roku SDK zip file from the [GitHub Releases](https://github.com/adobe/aepsdk-roku/releases)
 
@@ -19,7 +19,11 @@ If no datastream was previously created, see [Configure datastreams](https://dev
 
 ## Initialize and configure the Roku SDK
 
-Initalize and configure the Roku SDK insdie your `scene` script.
+Initialize and configure the Roku SDK inside your `scene` script.
+
+```xml
+  <script type="text/brightscript" uri="pkg:/source/AdobeEdge.brs"/>
+```
 
 ```javascript
   m.adobeEdgeSdk = AdobeSDKInit()
