@@ -342,7 +342,8 @@ function _adb_generate_UUID() as string
 end function
 
 function _adb_sdk_version() as string
-    return "1.0.0-alpha1"
+    VERSION = "1.0.0-alpha1"
+    return VERSION
 end function
 
 function _adb_internal_constants() as object
@@ -677,7 +678,7 @@ function _adb_StateManager() as object
             response = _adb_serviceProvider().networkService.syncPostRequest(url, jsonBody)
             if response.code >= 200 and response.code < 300 and response.message <> invalid
                 responseJson = ParseJson(response.message)
-                if responseJson <>invalid and responseJson.handle[0] <> invalid and responseJson.handle[0].payload[0] <> invalid
+                if responseJson <> invalid and responseJson.handle[0] <> invalid and responseJson.handle[0].payload[0] <> invalid
                     _adb_log_verbose("response json: " + response.message)
                     return responseJson.handle[0].payload[0].id
                 else
@@ -695,7 +696,7 @@ function _adb_StateManager() as object
             localDataStoreService = _adb_serviceProvider().localDataStoreService
             ecid = localDataStoreService.readValue(_adb_internal_constants().LOCAL_DATA_STORE_KEYS.ECID)
 
-            _adb_log_info("_loadECID() - ECID loaded from persistence:("+ ecid +")")
+            _adb_log_info("_loadECID() - ECID loaded from persistence:(" + ecid + ")")
             return ecid
         end function,
 
@@ -921,12 +922,12 @@ function _adb_buildEdgeRequestURL(configId as string, requestId as string, edgeD
     end if
 
     if not _adb_isNullOrEmptyString(requestId)
-        query =  query + "&requestId=" + requestId
+        query = query + "&requestId=" + requestId
     end if
 
     requestUrl = scheme + host + path + query
 
-    _adb_log_debug("requestURL: ("+ requestUrl +")")
+    _adb_log_debug("requestURL: (" + requestUrl + ")")
     return requestUrl
 end function
 
