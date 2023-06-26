@@ -620,8 +620,8 @@ function _adb_StateManager() as object
     return {
         CONFIG_KEY: AdobeSDKConstants().CONFIGURATION
         ' example : {configId:"1234567890", edgeDomain:"xyz"}
-        _edgeConfigId: invalid
-        _edgeDomain: invalid
+        _edge_configId: invalid
+        _edge_domain: invalid
         ' example : ecid = "1234567890"
         _ecid: invalid,
         ' example : {edge: {configId:"1234567890", edgeDomain:"xyz"}}
@@ -637,11 +637,11 @@ function _adb_StateManager() as object
             domain = _adb_optStringFromMap(edgeConfigMap, m.CONFIG_KEY.EDGE_DOMAIN)
 
             if configId <> invalid
-                m._edgeConfigId = configId
+                m._edge_configId = configId
             end if
 
             if domain <> invalid
-                m._edgeDomain = domain
+                m._edge_domain = domain
             end if
         end function,
 
@@ -663,11 +663,11 @@ function _adb_StateManager() as object
         end function,
 
         getConfigId: function() as dynamic
-            return m._edgeConfigId
+            return m._edge_configId
         end function,
 
         getEdgeDomain: function() as dynamic
-            return m._edgeDomain
+            return m._edge_domain
         end function
 
         updateECID: function(ecid as dynamic) as void
