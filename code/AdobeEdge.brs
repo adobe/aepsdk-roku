@@ -913,11 +913,12 @@ end function
 function _adb_buildEdgeRequestURL(configId as string, requestId as string, edgeDomain = invalid as dynamic) as string
     scheme = "https://"
     host = "edge.adobedc.net"
+    host_for_custom_domain = "data.adobedc.net"
     path = "/ee/v1/interact"
     query = "?configId=" + configId
 
     if not _adb_isEmptyOrInvalidString(edgeDomain)
-        host = edgeDomain + "." + host
+        host = edgeDomain + "." + host_for_custom_domain
     end if
 
     if not _adb_isEmptyOrInvalidString(requestId)
