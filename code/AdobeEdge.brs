@@ -497,12 +497,12 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
         end function,
 
         _hasValidConfig: function() as boolean
-            if _adb_isNullOrEmptyString(m.stateManager.getConfigId())
+            if _adb_isEmptyOrInvalidString(m.stateManager.getConfigId())
                 _adb_log_error("_hasValidConfig() - Missing edge config id, please check configuration")
                 return false
             end if
 
-            if _adb_isNullOrEmptyString(m.stateManager.getECID())
+            if _adb_isEmptyOrInvalidString(m.stateManager.getECID())
                 _adb_log_error("_hasValidConfig() - Invalid ECID found.")
                 return false
             end if
@@ -602,6 +602,7 @@ function _adb_StateManager() as object
         _edge: {}
         ' example : ecid = "1234567890"
         _ecid: invalid,
+
         ' example : {edge: {configId:"1234567890", edgeDomain:"xyz"}}
         updateConfiguration: function(configuration as object) as void
             ' find edge configuration and save it
@@ -916,11 +917,11 @@ function _adb_buildEdgeRequestURL(configId as string, requestId as string, edgeD
     path = "/ee/v1/interact"
     query = "?configId=" + configId
 
-    if not _adb_isNullOrEmptyString(edgeDomain)
+    if not _adb_isEmptyOrInvalidString(edgeDomain)
         host = edgeDomain + "." + host
     end if
 
-    if not _adb_isNullOrEmptyString(requestId)
+    if not _adb_isEmptyOrInvalidString(requestId)
         query = query + "&requestId=" + requestId
     end if
 
@@ -977,7 +978,7 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
 
                 _adb_log_verbose("ecid:" + ecid)
                 _adb_log_verbose("configid:" + configId)
-                if (not _adb_isNullOrEmptyString(ecid)) and (not _adb_isNullOrEmptyString(configId)) then
+                if (not _adb_isEmptyOrInvalidString(ecid)) and (not _adb_isEmptyOrInvalidString(configId)) then
                     response = m._processRequest(xdmData, ecid, configId, requestId, edgeDomain)
                     if response = invalid
                         _adb_log_error("processRequests() - Edge request dropped. Response is invalid.")
@@ -1044,7 +1045,7 @@ end function
 ' *****************************
 
 ' ********** String utils ********
-function _adb_isNullOrEmptyString(str as dynamic) as boolean
+function _adb_isEmptyOrInvalidString(str as dynamic) as boolean
     if str = invalid or (type(str) <> "roString" and type(str) <> "String")
         return true
     end if
