@@ -772,7 +772,7 @@ function _adb_serviceProvider() as object
                     request.SetUrl(url)
                     request.AddHeader("Content-Type", "application/json")
                     request.AddHeader("accept", "application/json")
-                    ' request.AddHeader("Accept-Language", "en-US")
+                    request.AddHeader("Accept-Language", "en-US")
                     for each header in headers
                         request.AddHeader(header.key, header.value)
                     end for
