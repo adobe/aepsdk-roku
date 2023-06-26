@@ -677,7 +677,7 @@ function _adb_StateManager() as object
             response = _adb_serviceProvider().networkService.syncPostRequest(url, jsonBody)
             if response.code >= 200 and response.code < 300 and response.message <> invalid
                 responseJson = ParseJson(response.message)
-                if responseJson <>invalid and responseJson.handle[0] <> invalid and responseJson.handle[0].payload[0] <> invalid
+                if responseJson <> invalid and responseJson.handle[0] <> invalid and responseJson.handle[0].payload[0] <> invalid
                     _adb_log_verbose("response json: " + response.message)
                     return responseJson.handle[0].payload[0].id
                 else
@@ -695,7 +695,7 @@ function _adb_StateManager() as object
             localDataStoreService = _adb_serviceProvider().localDataStoreService
             ecid = localDataStoreService.readValue(_adb_internal_constants().LOCAL_DATA_STORE_KEYS.ECID)
 
-            _adb_log_info("_loadECID() - ECID loaded from persistence:("+ ecid +")")
+            _adb_log_info("_loadECID() - ECID loaded from persistence:(" + ecid + ")")
             return ecid
         end function,
 
@@ -921,29 +921,35 @@ function _adb_buildEdgeRequestURL(configId as string, requestId as string, edgeD
     end if
 
     if not _adb_isNullOrEmptyString(requestId)
-        query =  query + "&requestId=" + requestId
+        query = query + "&requestId=" + requestId
     end if
 
     requestUrl = scheme + host + path + query
 
-    _adb_log_debug("requestURL: ("+ requestUrl +")")
+    _adb_log_debug("requestURL: (" + requestUrl + ")")
     return requestUrl
 end function
 
 function _adb_EdgeRequestWorker(stateManager as object) as object
+    if stateManager = invalid
+        _adb_log_debug("stateManager is invalid")
+        return invalid
+    end if
+    ' if stateManager._type_ = invalid or stateManager._type_ <> "stateManager"
+    '     _adb_log_debug("not a StateManager object")
+    '     return invalid
+    ' end if
     instance = {
         _queue: [],
         _stateManager: stateManager
         _queue_size_max: 100,
 
-        queue: function(requestId as string, xdmData as object, timestamp as integer, configId = invalid as dynamic, ecid = invalid as dynamic, edgeDomain = invalid as dynamic) as void
+        queue: function(requestId as string, xdmData as object, timestamp as integer) as void
+
             requestEntity = {
                 requestId: requestId,
                 xdmData: xdmData,
-                stamp: timestamp,
-                configId: configId,
-                ecid: ecid,
-                edgeDomain: edgeDomain
+                timestamp: timestamp
             }
             ' remove the oldest entity if reaching the limit
             if m._queue.count() >= m._queue_size_max
@@ -963,28 +969,16 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
                 requestEntity = m._queue.Shift()
 
                 xdmData = requestEntity.xdmData
-                ecid = requestEntity.ecid
-                if ecid = invalid
-                    ecid = m._stateManager.getECID()
-                end if
-
-                configId = requestEntity.configId
-                if configId = invalid
-                    configId = m._stateManager.getConfigId()
-                end if
-
                 requestId = requestEntity.requestId
 
-                edgeDomain = requestEntity.edgeDomain
-                if edgeDomain = invalid
-                    edgeDomain = m._stateManager.getEdgeDomain()
-                end if
+                ecid = m._stateManager.getECID()
+                configId = m._stateManager.getConfigId()
+                edgeDomain = m._stateManager.getEdgeDomain()
 
                 _adb_log_verbose("ecid:" + ecid)
                 _adb_log_verbose("configid:" + configId)
                 if (not _adb_isNullOrEmptyString(ecid)) and (not _adb_isNullOrEmptyString(configId)) then
                     response = m._processRequest(xdmData, ecid, configId, requestId, edgeDomain)
-                    ' TODO: handle response code properly
                     if response = invalid
                         _adb_log_error("processRequests() - Edge request dropped. Response is invalid.")
                         ' drop the request

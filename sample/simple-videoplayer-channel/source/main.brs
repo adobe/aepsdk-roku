@@ -129,6 +129,14 @@ function _adb_test_functions() as dynamic
     AdobeEdgeTestSuite_Edge_utils_TearDown
     TestCase_AdobeEdge_adb_generate_implementation_details
     TestCase_AdobeEdge_adb_buildEdgeRequestURL
-    TestCase_AdobeEdge_adb_EdgeRequestWorker
+    ' adb_test_AdobeEdge_EdgeRequestWorker.brs
+    AdobeEdgeTestSuite_EdgeRequestWorker_SetUp
+    AdobeEdgeTestSuite_EdgeRequestWorker_BeforeEach
+    AdobeEdgeTestSuite_EdgeRequestWorker_TearDown
+    TestCase_AdobeEdge_adb_EdgeRequestWorker_init
+    TestCase_AdobeEdge_adb_EdgeRequestWorker_init_invalid
+    TestCase_AdobeEdge_adb_EdgeRequestWorker_isReadyToProcess
+    TestCase_AdobeEdge_adb_EdgeRequestWorker_queue
+    TestCase_AdobeEdge_adb_EdgeRequestWorker_queue_bad_input
   ]
 end function

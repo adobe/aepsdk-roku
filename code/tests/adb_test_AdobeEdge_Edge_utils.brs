@@ -36,9 +36,3 @@ end sub
 sub TestCase_AdobeEdge_adb_buildEdgeRequestURL()
     ' TODO: implement
 end sub
-
-' target: _adb_EdgeRequestWorker()
-' @Test
-sub TestCase_AdobeEdge_adb_EdgeRequestWorker()
-    ' TODO: implement
-end sub
