@@ -772,7 +772,7 @@ function _adb_serviceProvider() as object
                     request.SetUrl(url)
                     request.AddHeader("Content-Type", "application/json")
                     request.AddHeader("accept", "application/json")
-                    request.AddHeader("Accept-Language", "en-US")
+                    ' request.AddHeader("Accept-Language", "en-US")
                     for each header in headers
                         request.AddHeader(header.key, header.value)
                     end for
@@ -946,6 +946,20 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
         _queue_size_max: 100,
 
         queue: function(requestId as string, xdmData as object, timestamp as integer) as void
+            if _adb_isEmptyOrInvalidString(requestId)
+                _adb_log_debug("[EdgeRequestWorker.queue()] requestId is invalid")
+                return
+            end if
+
+            if _adb_isEmptyOrInvalidObject(xdmData)
+                _adb_log_debug("[EdgeRequestWorker.queue()] xdmData is invalid")
+                return
+            end if
+
+            if timestamp <= 0
+                _adb_log_debug("[EdgeRequestWorker.queue()] timestamp is invalid")
+                return
+            end if
 
             requestEntity = {
                 requestId: requestId,
@@ -1031,7 +1045,9 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
             url = _adb_buildEdgeRequestURL(configId, requestId, edgeDomain)
             _adb_log_verbose("request JSON: " + FormatJson(jsonBody))
             response = _adb_serviceProvider().networkService.syncPostRequest(url, jsonBody)
-            response.requestId = requestId
+            if response <> invalid
+                response.requestId = requestId
+            end if
             return response
         end function
 
@@ -1051,6 +1067,18 @@ function _adb_isEmptyOrInvalidString(str as dynamic) as boolean
     end if
 
     if Len(str) = 0
+        return true
+    end if
+
+    return false
+end function
+
+function _adb_isEmptyOrInvalidObject(input as object) as boolean
+    if input = invalid or type(input) <> "roAssociativeArray"
+        return true
+    end if
+
+    if input.count() = 0
         return true
     end if
 

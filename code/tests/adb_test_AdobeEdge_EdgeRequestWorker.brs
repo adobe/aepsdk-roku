@@ -72,14 +72,109 @@ end sub
 sub TestCase_AdobeEdge_adb_EdgeRequestWorker_queue_bad_input()
     worker = _adb_EdgeRequestWorker({})
     worker._queue = []
-    worker.queue("request_id", { xdm: {} }, 12345534)
-    UTF_assertEqual(1, worker._queue.Count())
-    expectedObj = {
-        requestId: "request_id",
-        xdmData: { xdm: {} },
-        timestamp: 12345534
-    }
-    UTF_assertEqual(expectedObj, worker._queue[0])
+    worker.queue("request_id", { xdm: {} }, -1)
+    worker.queue("request_id", {}, 12345534)
+    worker.queue("request_id", invalid, 12345534)
+    worker.queue("request_id", 999, 12345534)
+    worker.queue("request_id", "invalid object", 12345534)
+    worker.queue("", { xdm: {} }, 12345534)
+    UTF_assertEqual(0, worker._queue.Count())
+end sub
 
+' target: queue()
+' @Test
+sub TestCase_AdobeEdge_adb_EdgeRequestWorker_queue_limit()
+    worker = _adb_EdgeRequestWorker({})
+    worker._queue = []
+    worker._queue_size_max = 2
+    worker.queue("request_id", { xdm: {} }, 12345534)
+    worker.queue("request_id", { xdm: {} }, 12345535)
+    worker.queue("request_id", { xdm: {} }, 12345536)
+    UTF_assertEqual(2, worker._queue.Count())
+end sub
+
+' target: clear()
+' @Test
+sub TestCase_AdobeEdge_adb_EdgeRequestWorker_clear()
+    worker = _adb_EdgeRequestWorker({})
+    worker._queue = []
+    worker.queue("request_id", { xdm: {} }, 12345534)
+    worker.queue("request_id", { xdm: {} }, 12345535)
+    worker.queue("request_id", { xdm: {} }, 12345536)
+    UTF_assertEqual(3, worker._queue.Count())
+    worker.clear()
+    UTF_assertEqual(0, worker._queue.Count())
+end sub
+
+' target: _processRequest()
+' @Test
+sub TestCase_AdobeEdge_adb_EdgeRequestWorker_processRequest()
+    cachedFuntion = _adb_serviceProvider().networkService.syncPostRequest
+    _adb_serviceProvider().networkService.syncPostRequest = function(url as string, jsonObj as object, headers = [] as object) as object
+        UTF_assertEqual(0, headers.Count())
+        UTF_assertEqual("https://edge.adobedc.net/ee/v1/interact?configId=config_id&requestId=request_id", url)
+        UTF_assertEqual(2, jsonObj.Count())
+        UTF_assertNotInvalid(jsonObj.xdm)
+        expectedXdmObj = {
+            identitymap: {
+                ecid: [
+                    {
+                        authenticatedstate: "ambiguous",
+                        id: "ecid_test",
+                        primary: true
+                    }
+                ]
+            },
+            implementationdetails: {
+                environment: "app",
+                name: "https://ns.adobe.com/experience/mobilesdk/roku",
+                version: "1.0.0-alpha1"
+            }
+        }
+        UTF_assertEqual(expectedXdmObj, jsonObj.xdm)
+        UTF_assertNotInvalid(jsonObj.events)
+        expectedEventsArray = [
+            {
+                xdm: {
+                    key: "value"
+                }
+            }
+        ]
+        UTF_assertEqual(expectedEventsArray, jsonObj.events, "validate the xdm data")
+        return {
+            statusCode: 200,
+            body: "response body"
+        }
+    end function
+
+    worker = _adb_EdgeRequestWorker({})
+    result = worker._processRequest({ xdm: { key: "value" } }, "ecid_test", "config_id", "request_id", invalid)
+
+    UTF_assertEqual("request_id", result.requestId)
+    UTF_assertEqual(200, result.statusCode)
+    UTF_assertEqual("response body", result.body)
+
+    _adb_serviceProvider().networkService.syncPostRequest = cachedFuntion
+end sub
+
+' target: _processRequest()
+' @Test
+sub TestCase_AdobeEdge_adb_EdgeRequestWorker_processRequest_invalid_response()
+    cachedFuntion = _adb_serviceProvider().networkService.syncPostRequest
+    _adb_serviceProvider().networkService.syncPostRequest = function(url as string, jsonObj as object, headers = [] as object) as object
+        UTF_assertEqual(0, headers.Count())
+        UTF_assertEqual("https://edge.adobedc.net/ee/v1/interact?configId=config_id&requestId=request_id", url)
+        UTF_assertEqual(2, jsonObj.Count())
+        UTF_assertNotInvalid(jsonObj.xdm)
+        UTF_assertNotInvalid(jsonObj.events)
+        return invalid
+    end function
+
+    worker = _adb_EdgeRequestWorker({})
+    result = worker._processRequest({ xdm: { key: "value" } }, "ecid_test", "config_id", "request_id", invalid)
+
+    UTF_assertInvalid(result)
+
+    _adb_serviceProvider().networkService.syncPostRequest = cachedFuntion
 end sub
 

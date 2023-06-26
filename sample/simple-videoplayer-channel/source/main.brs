@@ -139,5 +139,9 @@ function _adb_test_functions() as dynamic
     TestCase_AdobeEdge_adb_EdgeRequestWorker_isReadyToProcess
     TestCase_AdobeEdge_adb_EdgeRequestWorker_queue
     TestCase_AdobeEdge_adb_EdgeRequestWorker_queue_bad_input
+    TestCase_AdobeEdge_adb_EdgeRequestWorker_queue_limit
+    TestCase_AdobeEdge_adb_EdgeRequestWorker_clear
+    TestCase_AdobeEdge_adb_EdgeRequestWorker_processRequest
+    TestCase_AdobeEdge_adb_EdgeRequestWorker_processRequest_invalid_response
   ]
 end function
