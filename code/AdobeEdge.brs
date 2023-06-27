@@ -512,20 +512,6 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
             end if
         end function,
 
-        _hasValidConfig: function() as boolean
-            if _adb_isEmptyOrInvalidString(m.stateManager.getConfigId())
-                _adb_log_error("_hasValidConfig() - Missing edge config id, please check configuration")
-                return false
-            end if
-
-            if _adb_isEmptyOrInvalidString(m.stateManager.getECID())
-                _adb_log_error("_hasValidConfig() - Invalid ECID found.")
-                return false
-            end if
-
-            return true
-        end function,
-
         _resetIdentities: function(_event as object) as void
             _adb_log_info("_resetIdentities() - Reset presisted Identities.")
             m.stateManager.reset()
@@ -550,7 +536,7 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
         end function,
 
         _hasXDMData: function(event as object) as boolean
-            if event.count() <> 0 and event.data.DoesExist("xdm") and event.data.xdm.Count() > 0 then
+            if event <> invalid and event.DoesExist("data") and event.data.DoesExist("xdm") and event.data.xdm.Count() > 0 then
                 return true
             end if
 
@@ -575,6 +561,10 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
         processQueuedRequests: function() as void
             if m.edgeRequestWorker.isReadyToProcess() then
                 responses = m.edgeRequestWorker.processRequests()
+                if responses = invalid
+                    _adb_log_error("processQueuedRequests() - Failed to process queued requests.")
+                    return
+                end if
                 if Type(responses) = "roArray" then
                     for each response in responses
                         m._sendResponseEvent({
@@ -584,9 +574,7 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
                                 message: response.message
                             }
                         })
-                    next
-                else
-                    m._sendResponseEvent(responses)
+                    end for
                 end if
             end if
         end function
