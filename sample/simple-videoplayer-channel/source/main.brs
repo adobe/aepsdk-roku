@@ -119,12 +119,16 @@ function _adb_test_functions() as dynamic
     TestCase_AdobeEdge_EventProcessor_init
     TestCase_AdobeEdge_EventProcessor_handleEvent_setLogLevel
     TestCase_AdobeEdge_EventProcessor_handleEvent_setLogLevel_invalid
+    TestCase_AdobeEdge_EventProcessor_handleEvent_resetIdentities
     TestCase_AdobeEdge_EventProcessor_handleEvent_setConfiguration
     TestCase_AdobeEdge_EventProcessor_handleEvent_setECID
-    TestCase_AdobeEdge_EventProcessor_handleEvent_queryECID
+    TestCase_AdobeEdge_EventProcessor_hasXDMData
     TestCase_AdobeEdge_EventProcessor_handleEvent_sendEvent
     TestCase_AdobeEdge_EventProcessor_sendResponseEvent
-    TestCase_AdobeEdge_EventProcessor_loadECID
+    TestCase_AdobeEdge_EventProcessor_processQueuedRequests
+    TestCase_AdobeEdge_EventProcessor_processQueuedRequests_multiple_requests
+    TestCase_AdobeEdge_EventProcessor_processQueuedRequests_bad_request
+    TestCase_AdobeEdge_EventProcessor_processQueuedRequests_empty_queue
     ' adb_test_AdobeEdge_Edge_utils.brs
     AdobeEdgeTestSuite_Edge_utils_SetUp
     AdobeEdgeTestSuite_Edge_utils_TearDown

@@ -26,12 +26,12 @@ sub init()
   ADB_CONSTANTS = AdobeSDKConstants()
   m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
   ' m.adobeEdgeSdk.setExperienceCloudId("012344545454809")
-  m.adobeEdgeSdk.sendEdgeEvent({
-    eventType: "commerce.orderPlaced",
-    commerce: {
-      key: "value"
-    }
-  })
+  ' m.adobeEdgeSdk.sendEdgeEvent({
+  '   eventType: "commerce.orderPlaced",
+  '   commerce: {
+  '     key: "value"
+  '   }
+  ' })
   ' m.adobeEdgeSdk.sendEdgeEvent({
   '   a: {
   '     a1: "a1",
