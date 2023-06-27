@@ -318,8 +318,6 @@ function AdobeSDKInit() as object
                 ' API callbacks to be called later
                 ' CallbackInfo = {cb: function, context: dynamic}
                 cachedCallbackInfo: {},
-                ' log level
-                logLevel: 4,
             }
 
         }
