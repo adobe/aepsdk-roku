@@ -209,7 +209,7 @@ function AdobeSDKInit() as object
                     xdm: xdmData
                 })
                 ' add a timestamp to the XDM data
-                event.data.xdm.timestap = event.timestamp
+                event.data.xdm.timestamp = event.timestamp
                 if callback <> _adb_default_callback then
                     ' store callback function
                     callbackInfo = {
@@ -309,15 +309,15 @@ function AdobeSDKInit() as object
                 ' dispatch events to the task node
                 dispatchEvent: function(event as object) as void
                     _adb_log_debug("dispatchEvent() - " + FormatJson(event))
-                    m.taskNode[m.cons.TASK.REQUEST_EVENT] = event
+                    if m.taskNode <> invalid then
+                        m.taskNode[m.cons.TASK.REQUEST_EVENT] = event
+                    end if
                 end function,
                 ' private memeber
                 taskNode: GetGlobalAA()._adb_edge_task_node,
                 ' API callbacks to be called later
                 ' CallbackInfo = {cb: function, context: dynamic}
                 cachedCallbackInfo: {},
-                ' private memeber
-                config: {},
                 ' log level
                 logLevel: 4,
             }
