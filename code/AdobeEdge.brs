@@ -560,11 +560,6 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
         _sendEvent: function(event as object) as void
             _adb_log_info("_sendEvent() - Try sending event.")
 
-            if (not m._hasValidConfig())
-                _adb_log_error("_sendEvent() - Cannot send event, missing required configuration.")
-                return
-            end if
-
             if not m._hasXDMData(event)
                 _adb_log_error("_sendEvent() - Not sending event, XDM data is empty.")
                 return
