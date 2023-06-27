@@ -11,6 +11,40 @@
 
 ' *****************************************************************************************
 
-function isValidUUID(input as dynamic) as boolean
-    return true
+' ************************ Registry Helpers ************************
+function removeValue(key) as void
+    _registry = CreateObject("roRegistrySection", "adb_edge_mobile")
+    _registry.Delete(key)
+    _registry.Flush()
+end function
+
+function clearPersistedECID() as void
+    removeValue("ecid")
+end function
+
+function getPersistedECID() as dynamic
+    persistedECID = readValueFromRegistry("ecid")
+    return persistedECID
+end function
+
+function readValueFromRegistry(key as string) as dynamic
+    _registry = CreateObject("roRegistrySection", "adb_edge_mobile")
+    if _registry.Exists(key) and _registry.Read(key).Len() > 0
+        return _registry.Read(key)
+    end if
+
+    return invalid
+end function
+
+' ************************ String Helper ************************
+function isEmptyOrInvalidString(str as dynamic) as boolean
+    if str = invalid or (type(str) <> "roString" and type(str) <> "String")
+        return true
+    end if
+
+    if Len(str) = 0
+        return true
+    end if
+
+    return false
 end function
