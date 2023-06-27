@@ -209,7 +209,7 @@ sub TestCase_AdobeEdge_adb_EdgeRequestWorker_processRequests()
     responseArray = worker.processRequests()
 
     UTF_assertEqual(2, responseArray.Count())
-    ' queued reqeust shoudl be processed in order
+    ' queued request should be processed in order
     UTF_assertEqual("request_id_1", responseArray[0].requestId)
     UTF_assertEqual("request_id_2", responseArray[1].requestId)
 
