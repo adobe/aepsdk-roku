@@ -560,17 +560,19 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
         processQueuedRequests: function() as void
             if m._edgeRequestWorker.isReadyToProcess() then
                 responses = m._edgeRequestWorker.processRequests()
-                if responses <> invalid and Type(responses) = "roArray" then
-                    for each response in responses
-                        m._sendResponseEvent({
-                            uuid: response.requestId,
-                            data: {
-                                code: response.code,
-                                message: response.message
-                            }
-                        })
-                    end for
+                if responses = invalid or Type(responses) <> "roArray"
+                    _adb_log_error("processQueuedRequests() - not found valid edge response.")
+                    return
                 end if
+                for each response in responses
+                    m._sendResponseEvent({
+                        uuid: response.requestId,
+                        data: {
+                            code: response.code,
+                            message: response.message
+                        }
+                    })
+                end for
             end if
         end function
 
