@@ -146,5 +146,8 @@ function _adb_test_functions() as dynamic
     TestCase_AdobeEdge_adb_EdgeRequestWorker_clear
     TestCase_AdobeEdge_adb_EdgeRequestWorker_processRequest
     TestCase_AdobeEdge_adb_EdgeRequestWorker_processRequest_invalid_response
+    TestCase_AdobeEdge_adb_EdgeRequestWorker_processRequests
+    TestCase_AdobeEdge_adb_EdgeRequestWorker_processRequests_empty_queue
+    TestCase_AdobeEdge_adb_EdgeRequestWorker_processRequests_recoverable_error
   ]
 end function
