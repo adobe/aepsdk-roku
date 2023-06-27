@@ -11,10 +11,6 @@
 
 ' *****************************************************************************************
 
-function isValidUUID(input as dynamic) as boolean
-    return true
-end function
-
 ' ************************ Registry Helpers ************************
 function removeValue(key) as void
     _registry = CreateObject("roRegistrySection", "adb_edge_mobile")
