@@ -648,7 +648,7 @@ function _adb_StateManager() as object
                 m.updateECID(m._queryECID())
             end if
 
-            _adb_log_info("getECID() - ecid: " + m._ecid)
+            _adb_log_info("getECID() - ecid: " + FormatJson(m._ecid))
             return m._ecid
         end function,
 
@@ -697,6 +697,11 @@ function _adb_StateManager() as object
             _adb_log_info("_queryECID() - query ECID from service side")
             configId = m.getConfigId()
             edgeDomain = m.getEdgeDomain()
+
+            if _adb_isEmptyOrInvalidString(configId)
+                _adb_log_error("_queryECID() - Unable to query ECID from service side, invalid configuration.")
+                return invalid
+            end if
 
             url = _adb_buildEdgeRequestURL(configId, _adb_generate_UUID(), edgeDomain)
             jsonBody = {

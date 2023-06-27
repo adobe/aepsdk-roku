@@ -52,41 +52,6 @@ sub TestCase_AdobeEdge_adb_serviceProvider()
     UTF_assertEqual(GetGlobalAA()._adb_serviceProvider_instance.test, instance1.test)
 end sub
 
-' target: _adb_StateManager()
-' @Test
-sub TestCase_AdobeEdge_adb_StateManager_init()
-    stateManager = _adb_StateManager()
-    UTF_assertInvalid(stateManager.getConfigId())
-    UTF_assertInvalid(stateManager.getEdgeDomain())
-end sub
-
-' target: _adb_StateManager()
-' @Test
-sub TestCase_AdobeEdge_adb_StateManager_configId()
-    stateManager = _adb_StateManager()
-    stateManager.updateConfiguration({
-        edge: {
-            configId: "testConfigId"
-        }
-    })
-    UTF_assertEqual(stateManager.getConfigId(), "testConfigId")
-    UTF_assertInvalid(stateManager.getEdgeDomain())
-end sub
-
-' target: _adb_StateManager()
-' @Test
-sub TestCase_AdobeEdge_adb_StateManager_edgeDomain()
-    stateManager = _adb_StateManager()
-    stateManager.updateConfiguration({
-        edge: {
-            configId: "testConfigId",
-            edgeDomain: "abx"
-        }
-    })
-    UTF_assertEqual(stateManager.getConfigId(), "testConfigId")
-    UTF_assertEqual(stateManager.getEdgeDomain(), "abx")
-end sub
-
 ' target: _adb_isEmptyOrInvalidString()
 ' @Test
 sub TestCase_AdobeEdge_adb_isEmptyOrInvalidString()

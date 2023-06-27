@@ -78,9 +78,6 @@ function _adb_test_functions() as dynamic
     TestCase_AdobeEdge_AdobeSDKConstants
     TestCase_AdobeEdge_adb_sdk_version
     TestCase_AdobeEdge_adb_serviceProvider
-    TestCase_AdobeEdge_adb_StateManager_init
-    TestCase_AdobeEdge_adb_StateManager_configId
-    TestCase_AdobeEdge_adb_StateManager_edgeDomain
     TestCase_AdobeEdge_adb_isEmptyOrInvalidString
     TestCase_AdobeEdge_adb_optMapFromMap
     TestCase_AdobeEdge_adb_optStringFromMap
@@ -149,5 +146,18 @@ function _adb_test_functions() as dynamic
     TestCase_AdobeEdge_adb_EdgeRequestWorker_processRequests
     TestCase_AdobeEdge_adb_EdgeRequestWorker_processRequests_empty_queue
     TestCase_AdobeEdge_adb_EdgeRequestWorker_processRequests_recoverable_error
+    ' adb_test_AdobeEdge_AdobeStateManager.brs
+    TS_StateManager_SetUp
+    TS_StateaManager_BeforeEach
+    TS_StateManager_TearDown
+    T_StateManager_init
+    T_StateManager_updateConfiguration_configId
+    T_StateManager_updateConfiguration_edgeDomain
+    T_StateManager_updateConfiguration_separateUpdates
+    T_StateManager_updateConfiguration_invalidConfiguration
+    T_StateManager_getECID_noSetECID_invalidConfiguration_returnsInvalid
+    T_StateManager_getECID_validConfiguration_fetchesECID
+    T_StateManager_updateECID_validString_updatesECID
+    T_StateManager_updateECID_invalid_deletesECID
   ]
 end function
