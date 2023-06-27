@@ -516,9 +516,9 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
 
         _setConfiguration: function(event as object) as void
             _adb_log_info("_setConfiguration() - set configuration")
-            _adb_log_verbose("configuration before: " + FormatJson(m._stateManager.getAll()))
+            _adb_log_verbose("configuration before: " + FormatJson(m._stateManager.dump()))
             m._stateManager.updateConfiguration(event.data)
-            _adb_log_verbose("configuration after: " + FormatJson(m._stateManager.getAll()))
+            _adb_log_verbose("configuration after: " + FormatJson(m._stateManager.dump()))
         end function,
 
         _setECID: function(event as object) as void
@@ -715,7 +715,7 @@ function _adb_StateManager() as object
             end if
         end function,
 
-        getAll: function() as object
+        dump: function() as object
             return {
                 edge: m._edge,
                 ecid: m._ecid
