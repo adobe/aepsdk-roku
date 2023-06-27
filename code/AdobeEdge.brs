@@ -560,11 +560,7 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
         processQueuedRequests: function() as void
             if m._edgeRequestWorker.isReadyToProcess() then
                 responses = m._edgeRequestWorker.processRequests()
-                if responses = invalid
-                    _adb_log_error("processQueuedRequests() - Failed to process queued requests.")
-                    return
-                end if
-                if Type(responses) = "roArray" then
+                if responses <> invalid and Type(responses) = "roArray" then
                     for each response in responses
                         m._sendResponseEvent({
                             uuid: response.requestId,
