@@ -118,7 +118,11 @@ sub TestCase_AdobeEdge_public_APIs_sendEdgeEvent()
     event = GetGlobalAA()._adb_edge_task_node["requestEvent"]
     UTF_assertEqual(event.apiName, _internal_const.PUBLIC_API.SEND_EDGE_EVENT)
     UTF_assertEqual(sdkInstance._private.cachedCallbackInfo.Count(), 0)
-    UTF_assertEqual(event.data, { xdm: xdmData })
+    UTF_assertEqual(event.data, { xdm: {
+            eventType: "commerce.orderPlaced",
+            timestamp: event.timestamp,
+            commerce: {
+    } } })
     UTF_AssertNotInvalid(event.uuid)
     UTF_AssertNotInvalid(event.timestamp)
 end sub

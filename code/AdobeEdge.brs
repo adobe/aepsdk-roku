@@ -209,7 +209,7 @@ function AdobeSDKInit() as object
                     xdm: xdmData
                 })
                 ' add a timestamp to the XDM data
-                event.data.xdm.timestap = event.timestamp
+                event.data.xdm.timestamp = event.timestamp
                 if callback <> _adb_default_callback then
                     ' store callback function
                     callbackInfo = {
@@ -309,17 +309,15 @@ function AdobeSDKInit() as object
                 ' dispatch events to the task node
                 dispatchEvent: function(event as object) as void
                     _adb_log_debug("dispatchEvent() - " + FormatJson(event))
-                    m.taskNode[m.cons.TASK.REQUEST_EVENT] = event
+                    if m.taskNode <> invalid then
+                        m.taskNode[m.cons.TASK.REQUEST_EVENT] = event
+                    end if
                 end function,
                 ' private memeber
                 taskNode: GetGlobalAA()._adb_edge_task_node,
                 ' API callbacks to be called later
                 ' CallbackInfo = {cb: function, context: dynamic}
                 cachedCallbackInfo: {},
-                ' private memeber
-                config: {},
-                ' log level
-                logLevel: 4,
             }
 
         }
@@ -513,14 +511,14 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
 
         _resetIdentities: function(_event as object) as void
             _adb_log_info("_resetIdentities() - Reset presisted Identities.")
-            m._stateManager.reset()
+            m._stateManager.resetIdentities()
         end function,
 
         _setConfiguration: function(event as object) as void
             _adb_log_info("_setConfiguration() - set configuration")
-            _adb_log_verbose("configuration before: " + FormatJson(m._stateManager.getAll()))
+            _adb_log_verbose("configuration before: " + FormatJson(m._stateManager.dump()))
             m._stateManager.updateConfiguration(event.data)
-            _adb_log_verbose("configuration after: " + FormatJson(m._stateManager.getAll()))
+            _adb_log_verbose("configuration after: " + FormatJson(m._stateManager.dump()))
         end function,
 
         _setECID: function(event as object) as void
@@ -620,7 +618,7 @@ function _adb_StateManager() as object
             end if
         end function,
 
-        reset: function() as void
+        resetIdentities: function() as void
             m.updateECID(invalid)
         end function,
 
@@ -717,7 +715,7 @@ function _adb_StateManager() as object
             end if
         end function,
 
-        getAll: function() as object
+        dump: function() as object
             return {
                 edge: m._edge,
                 ecid: m._ecid
