@@ -82,7 +82,7 @@ end sub
 sub TestCase_AdobeEdge_loggingService_logLevel_default()
     serviceProvider = _adb_serviceProvider()
     loggingService = serviceProvider.loggingService
-    UTF_assertEqual(loggingService._logLevel, 0)
+    UTF_assertEqual(loggingService._logLevel, 2)
 end sub
 
 ' target: Log utility functions
