@@ -70,7 +70,7 @@ sub TestCase_AdobeEdge_EventProcessor_handleEvent_resetIdentities()
     GetGlobalAA().reset_is_called = false
 
     eventProcessor = _adb_task_node_EventProcessor(_adb_internal_constants(), {})
-    eventProcessor._stateManager.reset = function() as void
+    eventProcessor._stateManager.resetIdentities = function() as void
         GetGlobalAA().reset_is_called = true
     end function
 
