@@ -89,8 +89,6 @@ end sub
 ' @Test
 sub TestCase_AdobeEdge_loggingService_utility_functions()
 
-
-
     serviceProvider = _adb_serviceProvider()
     loggingService = serviceProvider.loggingService
     loggingService.setLogLevel(0)

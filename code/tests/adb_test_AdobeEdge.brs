@@ -52,37 +52,60 @@ sub TestCase_AdobeEdge_adb_serviceProvider()
     UTF_assertEqual(GetGlobalAA()._adb_serviceProvider_instance.test, instance1.test)
 end sub
 
-' target: _adb_StateManager()
+' target: _adb_isEmptyOrInvalidString()
 ' @Test
-sub TestCase_AdobeEdge_adb_StateManager_init()
-    stateManager = _adb_StateManager()
-    UTF_assertInvalid(stateManager.getConfigId())
-    UTF_assertInvalid(stateManager.getEdgeDomain())
+sub TestCase_AdobeEdge_adb_isEmptyOrInvalidString()
+    UTF_assertTrue(_adb_isEmptyOrInvalidString(invalid))
+    UTF_assertTrue(_adb_isEmptyOrInvalidString(""))
+    UTF_assertFalse(_adb_isEmptyOrInvalidString("test"))
+    UTF_assertTrue(_adb_isEmptyOrInvalidString(123))
+    UTF_assertTrue(_adb_isEmptyOrInvalidString({}))
 end sub
 
-' target: _adb_StateManager()
+' target: _adb_optMapFromMap()
 ' @Test
-sub TestCase_AdobeEdge_adb_StateManager_configId()
-    stateManager = _adb_StateManager()
-    stateManager.updateConfiguration({
-        edge: {
-            configId: "testConfigId"
-        }
-    })
-    UTF_assertEqual(stateManager.getConfigId(), "testConfigId")
-    UTF_assertInvalid(stateManager.getEdgeDomain())
+sub TestCase_AdobeEdge_adb_optMapFromMap()
+    UTF_assertEqual({"key": "value"}, _adb_optMapFromMap({"map" :{"key" : "value"}}, "map"))
+
+
+    UTF_assertEqual(invalid, _adb_optMapFromMap({"map" : 1}, "map"))
+    UTF_assertEqual(invalid, _adb_optMapFromMap({"map" : "string"}, "map"))
+    UTF_assertEqual(invalid, _adb_optMapFromMap({"map" : true}, "map"))
+    UTF_assertEqual(invalid, _adb_optMapFromMap(invalid, "map1"))
+    UTF_assertEqual(invalid, _adb_optMapFromMap({"map" :{"key" : "value"}}, "map1"))
+
+    UTF_assertEqual({}, _adb_optMapFromMap({"map" :{"key" : "value"}}, "map1", {}))
+    UTF_assertEqual(false, _adb_optMapFromMap({"map" :{"key" : "value"}}, "map1", false))
+    UTF_assertEqual("invalidMap", _adb_optMapFromMap({"map" :{"key" : "value"}}, "map1", "invalidMap"))
 end sub
 
-' target: _adb_StateManager()
+' target: _adb_optStringFromMap()
 ' @Test
-sub TestCase_AdobeEdge_adb_StateManager_edgeDomain()
-    stateManager = _adb_StateManager()
-    stateManager.updateConfiguration({
-        edge: {
-            configId: "testConfigId",
-            edgeDomain: "abx"
-        }
-    })
-    UTF_assertEqual(stateManager.getConfigId(), "testConfigId")
-    UTF_assertEqual(stateManager.getEdgeDomain(), "abx")
+sub TestCase_AdobeEdge_adb_optStringFromMap()
+    UTF_assertEqual("value", _adb_optStringFromMap({"key" : "value"}, "key"))
+
+    UTF_assertEqual(invalid, _adb_optStringFromMap({"key" : 1}, "key"))
+    UTF_assertEqual(invalid, _adb_optStringFromMap({"key" : true}, "key"))
+    UTF_assertEqual(invalid, _adb_optStringFromMap({"key" : "value"}, "key1"))
+    UTF_assertEqual(invalid, _adb_optStringFromMap(invalid, "key1"))
+
+    UTF_assertEqual("invalid", _adb_optStringFromMap({"key" : "value"}, "key1", "invalid"))
+    UTF_assertEqual(false, _adb_optStringFromMap({"key" : "value"}, "key1", false))
+    UTF_assertEqual({}, _adb_optStringFromMap({"key" : "value"}, "key1", {}))
+end sub
+
+' target: _adb_optIntFromMap()
+' @Test
+sub TestCase_AdobeEdge_adb_optIntFromMap()
+    UTF_assertEqual(1, _adb_optIntFromMap({"key" : 1}, "key"))
+
+    UTF_assertEqual(invalid, _adb_optIntFromMap({"key" : "value"}, "key1"))
+    UTF_assertEqual(invalid, _adb_optIntFromMap({"key" : true}, "key1"))
+    UTF_assertEqual(invalid, _adb_optIntFromMap({"key" : 1}, "key1"))
+    UTF_assertEqual(invalid, _adb_optIntFromMap(invalid, "key1"))
+
+    UTF_assertEqual(-1, _adb_optIntFromMap({"key" : "value"}, "key1", -1))
+    UTF_assertEqual(false, _adb_optIntFromMap({"key" : "value"}, "key1", false))
+    UTF_assertEqual("invalid", _adb_optIntFromMap({"key" : "value"}, "key1", "invalid"))
+    UTF_assertEqual({}, _adb_optIntFromMap({"key" : "value"}, "key1", {}))
 end sub

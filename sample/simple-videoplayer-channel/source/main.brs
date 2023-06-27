@@ -78,9 +78,10 @@ function _adb_test_functions() as dynamic
     TestCase_AdobeEdge_AdobeSDKConstants
     TestCase_AdobeEdge_adb_sdk_version
     TestCase_AdobeEdge_adb_serviceProvider
-    TestCase_AdobeEdge_adb_StateManager_init
-    TestCase_AdobeEdge_adb_StateManager_configId
-    TestCase_AdobeEdge_adb_StateManager_edgeDomain
+    TestCase_AdobeEdge_adb_isEmptyOrInvalidString
+    TestCase_AdobeEdge_adb_optMapFromMap
+    TestCase_AdobeEdge_adb_optStringFromMap
+    TestCase_AdobeEdge_adb_optIntFromMap
     ' adb_test_AdobeEdge_AdobeSDKInit.brs
     AdobeEdgeTestSuite_AdobeSDKInit_SetUp
     AdobeEdgeTestSuite_AdobeSDKInit_TearDown
@@ -118,17 +119,49 @@ function _adb_test_functions() as dynamic
     TestCase_AdobeEdge_EventProcessor_init
     TestCase_AdobeEdge_EventProcessor_handleEvent_setLogLevel
     TestCase_AdobeEdge_EventProcessor_handleEvent_setLogLevel_invalid
+    TestCase_AdobeEdge_EventProcessor_handleEvent_resetIdentities
     TestCase_AdobeEdge_EventProcessor_handleEvent_setConfiguration
     TestCase_AdobeEdge_EventProcessor_handleEvent_setECID
-    TestCase_AdobeEdge_EventProcessor_handleEvent_queryECID
+    TestCase_AdobeEdge_EventProcessor_hasXDMData
     TestCase_AdobeEdge_EventProcessor_handleEvent_sendEvent
     TestCase_AdobeEdge_EventProcessor_sendResponseEvent
-    TestCase_AdobeEdge_EventProcessor_loadECID
+    TestCase_AdobeEdge_EventProcessor_processQueuedRequests
+    TestCase_AdobeEdge_EventProcessor_processQueuedRequests_multiple_requests
+    TestCase_AdobeEdge_EventProcessor_processQueuedRequests_bad_request
+    TestCase_AdobeEdge_EventProcessor_processQueuedRequests_empty_queue
     ' adb_test_AdobeEdge_Edge_utils.brs
     AdobeEdgeTestSuite_Edge_utils_SetUp
     AdobeEdgeTestSuite_Edge_utils_TearDown
     TestCase_AdobeEdge_adb_generate_implementation_details
     TestCase_AdobeEdge_adb_buildEdgeRequestURL
-    TestCase_AdobeEdge_adb_EdgeRequestWorker
+    ' adb_test_AdobeEdge_EdgeRequestWorker.brs
+    AdobeEdgeTestSuite_EdgeRequestWorker_SetUp
+    AdobeEdgeTestSuite_EdgeRequestWorker_BeforeEach
+    AdobeEdgeTestSuite_EdgeRequestWorker_TearDown
+    TestCase_AdobeEdge_adb_EdgeRequestWorker_init
+    TestCase_AdobeEdge_adb_EdgeRequestWorker_init_invalid
+    TestCase_AdobeEdge_adb_EdgeRequestWorker_isReadyToProcess
+    TestCase_AdobeEdge_adb_EdgeRequestWorker_queue
+    TestCase_AdobeEdge_adb_EdgeRequestWorker_queue_bad_input
+    TestCase_AdobeEdge_adb_EdgeRequestWorker_queue_limit
+    TestCase_AdobeEdge_adb_EdgeRequestWorker_clear
+    TestCase_AdobeEdge_adb_EdgeRequestWorker_processRequest
+    TestCase_AdobeEdge_adb_EdgeRequestWorker_processRequest_invalid_response
+    TestCase_AdobeEdge_adb_EdgeRequestWorker_processRequests
+    TestCase_AdobeEdge_adb_EdgeRequestWorker_processRequests_empty_queue
+    TestCase_AdobeEdge_adb_EdgeRequestWorker_processRequests_recoverable_error
+    ' adb_test_AdobeEdge_AdobeStateManager.brs
+    TS_StateManager_SetUp
+    TS_StateaManager_BeforeEach
+    TS_StateManager_TearDown
+    T_StateManager_init
+    T_StateManager_updateConfiguration_configId
+    T_StateManager_updateConfiguration_edgeDomain
+    T_StateManager_updateConfiguration_separateUpdates
+    T_StateManager_updateConfiguration_invalidConfiguration
+    T_StateManager_getECID_noSetECID_invalidConfiguration_returnsInvalid
+    T_StateManager_getECID_validConfiguration_fetchesECID
+    T_StateManager_updateECID_validString_updatesECID
+    T_StateManager_updateECID_invalid_deletesECID
   ]
 end function

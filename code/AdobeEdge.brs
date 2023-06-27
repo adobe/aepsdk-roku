@@ -125,6 +125,18 @@ function AdobeSDKInit() as object
                 GetGlobalAA()._adb_public_api = invalid
             end function,
 
+            ' ***********************************************************************
+            '
+            ' Call this function to reset the Adobe set identities such as ECID from the SDK.
+            '
+            ' ***********************************************************************
+
+            resetIdentities: function() as void
+                _adb_log_debug("API: resetIdentities()")
+                event = m._private.buildEvent(m._private.cons.PUBLIC_API.RESET_IDENTITIES, invalid)
+                m._private.dispatchEvent(event)
+            end function,
+
             ' **********************************************************************************
             '
             ' Call this function before using any other public APIs.
@@ -187,7 +199,7 @@ function AdobeSDKInit() as object
             ' *************************************************************************************
 
             sendEdgeEvent: function(xdmData as object, callback = _adb_default_callback as function, context = invalid as dynamic) as void
-                _adb_log_debug("API: sendEdgeEvent")
+                _adb_log_debug("API: sendEdgeEvent()")
                 if type(xdmData) <> "roAssociativeArray" then
                     _adb_log_error("sendEdgeEvent() - Invalid XDM data")
                     return
@@ -212,7 +224,7 @@ function AdobeSDKInit() as object
 
             ' TDB
             sendEdgeEventWithNonXdmData: function(xdmData as object, nonXdmData as object, callback = _adb_default_callback as function, context = invalid as dynamic) as void
-                _adb_log_debug("API: sendEdgeEventWithNonXdmData")
+                _adb_log_debug("API: sendEdgeEventWithNonXdmData()")
                 eventData = {
                     xdm: xdmData,
                     data: nonXdmData
@@ -252,7 +264,7 @@ function AdobeSDKInit() as object
             ' ****************************************************************************************************
 
             setExperienceCloudId: function(ecid as string) as void
-                _adb_log_debug("API: setExperienceCloudId")
+                _adb_log_debug("API: setExperienceCloudId()")
                 ' event data: { "ecid": ecid }
                 data = {}
                 data[m._private.cons.EVENT_DATA_KEY.ecid] = ecid
@@ -351,7 +363,7 @@ function _adb_internal_constants() as object
         PUBLIC_API: {
             SET_CONFIGURATION: "setConfiguration",
             SET_EXPERIENCE_CLOUD_ID: "setExperienceCloudId",
-            SYNC_IDENTIFIERS: "syncIdentifiers",
+            RESET_IDENTITIES: "resetIdentities",
             SEND_EDGE_EVENT: "sendEdgeEvent",
             SET_LOG_LEVEL: "setLogLevel",
         },
@@ -459,27 +471,30 @@ end function
 
 function _adb_task_node_EventProcessor(internalConstants as object, task as object) as object
     eventProcessor = {
-        ADB_CONSTANTS: internalConstants,
-        task: task,
-        stateManager: _adb_StateManager(),
-        networkService: _adb_serviceProvider().networkService,
-        edgeRequestWorker: invalid,
+        _ADB_CONSTANTS: internalConstants,
+        _task: task,
+        _stateManager: _adb_StateManager(),
+        _edgeRequestWorker: invalid,
 
         init: function() as void
-            m.edgeRequestWorker = _adb_EdgeRequestWorker(m.stateManager)
+            m._edgeRequestWorker = _adb_EdgeRequestWorker(m._stateManager)
         end function
 
         handleEvent: function(event as dynamic) as void
-            if event.DoesExist("owner") and event.owner = m.ADB_CONSTANTS.EVENT_OWNER
+            eventOwner = _adb_optStringFromMap(event, "owner", "unknown")
+
+            if eventOwner = m._ADB_CONSTANTS.EVENT_OWNER
                 _adb_log_info("handleEvent() - handle event: " + FormatJson(event))
-                if event.apiname = m.ADB_CONSTANTS.PUBLIC_API.SEND_EDGE_EVENT
+                if event.apiname = m._ADB_CONSTANTS.PUBLIC_API.SEND_EDGE_EVENT
                     m._sendEvent(event)
-                else if event.apiname = m.ADB_CONSTANTS.PUBLIC_API.SET_CONFIGURATION
+                else if event.apiname = m._ADB_CONSTANTS.PUBLIC_API.SET_CONFIGURATION
                     m._setConfiguration(event)
-                else if event.apiname = m.ADB_CONSTANTS.PUBLIC_API.SET_LOG_LEVEL
+                else if event.apiname = m._ADB_CONSTANTS.PUBLIC_API.SET_LOG_LEVEL
                     m._setLogLevel(event)
-                else if event.apiname = m.ADB_CONSTANTS.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID
+                else if event.apiname = m._ADB_CONSTANTS.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID
                     m._setECID(event)
+                else if event.apiname = m._ADB_CONSTANTS.PUBLIC_API.RESET_IDENTITIES
+                    m._resetIdentities(event)
                 end if
             else
                 _adb_log_warning("handleEvent() - event is invalid: " + FormatJson(event))
@@ -487,8 +502,8 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
         end function,
 
         _setLogLevel: function(event as object) as void
-            if event.data.DoesExist(m.ADB_CONSTANTS.EVENT_DATA_KEY.LOG.LEVEL)
-                logLevel = event.data[m.ADB_CONSTANTS.EVENT_DATA_KEY.LOG.LEVEL]
+            logLevel = _adb_optIntFromMap(event.data, m._ADB_CONSTANTS.EVENT_DATA_KEY.LOG.LEVEL)
+            if logLevel <> invalid
                 loggingService = _adb_serviceProvider().loggingService
                 loggingService.setLogLevel(logLevel)
                 _adb_log_info("_setLogLevel() - set log level: " + FormatJson(logLevel))
@@ -497,40 +512,31 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
             end if
         end function,
 
-        _hasValidConfig: function() as boolean
-            if _adb_isNullOrEmptyString(m.stateManager.getConfigId())
-                _adb_log_error("_hasValidConfig() - Missing edge config id, please check configuration")
-                return false
-            end if
-
-            if _adb_isNullOrEmptyString(m.stateManager.getECID())
-                _adb_log_error("_hasValidConfig() - Invalid ECID found.")
-                return false
-            end if
-
-            return true
+        _resetIdentities: function(_event as object) as void
+            _adb_log_info("_resetIdentities() - Reset presisted Identities.")
+            m._stateManager.reset()
         end function,
 
         _setConfiguration: function(event as object) as void
             _adb_log_info("_setConfiguration() - set configuration")
-            _adb_log_verbose("configuration before: " + FormatJson(m.stateManager.getAll()))
-            m.stateManager.updateConfiguration(event.data)
-            _adb_log_verbose("configuration after: " + FormatJson(m.stateManager.getAll()))
+            _adb_log_verbose("configuration before: " + FormatJson(m._stateManager.getAll()))
+            m._stateManager.updateConfiguration(event.data)
+            _adb_log_verbose("configuration after: " + FormatJson(m._stateManager.getAll()))
         end function,
 
         _setECID: function(event as object) as void
-            _adb_log_info("_setECID() - set ecid")
+            _adb_log_info("_setECID() - Handle setECID.")
 
-            if event.data.DoesExist(m.ADB_CONSTANTS.EVENT_DATA_KEY.ECID)
-                ecid = event.data[m.ADB_CONSTANTS.EVENT_DATA_KEY.ECID]
-                m.stateManager.updateECID(ecid)
+            ecid = _adb_optStringFromMap(event.data, m._ADB_CONSTANTS.EVENT_DATA_KEY.ECID)
+            if ecid <> invalid
+                m._stateManager.updateECID(ecid)
             else
-                _adb_log_warning("_setECID() - ecid is not found in event data")
+                _adb_log_warning("_setECID() - ECID not found in event data.")
             end if
         end function,
 
         _hasXDMData: function(event as object) as boolean
-            if event.count() <> 0 and event.data.DoesExist("xdm") and event.data.xdm.Count() > 0 then
+            if event <> invalid and event.DoesExist("data") and event.data.DoesExist("xdm") and event.data.xdm.Count() > 0 then
                 return true
             end if
 
@@ -540,54 +546,44 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
         _sendEvent: function(event as object) as void
             _adb_log_info("_sendEvent() - Try sending event.")
 
-            if (not m._hasValidConfig())
-                _adb_log_error("_sendEvent() - Cannot send event, missing required configuration.")
-                return
-            end if
-
             if not m._hasXDMData(event)
                 _adb_log_error("_sendEvent() - Not sending event, XDM data is empty.")
                 return
             end if
 
-            ecid = m.stateManager.getECID()
-            configId = m.stateManager.getConfigId()
-            edgeDomain = m.stateManager.getEdgeDomain()
-
-
             requestId = event.uuid
             xdmData = event.data
 
-            m.edgeRequestWorker.queue(requestId, xdmData, event.timestamp_in_millis, configId, ecid, edgeDomain)
+            m._edgeRequestWorker.queue(requestId, xdmData, event.timestamp_in_millis)
             m.processQueuedRequests()
         end function,
 
         processQueuedRequests: function() as void
-            if m.edgeRequestWorker.isReadyToProcess() then
-                responses = m.edgeRequestWorker.processRequests()
-                if Type(responses) = "roArray" then
-                    for each response in responses
-                        m._sendResponseEvent({
-                            uuid: response.requestId,
-                            data: {
-                                code: response.code,
-                                message: response.message
-                            }
-                        })
-                    next
-                else
-                    m._sendResponseEvent(responses)
+            if m._edgeRequestWorker.isReadyToProcess() then
+                responses = m._edgeRequestWorker.processRequests()
+                if responses = invalid or Type(responses) <> "roArray"
+                    _adb_log_error("processQueuedRequests() - not found valid edge response.")
+                    return
                 end if
+                for each response in responses
+                    m._sendResponseEvent({
+                        uuid: response.requestId,
+                        data: {
+                            code: response.code,
+                            message: response.message
+                        }
+                    })
+                end for
             end if
         end function
 
         _sendResponseEvent: function(event as object) as void
             _adb_log_info("_sendResponseEvent() - Send response event: (" + FormatJson(event) + ") .")
-            if m.task = invalid
+            if m._task = invalid
                 _adb_log_error("_sendResponseEvent() - Cannot send response event, task node instance is invalid.")
                 return
             end if
-            m.task[m.ADB_CONSTANTS.TASK.RESPONSE_EVENT] = event
+            m._task[m._ADB_CONSTANTS.TASK.RESPONSE_EVENT] = event
         end function,
     }
 
@@ -600,20 +596,33 @@ function _adb_StateManager() as object
     return {
         CONFIG_KEY: AdobeSDKConstants().CONFIGURATION
         ' example : {configId:"1234567890", edgeDomain:"xyz"}
-        _edge: {}
+        _edge_configId: invalid
+        _edge_domain: invalid
         ' example : ecid = "1234567890"
         _ecid: invalid,
         ' example : {edge: {configId:"1234567890", edgeDomain:"xyz"}}
         updateConfiguration: function(configuration as object) as void
-            ' find edge configuration and save it
-            if configuration.DoesExist(m.CONFIG_KEY.EDGE) and configuration.edge <> invalid then
-                if configuration.edge.DoesExist(m.CONFIG_KEY.CONFIG_ID) and Type(configuration.edge[m.CONFIG_KEY.CONFIG_ID]) = "roString"
-                    m._edge[m.CONFIG_KEY.CONFIG_ID] = configuration.edge[m.CONFIG_KEY.CONFIG_ID]
-                end if
-                if configuration.edge.DoesExist(m.CONFIG_KEY.EDGE_DOMAIN) and Type(configuration.edge[m.CONFIG_KEY.EDGE_DOMAIN]) = "roString"
-                    m._edge[m.CONFIG_KEY.EDGE_DOMAIN] = configuration.edge[m.CONFIG_KEY.EDGE_DOMAIN]
-                end if
+
+            edgeConfigMap = _adb_optMapFromMap(configuration, m.CONFIG_KEY.EDGE)
+            if edgeConfigMap = invalid
+                _adb_log_error("updateConfiguration() - Cannot update configuration, invalid configuration passed.")
+                return
             end if
+
+            configId = _adb_optStringFromMap(edgeConfigMap, m.CONFIG_KEY.CONFIG_ID)
+            domain = _adb_optStringFromMap(edgeConfigMap, m.CONFIG_KEY.EDGE_DOMAIN)
+
+            if configId <> invalid
+                m._edge_configId = configId
+            end if
+
+            if domain <> invalid
+                m._edge_domain = domain
+            end if
+        end function,
+
+        reset: function() as void
+            m.updateECID(invalid)
         end function,
 
         getECID: function() as dynamic
@@ -625,42 +634,60 @@ function _adb_StateManager() as object
                 m.updateECID(m._queryECID())
             end if
 
-            _adb_log_info("getECID() - ecid: " + m._ecid)
+            _adb_log_info("getECID() - ecid: " + FormatJson(m._ecid))
             return m._ecid
         end function,
 
         getConfigId: function() as dynamic
-            if m._edge.DoesExist(m.CONFIG_KEY.CONFIG_ID) then
-                return m._edge[m.CONFIG_KEY.CONFIG_ID]
-            else
-                return invalid
-            end if
+            return m._edge_configId
         end function,
 
         getEdgeDomain: function() as dynamic
-            if m._edge.DoesExist(m.CONFIG_KEY.EDGE_DOMAIN) then
-                return m._edge[m.CONFIG_KEY.EDGE_DOMAIN]
-            else
-                return invalid
-            end if
+            return m._edge_domain
         end function
 
-        updateECID: function(ecid as string) as void
+        updateECID: function(ecid as dynamic) as void
+            if ecid = invalid
+                _adb_log_debug("updateECID() - Resetting ECID.")
+            end if
             m._ecid = ecid
             m._saveECID(m._ecid)
         end function,
 
-        _saveECID: function(ecid as string) as void
-            _adb_log_info("_saveECID() - save ecid")
+        _loadECID: function() as dynamic
+            _adb_log_info("_loadECID() - Loading ECID from persistence.")
             localDataStoreService = _adb_serviceProvider().localDataStoreService
+            ecid = localDataStoreService.readValue(_adb_internal_constants().LOCAL_DATA_STORE_KEYS.ECID)
+
+            if ecid = invalid
+                _adb_log_info("_loadECID() - ECID not found in persistence.")
+            end if
+
+            return ecid
+        end function,
+
+        _saveECID: function(ecid as dynamic) as void
+            localDataStoreService = _adb_serviceProvider().localDataStoreService
+
+            if ecid = invalid
+                _adb_log_info("_saveECID() - Removing ECID from persistence.")
+                localDataStoreService.removeValue(_adb_internal_constants().LOCAL_DATA_STORE_KEYS.ECID)
+                return
+            end if
+
+            _adb_log_info("_saveECID() - Saving ECID " + FormatJson(ecid) + " to presistence.")
             localDataStoreService.writeValue(_adb_internal_constants().LOCAL_DATA_STORE_KEYS.ECID, ecid)
-            _adb_log_verbose("save ecid to registry: " + FormatJson(ecid))
         end function,
 
         _queryECID: function() as dynamic
             _adb_log_info("_queryECID() - query ECID from service side")
             configId = m.getConfigId()
             edgeDomain = m.getEdgeDomain()
+
+            if _adb_isEmptyOrInvalidString(configId)
+                _adb_log_error("_queryECID() - Unable to query ECID from service side, invalid configuration.")
+                return invalid
+            end if
 
             url = _adb_buildEdgeRequestURL(configId, _adb_generate_UUID(), edgeDomain)
             jsonBody = {
@@ -689,15 +716,6 @@ function _adb_StateManager() as object
                 _adb_log_error("Error occured while quering ECID from service side. Please verify the edge configuration.")
                 return invalid
             end if
-        end function,
-
-        _loadECID: function() as dynamic
-            _adb_log_info("_loadECID() - Loading ECID from persistence.")
-            localDataStoreService = _adb_serviceProvider().localDataStoreService
-            ecid = localDataStoreService.readValue(_adb_internal_constants().LOCAL_DATA_STORE_KEYS.ECID)
-
-            _adb_log_info("_loadECID() - ECID loaded from persistence:(" + ecid + ")")
-            return ecid
         end function,
 
         getAll: function() as object
@@ -914,14 +932,15 @@ end function
 function _adb_buildEdgeRequestURL(configId as string, requestId as string, edgeDomain = invalid as dynamic) as string
     scheme = "https://"
     host = "edge.adobedc.net"
+    host_for_custom_domain = "data.adobedc.net"
     path = "/ee/v1/interact"
     query = "?configId=" + configId
 
-    if not _adb_isNullOrEmptyString(edgeDomain)
-        host = edgeDomain + "." + host
+    if not _adb_isEmptyOrInvalidString(edgeDomain)
+        host = edgeDomain + "." + host_for_custom_domain
     end if
 
-    if not _adb_isNullOrEmptyString(requestId)
+    if not _adb_isEmptyOrInvalidString(requestId)
         query = query + "&requestId=" + requestId
     end if
 
@@ -932,19 +951,35 @@ function _adb_buildEdgeRequestURL(configId as string, requestId as string, edgeD
 end function
 
 function _adb_EdgeRequestWorker(stateManager as object) as object
+    if stateManager = invalid
+        _adb_log_debug("stateManager is invalid")
+        return invalid
+    end if
     instance = {
         _queue: [],
         _stateManager: stateManager
         _queue_size_max: 100,
 
-        queue: function(requestId as string, xdmData as object, timestamp as integer, configId = invalid as dynamic, ecid = invalid as dynamic, edgeDomain = invalid as dynamic) as void
+        queue: function(requestId as string, xdmData as object, timestamp as integer) as void
+            if _adb_isEmptyOrInvalidString(requestId)
+                _adb_log_debug("[EdgeRequestWorker.queue()] requestId is invalid")
+                return
+            end if
+
+            if isEmptyOrInvalidMap(xdmData)
+                _adb_log_debug("[EdgeRequestWorker.queue()] xdmData is invalid")
+                return
+            end if
+
+            if timestamp <= 0
+                _adb_log_debug("[EdgeRequestWorker.queue()] timestamp is invalid")
+                return
+            end if
+
             requestEntity = {
                 requestId: requestId,
                 xdmData: xdmData,
-                stamp: timestamp,
-                configId: configId,
-                ecid: ecid,
-                edgeDomain: edgeDomain
+                timestamp: timestamp
             }
             ' remove the oldest entity if reaching the limit
             if m._queue.count() >= m._queue_size_max
@@ -964,28 +999,16 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
                 requestEntity = m._queue.Shift()
 
                 xdmData = requestEntity.xdmData
-                ecid = requestEntity.ecid
-                if ecid = invalid
-                    ecid = m._stateManager.getECID()
-                end if
-
-                configId = requestEntity.configId
-                if configId = invalid
-                    configId = m._stateManager.getConfigId()
-                end if
-
                 requestId = requestEntity.requestId
 
-                edgeDomain = requestEntity.edgeDomain
-                if edgeDomain = invalid
-                    edgeDomain = m._stateManager.getEdgeDomain()
-                end if
+                ecid = m._stateManager.getECID()
+                configId = m._stateManager.getConfigId()
+                edgeDomain = m._stateManager.getEdgeDomain()
 
                 _adb_log_verbose("ecid:" + ecid)
                 _adb_log_verbose("configid:" + configId)
-                if (not _adb_isNullOrEmptyString(ecid)) and (not _adb_isNullOrEmptyString(configId)) then
+                if (not _adb_isEmptyOrInvalidString(ecid)) and (not _adb_isEmptyOrInvalidString(configId)) then
                     response = m._processRequest(xdmData, ecid, configId, requestId, edgeDomain)
-                    ' TODO: handle response code properly
                     if response = invalid
                         _adb_log_error("processRequests() - Edge request dropped. Response is invalid.")
                         ' drop the request
@@ -1037,7 +1060,9 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
             url = _adb_buildEdgeRequestURL(configId, requestId, edgeDomain)
             _adb_log_verbose("request JSON: " + FormatJson(jsonBody))
             response = _adb_serviceProvider().networkService.syncPostRequest(url, jsonBody)
-            response.requestId = requestId
+            if response <> invalid
+                response.requestId = requestId
+            end if
             return response
         end function
 
@@ -1051,12 +1076,79 @@ end function
 ' *****************************
 
 ' ********** String utils ********
-function _adb_isNullOrEmptyString(str as dynamic) as boolean
+function _adb_isEmptyOrInvalidString(str as dynamic) as boolean
     if str = invalid or (type(str) <> "roString" and type(str) <> "String")
         return true
     end if
 
     if Len(str) = 0
+        return true
+    end if
+
+    return false
+end function
+
+' ********** Map utils ********
+function _adb_optMapFromMap(map as object, key as string, fallback = invalid as dynamic)
+    if map = invalid
+        return fallback
+    end if
+
+    if not map.DoesExist(key)
+        return fallback
+    end if
+
+    ret = map[key]
+    if type(ret) <> "roAssociativeArray"
+        return fallback
+    end if
+
+    return ret
+
+end function
+
+function _adb_optStringFromMap(map as object, key as string, fallback = invalid as dynamic)
+    if map = invalid
+        return fallback
+    end if
+
+    if not map.DoesExist(key)
+        return fallback
+    end if
+
+    ret = map[key]
+    if type(ret) <> "roString" and type(ret) <> "String"
+        return fallback
+    end if
+
+    return ret
+
+end function
+
+function _adb_optIntFromMap(map as object, key as string, fallback = invalid as dynamic)
+    if map = invalid
+        return fallback
+    end if
+
+    if not map.DoesExist(key)
+        return fallback
+    end if
+
+    ret = map[key]
+    if type(ret) <> "roInteger"
+        return fallback
+    end if
+
+    return ret
+
+end function
+
+function isEmptyOrInvalidMap(input as object) as boolean
+    if input = invalid or type(input) <> "roAssociativeArray"
+        return true
+    end if
+
+    if input.count() = 0
         return true
     end if
 
