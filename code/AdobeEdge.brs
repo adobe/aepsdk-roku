@@ -511,7 +511,7 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
 
         _resetIdentities: function(_event as object) as void
             _adb_log_info("_resetIdentities() - Reset presisted Identities.")
-            m._stateManager.reset()
+            m._stateManager.resetIdentities()
         end function,
 
         _setConfiguration: function(event as object) as void
@@ -618,7 +618,7 @@ function _adb_StateManager() as object
             end if
         end function,
 
-        reset: function() as void
+        resetIdentities: function() as void
             m.updateECID(invalid)
         end function,
 
