@@ -18,7 +18,7 @@ sub init()
   mid = "12340203495818708474263889316984678123"
   '''
   'configuration = {
-  '  "edge.configId" : "c3bd1d4c-8d1a-4391-8252-23290aa3d41c",
+  '  "edge.configId" : "1234-abc",
   '  "edge.domain" : "edge.adobedc.net"
   '}
   '

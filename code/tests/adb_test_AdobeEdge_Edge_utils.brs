@@ -36,6 +36,7 @@ end sub
 sub TestCase_AdobeEdge_adb_buildEdgeRequestURL()
     url = _adb_buildEdgeRequestURL("config_id_1", "request_id_1")
     UTF_assertEqual("https://edge.adobedc.net/ee/v1/interact?configId=config_id_1&requestId=request_id_1", url)
-    urlWithDomainPrefix = _adb_buildEdgeRequestURL("config_id_2", "request_id_2", "company_domain_prefix")
-    UTF_assertEqual("https://company_domain_prefix.data.adobedc.net/ee/v1/interact?configId=config_id_2&requestId=request_id_2", urlWithDomainPrefix)
+
+    urlWithCustomDomain = _adb_buildEdgeRequestURL("config_id_2", "request_id_2", "custom.domain.net")
+    UTF_assertEqual("https://custom.domain.net/ee/v1/interact?configId=config_id_2&requestId=request_id_2", urlWithCustomDomain)
 end sub

@@ -53,11 +53,11 @@ sub T_StateManager_updateConfiguration_edgeDomain()
     stateManager = _adb_StateManager()
     stateManager.updateConfiguration({
         "edge.configId" : "testConfigId"
-        "edge.domain" : "abc"
+        "edge.domain" : "abc.net"
     })
 
     UTF_assertEqual(stateManager.getConfigId(), "testConfigId")
-    UTF_assertEqual(stateManager.getEdgeDomain(), "abc")
+    UTF_assertEqual(stateManager.getEdgeDomain(), "abc.net")
 end sub
 
 ' target: _adb_StateManager()
@@ -68,10 +68,10 @@ sub T_StateManager_updateConfiguration_separateUpdates()
         "edge.configId": "testConfigId"
     })
     stateManager.updateConfiguration({
-        "edge.domain" : "abc"
+        "edge.domain" : "abc.net"
     })
     UTF_assertEqual(stateManager.getConfigId(), "testConfigId")
-    UTF_assertEqual(stateManager.getEdgeDomain(), "abc")
+    UTF_assertEqual(stateManager.getEdgeDomain(), "abc.net")
 end sub
 
 

@@ -595,7 +595,7 @@ function _adb_StateManager() as object
         _edge_domain: invalid,
         ' example : ecid = "1234567890"
         _ecid: invalid,
-        ' example : {edge: {configId:"1234567890", edgeDomain:"xyz"}}
+        ' example : {edge: {configId:"1234567890", edgeDomain:"xyz.net"}}
         updateConfiguration: function(configuration as object) as void
             configId = _adb_optStringFromMap(configuration, m.CONFIG_KEY.EDGE_CONFIG_ID)
             domain = _adb_optStringFromMap(configuration, m.CONFIG_KEY.EDGE_DOMAIN)
@@ -920,12 +920,11 @@ end function
 function _adb_buildEdgeRequestURL(configId as string, requestId as string, edgeDomain = invalid as dynamic) as string
     scheme = "https://"
     host = "edge.adobedc.net"
-    host_for_custom_domain = "data.adobedc.net"
     path = "/ee/v1/interact"
     query = "?configId=" + configId
 
     if not _adb_isEmptyOrInvalidString(edgeDomain)
-        host = edgeDomain + "." + host_for_custom_domain
+        host = edgeDomain
     end if
 
     if not _adb_isEmptyOrInvalidString(requestId)
