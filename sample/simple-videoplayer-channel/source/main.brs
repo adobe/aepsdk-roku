@@ -158,10 +158,12 @@ function _adb_test_functions() as dynamic
     T_StateManager_updateConfiguration_configId
     T_StateManager_updateConfiguration_edgeDomain
     T_StateManager_updateConfiguration_separateUpdates
-    T_StateManager_updateConfiguration_invalidConfiguration
+    T_StateManager_updateConfiguration_invalidConfigurationKeys
+    T_StateManager_updateConfiguration_invalidConfigurationValues
     T_StateManager_getECID_noSetECID_invalidConfiguration_returnsInvalid
     T_StateManager_getECID_validConfiguration_fetchesECID
     T_StateManager_updateECID_validString_updatesECID
     T_StateManager_updateECID_invalid_deletesECID
+    T_StateManager_resetIdentities_deletesECIDAndOtherIdentities
   ]
 end function

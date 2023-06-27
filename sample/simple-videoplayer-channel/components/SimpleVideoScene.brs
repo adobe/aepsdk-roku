@@ -16,15 +16,24 @@ sub init()
 
   '------------------------------------
   mid = "12340203495818708474263889316984678123"
-  configuration = {
-    edge: {
-      configId: ""
-    }
-  }
+  '''
+  'configuration = {
+  '  "edge.configId" : "c3bd1d4c-8d1a-4391-8252-23290aa3d41c",
+  '  "edge.domain" : "edge.adobedc.net"
+  '}
+  '
+
   m.adobeEdgeSdk = AdobeSDKInit()
-  m.adobeEdgeSdk.updateConfiguration(configuration)
   ADB_CONSTANTS = AdobeSDKConstants()
+
   m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
+
+  configuration = {}
+  configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = "test"
+  'configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = ""
+
+  m.adobeEdgeSdk.updateConfiguration(configuration)
+
   ' m.adobeEdgeSdk.setExperienceCloudId("012344545454809")
   ' m.adobeEdgeSdk.sendEdgeEvent({
   '   eventType: "commerce.orderPlaced",
