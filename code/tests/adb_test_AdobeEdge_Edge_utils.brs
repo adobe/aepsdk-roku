@@ -39,9 +39,3 @@ sub TestCase_AdobeEdge_adb_buildEdgeRequestURL()
     urlWithDomainPrefix = _adb_buildEdgeRequestURL("config_id_2", "request_id_2", "company_domain_prefix")
     UTF_assertEqual("https://company_domain_prefix.data.adobedc.net/ee/v1/interact?configId=config_id_2&requestId=request_id_2", urlWithDomainPrefix)
 end sub
-
-' target: _adb_EdgeRequestWorker()
-' @Test
-sub TestCase_AdobeEdge_adb_EdgeRequestWorker()
-    ' TODO: implement
-end sub
