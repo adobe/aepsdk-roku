@@ -639,6 +639,10 @@ function _adb_StateManager() as object
             if ecid = invalid
                 _adb_log_debug("updateECID() - Resetting ECID.")
             end if
+            if ecid = m._ecid
+                _adb_log_debug("updateECID() - updateing ECID with same value.")
+                return
+            end if
             m._ecid = ecid
             m._saveECID(m._ecid)
         end function,
@@ -984,7 +988,11 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
         end function,
 
         isReadyToProcess: function() as boolean
-            return m._queue.count() > 0
+            size = m._queue.count()
+            if size > 0
+                _adb_log_debug("Request queue size is: " + StrI(size))
+            end if
+            return size > 0
         end function,
 
         processRequests: function() as dynamic
@@ -1029,6 +1037,7 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
 
                 else
                     _adb_log_warning("processRequests() - Edge request skipped. ECID and/or configId not set.")
+                    m._queue.Unshift(requestEntity)
                     exit while
                 end if
             end while
