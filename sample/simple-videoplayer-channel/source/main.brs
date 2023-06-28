@@ -134,7 +134,6 @@ function _adb_test_functions() as dynamic
     AdobeEdgeTestSuite_Edge_utils_TearDown
     TestCase_AdobeEdge_adb_generate_implementation_details
     TestCase_AdobeEdge_adb_buildEdgeRequestURL_validDomain
-    TestCase_AdobeEdge_adb_buildEdgeRequestURL_invalidDomain_fallbackToDefaultDomain
     ' adb_test_AdobeEdge_EdgeRequestWorker.brs
     AdobeEdgeTestSuite_EdgeRequestWorker_SetUp
     AdobeEdgeTestSuite_EdgeRequestWorker_BeforeEach
@@ -158,6 +157,7 @@ function _adb_test_functions() as dynamic
     T_StateManager_init
     T_StateManager_updateConfiguration_configId
     T_StateManager_updateConfiguration_edgeDomain
+    T_StateManager_updateConfiguration_edgeDomain_invalidValues
     T_StateManager_updateConfiguration_separateUpdates
     T_StateManager_updateConfiguration_invalidConfigurationKeys
     T_StateManager_updateConfiguration_invalidConfigurationValues

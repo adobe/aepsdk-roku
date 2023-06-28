@@ -39,26 +39,4 @@ sub TestCase_AdobeEdge_adb_buildEdgeRequestURL_validDomain()
 
     urlWithCustomDomain = _adb_buildEdgeRequestURL("config_id_2", "request_id_2", "custom.domain.net")
     UTF_assertEqual("https://custom.domain.net/ee/v1/interact?configId=config_id_2&requestId=request_id_2", urlWithCustomDomain)
-
-    urlWithCustomDomain = _adb_buildEdgeRequestURL("config_id_2", "request_id_2", "custom1.Domain2.Net")
-    UTF_assertEqual("https://custom1.Domain2.Net/ee/v1/interact?configId=config_id_2&requestId=request_id_2", urlWithCustomDomain)
-end sub
-
-' target: _adb_buildEdgeRequestURL()
-' @Test
-sub TestCase_AdobeEdge_adb_buildEdgeRequestURL_invalidDomain_fallbackToDefaultDomain()
-    urlWithCustomDomain = _adb_buildEdgeRequestURL("config_id_2", "request_id_2", "https://custom.domain.net")
-    UTF_assertEqual("https://edge.adobedc.net/ee/v1/interact?configId=config_id_2&requestId=request_id_2", urlWithCustomDomain)
-
-    urlWithCustomDomain = _adb_buildEdgeRequestURL("config_id_2", "request_id_2", "custom")
-    UTF_assertEqual("https://edge.adobedc.net/ee/v1/interact?configId=config_id_2&requestId=request_id_2", urlWithCustomDomain)
-
-    urlWithCustomDomain = _adb_buildEdgeRequestURL("config_id_2", "request_id_2", "?custom.domain.net")
-    UTF_assertEqual("https://edge.adobedc.net/ee/v1/interact?configId=config_id_2&requestId=request_id_2", urlWithCustomDomain)
-
-    urlWithCustomDomain = _adb_buildEdgeRequestURL("config_id_2", "request_id_2", "custom.domain.net/")
-    UTF_assertEqual("https://edge.adobedc.net/ee/v1/interact?configId=config_id_2&requestId=request_id_2", urlWithCustomDomain)
-
-    urlWithCustomDomain = _adb_buildEdgeRequestURL("config_id_2", "request_id_2", "custom.domain.net?")
-    UTF_assertEqual("https://edge.adobedc.net/ee/v1/interact?configId=config_id_2&requestId=request_id_2", urlWithCustomDomain)
 end sub

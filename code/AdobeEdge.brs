@@ -604,7 +604,8 @@ function _adb_StateManager() as object
                 m._edge_configId = configId
             end if
 
-            if not _adb_isEmptyOrInvalidString(domain)
+            regexPattern = CreateObject("roRegex", "^((?!-)[A-Za-z0-9-]+(?<!-)\.)+[A-Za-z]{2,6}$","")
+            if not _adb_isEmptyOrInvalidString(domain) and regexPattern.isMatch(domain)
                 m._edge_domain = domain
             end if
         end function,
@@ -923,9 +924,7 @@ function _adb_buildEdgeRequestURL(configId as string, requestId as string, edgeD
     path = "/ee/v1/interact"
     query = "?configId=" + configId
 
-    regexPattern = CreateObject("roRegex", "^((?!-)[A-Za-z0-9-]+(?<!-)\.)+[A-Za-z]{2,6}$","")
-
-    if not _adb_isEmptyOrInvalidString(edgeDomain) and regexPattern.isMatch(edgeDomain)
+    if not _adb_isEmptyOrInvalidString(edgeDomain)
         host = edgeDomain
     end if
 

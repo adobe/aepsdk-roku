@@ -62,6 +62,31 @@ end sub
 
 ' target: _adb_StateManager()
 ' @Test
+sub T_StateManager_updateConfiguration_edgeDomain_invalidValues()
+    stateManager = _adb_StateManager()
+    stateManager.updateConfiguration({
+        "edge.domain" : "abc.net?"
+    })
+    UTF_assertInvalid(stateManager.getEdgeDomain())
+
+    stateManager.updateConfiguration({
+        "edge.domain" : "https://abc.net"
+    })
+    UTF_assertInvalid(stateManager.getEdgeDomain())
+
+    stateManager.updateConfiguration({
+        "edge.domain" : "abc.net/"
+    })
+    UTF_assertInvalid(stateManager.getEdgeDomain())
+
+    stateManager.updateConfiguration({
+        "edge.domain" : "abc/net/path"
+    })
+    UTF_assertInvalid(stateManager.getEdgeDomain())
+end sub
+
+' target: _adb_StateManager()
+' @Test
 sub T_StateManager_updateConfiguration_separateUpdates()
     stateManager = _adb_StateManager()
     stateManager.updateConfiguration({
