@@ -973,9 +973,8 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
 
             if size = 0
                 return false
-            else
-                _adb_log_verbose("Request queue size is: " + StrI(size))
             end if
+            _adb_log_verbose("Request queue size is: " + StrI(size))
 
             if not m._stateManager.isReadyForRequest()
                 return false
