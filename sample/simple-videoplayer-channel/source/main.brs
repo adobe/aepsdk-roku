@@ -31,7 +31,7 @@ sub Main(input as dynamic)
       _adb_run_tests()
     end if
   end if
-  _adb_run_tests()
+  ' _adb_run_tests()
   showHeroScreen()
 end sub
 
@@ -42,7 +42,7 @@ sub showHeroScreen()
   screen = CreateObject("roSGScreen")
   m.port = CreateObject("roMessagePort")
   screen.setMessagePort(m.port)
-  scene = screen.CreateScene("SimpleVideoScene")
+  _scene = screen.CreateScene("SimpleVideoScene")
   screen.show()
   ' vscode_rdb_on_device_component_entry
 

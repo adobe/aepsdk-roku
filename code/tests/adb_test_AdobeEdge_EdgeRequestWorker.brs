@@ -222,7 +222,7 @@ end sub
 ' @Test
 sub TestCase_AdobeEdge_adb_EdgeRequestWorker_processRequests_empty_queue()
     cachedFuntion = _adb_serviceProvider().networkService.syncPostRequest
-    _adb_serviceProvider().networkService.syncPostRequest = function(url as string, jsonObj as object, headers = [] as object) as object
+    _adb_serviceProvider().networkService.syncPostRequest = function(_url as string, _jsonObj as object, _headers = [] as object) as object
         UTF_fail("should not be called")
         return invalid
     end function

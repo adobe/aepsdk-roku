@@ -68,7 +68,7 @@ sub TestCase_AdobeEdge_loggingService_logLevel()
 
     ' error() should not print message
     GetGlobalAA()._adb_test_last_called_method = "not_called"
-    loggingService._adb_print = function(message as string)
+    loggingService._adb_print = function(_message as string)
         GetGlobalAA()._adb_test_last_called_method = "_adb_print5"
     end function
     loggingService.verbose("test-123")

@@ -18,7 +18,6 @@ function AdobeSDKConstants() as object
         CONFIGURATION: {
             EDGE_CONFIG_ID: "edge.configId",
             EDGE_DOMAIN: "edge.domain"
-            ' EDGE_ENVIRONMENT: "edgeEnvironment",
         },
         LOG_LEVEL: {
             VERBOSE: 0,
@@ -207,7 +206,7 @@ function AdobeSDKInit() as object
             sendEdgeEvent: function(xdmData as object, callback = _adb_default_callback as function, context = invalid as dynamic) as void
                 _adb_log_debug("API: sendEdgeEvent()")
                 if type(xdmData) <> "roAssociativeArray" then
-                    _adb_log_error("sendEdgeEvent() - Invalid XDM data")
+                    _adb_log_error("sendEdgeEvent() - Cannot send event, invalid XDM data")
                     return
                 end if
                 ' event data: { "xdm": xdmData }
@@ -251,6 +250,10 @@ function AdobeSDKInit() as object
 
             setExperienceCloudId: function(ecid as string) as void
                 _adb_log_debug("API: setExperienceCloudId()")
+                if _adb_isEmptyOrInvalidString(ecid)
+                    _adb_log_error("setExperienceCloudId() - Cannot set ECID, invalid ecid:(" + FormatJson(ecid) + ") passed.")
+                    return
+                end if
                 ' event data: { "ecid": ecid }
                 data = {}
                 data[m._private.cons.EVENT_DATA_KEY.ecid] = ecid
@@ -294,10 +297,13 @@ function AdobeSDKInit() as object
                 end function,
                 ' dispatch events to the task node
                 dispatchEvent: function(event as object) as void
-                    _adb_log_debug("dispatchEvent() - " + FormatJson(event))
-                    if m.taskNode <> invalid then
-                        m.taskNode[m.cons.TASK.REQUEST_EVENT] = event
+                    _adb_log_debug("dispatchEvent() - Dispatching event:(" + FormatJson(event) + ")")
+                    if m.taskNode = invalid then
+                        _adb_log_debug("dispatchEvent() - Cannot dispatch public API event after shutdown(). Please initialze the SDK using AdobeSDKInit() API.")
+                        return
                     end if
+
+                    m.taskNode[m.cons.TASK.REQUEST_EVENT] = event
                 end function,
                 ' private memeber
                 taskNode: GetGlobalAA()._adb_edge_task_node,
@@ -330,7 +336,7 @@ end function
 '                                              Below functions are for internal use only
 ' ****************************************************************************************************************************************
 
-function _adb_default_callback(context, result) as void
+function _adb_default_callback(_context, _result) as void
 end function
 
 function _adb_generate_UUID() as string
@@ -403,28 +409,27 @@ function _adb_handle_response_event() as void
         current_time = _adb_timestampInMillis()
         for each key in sdk._private.cachedCallbackInfo
             if current_time - sdk._private.cachedCallbackInfo[key].timestamp_in_millis > timeout_ms
-                _adb_log_error("callback timeout, uuid: " + key)
                 sdk._private.cachedCallbackInfo.Delete(key)
             end if
         end for
 
         responseEvent = sdk._private.taskNode[sdk._private.cons.TASK.RESPONSE_EVENT]
         if responseEvent <> invalid
-            _adb_log_info("start to hanlde response event")
-            _adb_log_debug("responseEvent:" + FormatJson(responseEvent))
             uuid = responseEvent.uuid
+
+            _adb_log_debug("_adb_handle_response_event() - Received response event:" + FormatJson(responseEvent)+ " with uuid:" + FormatJson(uuid))
             if sdk._private.cachedCallbackInfo[uuid] <> invalid
                 context = sdk._private.cachedCallbackInfo[uuid].context
                 sdk._private.cachedCallbackInfo[uuid].cb(context, responseEvent)
                 sdk._private.cachedCallbackInfo[uuid] = invalid
             else
-                _adb_log_error("failed to handle response event, callback info is not found")
+                _adb_log_error("_adb_handle_response_event() - Not handling response event, callback not passed with the request event.")
             end if
         else
-            _adb_log_error("failed to handle response event, response event is invalid")
+            _adb_log_error("_adb_handle_response_event() - Failed to handle response event, response event is invalid")
         end if
     else
-        _adb_log_error("failed to handle response event, SDK instance is invalid")
+        _adb_log_error("_adb_handle_response_event() - Failed to handle response event, SDK instance is invalid")
     end if
 end function
 ' *********************************************
@@ -562,7 +567,7 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
         end function
 
         _sendResponseEvent: function(event as object) as void
-            _adb_log_info("_sendResponseEvent() - Send response event: (" + FormatJson(event) + ") .")
+            _adb_log_info("_sendResponseEvent() - Send response event: (" + FormatJson(event) + ").")
             if m._task = invalid
                 _adb_log_error("_sendResponseEvent() - Cannot send response event, task node instance is invalid.")
                 return
@@ -581,9 +586,8 @@ function _adb_StateManager() as object
         CONFIG_KEY: AdobeSDKConstants().CONFIGURATION,
         _edge_configId: invalid,
         _edge_domain: invalid,
-        ' example : ecid = "1234567890"
         _ecid: invalid,
-        ' example : {edge: {configId:"1234567890", edgeDomain:"xyz.net"}}
+        ' example config = {edge.configId:"1234567890", edge.domain:"xyz.net"}
         updateConfiguration: function(configuration as object) as void
             configId = _adb_optStringFromMap(configuration, m.CONFIG_KEY.EDGE_CONFIG_ID)
             domain = _adb_optStringFromMap(configuration, m.CONFIG_KEY.EDGE_DOMAIN)
@@ -592,6 +596,7 @@ function _adb_StateManager() as object
                 m._edge_configId = configId
             end if
 
+            ' example domain: company.data.adobedc.net
             regexPattern = CreateObject("roRegex", "^((?!-)[A-Za-z0-9-]+(?<!-)\.)+[A-Za-z]{2,6}$", "")
             if not _adb_isEmptyOrInvalidString(domain) and regexPattern.isMatch(domain)
                 m._edge_domain = domain
@@ -604,17 +609,20 @@ function _adb_StateManager() as object
 
         getECID: function() as dynamic
             if m._ecid = invalid
+                _adb_log_verbose("getECID() - ECID not found in cache, fetching it from presistence.")
                 m._ecid = m._loadECID()
             end if
 
             if m._ecid = invalid
+                _adb_log_verbose("getECID() - ECID not found in persistence, fetching it from service side.")
                 remote_ecid = m._queryECID()
-                if remote_ecid <> invalid
+                if not _adb_isEmptyOrInvalidString(remote_ecid)
+                    _adb_log_verbose("getECID() - Fetched ECID:(" + FormatJson(m._ecid) + ") from service side")
                     m.updateECID(remote_ecid)
                 end if
             end if
 
-            _adb_log_info("getECID() - ecid: " + FormatJson(m._ecid))
+            _adb_log_debug("getECID() - Returning ECID:" + FormatJson(m._ecid))
             return m._ecid
         end function,
 
@@ -628,12 +636,13 @@ function _adb_StateManager() as object
 
         updateECID: function(ecid as dynamic) as void
             if ecid = invalid
-                _adb_log_debug("updateECID() - Resetting ECID.")
+                _adb_log_debug("updateECID() - Deleting ECID.")
             end if
             if ecid = m._ecid
-                _adb_log_verbose("updateECID() - updating ECID with same value.")
+                _adb_log_verbose("updateECID() - Not updating ECID. Same value is cached and persisted.")
                 return
             end if
+            _adb_log_verbose("updateECID() - Saving ECID:(" + FormatJson(ecid) + ") in cache and persistence.")
             m._ecid = ecid
             m._saveECID(m._ecid)
         end function,
@@ -641,10 +650,12 @@ function _adb_StateManager() as object
         isReadyForRequest: function() as boolean
             configId = m.getConfigId()
             if _adb_isEmptyOrInvalidString(configId)
+                _adb_log_verbose("isReadyForRequest() - Confguration for edge.configId not found.")
                 return false
             end if
             ecid = m.getECID()
             if _adb_isEmptyOrInvalidString(ecid)
+                _adb_log_verbose("isReadyForRequest() - ECID not set. Please verify the configuration.")
                 return false
             end if
             return true
@@ -656,7 +667,7 @@ function _adb_StateManager() as object
             ecid = localDataStoreService.readValue(_adb_internal_constants().LOCAL_DATA_STORE_KEYS.ECID)
 
             if ecid = invalid
-                _adb_log_info("_loadECID() - ECID not found in persistence.")
+                _adb_log_info("_loadECID() - Failed to load ECID from persistence, not found.")
             end if
 
             return ecid
@@ -666,22 +677,22 @@ function _adb_StateManager() as object
             localDataStoreService = _adb_serviceProvider().localDataStoreService
 
             if ecid = invalid
-                _adb_log_info("_saveECID() - Removing ECID from persistence.")
+                _adb_log_debug("_saveECID() - Removing ECID from persistence.")
                 localDataStoreService.removeValue(_adb_internal_constants().LOCAL_DATA_STORE_KEYS.ECID)
                 return
             end if
 
-            _adb_log_info("_saveECID() - Saving ECID " + FormatJson(ecid) + " to presistence.")
+            _adb_log_verbose("_saveECID() - Saving ECID:(" + FormatJson(ecid) + ") to presistence.")
             localDataStoreService.writeValue(_adb_internal_constants().LOCAL_DATA_STORE_KEYS.ECID, ecid)
         end function,
 
         _queryECID: function() as dynamic
-            _adb_log_info("_queryECID() - query ECID from service side")
+            _adb_log_info("_queryECID() - Fetching ECID from service side.")
             configId = m.getConfigId()
             edgeDomain = m.getEdgeDomain()
 
             if _adb_isEmptyOrInvalidString(configId)
-                _adb_log_error("_queryECID() - Unable to query ECID from service side, invalid configuration.")
+                _adb_log_error("_queryECID() - Unable to fetch ECID from service side, invalid configuration.")
                 return invalid
             end if
 
@@ -702,14 +713,15 @@ function _adb_StateManager() as object
             if response.code >= 200 and response.code < 300 and response.message <> invalid
                 responseJson = ParseJson(response.message)
                 if responseJson <> invalid and responseJson.handle[0] <> invalid and responseJson.handle[0].payload[0] <> invalid
-                    _adb_log_verbose("response json: " + response.message)
-                    return responseJson.handle[0].payload[0].id
+                    _adb_log_verbose("_queryECID() - Received response with payload: (" + FormatJson(responseJson) + ").")
+                    remote_ecid = responseJson.handle[0].payload[0].id
+                    return remote_ecid
                 else
                     _adb_log_error("_queryECID() - Error extracting ECID, invalid response from server.")
                     return invalid
                 end if
             else
-                _adb_log_error("Error occured while quering ECID from service side. Please verify the edge configuration.")
+                _adb_log_error("_queryECID() - Error occured while quering ECID from service side. Please verify the edge configuration.")
                 return invalid
             end if
         end function,
@@ -729,7 +741,7 @@ function _adb_serviceProvider() as object
         instance = {
             loggingService: {
                 ' (VERBOSE: 0, DEBUG: 1, INFO: 2, WARNING: 3, ERROR: 4)
-                _logLevel: 2,
+                _logLevel: 2, ' Default log level
 
                 setLogLevel: function(logLevel as integer) as void
                     m._logLevel = logLevel
@@ -764,13 +776,7 @@ function _adb_serviceProvider() as object
                 end function,
 
                 _adb_print: function(message as string) as void
-                    ' if m._logLevel <= 1 then
-                    '     print "[" + _adb_ISO8601_timestamp() + "]" + message
-                    ' else
-                    '     print message
-                    ' end if
                     print "[" + _adb_ISO8601_timestamp() + "]" + message
-
                 end function
             },
             networkService: {
@@ -785,6 +791,8 @@ function _adb_serviceProvider() as object
                 '
                 ' **************************************************************
                 syncPostRequest: function(url as string, jsonObj as object, headers = [] as object) as object
+                    _adb_log_verbose("syncPostRequest() - Attempting to send request with url:(" + FormatJson(url) + ") and body:(" + FormatJson(jsonObj)+").")
+
                     request = CreateObject("roUrlTransfer")
                     port = CreateObject("roMessagePort")
                     request.SetPort(port)
@@ -804,12 +812,15 @@ function _adb_serviceProvider() as object
                             if (type(msg) = "roUrlEvent")
                                 code = msg.GetResponseCode()
                                 repMessage = msg.getString()
+                                _adb_log_verbose("syncPostRequest() -  Sent edge request url:(" + FormatJson(url) + ") and body:(" + FormatJson(jsonObj) + ").")
+
                                 return {
                                     code: code,
                                     message: repMessage
                                 }
                             end if
                             if (msg = invalid)
+                                _adb_log_verbose("syncPostRequest() - Failed to send edge request url:(" + FormatJson(url) + ") and body:(" + FormatJson(jsonObj) + ").")
                                 request.AsyncCancel()
                                 return invalid
                             end if
@@ -824,20 +835,25 @@ function _adb_serviceProvider() as object
 
                 ''' public Functions
                 writeValue: function(key as string, value as string) as void
+                    _adb_log_verbose("localDataStoreService::writeValue() - Write key:(" + key + ") value:(" + value + ") to registry.")
                     m._registry.Write(key, value)
                     m._registry.Flush()
                 end function,
                 readValue: function(key as string) as dynamic
-
+                    _adb_log_verbose("localDataStoreService::readValue() - Read key:" + key + " from registry.")
                     '''bug in roku - Exists returns true even if no key. value in that case is an empty string
                     if m._registry.Exists(key) and m._registry.Read(key).Len() > 0
+                        _adb_log_verbose("localDataStoreService::readValue() - Found key:(" + key + ") with value:(" + m._registry.Read(key) + ") in registry.")
                         return m._registry.Read(key)
                     end if
 
+
+                    _adb_log_verbose("localDataStoreService::readValue() - key:(" + key + ") not found in registry.")
                     return invalid
                 end function,
 
                 removeValue: function(key as string) as void
+                    _adb_log_verbose("localDataStoreService::removeValue() - Deleting key:(" + key + ") from registry.")
                     m._registry.Delete(key)
                     m._registry.Flush()
                 end function,
@@ -845,7 +861,7 @@ function _adb_serviceProvider() as object
                 writeMap: function(name as string, map as dynamic) as dynamic
                     mapName = "adbmobileMap_" + name
                     mapRegistry = CreateObject("roRegistrySection", mapName)
-                    _adb_log_debug("localDataStoreService::writeMap() - Writing to map: " + mapName)
+                    _adb_log_debug("localDataStoreService::writeMap() - Writing to map:(" + mapName + ")")
 
                     if map <> invalid and map.Count() > 0
                         For each key in map
@@ -864,7 +880,7 @@ function _adb_serviceProvider() as object
                     keyList = mapRegistry.GetKeyList()
                     result = {}
                     if keyList <> invalid
-                        _adb_log_debug("localDataStoreService::readMap() - Reading from map: " + mapName + " with size: " + keyList.Count().toStr())
+                        _adb_log_debug("localDataStoreService::readMap() - Reading from map:(" + mapName + ") with size:(" + keyList.Count().toStr() + ")")
                         For each key in keyList
                             result[key] = mapRegistry.Read(key)
                         end for
@@ -876,18 +892,18 @@ function _adb_serviceProvider() as object
                 readValueFromMap: function(name as string, key as string) as dynamic
                     mapName = "adbmobileMap_" + name
                     mapRegistry = CreateObject("roRegistrySection", mapName)
-                    _adb_log_debug("localDataStoreService::readValueFromMap() reading Value for key:" + key + " from map:" + mapName)
+                    _adb_log_debug("localDataStoreService::readValueFromMap() - Reading value for key:(" + key + ") from map:(" + mapName + ")")
                     if mapRegistry.Exists(key) and mapRegistry.Read(key).Len() > 0
                         return mapRegistry.Read(key)
                     end if
-                    _adb_log_debug("localDataStoreService::readValueFromMap() did not get Value for key:" + key + " from map: " + mapName)
+                    _adb_log_debug("localDataStoreService::readValueFromMap() - No Value for key:(" + key + ") found in map:(" + mapName + ")")
                     return invalid
                 end function,
 
                 removeValueFromMap: function(name as string, key as string) as void
                     mapName = "adbmobileMap_" + name
                     mapRegistry = CreateObject("roRegistrySection", mapName)
-                    _adb_log_debug("localDataStoreService::removeValueFromMap() Removing key:" + key + " from map: " + mapName)
+                    _adb_log_debug("localDataStoreService::removeValueFromMap() - Removing key:(" + key + ") from map:(" + mapName + ")")
                     mapRegistry.Delete(key)
                     mapRegistry.Flush()
                 end function,
@@ -895,7 +911,7 @@ function _adb_serviceProvider() as object
                 removeMap: function(name as string) as void
                     mapName = "adbmobileMap_" + name
                     mapRegistry = CreateObject("roRegistrySection", mapName)
-                    _adb_log_debug("localDataStoreService::removeMap() Deleting map: " + mapName)
+                    _adb_log_debug("localDataStoreService::removeMap() - Deleting map:(" + mapName + ")")
                     keyList = mapRegistry.GetKeyList()
                     For each key in keyList
                         m.removeValueFromMap(mapName, key)
@@ -982,7 +998,7 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
             if size = 0
                 return false
             end if
-            _adb_log_verbose("Request queue size is: " + StrI(size))
+            _adb_log_verbose("isReadyToProcess() - Request queue size:(" + StrI(size) + ")")
 
             if not m._stateManager.isReadyForRequest()
                 return false
@@ -1027,7 +1043,7 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
                             exit while
                         else
                             ' drop the request
-                            _adb_log_error("processRequests() - Edge request dropped. Response code: " + response.code.toStr() + " Response body: " + response.message)
+                            _adb_log_error("processRequests() - Edge request dropped. Response code:(" + response.code.toStr() + ") Response body:(" + response.message + ")")
                             exit while
                         end if
                     end if
@@ -1042,24 +1058,29 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
         end function,
 
         _processRequest: function(xdmData as object, ecid as string, configId as string, requestId as string, edgeDomain = invalid as dynamic) as object
+            identityMap = {
+                "ECID": [
+                    {
+                        "id": ecid,
+                        "primary": true,
+                        "authenticatedState": "ambiguous"
+                    }
+                ]
+            }
+
             jsonBody = {
                 "xdm": {
-                    "identityMap": {
-                        "ECID": [
-                            {
-                                "id": ecid,
-                                "primary": true,
-                                "authenticatedState": "ambiguous"
-                            }
-                        ]
-                    },
+                    "identityMap": identityMap,
                     "implementationDetails": _adb_generate_implementation_details()
                 },
                 "events": []
             }
+
+            ' Add customer provided xdmData
             jsonBody.events[0] = xdmData
+
             url = _adb_buildEdgeRequestURL(configId, requestId, edgeDomain)
-            _adb_log_verbose("request JSON: " + FormatJson(jsonBody))
+            _adb_log_verbose("_processRequest() - Sending Request to url:(" + FormatJson(url) + ") with payload:(" + FormatJson(jsonBody) + ")")
             response = _adb_serviceProvider().networkService.syncPostRequest(url, jsonBody)
             if response <> invalid
                 response.requestId = requestId
