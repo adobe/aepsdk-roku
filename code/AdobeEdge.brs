@@ -330,7 +330,7 @@ end function
 '                                              Below functions are for internal use only
 ' ****************************************************************************************************************************************
 
-function _adb_default_callback(context, result) as void
+function _adb_default_callback(_context, _result) as void
 end function
 
 function _adb_generate_UUID() as string

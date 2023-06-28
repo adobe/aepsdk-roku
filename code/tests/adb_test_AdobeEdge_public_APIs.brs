@@ -20,7 +20,7 @@ end sub
 sub AdobeEdgeTestSuite_public_APIs_BeforeEach()
     GetGlobalAA()._adb_public_api = invalid
     GetGlobalAA()._adb_edge_task_node = {
-        observeField: function(arg1 as string, arg2 as string) as void
+        observeField: function(_arg1 as string, _arg2 as string) as void
         end function
     }
     sdkInstance = AdobeSDKInit()
@@ -99,7 +99,6 @@ end sub
 ' @Test
 sub TestCase_AdobeEdge_public_APIs_updateConfiguration_invalid()
     sdkInstance = AdobeSDKInit()
-    configuration = { "edge.configId": "test-config-id" }
     sdkInstance.updateConfiguration("x")
     event = GetGlobalAA()._adb_edge_task_node["requestEvent"]
     UTF_assertEqual(0, event.Count())

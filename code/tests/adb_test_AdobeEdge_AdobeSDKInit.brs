@@ -29,7 +29,7 @@ end sub
 sub TestCase_AdobeEdge_AdobeSDKInit_singleton()
     print "TestCase_AdobeEdge_AdobeSDKInit_singleton"
     GetGlobalAA()._adb_edge_task_node = {
-        observeField: function(arg1 as string, arg2 as string) as void
+        observeField: function(_arg1 as string, _arg2 as string) as void
         end function
     }
     obj1 = AdobeSDKInit()
