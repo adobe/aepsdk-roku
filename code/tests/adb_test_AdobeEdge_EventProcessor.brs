@@ -163,7 +163,7 @@ sub TestCase_AdobeEdge_EventProcessor_handleEvent_sendEvent()
 
     eventProcessor.handleEvent({
         owner: "adobe",
-        apiName: "sendEdgeEvent",
+        apiName: "sendEvent",
         uuid: "request_id_test",
         timestamp_in_millis: 12345678,
         data: {

@@ -25,7 +25,7 @@ function AdobeSDKConstants() as object
             INFO: 2,
             WARNING: 3,
             ERROR: 4
-        },
+        }
     }
 end function
 
@@ -138,7 +138,7 @@ function AdobeSDKInit() as object
             ' **********************************************************************************
             '
             ' Call this function before using any other public APIs.
-            ' For example, if calling sendEdgeEvent() without a valid configuration in the SDK,
+            ' For example, if calling sendEvent() without a valid configuration in the SDK,
             ' the SDK will drop the Edge event.
             '
             ' @param configuration as object
@@ -167,7 +167,7 @@ function AdobeSDKInit() as object
 
             ' *************************************************************************************
             '
-            ' Send edge event.
+            ' Send event.
             '
             ' This function will automatically add an identity property, the Experience Cloud Identifier (ECID),
             ' to each Edge network request within the Experience event's "XDM IdentityMap".
@@ -181,7 +181,7 @@ function AdobeSDKInit() as object
             '
             ' Example 1:
             '
-            ' m.adobeEdgeSdk.sendEdgeEvent({
+            ' m.adobeEdgeSdk.sendEvent({
             '   eventType: "commerce.orderPlaced",
             '   commerce: {
             '      .....
@@ -190,7 +190,7 @@ function AdobeSDKInit() as object
             '
             ' Example 2:
             '
-            ' m.adobeEdgeSdk.sendEdgeEventWithCallback({
+            ' m.adobeEdgeSdk.sendEventWithCallback({
             '     eventType: "commerce.orderPlaced",
             '     commerce: {
             '        .....
@@ -203,10 +203,10 @@ function AdobeSDKInit() as object
             '
             ' *************************************************************************************
 
-            sendEdgeEvent: function(xdmData as object, callback = _adb_default_callback as function, context = invalid as dynamic) as void
-                _adb_log_debug("API: sendEdgeEvent()")
+            sendEvent: function(xdmData as object, callback = _adb_default_callback as function, context = invalid as dynamic) as void
+                _adb_log_debug("API: sendEvent()")
                 if type(xdmData) <> "roAssociativeArray" then
-                    _adb_log_error("sendEdgeEvent() - Cannot send event, invalid XDM data")
+                    _adb_log_error("sendEvent() - Cannot send event, invalid XDM data")
                     return
                 end if
                 ' event data: { "xdm": xdmData }
@@ -354,7 +354,7 @@ function _adb_internal_constants() as object
             SET_CONFIGURATION: "setConfiguration",
             SET_EXPERIENCE_CLOUD_ID: "setExperienceCloudId",
             RESET_IDENTITIES: "resetIdentities",
-            SEND_EDGE_EVENT: "sendEdgeEvent",
+            SEND_EDGE_EVENT: "sendEvent",
             SET_LOG_LEVEL: "setLogLevel",
         },
         EVENT_DATA_KEY: {
@@ -533,7 +533,7 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
         end function,
 
         _sendEvent: function(event as object) as void
-            _adb_log_info("_sendEvent() - Try sending event.")
+            _adb_log_info("_sendEvent() - Try sending event with uuid:(" + FormatJson(event.uuid) + ").")
 
             if not m._hasXDMData(event)
                 _adb_log_error("_sendEvent() - Not sending event, XDM data is empty.")
@@ -622,7 +622,7 @@ function _adb_StateManager() as object
                 end if
             end if
 
-            _adb_log_debug("getECID() - Returning ECID:" + FormatJson(m._ecid))
+            _adb_log_debug("getECID() - Returning ECID:(" + FormatJson(m._ecid) + ")")
             return m._ecid
         end function,
 
@@ -840,7 +840,7 @@ function _adb_serviceProvider() as object
                     m._registry.Flush()
                 end function,
                 readValue: function(key as string) as dynamic
-                    _adb_log_verbose("localDataStoreService::readValue() - Read key:" + key + " from registry.")
+                    _adb_log_verbose("localDataStoreService::readValue() - Read key:(" + key + ") from registry.")
                     '''bug in roku - Exists returns true even if no key. value in that case is an empty string
                     if m._registry.Exists(key) and m._registry.Read(key).Len() > 0
                         _adb_log_verbose("localDataStoreService::readValue() - Found key:(" + key + ") with value:(" + m._registry.Read(key) + ") in registry.")
@@ -998,7 +998,7 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
             if size = 0
                 return false
             end if
-            _adb_log_verbose("isReadyToProcess() - Request queue size:(" + StrI(size) + ")")
+            _adb_log_verbose("isReadyToProcess() - Request queue size:(" + FormatJson(size) + ")")
 
             if not m._stateManager.isReadyForRequest()
                 return false
@@ -1021,16 +1021,14 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
                 configId = m._stateManager.getConfigId()
                 edgeDomain = m._stateManager.getEdgeDomain()
 
-                _adb_log_verbose("ecid:" + FormatJson(ecid))
-                _adb_log_verbose("configid:" + FormatJson(configId))
+                _adb_log_verbose("processRequests() - Using ECID:(" + FormatJson(ecid) +") and configId:(" + FormatJson(configId) + ")")
                 if (not _adb_isEmptyOrInvalidString(ecid)) and (not _adb_isEmptyOrInvalidString(configId)) then
                     response = m._processRequest(xdmData, ecid, configId, requestId, edgeDomain)
                     if response = invalid
                         _adb_log_error("processRequests() - Edge request dropped. Response is invalid.")
                         ' drop the request
                     else
-                        _adb_log_verbose("response code : " + FormatJson(response.code))
-                        _adb_log_verbose("response message :" + response.message)
+                        _adb_log_verbose("processRequests() - Request with id:(" + FormatJson(requestId) + ") code:(" + FormatJson(response.code) + ") message:(" + response.message + ")")
                         if response.code >= 200 and response.code <= 299 then
                             if responseArray = invalid
                                 responseArray = []
