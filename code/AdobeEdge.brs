@@ -709,7 +709,8 @@ function _adb_StateManager() as object
 
         dump: function() as object
             return {
-                edge: m._edge,
+                edge_configId: m._edge_configId,
+                edge_domain: m._edge_domain,
                 ecid: m._ecid
             }
         end function
@@ -999,8 +1000,8 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
                 configId = m._stateManager.getConfigId()
                 edgeDomain = m._stateManager.getEdgeDomain()
 
-                _adb_log_verbose("ecid:" + ecid)
-                _adb_log_verbose("configid:" + configId)
+                _adb_log_verbose("ecid:" + FormatJson(ecid))
+                _adb_log_verbose("configid:" + FormatJson(configId))
                 if (not _adb_isEmptyOrInvalidString(ecid)) and (not _adb_isEmptyOrInvalidString(configId)) then
                     response = m._processRequest(xdmData, ecid, configId, requestId, edgeDomain)
                     if response = invalid
