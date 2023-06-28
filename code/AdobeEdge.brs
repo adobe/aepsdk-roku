@@ -600,7 +600,10 @@ function _adb_StateManager() as object
             end if
 
             if m._ecid = invalid
-                m.updateECID(m._queryECID())
+                remote_ecid = m._queryECID()
+                if remote_ecid <> invalid
+                    m.updateECID(remote_ecid)
+                end if
             end if
 
             _adb_log_info("getECID() - ecid: " + FormatJson(m._ecid))
@@ -625,6 +628,18 @@ function _adb_StateManager() as object
             end if
             m._ecid = ecid
             m._saveECID(m._ecid)
+        end function,
+
+        isReadyForRequest: function() as boolean
+            configId = m.getConfigId()
+            if _adb_isEmptyOrInvalidString(configId)
+                return false
+            end if
+            ecid = m.getECID()
+            if _adb_isEmptyOrInvalidString(ecid)
+                return false
+            end if
+            return true
         end function,
 
         _loadECID: function() as dynamic
@@ -955,13 +970,18 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
 
         isReadyToProcess: function() as boolean
             size = m._queue.count()
-            configId = m._stateManager.getConfigId()
 
-            if _adb_isEmptyOrInvalidString(configId) or size = 0
+            if size = 0
+                return false
+            else
+                _adb_log_verbose("Request queue size is: " + StrI(size))
+            end if
+
+            if not m._stateManager.isReadyForRequest()
                 return false
             end if
 
-            _adb_log_debug("Request queue size is: " + StrI(size))
+            _adb_log_verbose("isReadyToProcess() - Ready to process queued requests.")
             return true
         end function,
 
