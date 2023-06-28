@@ -623,7 +623,7 @@ function _adb_StateManager() as object
                 _adb_log_debug("updateECID() - Resetting ECID.")
             end if
             if ecid = m._ecid
-                _adb_log_debug("updateECID() - updateing ECID with same value.")
+                _adb_log_verbose("updateECID() - updating ECID with same value.")
                 return
             end if
             m._ecid = ecid
