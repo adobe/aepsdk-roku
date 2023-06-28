@@ -299,7 +299,7 @@ sub TestCase_AdobeEdge_EventProcessor_processQueuedRequests_bad_request()
         return invalid
     end function
 
-    eventProcessor._sendResponseEvent = function(event as object) as void
+    eventProcessor._sendResponseEvent = function(_event as object) as void
         GetGlobalAA()._sendResponseEvent_is_called = true
     end function
 

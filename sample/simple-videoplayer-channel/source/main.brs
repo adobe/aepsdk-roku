@@ -42,7 +42,7 @@ sub showHeroScreen()
   screen = CreateObject("roSGScreen")
   m.port = CreateObject("roMessagePort")
   screen.setMessagePort(m.port)
-  scene = screen.CreateScene("SimpleVideoScene")
+  _scene = screen.CreateScene("SimpleVideoScene")
   screen.show()
   ' vscode_rdb_on_device_component_entry
 
