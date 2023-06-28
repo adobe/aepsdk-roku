@@ -16,9 +16,8 @@
 function AdobeSDKConstants() as object
     return {
         CONFIGURATION: {
-            EDGE: "edge",
-            CONFIG_ID: "configId",
-            EDGE_DOMAIN: "edgeDomain",
+            EDGE_CONFIG_ID: "edge.configId",
+            EDGE_DOMAIN: "edge.domain"
             ' EDGE_ENVIRONMENT: "edgeEnvironment",
         },
         LOG_LEVEL: {
@@ -147,12 +146,13 @@ function AdobeSDKInit() as object
             '
             ' Example:
             '
-            ' config = {
-            '   edge = {
-            '     configId: "123-abc-xyz"
-            '   }
-            ' }
-            ' m.adobeEdgeSdk.updateConfiguration(config)
+            ' ADB_CONSTANTS = AdobeSDKConstants()
+            '
+            ' configuration = {}
+            ' configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = "<YOUR_CONFIG_ID>"
+            ' configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = "<YOUR_DOMAIN_NAME>"
+            '
+            ' m.adobeEdgeSdk.updateConfiguration(configuration)
             '
             ' **********************************************************************************
 
@@ -209,27 +209,7 @@ function AdobeSDKInit() as object
                     xdm: xdmData
                 })
                 ' add a timestamp to the XDM data
-                event.data.xdm.timestap = event.timestamp
-                if callback <> _adb_default_callback then
-                    ' store callback function
-                    callbackInfo = {
-                        cb: callback,
-                        context: context,
-                        timestamp_in_millis: event.timestamp_in_millis
-                    }
-                    m._private.cachedCallbackInfo[event.uuid] = callbackInfo
-                end if
-                m._private.dispatchEvent(event)
-            end function,
-
-            ' TDB
-            sendEdgeEventWithNonXdmData: function(xdmData as object, nonXdmData as object, callback = _adb_default_callback as function, context = invalid as dynamic) as void
-                _adb_log_debug("API: sendEdgeEventWithNonXdmData()")
-                eventData = {
-                    xdm: xdmData,
-                    data: nonXdmData
-                }
-                event = m._private.buildEvent(m._private.cons.PUBLIC_API.SEND_EDGE_EVENT, eventData)
+                event.data.xdm.timestamp = event.timestamp
                 if callback <> _adb_default_callback then
                     ' store callback function
                     callbackInfo = {
@@ -309,17 +289,15 @@ function AdobeSDKInit() as object
                 ' dispatch events to the task node
                 dispatchEvent: function(event as object) as void
                     _adb_log_debug("dispatchEvent() - " + FormatJson(event))
-                    m.taskNode[m.cons.TASK.REQUEST_EVENT] = event
+                    if m.taskNode <> invalid then
+                        m.taskNode[m.cons.TASK.REQUEST_EVENT] = event
+                    end if
                 end function,
                 ' private memeber
                 taskNode: GetGlobalAA()._adb_edge_task_node,
                 ' API callbacks to be called later
                 ' CallbackInfo = {cb: function, context: dynamic}
                 cachedCallbackInfo: {},
-                ' private memeber
-                config: {},
-                ' log level
-                logLevel: 4,
             }
 
         }
@@ -514,14 +492,14 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
 
         _resetIdentities: function(_event as object) as void
             _adb_log_info("_resetIdentities() - Reset presisted Identities.")
-            m._stateManager.reset()
+            m._stateManager.resetIdentities()
         end function,
 
         _setConfiguration: function(event as object) as void
             _adb_log_info("_setConfiguration() - set configuration")
-            _adb_log_verbose("configuration before: " + FormatJson(m._stateManager.getAll()))
+            _adb_log_verbose("configuration before: " + FormatJson(m._stateManager.dump()))
             m._stateManager.updateConfiguration(event.data)
-            _adb_log_verbose("configuration after: " + FormatJson(m._stateManager.getAll()))
+            _adb_log_verbose("configuration after: " + FormatJson(m._stateManager.dump()))
         end function,
 
         _setECID: function(event as object) as void
@@ -594,34 +572,27 @@ end function
 
 function _adb_StateManager() as object
     return {
-        CONFIG_KEY: AdobeSDKConstants().CONFIGURATION
-        ' example : {configId:"1234567890", edgeDomain:"xyz"}
-        _edge_configId: invalid
-        _edge_domain: invalid
+        CONFIG_KEY: AdobeSDKConstants().CONFIGURATION,
+        _edge_configId: invalid,
+        _edge_domain: invalid,
         ' example : ecid = "1234567890"
         _ecid: invalid,
-        ' example : {edge: {configId:"1234567890", edgeDomain:"xyz"}}
+        ' example : {edge: {configId:"1234567890", edgeDomain:"xyz.net"}}
         updateConfiguration: function(configuration as object) as void
+            configId = _adb_optStringFromMap(configuration, m.CONFIG_KEY.EDGE_CONFIG_ID)
+            domain = _adb_optStringFromMap(configuration, m.CONFIG_KEY.EDGE_DOMAIN)
 
-            edgeConfigMap = _adb_optMapFromMap(configuration, m.CONFIG_KEY.EDGE)
-            if edgeConfigMap = invalid
-                _adb_log_error("updateConfiguration() - Cannot update configuration, invalid configuration passed.")
-                return
-            end if
-
-            configId = _adb_optStringFromMap(edgeConfigMap, m.CONFIG_KEY.CONFIG_ID)
-            domain = _adb_optStringFromMap(edgeConfigMap, m.CONFIG_KEY.EDGE_DOMAIN)
-
-            if configId <> invalid
+            if not _adb_isEmptyOrInvalidString(configId)
                 m._edge_configId = configId
             end if
 
-            if domain <> invalid
+            regexPattern = CreateObject("roRegex", "^((?!-)[A-Za-z0-9-]+(?<!-)\.)+[A-Za-z]{2,6}$", "")
+            if not _adb_isEmptyOrInvalidString(domain) and regexPattern.isMatch(domain)
                 m._edge_domain = domain
             end if
         end function,
 
-        reset: function() as void
+        resetIdentities: function() as void
             m.updateECID(invalid)
         end function,
 
@@ -631,7 +602,10 @@ function _adb_StateManager() as object
             end if
 
             if m._ecid = invalid
-                m.updateECID(m._queryECID())
+                remote_ecid = m._queryECID()
+                if remote_ecid <> invalid
+                    m.updateECID(remote_ecid)
+                end if
             end if
 
             _adb_log_info("getECID() - ecid: " + FormatJson(m._ecid))
@@ -644,14 +618,30 @@ function _adb_StateManager() as object
 
         getEdgeDomain: function() as dynamic
             return m._edge_domain
-        end function
+        end function,
 
         updateECID: function(ecid as dynamic) as void
             if ecid = invalid
                 _adb_log_debug("updateECID() - Resetting ECID.")
             end if
+            if ecid = m._ecid
+                _adb_log_verbose("updateECID() - updating ECID with same value.")
+                return
+            end if
             m._ecid = ecid
             m._saveECID(m._ecid)
+        end function,
+
+        isReadyForRequest: function() as boolean
+            configId = m.getConfigId()
+            if _adb_isEmptyOrInvalidString(configId)
+                return false
+            end if
+            ecid = m.getECID()
+            if _adb_isEmptyOrInvalidString(ecid)
+                return false
+            end if
+            return true
         end function,
 
         _loadECID: function() as dynamic
@@ -691,10 +681,10 @@ function _adb_StateManager() as object
 
             url = _adb_buildEdgeRequestURL(configId, _adb_generate_UUID(), edgeDomain)
             jsonBody = {
-                events: [
+                "events": [
                     {
-                        query: {
-                            identity: { fetch: [
+                        "query": {
+                            "identity": { "fetch": [
                                     "ECID"
                             ] }
 
@@ -718,9 +708,10 @@ function _adb_StateManager() as object
             end if
         end function,
 
-        getAll: function() as object
+        dump: function() as object
             return {
-                edge: m._edge,
+                edge_configId: m._edge_configId,
+                edge_domain: m._edge_domain,
                 ecid: m._ecid
             }
         end function
@@ -732,7 +723,7 @@ function _adb_serviceProvider() as object
         instance = {
             loggingService: {
                 ' (VERBOSE: 0, DEBUG: 1, INFO: 2, WARNING: 3, ERROR: 4)
-                _logLevel: 0,
+                _logLevel: 2,
 
                 setLogLevel: function(logLevel as integer) as void
                     m._logLevel = logLevel
@@ -767,7 +758,13 @@ function _adb_serviceProvider() as object
                 end function,
 
                 _adb_print: function(message as string) as void
-                    print message
+                    ' if m._logLevel <= 1 then
+                    '     print "[" + _adb_ISO8601_timestamp() + "]" + message
+                    ' else
+                    '     print message
+                    ' end if
+                    print "[" + _adb_ISO8601_timestamp() + "]" + message
+
                 end function
             },
             networkService: {
@@ -813,20 +810,6 @@ function _adb_serviceProvider() as object
                         end while
                     end if
                     return invalid
-                end function,
-                ' **************************************************************
-                '
-                ' Sned POST request to the given URL with the given JSON object
-                '
-                ' @param url: the URL to send the request to
-                ' @param jsonObj: the JSON object to send
-                ' @param headers: the headers to send with the request
-                ' @param port: the port to send the response to
-                ' @return the response object
-                '
-                ' **************************************************************
-                asyncPostRequest: function(url as string, jsonObj as object, port as object, headers = [] as object) as void
-                    ' network response will be sent to the port
                 end function,
             },
             localDataStoreService: {
@@ -923,21 +906,20 @@ end function
 ' ********** Edge utils ********
 function _adb_generate_implementation_details() as object
     return {
-        name: "https://ns.adobe.com/experience/mobilesdk/roku",
-        version: _adb_sdk_version(),
-        environment: "app"
+        "name": "https://ns.adobe.com/experience/mobilesdk/roku",
+        "version": _adb_sdk_version(),
+        "environment": "app"
     }
 end function
 
 function _adb_buildEdgeRequestURL(configId as string, requestId as string, edgeDomain = invalid as dynamic) as string
     scheme = "https://"
     host = "edge.adobedc.net"
-    host_for_custom_domain = "data.adobedc.net"
     path = "/ee/v1/interact"
     query = "?configId=" + configId
 
     if not _adb_isEmptyOrInvalidString(edgeDomain)
-        host = edgeDomain + "." + host_for_custom_domain
+        host = edgeDomain
     end if
 
     if not _adb_isEmptyOrInvalidString(requestId)
@@ -989,7 +971,19 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
         end function,
 
         isReadyToProcess: function() as boolean
-            return m._queue.count() > 0
+            size = m._queue.count()
+
+            if size = 0
+                return false
+            end if
+            _adb_log_verbose("Request queue size is: " + StrI(size))
+
+            if not m._stateManager.isReadyForRequest()
+                return false
+            end if
+
+            _adb_log_verbose("isReadyToProcess() - Ready to process queued requests.")
+            return true
         end function,
 
         processRequests: function() as dynamic
@@ -1005,8 +999,8 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
                 configId = m._stateManager.getConfigId()
                 edgeDomain = m._stateManager.getEdgeDomain()
 
-                _adb_log_verbose("ecid:" + ecid)
-                _adb_log_verbose("configid:" + configId)
+                _adb_log_verbose("ecid:" + FormatJson(ecid))
+                _adb_log_verbose("configid:" + FormatJson(configId))
                 if (not _adb_isEmptyOrInvalidString(ecid)) and (not _adb_isEmptyOrInvalidString(configId)) then
                     response = m._processRequest(xdmData, ecid, configId, requestId, edgeDomain)
                     if response = invalid
@@ -1034,6 +1028,7 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
 
                 else
                     _adb_log_warning("processRequests() - Edge request skipped. ECID and/or configId not set.")
+                    m._queue.Unshift(requestEntity)
                     exit while
                 end if
             end while
@@ -1042,19 +1037,19 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
 
         _processRequest: function(xdmData as object, ecid as string, configId as string, requestId as string, edgeDomain = invalid as dynamic) as object
             jsonBody = {
-                xdm: {
-                    identityMap: {
-                        ECID: [
+                "xdm": {
+                    "identityMap": {
+                        "ECID": [
                             {
-                                id: ecid,
-                                primary: true,
-                                authenticatedState: "ambiguous"
+                                "id": ecid,
+                                "primary": true,
+                                "authenticatedState": "ambiguous"
                             }
                         ]
                     },
-                    implementationDetails: _adb_generate_implementation_details()
+                    "implementationDetails": _adb_generate_implementation_details()
                 },
-                events: []
+                "events": []
             }
             jsonBody.events[0] = xdmData
             url = _adb_buildEdgeRequestURL(configId, requestId, edgeDomain)
@@ -1135,7 +1130,7 @@ function _adb_optIntFromMap(map as object, key as string, fallback = invalid as 
     end if
 
     ret = map[key]
-    if type(ret) <> "roInteger"
+    if type(ret) <> "roInteger" and type(ret) <> "roInt"
         return fallback
     end if
 

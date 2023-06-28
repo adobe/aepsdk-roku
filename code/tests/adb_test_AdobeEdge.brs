@@ -32,8 +32,8 @@ sub TestCase_AdobeEdge_AdobeSDKConstants()
     UTF_assertEqual(cons.LOG_LEVEL.WARNING, 3)
     UTF_assertEqual(cons.LOG_LEVEL.ERROR, 4)
 
-    UTF_assertEqual(cons.CONFIGURATION.CONFIG_ID, "configId")
-    UTF_assertEqual(cons.CONFIGURATION.EDGE_DOMAIN, "edgeDomain")
+    UTF_assertEqual(cons.CONFIGURATION.EDGE_CONFIG_ID, "edge.configId")
+    UTF_assertEqual(cons.CONFIGURATION.EDGE_DOMAIN, "edge.domain")
 end sub
 
 ' target: _adb_sdk_version()
