@@ -16,9 +16,8 @@
 function AdobeSDKConstants() as object
     return {
         CONFIGURATION: {
-            EDGE: "edge",
-            CONFIG_ID: "configId",
-            EDGE_DOMAIN: "edgeDomain",
+            EDGE_CONFIG_ID: "edge.configId",
+            EDGE_DOMAIN: "edge.domain"
             ' EDGE_ENVIRONMENT: "edgeEnvironment",
         },
         LOG_LEVEL: {
@@ -591,29 +590,22 @@ end function
 
 function _adb_StateManager() as object
     return {
-        CONFIG_KEY: AdobeSDKConstants().CONFIGURATION
-        ' example : {configId:"1234567890", edgeDomain:"xyz"}
-        _edge_configId: invalid
-        _edge_domain: invalid
+        CONFIG_KEY: AdobeSDKConstants().CONFIGURATION,
+        _edge_configId: invalid,
+        _edge_domain: invalid,
         ' example : ecid = "1234567890"
         _ecid: invalid,
-        ' example : {edge: {configId:"1234567890", edgeDomain:"xyz"}}
+        ' example : {edge: {configId:"1234567890", edgeDomain:"xyz.net"}}
         updateConfiguration: function(configuration as object) as void
+            configId = _adb_optStringFromMap(configuration, m.CONFIG_KEY.EDGE_CONFIG_ID)
+            domain = _adb_optStringFromMap(configuration, m.CONFIG_KEY.EDGE_DOMAIN)
 
-            edgeConfigMap = _adb_optMapFromMap(configuration, m.CONFIG_KEY.EDGE)
-            if edgeConfigMap = invalid
-                _adb_log_error("updateConfiguration() - Cannot update configuration, invalid configuration passed.")
-                return
-            end if
-
-            configId = _adb_optStringFromMap(edgeConfigMap, m.CONFIG_KEY.CONFIG_ID)
-            domain = _adb_optStringFromMap(edgeConfigMap, m.CONFIG_KEY.EDGE_DOMAIN)
-
-            if configId <> invalid
+            if not _adb_isEmptyOrInvalidString(configId)
                 m._edge_configId = configId
             end if
 
-            if domain <> invalid
+            regexPattern = CreateObject("roRegex", "^((?!-)[A-Za-z0-9-]+(?<!-)\.)+[A-Za-z]{2,6}$","")
+            if not _adb_isEmptyOrInvalidString(domain) and regexPattern.isMatch(domain)
                 m._edge_domain = domain
             end if
         end function,
@@ -641,7 +633,7 @@ function _adb_StateManager() as object
 
         getEdgeDomain: function() as dynamic
             return m._edge_domain
-        end function
+        end function,
 
         updateECID: function(ecid as dynamic) as void
             if ecid = invalid
@@ -929,12 +921,11 @@ end function
 function _adb_buildEdgeRequestURL(configId as string, requestId as string, edgeDomain = invalid as dynamic) as string
     scheme = "https://"
     host = "edge.adobedc.net"
-    host_for_custom_domain = "data.adobedc.net"
     path = "/ee/v1/interact"
     query = "?configId=" + configId
 
     if not _adb_isEmptyOrInvalidString(edgeDomain)
-        host = edgeDomain + "." + host_for_custom_domain
+        host = edgeDomain
     end if
 
     if not _adb_isEmptyOrInvalidString(requestId)
