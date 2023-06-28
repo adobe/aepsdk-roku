@@ -960,6 +960,7 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
                 configId = m._stateManager.getConfigId()
                 return not _adb_isEmptyOrInvalidString(configId)
             end if
+            return false
         end function,
 
         processRequests: function() as dynamic
