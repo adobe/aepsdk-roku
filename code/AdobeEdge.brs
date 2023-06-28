@@ -955,12 +955,14 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
 
         isReadyToProcess: function() as boolean
             size = m._queue.count()
-            if size > 0
-                _adb_log_debug("Request queue size is: " + StrI(size))
-                configId = m._stateManager.getConfigId()
-                return not _adb_isEmptyOrInvalidString(configId)
+            configId = m._stateManager.getConfigId()
+
+            if _adb_isEmptyOrInvalidString(configId) or size = 0
+                return false
             end if
-            return false
+
+            _adb_log_debug("Request queue size is: " + StrI(size))
+            return true
         end function,
 
         processRequests: function() as dynamic
