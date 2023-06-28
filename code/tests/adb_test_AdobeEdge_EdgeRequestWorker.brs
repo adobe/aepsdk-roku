@@ -42,10 +42,12 @@ end sub
 ' target: isReadyToProcess()
 ' @Test
 sub TestCase_AdobeEdge_adb_EdgeRequestWorker_isReadyToProcess()
-    worker = _adb_EdgeRequestWorker({})
+    worker = _adb_EdgeRequestWorker(_adb_StateManager())
     worker._queue = []
     UTF_assertFalse(worker.isReadyToProcess())
     worker._queue.Push({})
+    worker._stateManager._edge_configId = "config_id_test"
+    worker._stateManager._ecid = "ecid_test"
     UTF_assertTrue(worker.isReadyToProcess())
     worker._queue.Shift()
     UTF_assertFalse(worker.isReadyToProcess())
