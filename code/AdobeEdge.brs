@@ -762,7 +762,7 @@ function _adb_serviceProvider() as object
                     ' else
                     '     print message
                     ' end if
-                    print "[" + _adb_ISO8601_timestamp() + "]" + message
+                    print "[" + _adb_ISO8601_timestamp().Replace("T", " ") + "]" + message
 
                 end function
             },
