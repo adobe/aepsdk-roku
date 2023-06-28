@@ -761,7 +761,7 @@ function _adb_serviceProvider() as object
                     ' else
                     '     print message
                     ' end if
-                    print message
+                    print "[" + _adb_ISO8601_timestamp() + "]" + message
 
                 end function
             },
