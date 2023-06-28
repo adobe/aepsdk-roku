@@ -31,7 +31,7 @@ sub Main(input as dynamic)
       _adb_run_tests()
     end if
   end if
-  ' _adb_run_tests()
+  _adb_run_tests()
   showHeroScreen()
 end sub
 
@@ -133,7 +133,7 @@ function _adb_test_functions() as dynamic
     AdobeEdgeTestSuite_Edge_utils_SetUp
     AdobeEdgeTestSuite_Edge_utils_TearDown
     TestCase_AdobeEdge_adb_generate_implementation_details
-    TestCase_AdobeEdge_adb_buildEdgeRequestURL
+    TestCase_AdobeEdge_adb_buildEdgeRequestURL_validDomain
     ' adb_test_AdobeEdge_EdgeRequestWorker.brs
     AdobeEdgeTestSuite_EdgeRequestWorker_SetUp
     AdobeEdgeTestSuite_EdgeRequestWorker_BeforeEach
@@ -157,11 +157,14 @@ function _adb_test_functions() as dynamic
     T_StateManager_init
     T_StateManager_updateConfiguration_configId
     T_StateManager_updateConfiguration_edgeDomain
+    T_StateManager_updateConfiguration_edgeDomain_invalidValues
     T_StateManager_updateConfiguration_separateUpdates
-    T_StateManager_updateConfiguration_invalidConfiguration
+    T_StateManager_updateConfiguration_invalidConfigurationKeys
+    T_StateManager_updateConfiguration_invalidConfigurationValues
     T_StateManager_getECID_noSetECID_invalidConfiguration_returnsInvalid
     T_StateManager_getECID_validConfiguration_fetchesECID
     T_StateManager_updateECID_validString_updatesECID
     T_StateManager_updateECID_invalid_deletesECID
+    T_StateManager_resetIdentities_deletesECIDAndOtherIdentities
   ]
 end function

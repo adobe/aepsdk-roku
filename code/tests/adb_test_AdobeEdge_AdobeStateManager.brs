@@ -41,9 +41,7 @@ end sub
 sub T_StateManager_updateConfiguration_configId()
     stateManager = _adb_StateManager()
     stateManager.updateConfiguration({
-        edge: {
-            configId: "testConfigId"
-        }
+        "edge.configId" : "testConfigId"
     })
     UTF_assertEqual(stateManager.getConfigId(), "testConfigId")
     UTF_assertInvalid(stateManager.getEdgeDomain())
@@ -54,13 +52,37 @@ end sub
 sub T_StateManager_updateConfiguration_edgeDomain()
     stateManager = _adb_StateManager()
     stateManager.updateConfiguration({
-        edge: {
-            configId: "testConfigId",
-            edgeDomain: "abx"
-        }
+        "edge.configId" : "testConfigId"
+        "edge.domain" : "abc.net"
     })
+
     UTF_assertEqual(stateManager.getConfigId(), "testConfigId")
-    UTF_assertEqual(stateManager.getEdgeDomain(), "abx")
+    UTF_assertEqual(stateManager.getEdgeDomain(), "abc.net")
+end sub
+
+' target: _adb_StateManager()
+' @Test
+sub T_StateManager_updateConfiguration_edgeDomain_invalidValues()
+    stateManager = _adb_StateManager()
+    stateManager.updateConfiguration({
+        "edge.domain" : "abc.net?"
+    })
+    UTF_assertInvalid(stateManager.getEdgeDomain())
+
+    stateManager.updateConfiguration({
+        "edge.domain" : "https://abc.net"
+    })
+    UTF_assertInvalid(stateManager.getEdgeDomain())
+
+    stateManager.updateConfiguration({
+        "edge.domain" : "abc.net/"
+    })
+    UTF_assertInvalid(stateManager.getEdgeDomain())
+
+    stateManager.updateConfiguration({
+        "edge.domain" : "abc/net/path"
+    })
+    UTF_assertInvalid(stateManager.getEdgeDomain())
 end sub
 
 ' target: _adb_StateManager()
@@ -68,28 +90,56 @@ end sub
 sub T_StateManager_updateConfiguration_separateUpdates()
     stateManager = _adb_StateManager()
     stateManager.updateConfiguration({
-        edge: {
-            configId: "testConfigId"
-        }
+        "edge.configId": "testConfigId"
     })
     stateManager.updateConfiguration({
-        edge: {
-            edgeDomain: "abx"
-        }
+        "edge.domain" : "abc.net"
     })
     UTF_assertEqual(stateManager.getConfigId(), "testConfigId")
-    UTF_assertEqual(stateManager.getEdgeDomain(), "abx")
+    UTF_assertEqual(stateManager.getEdgeDomain(), "abc.net")
 end sub
 
 
 ' target: _adb_StateManager()
 ' @Test
-sub T_StateManager_updateConfiguration_invalidConfiguration()
+sub T_StateManager_updateConfiguration_invalidConfigurationKeys()
     stateManager = _adb_StateManager()
     invalidConfig = {
-        edgeDomain: "abx",
-         configId: "testConfigId"
+        "edgeDomain": "abc",
+        "configId": "testConfigId"
      }
+    stateManager.updateConfiguration(invalidConfig)
+    UTF_assertInvalid(stateManager.getConfigId())
+    UTF_assertInvalid(stateManager.getEdgeDomain())
+end sub
+
+sub T_StateManager_updateConfiguration_invalidConfigurationValues()
+    stateManager = _adb_StateManager()
+    invalidConfig = {
+        "edge.configId" : ""
+        "edge.domain" : ""
+    }
+
+    stateManager.updateConfiguration(invalidConfig)
+    UTF_assertInvalid(stateManager.getConfigId())
+    UTF_assertInvalid(stateManager.getEdgeDomain())
+
+    invalidConfig = {
+        "edge.configId" : invalid
+        "edge.domain" : invalid
+    }
+
+    stateManager.updateConfiguration(invalidConfig)
+    UTF_assertInvalid(stateManager.getConfigId())
+    UTF_assertInvalid(stateManager.getEdgeDomain())
+
+    invalidConfig = {
+        "edge": {
+            "configId" : "configId",
+            "domain" : "domain"
+        }
+    }
+
     stateManager.updateConfiguration(invalidConfig)
     UTF_assertInvalid(stateManager.getConfigId())
     UTF_assertInvalid(stateManager.getEdgeDomain())
@@ -120,9 +170,7 @@ end sub
 sub T_StateManager_getECID_validConfiguration_fetchesECID()
     stateManager = _adb_StateManager()
     config = {
-        edge: {
-          configId: ""
-        }
+        "edge.configId": "<test-with-actual-config-id>"
       }
     stateManager.updateConfiguration(config)
 
@@ -171,6 +219,28 @@ sub T_StateManager_updateECID_invalid_deletesECID()
     UTF_assertEqual("test-ecid", persistedECID)
 
     stateManager.updateECID(invalid)
+    persistedECID = getPersistedECID()
+    UTF_assertInvalid(stateManager._ecid)
+    UTF_assertInvalid(persistedECID)
+
+end sub
+
+' target: _adb_StateManager()
+' @Test
+sub T_StateManager_resetIdentities_deletesECIDAndOtherIdentities()
+    stateManager = _adb_StateManager()
+
+    UTF_assertInvalid(stateManager._ecid)
+
+    stateManager.updateECID("test-ecid")
+
+    persistedECID = getPersistedECID()
+
+    UTF_assertEqual("test-ecid", stateManager._ecid)
+    UTF_assertNotInvalid(persistedECID)
+    UTF_assertEqual("test-ecid", persistedECID)
+
+    stateManager.resetIdentities()
     persistedECID = getPersistedECID()
     UTF_assertInvalid(stateManager._ecid)
     UTF_assertInvalid(persistedECID)
