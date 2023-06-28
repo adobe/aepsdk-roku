@@ -30,7 +30,7 @@ function AdobeSDKInit() as object
 ##### Example
 
 ```javascript
-m.adobeEdgeSdk = AdobeSDKInit();
+m.adobeEdgeSdk = AdobeSDKInit()
 ```
 
 ### getVersion
@@ -46,7 +46,7 @@ getVersion: function() as string
 ##### Example
 
 ```javascript
-sdkVersion = m.adobeEdgeSdk.getVersion();
+sdkVersion = m.adobeEdgeSdk.getVersion()
 ```
 
 ### setLogLevel
@@ -62,8 +62,8 @@ setLogLevel: function(level as integer) as void
 ##### Example
 
 ```javascript
-ADB_CONSTANTS = AdobeSDKConstants();
-m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE);
+ADB_CONSTANTS = AdobeSDKConstants()
+m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
 ```
 
 ### updateConfiguration
@@ -81,12 +81,12 @@ setConfiguration: function(configuration as object) as void
 ##### Example
 
 ```javascript
-configuration = {
-  edge: {
-    configId: "123-abc-xyz",
-  },
-};
-m.adobeEdgeSdk.updateConfiguration(configuration);
+ADB_CONSTANTS = AdobeSDKConstants()
+
+configuration = {}
+configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = "<YOUR_CONFIG_ID>"
+
+m.adobeEdgeSdk.updateConfiguration(configuration)
 ```
 
 The `configId` value is presented as `Datastream ID` in the [satastream details](https://experienceleague.adobe.com/docs/experience-platform/edge/datastreams/configure.html?lang=en#view-details) page.
@@ -147,9 +147,48 @@ setExperienceCloudId: function(ecid as string) as void
 
 ##### Example
 
-```javascript
-mid_from_media_sdk = "0123456789";
-m.adobeEdgeSdk.setExperienceCloudId(mid_from_media_sdk);
+Setup Media SDK for Scenegraph APIs
+```brightscript
+
+''' Create adbmobileTask node
+m.adbmobileTask = createObject("roSGNode","adbmobileTask")
+
+''' Get AdobeMobile SG connector instance
+m.adbmobile = ADBMobile().getADBMobileConnectorInstance(m.adbmobileTask)
+
+''' Get AdobeMobile SG constants
+m.adbmobileConstants = m.adbmobile.sceneGraphConstants()
+
+''' Register callback for receiving API responses
+m.adbmobileTask.ObserveField(m.adbmobileConstants.API_RESPONSE, "onAdbmobileApiResponse")
+```
+
+
+```brightscript
+''' Get ECID from Media SDK
+m.adbmobile.visitorMarketingCloudID()
+
+
+''' Listen ECID response from Media SDK and set it on AdobeEdge SDK
+function onAdbmobileApiResponse() as void
+      responseObject = m.adbmobileTask[m.adbmobileConstants.API_RESPONSE]
+
+      if responseObject <> invalid
+        methodName = responseObject.apiName
+        ecid_from_media_sdk = responseObject.returnValue
+
+        if methodName = m.adbmobileConstants.VISITOR_MARKETING_CLOUD_ID
+          if ecid_from_media_sdk <> invalid
+            print "API Response: ECID: " + ecid_from_media_sdk
+
+            ''' AdobeEdgeSDK setECID()
+            m.adobeEdgeSdk.setExperienceCloudId(ecid_from_media_sdk)
+          else
+            print "API Response: ECID: " + "invalid"
+          endif
+        endif
+      endif
+    end function
 ```
 
 ### shutdown
@@ -164,6 +203,6 @@ shutdown: function() as void
 
 ##### Example
 
-```javascript
+```brightscript
 m.adobeEdgeSdk.shutdown();
 ```
