@@ -91,6 +91,7 @@ ADB_CONSTANTS = AdobeSDKConstants()
 
 configuration = {}
 configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = "<YOUR_CONFIG_ID>"
+configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = "<YOUR_DOMAIN_NAME>"
 
 m.adobeEdgeSdk.updateConfiguration(configuration)
 ```
