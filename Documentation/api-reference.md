@@ -164,7 +164,7 @@ resetIdentities: function() as void
 ##### Example
 
 ```brightscript
-  m.adobeEdgeSdk.resetIdentities()
+m.adobeEdgeSdk.resetIdentities()
 ```
 
 ---
