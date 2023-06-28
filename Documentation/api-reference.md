@@ -132,6 +132,8 @@ sendEdgeEvent: function(xdmData as object, callback = _adb_default_callback as f
   })
 ```
 
+> Identifiers are not case sensitive in [BrightScript](https://developer.roku.com/docs/references/brightscript/language/expressions-variables-types.md), so please always use the `String literals` to present the XDM data keys. 
+
 ##### Example 2
 
 ```brightscript
