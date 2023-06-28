@@ -18,10 +18,11 @@ sub init()
   ' Initalize Adobe Edge SDK
   '------------------------------------
 
-  ADB_CONSTANTS = AdobeSDKConstants()
+
   m.adobeEdgeSdk = AdobeSDKInit()
   print "Adobe SDK version : " + m.adobeEdgeSdk.getVersion()
 
+  ADB_CONSTANTS = AdobeSDKConstants()
   m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
 
   ' get_mid_from_media_sdk = "12340203495818708"

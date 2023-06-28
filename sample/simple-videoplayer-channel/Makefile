@@ -17,6 +17,3 @@ install-bsc:
 
 build:
 	(bsc)
-
-unit-tests:
-	(curl -d '' http://192.168.1.144:8060/launch/dev?RunTests=true)
