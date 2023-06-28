@@ -765,7 +765,7 @@ function _adb_serviceProvider() as object
 
                 _adb_print: function(message as string) as void
                     if m._logLevel <= 1 then
-                        print _adb_ISO8601_timestamp() + " " + message
+                        print "[" + _adb_ISO8601_timestamp() + "]" + message
                     else
                         print message
                     end if
@@ -1137,7 +1137,7 @@ function _adb_optIntFromMap(map as object, key as string, fallback = invalid as 
     end if
 
     ret = map[key]
-    if type(ret) <> "roInteger"
+    if type(ret) <> "roInteger" and type(ret) <> "roInt"
         return fallback
     end if
 
