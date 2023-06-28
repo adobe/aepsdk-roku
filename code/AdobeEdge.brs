@@ -604,7 +604,7 @@ function _adb_StateManager() as object
                 m._edge_configId = configId
             end if
 
-            regexPattern = CreateObject("roRegex", "^((?!-)[A-Za-z0-9-]+(?<!-)\.)+[A-Za-z]{2,6}$","")
+            regexPattern = CreateObject("roRegex", "^((?!-)[A-Za-z0-9-]+(?<!-)\.)+[A-Za-z]{2,6}$", "")
             if not _adb_isEmptyOrInvalidString(domain) and regexPattern.isMatch(domain)
                 m._edge_domain = domain
             end if
@@ -721,7 +721,7 @@ function _adb_serviceProvider() as object
         instance = {
             loggingService: {
                 ' (VERBOSE: 0, DEBUG: 1, INFO: 2, WARNING: 3, ERROR: 4)
-                _logLevel: 0,
+                _logLevel: 2,
 
                 setLogLevel: function(logLevel as integer) as void
                     m._logLevel = logLevel
@@ -756,7 +756,13 @@ function _adb_serviceProvider() as object
                 end function,
 
                 _adb_print: function(message as string) as void
-                    print message
+                    ' if m._logLevel <= 1 then
+                    '     print "[" + _adb_ISO8601_timestamp() + "]" + message
+                    ' else
+                    '     print message
+                    ' end if
+                    print "[" + _adb_ISO8601_timestamp() + "]" + message
+
                 end function
             },
             networkService: {
@@ -1123,7 +1129,7 @@ function _adb_optIntFromMap(map as object, key as string, fallback = invalid as 
     end if
 
     ret = map[key]
-    if type(ret) <> "roInteger"
+    if type(ret) <> "roInteger" and type(ret) <> "roInt"
         return fallback
     end if
 
