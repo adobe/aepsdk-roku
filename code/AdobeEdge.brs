@@ -221,26 +221,6 @@ function AdobeSDKInit() as object
                 m._private.dispatchEvent(event)
             end function,
 
-            ' TDB
-            sendEdgeEventWithNonXdmData: function(xdmData as object, nonXdmData as object, callback = _adb_default_callback as function, context = invalid as dynamic) as void
-                _adb_log_debug("API: sendEdgeEventWithNonXdmData()")
-                eventData = {
-                    xdm: xdmData,
-                    data: nonXdmData
-                }
-                event = m._private.buildEvent(m._private.cons.PUBLIC_API.SEND_EDGE_EVENT, eventData)
-                if callback <> _adb_default_callback then
-                    ' store callback function
-                    callbackInfo = {
-                        cb: callback,
-                        context: context,
-                        timestamp_in_millis: event.timestamp_in_millis
-                    }
-                    m._private.cachedCallbackInfo[event.uuid] = callbackInfo
-                end if
-                m._private.dispatchEvent(event)
-            end function,
-
             ' ****************************************************************************************************
             '
             ' Note: Please do not call this API if you do not have both the Adobe Media SDK and the Edge SDK
@@ -813,20 +793,6 @@ function _adb_serviceProvider() as object
                         end while
                     end if
                     return invalid
-                end function,
-                ' **************************************************************
-                '
-                ' Sned POST request to the given URL with the given JSON object
-                '
-                ' @param url: the URL to send the request to
-                ' @param jsonObj: the JSON object to send
-                ' @param headers: the headers to send with the request
-                ' @param port: the port to send the response to
-                ' @return the response object
-                '
-                ' **************************************************************
-                asyncPostRequest: function(url as string, jsonObj as object, port as object, headers = [] as object) as void
-                    ' network response will be sent to the port
                 end function,
             },
             localDataStoreService: {
