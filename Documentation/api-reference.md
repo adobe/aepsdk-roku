@@ -33,6 +33,8 @@ function AdobeSDKInit() as object
 m.adobeEdgeSdk = AdobeSDKInit()
 ```
 
+---
+
 ### getVersion
 
 ##### Syntax
@@ -48,6 +50,8 @@ getVersion: function() as string
 ```javascript
 sdkVersion = m.adobeEdgeSdk.getVersion()
 ```
+
+---
 
 ### setLogLevel
 
@@ -65,6 +69,8 @@ setLogLevel: function(level as integer) as void
 ADB_CONSTANTS = AdobeSDKConstants()
 m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
 ```
+
+---
 
 ### updateConfiguration
 
@@ -90,6 +96,8 @@ m.adobeEdgeSdk.updateConfiguration(configuration)
 ```
 
 The `configId` value is presented as `Datastream ID` in the [satastream details](https://experienceleague.adobe.com/docs/experience-platform/edge/datastreams/configure.html?lang=en#view-details) page.
+
+---
 
 ### sendEdgeEvent
 
@@ -133,6 +141,8 @@ sendEdgeEvent: function(xdmData as object, callback = _adb_default_callback as f
   end sub, context)
 ```
 
+---
+
 ### setExperienceCloudId
 
 > Note: Please do not call this API if you do not have both the [Adobe Media SDK](https://experienceleague.adobe.com/docs/media-analytics/using/media-use-cases/sdk-track-scenegraph.html?lang=en#global-methods-for-mediaheartbeat) and the Edge SDK running in the same channel and you need to use the same ECID in both SDKs. By default, the Edge SDK automatically generates an ECID (Experience Cloud ID) when first used. If the Edge SDK and the previous media SDK are initialized in the same channel, calling this function can keep both SDKs running with the same ECID. `*` Call this function before using other public APIs. Otherwise, an automatically generated ECID will be assigned. Whenever the ECID is changed in the Media SDK, this API needs to be called to synchronize it in both SDKs.
@@ -163,9 +173,9 @@ m.adbmobileConstants = m.adbmobile.sceneGraphConstants()
 m.adbmobileTask.ObserveField(m.adbmobileConstants.API_RESPONSE, "onAdbmobileApiResponse")
 ```
 
+Get ECID from Media SDK and set it with AdobeEdge SDK
 
 ```brightscript
-''' Get ECID from Media SDK
 m.adbmobile.visitorMarketingCloudID()
 
 
@@ -190,6 +200,8 @@ function onAdbmobileApiResponse() as void
       endif
     end function
 ```
+
+---
 
 ### shutdown
 
