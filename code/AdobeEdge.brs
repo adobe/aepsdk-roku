@@ -126,7 +126,7 @@ function AdobeSDKInit() as object
 
             ' ***********************************************************************
             '
-            ' Call this function to reset the Adobe set identities such as ECID from the SDK.
+            ' Call this function to reset the Adobe identities such as ECID from the SDK.
             '
             ' ***********************************************************************
 
@@ -168,7 +168,13 @@ function AdobeSDKInit() as object
 
             ' *************************************************************************************
             '
-            ' Send edge event
+            ' Send edge event.
+            '
+            ' This function will automatically add an identity property, the Experience Cloud Identifier (ECID),
+            ' to each Edge network request within the Experience event's "XDM IdentityMap".
+            ' Also "ImplementationDetails" are automatically collected and are sent with every Experience Event.
+            ' If you would like to include this information in your dataset, add the "Implementation Details"
+            ' field group to the schema tied to your dataset.
             '
             ' @param data as object : xdm data
             ' @param [optional] callback as function(context, result) : handle Edge response
@@ -332,7 +338,8 @@ function _adb_generate_UUID() as string
 end function
 
 function _adb_sdk_version() as string
-    return "1.0.0-alpha1"
+    VERSION = "1.0.0-alpha1"
+    return VERSION
 end function
 
 function _adb_internal_constants() as object
