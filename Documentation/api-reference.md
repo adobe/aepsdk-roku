@@ -7,6 +7,7 @@ This document lists the APIs provided by Adobe Roku SDK, along with sample code 
 - [setLogLevel](#setLogLevel)
 - [updateConfiguration](#updateConfiguration)
 - [sendEdgeEvent](#sendEdgeEvent)
+- [resetIdentities](#resetIdentities)
 - [(optional) setExperienceCloudId](#setExperienceCloudId)
 - [shutdown](#shutdown)
 
@@ -18,10 +19,11 @@ Initialize the Adobe SDK and return the public API instance. `*` The following v
 
 - `GetGlobalAA()._adb_public_api`
 - `GetGlobalAA()._adb_edge_task_node`
+- `GetGlobalAA()._adb_serviceProvider_instance`
 
 ##### Syntax
 
-```javascript
+```brightscript
 function AdobeSDKInit() as object
 ```
 
@@ -29,7 +31,7 @@ function AdobeSDKInit() as object
 
 ##### Example
 
-```javascript
+```brightscript
 m.adobeEdgeSdk = AdobeSDKInit()
 ```
 
@@ -39,7 +41,7 @@ m.adobeEdgeSdk = AdobeSDKInit()
 
 ##### Syntax
 
-```javascript
+```brightscript
 getVersion: function() as string
 ```
 
@@ -47,7 +49,7 @@ getVersion: function() as string
 
 ##### Example
 
-```javascript
+```brightscript
 sdkVersion = m.adobeEdgeSdk.getVersion()
 ```
 
@@ -57,7 +59,7 @@ sdkVersion = m.adobeEdgeSdk.getVersion()
 
 ##### Syntax
 
-```javascript
+```brightscript
 setLogLevel: function(level as integer) as void
 ```
 
@@ -65,7 +67,7 @@ setLogLevel: function(level as integer) as void
 
 ##### Example
 
-```javascript
+```brightscript
 ADB_CONSTANTS = AdobeSDKConstants()
 m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
 ```
@@ -78,15 +80,15 @@ m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
 
 ##### Syntax
 
-```javascript
-setConfiguration: function(configuration as object) as void
+```brightscript
+updateConfiguration: function(configuration as object) as void
 ```
 
 - `@param configuration as object`
 
 ##### Example
 
-```javascript
+```brightscript
 ADB_CONSTANTS = AdobeSDKConstants()
 
 configuration = {}
@@ -108,7 +110,7 @@ Sends an Experience event to Edge Network.
 
 ##### Syntax
 
-```javascript
+```brightscript
 sendEdgeEvent: function(xdmData as object, callback = _adb_default_callback as function, context = invalid as dynamic) as void
 ```
 
@@ -117,13 +119,14 @@ sendEdgeEvent: function(xdmData as object, callback = _adb_default_callback as f
 - `@param [optional] context as dynamic : context to be passed to the callback function`
 
 > This function will automatically add an identity property, the Experience Cloud Identifier (ECID), to each Edge network request within the Experience event's `XDM IdentityMap`.
+> Also `ImplementationDetails` are automatically collected and are sent with every Experience Event. If you would like to include this information in your dataset, add the "Implementation Details" field group to the schema tied to your dataset.
 
 ##### Example 1
 
-```javascript
+```brightscript
   m.adobeEdgeSdk.sendEdgeEvent({
-    eventType: "commerce.orderPlaced",
-      commerce: {
+    "eventType": "commerce.orderPlaced",
+      "commerce": {
         .....
       }
   })
@@ -131,10 +134,10 @@ sendEdgeEvent: function(xdmData as object, callback = _adb_default_callback as f
 
 ##### Example 2
 
-```javascript
+```brightscript
   m.adobeEdgeSdk.sendEdgeEvent({
-      eventType: "commerce.orderPlaced",
-      commerce: {
+      "eventType": "commerce.orderPlaced",
+      "commerce": {
         .....
       }
   }, sub(context, result)
@@ -146,13 +149,31 @@ sendEdgeEvent: function(xdmData as object, callback = _adb_default_callback as f
 
 ---
 
+### resetIdentities
+
+Call this function to reset the Adobe identities such as ECID from the SDK.
+
+##### Syntax
+
+```brightscript
+resetIdentities: function() as void
+```
+
+##### Example
+
+```brightscript
+  m.adobeEdgeSdk.resetIdentities()
+```
+
+---
+
 ### setExperienceCloudId
 
 > Note: Please do not call this API if you do not have both the [Adobe Media SDK](https://experienceleague.adobe.com/docs/media-analytics/using/media-use-cases/sdk-track-scenegraph.html?lang=en#global-methods-for-mediaheartbeat) and the Edge SDK running in the same channel and you need to use the same ECID in both SDKs. By default, the Edge SDK automatically generates an ECID (Experience Cloud ID) when first used. If the Edge SDK and the previous media SDK are initialized in the same channel, calling this function can keep both SDKs running with the same ECID. `*` Call this function before using other public APIs. Otherwise, an automatically generated ECID will be assigned. Whenever the ECID is changed in the Media SDK, this API needs to be called to synchronize it in both SDKs.
 
 ##### Syntax
 
-```javascript
+```brightscript
 setExperienceCloudId: function(ecid as string) as void
 ```
 
@@ -208,11 +229,11 @@ function onAdbmobileApiResponse() as void
 
 ### shutdown
 
-Call this function to shutdown the SDK and drop the further API calls.
+Call this function to shut down the SDK and drop further API calls.
 
 ##### Syntax
 
-```javascript
+```brightscript
 shutdown: function() as void
 ```
 
