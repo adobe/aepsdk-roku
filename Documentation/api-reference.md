@@ -74,7 +74,7 @@ m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
 
 ### updateConfiguration
 
-> Call this function before using any other public APIs. For example, if calling sendEdgeEvent() without a valid configuration in the SDK, the SDK will drop the API call.
+> It is better to call this function before calling any other public APIs. For example, if calling sendEdgeEvent() without a valid configuration in the SDK, the Edge requests will be queued locally and sent out later with the valid configuration.
 
 ##### Syntax
 
@@ -96,7 +96,9 @@ configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = "<YOUR_DOMAIN_NAME>"
 m.adobeEdgeSdk.updateConfiguration(configuration)
 ```
 
-The `configId` value is presented as `Datastream ID` in the [satastream details](https://experienceleague.adobe.com/docs/experience-platform/edge/datastreams/configure.html?lang=en#view-details) page.
+The `EDGE_CONFIG_ID` value is presented as `Datastream ID` in the [satastream details](https://experienceleague.adobe.com/docs/experience-platform/edge/datastreams/configure.html?lang=en#view-details) page.
+
+The `EDGE_DOMAIN` value is the first-party domain mapped to the Adobe-provisioned Edge Network domain. For more information, see this [documentation](https://developer.adobe.com/client-sdks/documentation/edge-network/#domain-configuration)
 
 ---
 
