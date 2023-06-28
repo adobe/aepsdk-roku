@@ -6,6 +6,8 @@ link-sdk:
 
 link-tests:
 	(ln -s ../../../code/tests ./source/tests)
+
+link-test-framework:
 	(ln -s ../../../code/testFramework ./source/testFramework)
 
 
@@ -15,7 +17,3 @@ install-bsc:
 
 build:
 	(bsc)
-
-unit-tests:
-	(curl -d '' http://192.168.1.144:8060/launch/dev?RunTests=true)
-	# (curl -d '' 'http://192.168.1.144:8060/launch/dev?RunTests=true')
