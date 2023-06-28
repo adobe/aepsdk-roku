@@ -133,7 +133,8 @@ function _adb_test_functions() as dynamic
     AdobeEdgeTestSuite_Edge_utils_SetUp
     AdobeEdgeTestSuite_Edge_utils_TearDown
     TestCase_AdobeEdge_adb_generate_implementation_details
-    TestCase_AdobeEdge_adb_buildEdgeRequestURL
+    TestCase_AdobeEdge_adb_buildEdgeRequestURL_validDomain
+    TestCase_AdobeEdge_adb_buildEdgeRequestURL_invalidDomain_fallbackToDefaultDomain
     ' adb_test_AdobeEdge_EdgeRequestWorker.brs
     AdobeEdgeTestSuite_EdgeRequestWorker_SetUp
     AdobeEdgeTestSuite_EdgeRequestWorker_BeforeEach

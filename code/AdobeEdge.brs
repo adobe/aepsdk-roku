@@ -923,7 +923,9 @@ function _adb_buildEdgeRequestURL(configId as string, requestId as string, edgeD
     path = "/ee/v1/interact"
     query = "?configId=" + configId
 
-    if not _adb_isEmptyOrInvalidString(edgeDomain)
+    regexPattern = CreateObject("roRegex", "^((?!-)[A-Za-z0-9-]+(?<!-)\.)+[A-Za-z]{2,6}$","")
+
+    if not _adb_isEmptyOrInvalidString(edgeDomain) and regexPattern.isMatch(edgeDomain)
         host = edgeDomain
     end if
 
