@@ -680,10 +680,10 @@ function _adb_StateManager() as object
 
             url = _adb_buildEdgeRequestURL(configId, _adb_generate_UUID(), edgeDomain)
             jsonBody = {
-                events: [
+                "events": [
                     {
-                        query: {
-                            identity: { fetch: [
+                        "query": {
+                            "identity": { "fetch": [
                                     "ECID"
                             ] }
 
