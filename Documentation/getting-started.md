@@ -45,12 +45,14 @@ Initialize and configure the Roku SDK inside your `scene` script.
   ' send XDM data to Adobe Edge Network '
   
   m.adobeEdgeSdk.sendEdgeEvent({
-    eventType: "commerce.orderPlaced",
-    commerce: {
-      key: "value"
+    "eventType": "commerce.orderPlaced",
+    "eventType": {
+      "key": "value"
     }
   })
 ```
+
+> If you need to run both Media SDK and Edge SDK in the same Roku channel and want to use the same ECID, you can call the `setExperienceCloudId` API. For more information, refer to the [API reference](./api-reference.md#setexperiencecloudid).
 
 ## Next Step
 
