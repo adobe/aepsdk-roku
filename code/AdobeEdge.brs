@@ -126,7 +126,7 @@ function AdobeSDKInit() as object
 
             ' ***********************************************************************
             '
-            ' Call this function to reset the Adobe set identities such as ECID from the SDK.
+            ' Call this function to reset the Adobe identities such as ECID from the SDK.
             '
             ' ***********************************************************************
 
