@@ -293,7 +293,7 @@ function AdobeSDKInit() as object
                 dispatchEvent: function(event as object) as void
                     _adb_log_debug("dispatchEvent() - Dispatching event:(" + FormatJson(event) + ")")
                     if m.taskNode = invalid then
-                        _adb_log_debug("dispatchEvent() - Cannot Dispatch event with uuid:(" + FormatJson(event.uuid) + "), task node instance is invalid.")
+                        _adb_log_debug("dispatchEvent() - Cannot dispatch public API event after shutdown(). Please initialze the SDK using AdobeSDKInit() API.")
                         return
                     end if
 
@@ -589,7 +589,7 @@ function _adb_StateManager() as object
                 m._edge_configId = configId
             end if
 
-            ' example domain: org.data.edge.adobedc.net
+            ' example domain: company.data.adobedc.net
             regexPattern = CreateObject("roRegex", "^((?!-)[A-Za-z0-9-]+(?<!-)\.)+[A-Za-z]{2,6}$", "")
             if not _adb_isEmptyOrInvalidString(domain) and regexPattern.isMatch(domain)
                 m._edge_domain = domain
