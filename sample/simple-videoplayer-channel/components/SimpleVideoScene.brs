@@ -29,18 +29,18 @@ sub init()
   m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
 
   configuration = {}
-  configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = "test"
+  configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = ""
   'configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = ""
 
   m.adobeEdgeSdk.updateConfiguration(configuration)
 
   ' m.adobeEdgeSdk.setExperienceCloudId("012344545454809")
-  ' m.adobeEdgeSdk.sendEdgeEvent({
-  '   eventType: "commerce.orderPlaced",
-  '   commerce: {
-  '     key: "value"
-  '   }
-  ' })
+  m.adobeEdgeSdk.sendEdgeEvent({
+    "eventType": "commerce.orderPlaced",
+    "commerce": {
+      "key": "value"
+    }
+  })
   ' m.adobeEdgeSdk.sendEdgeEvent({
   '   a: {
   '     a1: "a1",
