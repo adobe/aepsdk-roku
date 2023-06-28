@@ -918,9 +918,9 @@ end function
 ' ********** Edge utils ********
 function _adb_generate_implementation_details() as object
     return {
-        name: "https://ns.adobe.com/experience/mobilesdk/roku",
-        version: _adb_sdk_version(),
-        environment: "app"
+        "name": "https://ns.adobe.com/experience/mobilesdk/roku",
+        "version": _adb_sdk_version(),
+        "environment": "app"
     }
 end function
 
@@ -1036,19 +1036,19 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
 
         _processRequest: function(xdmData as object, ecid as string, configId as string, requestId as string, edgeDomain = invalid as dynamic) as object
             jsonBody = {
-                xdm: {
-                    identityMap: {
-                        ECID: [
+                "xdm": {
+                    "identityMap": {
+                        "ECID": [
                             {
-                                id: ecid,
-                                primary: true,
-                                authenticatedState: "ambiguous"
+                                "id": ecid,
+                                "primary": true,
+                                "authenticatedState": "ambiguous"
                             }
                         ]
                     },
-                    implementationDetails: _adb_generate_implementation_details()
+                    "implementationDetails": _adb_generate_implementation_details()
                 },
-                events: []
+                "events": []
             }
             jsonBody.events[0] = xdmData
             url = _adb_buildEdgeRequestURL(configId, requestId, edgeDomain)
