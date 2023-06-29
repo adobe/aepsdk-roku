@@ -26,14 +26,14 @@ If you want to move `AdobeEdge.brs`, `AdobeEdgeTask.brs`, and `AdobeEdgeTask.xml
 
 ## Initialize and configure the AEP Roku SDK
 
-Initialize and configure the Roku SDK inside your `scene` script.
+Initialize and configure the AEP Roku SDK inside your `scene` script.
 
 ```xml
   <script type="text/brightscript" uri="pkg:/source/AdobeEdge.brs"/>
 ```
 
 ```brightscript
-  m.adobeEdgeSdk = AdobeSDKInit()
+  m.aepSdk = AdobeSDKInit()
   ADB_CONSTANTS = AdobeSDKConstants()
 
   configuration = {}
@@ -45,7 +45,7 @@ Initialize and configure the Roku SDK inside your `scene` script.
 
   ' send XDM data to Adobe Edge Network '
 
-  m.adobeEdgeSdk.sendEvent({
+  m.aepSdk.sendEvent({
     "eventType": "commerce.orderPlaced",
     "eventType": {
       "key": "value"
@@ -53,10 +53,10 @@ Initialize and configure the Roku SDK inside your `scene` script.
   })
 ```
 
-> If you need to run both Media SDK and Edge SDK in the same Roku channel and want to use the same ECID, you can call the `setExperienceCloudId` API. For more information, refer to the [API reference](./api-reference.md#setexperiencecloudid).
+> If you need to run both Media SDK for Roku and AEP Roku SDK in the same Roku channel and want to use the same ECID, you can call the `setExperienceCloudId` API. For more information, refer to the [API reference](./api-reference.md#setexperiencecloudid).
 
 ## Next Step
 
 - Get familiar with the various APIs offered by the Adobe Roku SDK by checking out the [API reference](./api-reference.md).
 
-- Review the [sample apps](../sample/simple-videoplayer-channel/README.md) that is integrated with the Adobe Roku SDK.
+- Review the [sample app](../sample/simple-videoplayer-channel/README.md) that is integrated with the AEP Roku SDK.
