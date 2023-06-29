@@ -131,14 +131,10 @@ sendEvent: function(xdmData as object, callback = _adb_default_callback as funct
 
 #### Sample ImplementationDetails XDM:
 ```json
-"xdm": {
-  ...
-  ...
-  "implementationDetails": {
-    "name": "https://ns.adobe.com/experience/mobilesdk/roku",
-    "version": "1.0.0-alpha1",
-    "environment": "app"
-  }
+"implementationDetails": {
+  "name": "https://ns.adobe.com/experience/mobilesdk/roku",
+  "version": "1.0.0-alpha1",
+  "environment": "app"
 }
 ```
 
