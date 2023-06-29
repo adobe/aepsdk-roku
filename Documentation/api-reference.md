@@ -180,7 +180,7 @@ m.aepSdk.resetIdentities()
 ### setExperienceCloudId
 
 > **Warning**
-> Note: Please do not call this API if you do not have both the [Adobe Media SDK for Roku](https://experienceleague.adobe.com/docs/media-analytics/using/media-use-cases/sdk-track-scenegraph.html?lang=en#global-methods-for-mediaheartbeat) and the AEP Roku SDK running in the same channel and you need to use the same ECID in both SDKs. By default, the AEP Roku SDK automatically generates an ECID (Experience Cloud ID) when first used. If the AEP Roku SDK and the previous Media SDK for Roku are initialized in the same channel, calling this function can keep both SDKs running with the same ECID. `*` Call this function before using other public APIs. Otherwise, an automatically generated ECID will be assigned. Whenever the ECID is changed in the Media SDK for Roku, this API needs to be called to synchronize it in both the SDKs.
+> Please do not call this API if you do not have both the [Adobe Media SDK for Roku](https://experienceleague.adobe.com/docs/media-analytics/using/media-use-cases/sdk-track-scenegraph.html?lang=en#global-methods-for-mediaheartbeat) and the AEP Roku SDK running in the same channel and you need to use the same ECID in both SDKs. By default, the AEP Roku SDK automatically generates an ECID (Experience Cloud ID) when first used. If the AEP Roku SDK and the previous Media SDK for Roku are initialized in the same channel, calling this function can keep both SDKs running with the same ECID. `*` Call this function before using other public APIs. Otherwise, an automatically generated ECID will be assigned. Whenever the ECID is changed in the Media SDK for Roku, this API needs to be called to synchronize it in both the SDKs.
 
 ##### Syntax
 
