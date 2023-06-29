@@ -16,8 +16,8 @@ If no datastream was previously created, see [Configure datastreams](https://dev
 
   - Copy the `AdobeEdge.brs` file to the `source` directory
   - Copy the `components/adobe/AdobeEdgeTask.brs` and `components/adobe/AdobeEdgeTask.xml` files to the `components/adobe` directory
- 
-If you want to move `AdobeEdge.brs`, `AdobeEdgeTask.brs`, and `AdobeEdgeTask.xml` to different locations than the paths specified below, please update `AdobeEdgeTask.xml` file with the corresponding file path. 
+
+If you want to move `AdobeEdge.brs`, `AdobeEdgeTask.brs`, and `AdobeEdgeTask.xml` to different locations than the paths specified below, please update `AdobeEdgeTask.xml` file with the corresponding file path.
 
 ```xml
   <script type="text/brightscript" uri="pkg:/components/adobe/AdobeEdgeTask.brs"/>
@@ -41,10 +41,10 @@ Initialize and configure the Roku SDK inside your `scene` script.
   m.adobeEdgeSdk.updateConfiguration(configuration)
 
   m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.DEBUG)
-  
+
   ' send XDM data to Adobe Edge Network '
-  
-  m.adobeEdgeSdk.sendEdgeEvent({
+
+  m.adobeEdgeSdk.sendEvent({
     "eventType": "commerce.orderPlaced",
     "eventType": {
       "key": "value"

@@ -103,10 +103,9 @@ function _adb_test_functions() as dynamic
     TestCase_AdobeEdge_public_APIs_shutdown
     TestCase_AdobeEdge_public_APIs_updateConfiguration
     TestCase_AdobeEdge_public_APIs_updateConfiguration_invalid
-    TestCase_AdobeEdge_public_APIs_sendEdgeEvent
-    TestCase_AdobeEdge_public_APIs_sendEdgeEvent_invalid
-    TestCase_AdobeEdge_public_APIs_sendEdgeEventWithCallback
-    TestCase_AdobeEdge_public_APIs_sendEdgeEventWithNonXdmData
+    TestCase_AdobeEdge_public_APIs_sendEvent
+    TestCase_AdobeEdge_public_APIs_sendEvent_invalid
+    TestCase_AdobeEdge_public_APIs_sendEventWithCallback
     TestCase_AdobeEdge_public_APIs_setExperienceCloudId
     TestCase_AdobeEdge_public_APIs_buildEvent
     ' adb_test_AdobeEdge_localDataStoreService.brs

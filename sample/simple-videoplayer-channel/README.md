@@ -14,4 +14,4 @@ The Roku SDK is initialized and configured in the [SimpleVideoScene](./component
 
 ## Send XDM data to the Adobe Edge Network
 
-You can now use the `sendEdgeEvent` API to send XDM data to the Adobe Edge Network.
+You can now use the `sendEvent` API to send XDM data to the Adobe Edge Network.

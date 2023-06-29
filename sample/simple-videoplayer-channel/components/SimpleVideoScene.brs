@@ -33,7 +33,7 @@ sub init()
   'configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = ""
   m.adobeEdgeSdk.updateConfiguration(configuration)
 
-  m.adobeEdgeSdk.sendEdgeEvent({
+  m.adobeEdgeSdk.sendEvent({
     "eventType": "commerce.orderPlaced",
     "commerce": {
       "key1": "value1"
@@ -42,7 +42,7 @@ sub init()
 
   ' m.adobeEdgeSdk.resetIdentities()
 
-  ' m.adobeEdgeSdk.sendEdgeEvent({
+  ' m.adobeEdgeSdk.sendEvent({
   '   "eventType": "commerce.orderPlaced",
   '   "commerce": {
   '     "key2": "value2"
@@ -65,7 +65,7 @@ sub onButtonSelected()
     ' Send an Experience Event with callback
     '----------------------------------------
 
-    m.adobeEdgeSdk.sendEdgeEvent({
+    m.adobeEdgeSdk.sendEvent({
       "eventType": "commerce.orderPlaced",
       "commerce": {
         "key3": "value3"

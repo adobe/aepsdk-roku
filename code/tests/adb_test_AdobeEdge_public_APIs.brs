@@ -104,16 +104,16 @@ sub TestCase_AdobeEdge_public_APIs_updateConfiguration_invalid()
     UTF_assertEqual(0, event.Count())
 end sub
 
-' target: sendEdgeEvent()
+' target: sendEvent()
 ' @Test
-sub TestCase_AdobeEdge_public_APIs_sendEdgeEvent()
+sub TestCase_AdobeEdge_public_APIs_sendEvent()
     _internal_const = _adb_internal_constants()
     sdkInstance = AdobeSDKInit()
     xdmData = {
         eventType: "commerce.orderPlaced",
         commerce: {
     } }
-    sdkInstance.sendEdgeEvent(xdmData)
+    sdkInstance.sendEvent(xdmData)
     event = GetGlobalAA()._adb_edge_task_node["requestEvent"]
     UTF_assertEqual(event.apiName, _internal_const.PUBLIC_API.SEND_EDGE_EVENT)
     UTF_assertEqual(sdkInstance._private.cachedCallbackInfo.Count(), 0)
@@ -126,11 +126,11 @@ sub TestCase_AdobeEdge_public_APIs_sendEdgeEvent()
     UTF_AssertNotInvalid(event.timestamp)
 end sub
 
-' target: sendEdgeEvent()
+' target: sendEvent()
 ' @Test
-sub TestCase_AdobeEdge_public_APIs_sendEdgeEvent_invalid()
+sub TestCase_AdobeEdge_public_APIs_sendEvent_invalid()
     sdkInstance = AdobeSDKInit()
-    sdkInstance.sendEdgeEvent("invalid xdm data")
+    sdkInstance.sendEvent("invalid xdm data")
     event = GetGlobalAA()._adb_edge_task_node["requestEvent"]
 
     UTF_assertEqual(0, event.Count())
@@ -138,9 +138,9 @@ sub TestCase_AdobeEdge_public_APIs_sendEdgeEvent_invalid()
     UTF_assertEqual(sdkInstance._private.cachedCallbackInfo.Count(), 0)
 end sub
 
-' target: sendEdgeEvent()
+' target: sendEvent()
 ' @Test
-sub TestCase_AdobeEdge_public_APIs_sendEdgeEventWithCallback()
+sub TestCase_AdobeEdge_public_APIs_sendEventWithCallback()
     sdkInstance = AdobeSDKInit()
     ' configuration = { "edge.configId": "test-config-id" }
     xdmData = {
@@ -153,7 +153,7 @@ sub TestCase_AdobeEdge_public_APIs_sendEdgeEventWithCallback()
     callback_result = {
         "test": "test"
     }
-    sdkInstance.sendEdgeEvent(xdmData, sub(ctx, result)
+    sdkInstance.sendEvent(xdmData, sub(ctx, result)
         UTF_assertEqual({
             content: "test"
         }, ctx)
@@ -168,23 +168,10 @@ sub TestCase_AdobeEdge_public_APIs_sendEdgeEventWithCallback()
     UTF_assertEqual(callbackInfo.context, context)
     UTF_AssertNotInvalid(callbackInfo.timestamp_in_millis)
     callbackInfo.cb(context, callback_result)
-    UTF_assertEqual(event.apiName, "sendEdgeEvent")
+    UTF_assertEqual(event.apiName, "sendEvent")
     UTF_assertEqual(event.data, { xdm: xdmData })
     UTF_AssertNotInvalid(event.uuid)
     UTF_AssertNotInvalid(event.timestamp)
-end sub
-
-' target: sendEdgeEventWithNonXdmData()
-' @Test
-sub TestCase_AdobeEdge_public_APIs_sendEdgeEventWithNonXdmData()
-    ' sdkInstance = AdobeSDKInit()
-    ' configuration = { "edge.configId": "test-config-id" }
-    ' sdkInstance.updateConfiguration(configuration)
-    ' event = GetGlobalAA()._adb_edge_task_node["requestEvent"]
-    ' UTF_assertEqual(event.apiName, "setConfiguration")
-    ' UTF_assertEqual(event.data, configuration)
-    ' UTF_AssertNotInvalid(event.uuid)
-    ' UTF_AssertNotInvalid(event.timestamp)
 end sub
 
 ' target: setExperienceCloudId()
