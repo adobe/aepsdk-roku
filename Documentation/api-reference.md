@@ -194,7 +194,7 @@ This API is intended to sync ECID (Experience Cloud ID) from [Adobe Media SDK fo
 > `*` Call this API before using other public APIs on AEP Roku SDK. Otherwise, an automatically generated ECID will be used.
 
 > **Warning**
-> **Do not** use `setExperienceCloudId` API to set custom ECID.
+> This API should only be used to share the ECID between the Adobe Media SDK and AEP Roku SDK.
 
 ##### Syntax
 
