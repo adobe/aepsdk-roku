@@ -53,7 +53,8 @@ Initialize and configure the AEP Roku SDK inside your `scene` script.
   })
 ```
 
-> If you need to run both Media SDK for Roku and AEP Roku SDK in the same Roku channel and want to use the same ECID, you can call the `setExperienceCloudId` API. For more information, refer to the [API reference](./api-reference.md#setexperiencecloudid).
+> **Note**
+> If you need to run both Media SDK for Roku and AEP Roku SDK in the same Roku channel and want to use the same ECID, use `setExperienceCloudId` API to set the ECID from Media SDK with the AEP Roku SDK. For more information, refer to the [API reference](./api-reference.md#setexperiencecloudid).
 
 ## Next Step
 
