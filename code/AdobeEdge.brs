@@ -408,7 +408,9 @@ function _adb_handle_response_event() as void
         timeout_ms = sdk._private.cons.CALLBACK_TIMEOUT_MS
         current_time = _adb_timestampInMillis()
         for each key in sdk._private.cachedCallbackInfo
-            if current_time - sdk._private.cachedCallbackInfo[key].timestamp_in_millis > timeout_ms
+            cachedCallback = sdk._private.cachedCallbackInfo[key]
+
+            if cachedCallback <> invalid and ((current_time - cachedCallback.timestamp_in_millis) > timeout_ms)
                 sdk._private.cachedCallbackInfo.Delete(key)
             end if
         end for

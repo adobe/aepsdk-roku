@@ -24,3 +24,9 @@ splash_min_time=0
 
 # Resolution
 ui_resolutions=fhd
+
+# Profiler settings
+#bsprof_data_dest=local
+#bsprof_enable=1
+#bsprof_enable_lines=1
+#bsprof_enable_mem=1
