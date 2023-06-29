@@ -130,7 +130,7 @@ sendEvent: function(xdmData as object, callback = _adb_default_callback as funct
 > `sendEvent` API will automatically collect and attach the identities synced with the SDK and the implementation details. That data is sent as `IdentityMap` and `Implementation Details` fieldgroups under the XDM payload and are sent with every Experience Edge Event. IdentityMap is added to the schema automatically but if you would like to include ImplementationDetails information in your dataset, add the `Implementation Details` field group to the schema tied to your dataset.
 
 #### Sample ImplementationDetails XDM:
-```
+```json
 "xdm": {
   ...
   ...
