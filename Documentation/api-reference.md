@@ -1,6 +1,6 @@
 # AEP Roku SDK API Usage
 
-This document lists the APIs provided by Adobe Roku SDK, along with sample code snippets on how to properly use the APIs.
+This document lists the APIs provided by AEP Roku SDK, along with code samples for API usage.
 
 - [AdobeSDKInit](#AdobeSDKInit)
 - [getVersion](#getVersion)
@@ -15,7 +15,7 @@ This document lists the APIs provided by Adobe Roku SDK, along with sample code 
 
 ### AdobeSDKInit
 
-Initialize the AEP Edge SDK and return the public API instance. `*` The following variables are reserved to hold the SDK instances in GetGlobalAA():
+Initialize the AEP Roku SDK and return the public API instance. `*` The following variables are reserved to hold the SDK instances in GetGlobalAA():
 
 - `GetGlobalAA()._adb_public_api`
 - `GetGlobalAA()._adb_edge_task_node`
