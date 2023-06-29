@@ -190,7 +190,7 @@ function AdobeSDKInit() as object
             '
             ' Example 2:
             '
-            ' m.adobeEdgeSdk.sendEventWithCallback({
+            ' m.adobeEdgeSdk.sendEvent({
             '     eventType: "commerce.orderPlaced",
             '     commerce: {
             '        .....

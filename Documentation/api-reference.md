@@ -6,7 +6,7 @@ This document lists the APIs provided by Adobe Roku SDK, along with sample code 
 - [getVersion](#getVersion)
 - [setLogLevel](#setLogLevel)
 - [updateConfiguration](#updateConfiguration)
-- [sendEdgeEvent](#sendEdgeEvent)
+- [sendEvent](#sendEvent)
 - [resetIdentities](#resetIdentities)
 - [(optional) setExperienceCloudId](#setExperienceCloudId)
 - [shutdown](#shutdown)
@@ -76,7 +76,7 @@ m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
 
 ### updateConfiguration
 
-> It is better to call this function before calling any other public APIs. For example, if calling sendEdgeEvent() without a valid configuration in the SDK, the Edge requests will be queued locally and sent out later with the valid configuration.
+> It is better to call this function before calling any other public APIs. For example, if calling sendEvent() without a valid configuration in the SDK, the Edge requests will be queued locally and sent out later with the valid configuration.
 
 ##### Syntax
 
@@ -104,14 +104,14 @@ The `EDGE_DOMAIN` value is the first-party domain mapped to the Adobe-provisione
 
 ---
 
-### sendEdgeEvent
+### sendEvent
 
 Sends an Experience event to Edge Network.
 
 ##### Syntax
 
 ```brightscript
-sendEdgeEvent: function(xdmData as object, callback = _adb_default_callback as function, context = invalid as dynamic) as void
+sendEvent: function(xdmData as object, callback = _adb_default_callback as function, context = invalid as dynamic) as void
 ```
 
 - `@param data as object : xdm data following the XDM schema that is defined in the Schema Editor`
@@ -124,7 +124,7 @@ sendEdgeEvent: function(xdmData as object, callback = _adb_default_callback as f
 ##### Example 1
 
 ```brightscript
-  m.adobeEdgeSdk.sendEdgeEvent({
+  m.adobeEdgeSdk.sendEvent({
     "eventType": "commerce.orderPlaced",
       "commerce": {
         .....
@@ -132,12 +132,12 @@ sendEdgeEvent: function(xdmData as object, callback = _adb_default_callback as f
   })
 ```
 
-> Identifiers are not case sensitive in [BrightScript](https://developer.roku.com/docs/references/brightscript/language/expressions-variables-types.md), so please always use the `String literals` to present the XDM data keys. 
+> Identifiers are not case sensitive in [BrightScript](https://developer.roku.com/docs/references/brightscript/language/expressions-variables-types.md), so please always use the `String literals` to present the XDM data keys.
 
 ##### Example 2
 
 ```brightscript
-  m.adobeEdgeSdk.sendEdgeEvent({
+  m.adobeEdgeSdk.sendEvent({
       "eventType": "commerce.orderPlaced",
       "commerce": {
         .....
