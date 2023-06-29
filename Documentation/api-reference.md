@@ -126,8 +126,8 @@ sendEvent: function(xdmData as object, callback = _adb_default_callback as funct
 - `@param [optional] callback as function(context, result) : handle Edge response`
 - `@param [optional] context as dynamic : context to be passed to the callback function`
 
-> This function will automatically add an identity property, the Experience Cloud Identifier (ECID), to each Edge network request within the Experience event's `XDM IdentityMap`.
-> Also `ImplementationDetails` are automatically collected and are sent with every Experience Event. If you would like to include this information in your dataset, add the "Implementation Details" field group to the schema tied to your dataset.
+> **Note**
+> `sendEvent` API will automatically collect and attach the identities synced with the SDK and implementation details. That data is sent as `IdentityMap` and `Implementation Details` fieldgroups under the XDM payload and are sent with every Experience Edge Event. IdentityMap is added to the schema automatically but if you would like to include ImplementationDetails information in your dataset, add the `Implementation Details` field group to the schema tied to your dataset.
 
 ##### Example 1
 
