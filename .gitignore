@@ -115,3 +115,7 @@ output/
 sample/development/components/adobe/AdobeEdgeTask.brs
 sample/development/source/adobe
 sample/development/source/tests
+
+
+sample/development/source/test_config.json
+sample/development/.vscode/settings.json

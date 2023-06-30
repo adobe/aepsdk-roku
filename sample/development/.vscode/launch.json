@@ -1,18 +1,15 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "BrightScript Debug: Launch",
+            "name": "Launch Roku",
             "type": "brightscript",
             "request": "launch",
-            // "host": "192.168.1.253",
-            "host": "192.168.1.144",
-            "password": "1111",
+            "host": "${config:roku_ip}",
+            "password": "${config:roku_password}",
             "rootDir": "${workspaceFolder}",
-            "injectRdbOnDeviceComponent": true,
+            // "injectRdbOnDeviceComponent": true,
+            // "deepLinkUrl": "http://${host}:8060/launch/dev?RunUnitTests=true"
         }
     ]
 }

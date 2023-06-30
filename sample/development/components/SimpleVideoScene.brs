@@ -29,7 +29,13 @@ sub init()
   ' m.adobeEdgeSdk.setExperienceCloudId(get_mid_from_media_sdk)
 
   configuration = {}
-  configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = ""
+
+  test_config = ParseJson(ReadAsciiFile("pkg:/source/test_config.json"))
+  if test_config.count() > 0
+    configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = test_config.config_id
+  end if
+
+  ' configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = ""
   'configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = ""
   m.adobeEdgeSdk.updateConfiguration(configuration)
 
