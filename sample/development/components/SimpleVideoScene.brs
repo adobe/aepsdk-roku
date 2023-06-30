@@ -1,12 +1,7 @@
 
 ' 1st function that runs for the scene component on channel startup
 sub init()
-  'To see print statements/debug info, telnet on port 8089
-  m.Image = m.top.findNode("Image")
   m.ButtonGroup = m.top.findNode("ButtonGroup")
-  m.Details = m.top.findNode("Details")
-  m.Title = m.top.findNode("Title")
-  m.Video = m.top.findNode("Video")
   m.Warning = m.top.findNode("WarningDialog")
   m.Exiter = m.top.findNode("Exiter")
   setContent()
@@ -94,26 +89,9 @@ end sub
 'Set your information here
 sub setContent()
 
-  m.Image.uri = "pkg:/images/CraigVenter-2008.jpg"
-  ContentNode = CreateObject("roSGNode", "ContentNode")
-  ContentNode.streamFormat = "mp4"
-  ContentNode.url = "http://video.ted.com/talks/podcast/DanGilbert_2004_480.mp4"
-  ContentNode.ShortDescriptionLine1 = "Can we create new life out of our digital universe?"
-  ContentNode.Description = "He walks the TED2008 audience through his latest research into fourth-generation fuels -- biologically created fuels with CO2 as their feedstock. His talk covers the details of creating brand-new chromosomes using digital technology, the reasons why we would want to do this, and the bioethics of synthetic life. A fascinating Q and A with TED's Chris Anderson follows."
-  ContentNode.StarRating = 80
-  ContentNode.Length = 1972
-  ContentNode.Title = "Craig Venter asks, Can we create new life out of our digital universe?"
-  ContentNode.subtitleConfig = { Trackname: "pkg:/source/CraigVenter.srt" }
-
-  m.Video.content = ContentNode
-
   'Change the buttons
   Buttons = ["Play", "SendEvent", "Exit"]
   m.ButtonGroup.buttons = Buttons
-
-  'Change the details
-  m.Title.text = "Craig Venter asks, Can we create new life out of our digital universe?"
-  m.Details.text = "He walks the TED2008 audience through his latest research into fourth-generation fuels -- biologically created fuels with CO2 as their feedstock. His talk covers the details of creating brand-new chromosomes using digital technology, the reasons why we would want to do this, and the bioethics of synthetic life. A fascinating Q and A with TED's Chris Anderson follows."
 
 end sub
 
