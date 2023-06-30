@@ -31,7 +31,7 @@ sub Main(input as dynamic)
       _adb_run_tests()
     end if
   end if
-  ' _adb_run_tests()
+  _adb_run_tests()
   showHeroScreen()
 end sub
 

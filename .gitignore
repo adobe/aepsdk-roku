@@ -111,3 +111,7 @@ sample/simple-videoplayer-channel/components/adobe
 sample/simple-videoplayer-channel/source/AdobeEdge.brs
 sample/simple-videoplayer-channel/source/tests
 output/
+
+sample/development/components/adobe/AdobeEdgeTask.brs
+sample/development/source/adobe
+sample/development/source/tests

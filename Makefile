@@ -33,3 +33,11 @@ archive:clean
 
 version:
 	echo $(VERSION)
+
+# Each *.brs should include a moulde name line as below: 
+# *************** MODULE: {module name} ****************
+# This line will be used to generate the final SDK file.
+# The module line should be placed before line 15.
+MODULE_LINE_SHOULD_BEFORE_LINE_NUMBER = 15
+build-sdk:
+	./build/build.sh ${MODULE_LINE_SHOULD_BEFORE_LINE_NUMBER}
