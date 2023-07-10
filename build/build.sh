@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "######################################################################"
-echo "##### Merging AdobeEdge SDK"
+echo "##### Building AdobeEdge SDK"
 echo "######################################################################"
 
 # Get the max number of lines could include license header
@@ -15,8 +15,13 @@ fi
 
 # Create the output directory if not exists
 mkdir -p output
-rm -rf /output/AdobeEdge.brs
+rm -rf ./output/AdobeEdge.brs
+rm -rf ./output/components
 
+# Copy the task node files to output directory
+cp -r ./code/components ./output
+
+# Merge the souce files to one SDK file under output directory
 cat ./code/AdobeEdge.brs > ./output/AdobeEdge.brs
 
 brs_array=(`find ./code/main -maxdepth 2 -name "*.brs"`)

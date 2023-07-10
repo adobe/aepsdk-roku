@@ -1,11 +1,3 @@
-# configurations
-
-OUTPUT_DIR = ./output
-OUT_DIR = ./out
-INFO_TXT_FILE = info.txt
-
-SDK_COMPONENTS_DIR = ./code/components
-
 GIT_HASH:=$(shell git show --name-status | grep commit | awk '{print $$2}' | head -c6)
 VERSION:=$(shell grep "VERSION = " ./output/AdobeEdge.brs | sed -e 's/.*= //; s/,//g; s/"//g')
 
@@ -14,8 +6,8 @@ install-bsc:
 	(npm install brighterscript -g)
 
 clean:
-	(rm -rf $(OUTPUT_DIR))
-	(rm -rf $(OUT_DIR))
+	(rm -rf ./output)
+	(rm -rf ./out)
 	
 archive:clean build-sdk
 	@echo "######################################################################"
@@ -24,14 +16,18 @@ archive:clean build-sdk
 	@echo git-hash=$(GIT_HASH)
 	@echo version=$(VERSION)
 
-	mkdir -p $(OUT_DIR)
+	mkdir -p ./out
 
-	touch $(OUTPUT_DIR)/$(INFO_TXT_FILE)
-	@echo git-hash=$(GIT_HASH) >> $(OUTPUT_DIR)/$(INFO_TXT_FILE)
-	@echo version=$(VERSION) >> $(OUTPUT_DIR)/$(INFO_TXT_FILE)
-	cp -r $(SDK_COMPONENTS_DIR) $(OUTPUT_DIR)
+	touch ./output/info.txt
+	@echo git-hash=$(GIT_HASH) >> ./output/info.txt
+	@echo version=$(VERSION) >> ./output/info.txt
 
-	zip -r ./$(OUT_DIR)/AdobeEdge-$(VERSION).zip $(OUTPUT_DIR)/*
+	test -f ./output/components/adobe/AdobeEdgeTask.brs
+	test -f ./output/components/adobe/AdobeEdgeTask.xml
+	test -f ./output/AdobeEdge.brs
+	test -f ./output/info.txt
+
+	zip -r ./out/AdobeEdge-$(VERSION).zip ./output/*
 
 version:
 	echo $(VERSION)
