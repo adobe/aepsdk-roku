@@ -1,6 +1,6 @@
-# Roku SDK API Usage
+# AEP Roku SDK API Usage
 
-This document lists the APIs provided by Adobe Roku SDK, along with sample code snippets on how to properly use the APIs.
+This document lists the APIs provided by AEP Roku SDK, along with code samples for API usage.
 
 - [AdobeSDKInit](#AdobeSDKInit)
 - [getVersion](#getVersion)
@@ -15,7 +15,7 @@ This document lists the APIs provided by Adobe Roku SDK, along with sample code 
 
 ### AdobeSDKInit
 
-Initialize the Adobe SDK and return the public API instance. `*` The following variables are reserved to hold SDK instances in GetGlobalAA():
+Initialize the AEP Roku SDK and return the public API instance. `*` The following variables are reserved to hold the SDK instances in GetGlobalAA():
 
 - `GetGlobalAA()._adb_public_api`
 - `GetGlobalAA()._adb_edge_task_node`
@@ -32,7 +32,7 @@ function AdobeSDKInit() as object
 ##### Example
 
 ```brightscript
-m.adobeEdgeSdk = AdobeSDKInit()
+m.aepSdk = AdobeSDKInit()
 ```
 
 ---
@@ -50,7 +50,7 @@ getVersion: function() as string
 ##### Example
 
 ```brightscript
-sdkVersion = m.adobeEdgeSdk.getVersion()
+sdkVersion = m.aepSdk.getVersion()
 ```
 
 ---
@@ -69,14 +69,22 @@ setLogLevel: function(level as integer) as void
 
 ```brightscript
 ADB_CONSTANTS = AdobeSDKConstants()
-m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
+m.aepSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
 ```
 
 ---
 
 ### updateConfiguration
 
-> It is better to call this function before calling any other public APIs. For example, if calling sendEvent() without a valid configuration in the SDK, the Edge requests will be queued locally and sent out later with the valid configuration.
+> **Note**
+> Some public APIs need valid configuration to process the data and make the network call to Adobe Experience Edge Network. All the hits will be queued if no valid configuration is found. It is ideal to call updateConfiguration API with valid require configuration before any other public APIs.
+
+#### Configuration Keys
+
+| Constants | Raw value | Required |
+| :-- | :--: | :--: |
+| `ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID` | "edge.configId" | **Yes**
+| `ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN` | "edge.domain" | **No**
 
 ##### Syntax
 
@@ -95,10 +103,10 @@ configuration = {}
 configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = "<YOUR_CONFIG_ID>"
 configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = "<YOUR_DOMAIN_NAME>"
 
-m.adobeEdgeSdk.updateConfiguration(configuration)
+m.aepSdk.updateConfiguration(configuration)
 ```
 
-The `EDGE_CONFIG_ID` value is presented as `Datastream ID` in the [satastream details](https://experienceleague.adobe.com/docs/experience-platform/edge/datastreams/configure.html?lang=en#view-details) page.
+The `EDGE_CONFIG_ID` value is presented as `Datastream ID` in the [Datastream details](https://experienceleague.adobe.com/docs/experience-platform/edge/datastreams/configure.html?lang=en#view-details) page.
 
 The `EDGE_DOMAIN` value is the first-party domain mapped to the Adobe-provisioned Edge Network domain. For more information, see this [documentation](https://developer.adobe.com/client-sdks/documentation/edge-network/#domain-configuration)
 
@@ -118,13 +126,22 @@ sendEvent: function(xdmData as object, callback = _adb_default_callback as funct
 - `@param [optional] callback as function(context, result) : handle Edge response`
 - `@param [optional] context as dynamic : context to be passed to the callback function`
 
-> This function will automatically add an identity property, the Experience Cloud Identifier (ECID), to each Edge network request within the Experience event's `XDM IdentityMap`.
-> Also `ImplementationDetails` are automatically collected and are sent with every Experience Event. If you would like to include this information in your dataset, add the "Implementation Details" field group to the schema tied to your dataset.
+> **Note**
+> `sendEvent` API will automatically collect and attach the identities synced with the SDK and the implementation details. That data is sent as `IdentityMap` and `Implementation Details` fieldgroups under the XDM payload and are sent with every Experience Edge Event. IdentityMap is added to the schema automatically but if you would like to include ImplementationDetails information in your dataset, add the `Implementation Details` field group to the schema tied to your dataset.
+
+#### Sample ImplementationDetails XDM:
+```json
+"implementationDetails": {
+  "name": "https://ns.adobe.com/experience/mobilesdk/roku",
+  "version": "1.0.0-alpha1",
+  "environment": "app"
+}
+```
 
 ##### Example 1
 
 ```brightscript
-  m.adobeEdgeSdk.sendEvent({
+  m.aepSdk.sendEvent({
     "eventType": "commerce.orderPlaced",
       "commerce": {
         .....
@@ -137,7 +154,7 @@ sendEvent: function(xdmData as object, callback = _adb_default_callback as funct
 ##### Example 2
 
 ```brightscript
-  m.adobeEdgeSdk.sendEvent({
+  m.aepSdk.sendEvent({
       "eventType": "commerce.orderPlaced",
       "commerce": {
         .....
@@ -164,14 +181,20 @@ resetIdentities: function() as void
 ##### Example
 
 ```brightscript
-m.adobeEdgeSdk.resetIdentities()
+m.aepSdk.resetIdentities()
 ```
 
 ---
 
 ### setExperienceCloudId
 
-> Note: Please do not call this API if you do not have both the [Adobe Media SDK](https://experienceleague.adobe.com/docs/media-analytics/using/media-use-cases/sdk-track-scenegraph.html?lang=en#global-methods-for-mediaheartbeat) and the Edge SDK running in the same channel and you need to use the same ECID in both SDKs. By default, the Edge SDK automatically generates an ECID (Experience Cloud ID) when first used. If the Edge SDK and the previous media SDK are initialized in the same channel, calling this function can keep both SDKs running with the same ECID. `*` Call this function before using other public APIs. Otherwise, an automatically generated ECID will be assigned. Whenever the ECID is changed in the Media SDK, this API needs to be called to synchronize it in both SDKs.
+> **Note**
+This API is intended to sync ECID (Experience Cloud ID) from [Adobe Media SDK for Roku](https://experienceleague.adobe.com/docs/media-analytics/using/media-use-cases/sdk-track-scenegraph.html?lang=en#global-methods-for-mediaheartbeat) with AEP Roku SDK.
+> By default, the AEP Roku SDK automatically generates an ECID. If the AEP Roku SDK and the Media SDK for Roku are initialized in the same channel, this API helps in syncing ECID for both the SDKs. Use this API anytime the ECID changes in the Media SDK for Roku, to sync the ECID with the AEP Roku SDK.
+> `*` Call this API before using other public APIs on AEP Roku SDK. Otherwise, an automatically generated ECID will be used.
+
+> **Warning**
+> This API should only be used to share the ECID between the Adobe Media SDK and AEP Roku SDK.
 
 ##### Syntax
 
@@ -179,11 +202,11 @@ m.adobeEdgeSdk.resetIdentities()
 setExperienceCloudId: function(ecid as string) as void
 ```
 
-- `@param ecid as string : the ECID generated by the previous media SDK`
+- `@param ecid as string : the ECID generated by the Media SDK for Roku`
 
 ##### Example
 
-Setup Media SDK for Scenegraph APIs
+Setup Media SDK for Roku for Scenegraph APIs
 ```brightscript
 
 ''' Create adbmobileTask node
@@ -199,13 +222,13 @@ m.adbmobileConstants = m.adbmobile.sceneGraphConstants()
 m.adbmobileTask.ObserveField(m.adbmobileConstants.API_RESPONSE, "onAdbmobileApiResponse")
 ```
 
-Get ECID from Media SDK and set it with AdobeEdge SDK
+Get ECID from Media SDK for Roku and set it with AEP Roku SDK
 
 ```brightscript
 m.adbmobile.visitorMarketingCloudID()
 
 
-''' Listen ECID response from Media SDK and set it on AdobeEdge SDK
+''' Listen ECID response from Media SDK and set it on AEP Roku SDK
 function onAdbmobileApiResponse() as void
       responseObject = m.adbmobileTask[m.adbmobileConstants.API_RESPONSE]
 
@@ -217,8 +240,8 @@ function onAdbmobileApiResponse() as void
           if ecid_from_media_sdk <> invalid
             print "API Response: ECID: " + ecid_from_media_sdk
 
-            ''' AdobeEdgeSDK setECID()
-            m.adobeEdgeSdk.setExperienceCloudId(ecid_from_media_sdk)
+            ''' AEP Roku SDK setECID()
+            m.aepSdk.setExperienceCloudId(ecid_from_media_sdk)
           else
             print "API Response: ECID: " + "invalid"
           endif
@@ -231,7 +254,7 @@ function onAdbmobileApiResponse() as void
 
 ### shutdown
 
-Call this function to shut down the SDK and drop further API calls.
+Call this function to shut down the AEP Roku SDK and drop further API calls.
 
 ##### Syntax
 
@@ -242,5 +265,5 @@ shutdown: function() as void
 ##### Example
 
 ```brightscript
-m.adobeEdgeSdk.shutdown();
+m.aepSdk.shutdown();
 ```

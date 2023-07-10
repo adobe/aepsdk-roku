@@ -4,13 +4,13 @@ This guide explains how to quickly start using the Adobe Experience Platform Rok
 
 ## Configure a datastream
 
-A `datastream` is a server-side configuration that tells the Adobe Experience Platform Web SDK where to send the data it collects. You can configure a datastream to send data to multiple Adobe solutions.
+A `datastream` is a server-side configuration that tells the AEP Roku SDK where to send the data it collects. You can configure a datastream to send data to multiple Adobe solutions.
 
 If no datastream was previously created, see [Configure datastreams](https://developer.adobe.com/client-sdks/documentation/getting-started/configure-datastreams/) before moving to the next step.
 
-## Install the Roku SDK
+## Install the AEP Roku SDK
 
-- Download the Roku SDK zip file from the [GitHub Releases](https://github.com/adobe/aepsdk-roku/releases)
+- Download the AEP Roku SDK zip file from the [GitHub Releases](https://github.com/adobe/aepsdk-roku/releases)
 
 - Add the below SDK files to your Roku project
 
@@ -24,17 +24,18 @@ If you want to move `AdobeEdge.brs`, `AdobeEdgeTask.brs`, and `AdobeEdgeTask.xml
   <script type="text/brightscript" uri="pkg:/source/AdobeEdge.brs"/>
 ```
 
-## Initialize and configure the Roku SDK
+## Initialize and configure the AEP Roku SDK
 
-Initialize and configure the Roku SDK inside your `scene` script.
+Initialize and configure the AEP Roku SDK inside your `scene` script.
 
 ```xml
   <script type="text/brightscript" uri="pkg:/source/AdobeEdge.brs"/>
 ```
 
 ```brightscript
-  m.adobeEdgeSdk = AdobeSDKInit()
+  m.aepSdk = AdobeSDKInit()
   ADB_CONSTANTS = AdobeSDKConstants()
+
   configuration = {}
   configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = "<YOUR_CONFIG_ID>"
   configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = "<YOUR_DOMAIN_NAME>"
@@ -44,7 +45,7 @@ Initialize and configure the Roku SDK inside your `scene` script.
 
   ' send XDM data to Adobe Edge Network '
 
-  m.adobeEdgeSdk.sendEvent({
+  m.aepSdk.sendEvent({
     "eventType": "commerce.orderPlaced",
     "eventType": {
       "key": "value"
@@ -52,10 +53,11 @@ Initialize and configure the Roku SDK inside your `scene` script.
   })
 ```
 
-> If you need to run both Media SDK and Edge SDK in the same Roku channel and want to use the same ECID, you can call the `setExperienceCloudId` API. For more information, refer to the [API reference](./api-reference.md#setexperiencecloudid).
+> **Note**
+> If you need to run both Media SDK for Roku and AEP Roku SDK in the same Roku channel and want to use the same ECID, use `setExperienceCloudId` API to set the ECID from Media SDK with the AEP Roku SDK. For more information, refer to the [API reference](./api-reference.md#setexperiencecloudid).
 
 ## Next Step
 
 - Get familiar with the various APIs offered by the Adobe Roku SDK by checking out the [API reference](./api-reference.md).
 
-- Review the [sample apps](../sample/simple-videoplayer-channel/README.md) that is integrated with the Adobe Roku SDK.
+- Review the [sample app](../sample/simple-videoplayer-channel/README.md) that is integrated with the AEP Roku SDK.
