@@ -19,9 +19,9 @@ rm -rf /output/AdobeEdge.brs
 
 cat ./code/AdobeEdge.brs > ./output/AdobeEdge.brs
 
-myarray=(`find ./code/main -maxdepth 2 -name "*.brs"`)
+brs_array=(`find ./code/main -maxdepth 2 -name "*.brs"`)
 
-for file in ${myarray[@]}; do
+for file in ${brs_array[@]}; do
 # each *.brs should include a moulde name line, like: 
 # ********************************** MODULE: constants ************************************
 # find the line number of the module name line.
@@ -31,7 +31,7 @@ for file in ${myarray[@]}; do
         exit 1
     fi
     if [  $line -gt $line_max ]; then
-        echo "Error: $file has license header lines more than $line_max"
+        echo "Error: $file has license header more than $line_max lines"
         exit 1
     fi
     
