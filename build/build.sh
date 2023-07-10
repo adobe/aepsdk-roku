@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "######################################################################"
-echo "##### merging AdobeEdge SDK"
+echo "##### Merging AdobeEdge SDK"
 echo "######################################################################"
 
 # Get the max number of lines could include license header

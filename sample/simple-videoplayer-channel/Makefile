@@ -11,7 +11,7 @@ install-sdk: clean
 	(test -f ./output/components/adobe/AdobeEdgeTask.brs)
 	(test -f ./output/components/adobe/AdobeEdgeTask.xml)
 	(test -f ./output/AdobeEdge.brs)
-	(cp -R ./output/components/adobe ./components/adobe)
+	(cp -R ./output/components/adobe ./components)
 	(cp ./output/AdobeEdge.brs ./source/AdobeEdge.brs)
 
 

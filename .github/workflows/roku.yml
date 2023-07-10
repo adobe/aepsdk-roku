@@ -25,9 +25,12 @@ jobs:
       - name: Install bsc
         run: make install-bsc
 
-      - name: Link SDK and tests
+      - name: Archive SDK files
+        run: make archive
+
+      - name: Install SDK on the sample app
         working-directory: ./sample/simple-videoplayer-channel
-        run: make link-sdk && make link-tests
+        run: make install-sdk
 
       - name: Build Roku SDK with the sample app
         working-directory: ./sample/simple-videoplayer-channel
