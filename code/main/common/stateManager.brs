@@ -153,7 +153,7 @@ function _adb_StateManager() as object
                     return invalid
                 end if
             else
-                _adb_log_error("_queryECID() - Error occured while quering ECID from service side. Please verify the edge configuration.The response code : " + StrI(response.code))
+                _adb_log_error("_queryECID() - Error occured while quering ECID from service side. Please verify the edge configuration.The response code : " + FormatJson(response.code))
                 return invalid
             end if
         end function,
