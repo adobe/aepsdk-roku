@@ -1,5 +1,5 @@
 {
-    "version": "1.0.0",
+    "version": "0.2.0",
     "configurations": [
         {
             "name": "Launch Roku",
@@ -8,6 +8,8 @@
             "host": "${config:roku_ip}",
             "password": "${config:roku_password}",
             "rootDir": "${workspaceFolder}",
+            "injectRdbOnDeviceComponent": true,
+            // "deepLinkUrl": "http://${host}:8060/launch/dev?RunUnitTests=true"
         }
     ]
 }

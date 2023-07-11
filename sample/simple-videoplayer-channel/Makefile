@@ -1,14 +1,18 @@
-link-sdk:
-	(rm -f ./source/AdobeEdge.brs)
-	(rm -f ./components/adobe)
-	(ln -s ../../../code/components/adobe ./components/adobe)
-	(ln -s ../../../code/AdobeEdge.brs ./source/AdobeEdge.brs)
+clean:
+	(rm -rf ./out)
+	(rm -rf ./output)
+	(rm -rf ./source/AdobeEdge.brs)
+	(rm -rf ./components/adobe)
 
-link-tests:
-	(ln -s ../../../code/tests ./source/tests)
-
-link-test-framework:
-	(ln -s ../../../code/testFramework ./source/testFramework)
+install-sdk: clean
+	(cp -R ../../out .)
+	(test -f ./out/AdobeEdge-*.zip)
+	(unzip ./out/AdobeEdge-*.zip)
+	(test -f ./output/components/adobe/AdobeEdgeTask.brs)
+	(test -f ./output/components/adobe/AdobeEdgeTask.xml)
+	(test -f ./output/AdobeEdge.brs)
+	(cp -R ./output/components/adobe ./components)
+	(cp ./output/AdobeEdge.brs ./source/AdobeEdge.brs)
 
 
 # bsc: https://github.com/rokucommunity/brighterscript

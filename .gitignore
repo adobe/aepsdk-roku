@@ -110,4 +110,13 @@ out/
 sample/simple-videoplayer-channel/components/adobe
 sample/simple-videoplayer-channel/source/AdobeEdge.brs
 sample/simple-videoplayer-channel/source/tests
+sample/simple-videoplayer-channel/.vscode/settings.json
 output/
+
+sample/development/components/adobe/AdobeEdgeTask.brs
+sample/development/source/adobe
+sample/development/source/tests
+
+
+sample/development/source/test_config.json
+sample/development/.vscode/settings.json
