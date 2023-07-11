@@ -8,7 +8,7 @@ sub Main(input as dynamic)
     end if
   end if
 
-  _adb_run_tests()
+  ' _adb_run_tests()
 
   showHeroScreen()
 end sub

@@ -67,12 +67,12 @@ function _adb_StateManager() as object
         end function,
 
         updateECID: function(ecid as dynamic) as void
-            if ecid = invalid
-                _adb_log_debug("updateECID() - Deleting ECID.")
-            end if
-            if ecid = m._ecid
+            if ecid <> invalid and ecid = m._ecid
                 _adb_log_verbose("updateECID() - Not updating ECID. Same value is cached and persisted.")
                 return
+            end if
+            if ecid = invalid
+                _adb_log_debug("updateECID() - Deleting ECID.")
             end if
             _adb_log_verbose("updateECID() - Saving ECID:(" + FormatJson(ecid) + ") in cache and persistence.")
             m._ecid = ecid
@@ -153,7 +153,7 @@ function _adb_StateManager() as object
                     return invalid
                 end if
             else
-                _adb_log_error("_queryECID() - Error occured while quering ECID from service side. Please verify the edge configuration.")
+                _adb_log_error("_queryECID() - Error occured while quering ECID from service side. Please verify the edge configuration.The response code : " + StrI(response.code))
                 return invalid
             end if
         end function,

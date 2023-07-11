@@ -26,7 +26,7 @@ sub init()
   configuration = {}
 
   test_config = ParseJson(ReadAsciiFile("pkg:/source/test_config.json"))
-  if test_config.count() > 0
+  if test_config <> invalid and test_config.count() > 0
     configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = test_config.config_id
   end if
 

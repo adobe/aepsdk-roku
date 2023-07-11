@@ -1,6 +1,6 @@
 # About
 
-This Roku channel is build for SDK development.
+This Roku channel is built for SDK development.
 
 ## Initializing Project
 

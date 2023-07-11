@@ -21,7 +21,7 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
     instance = {
         _queue: [],
         _stateManager: stateManager
-        _queue_size_max: 100,
+        _queue_size_max: 50,
 
         queue: function(requestId as string, xdmData as object, timestamp as integer) as void
             if _adb_isEmptyOrInvalidString(requestId)
