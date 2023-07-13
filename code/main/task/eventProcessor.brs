@@ -18,10 +18,10 @@ function _adb_EventProcessor(internalConstants as object, task as object) as obj
         _CONSTANTS: internalConstants,
         _task: task,
         _stateManager: _adb_StateManager(),
-        _edgeRequestWorker: invalid,
+        _edgeModule: invalid,
 
         init: function() as void
-            m._edgeRequestWorker = _adb_EdgeRequestWorker(m._stateManager)
+            m._edgeModule = _adb_EdgeModule(m._stateManager)
         end function
 
         handleEvent: function(event as dynamic) as void
@@ -97,28 +97,20 @@ function _adb_EventProcessor(internalConstants as object, task as object) as obj
 
             requestId = event.uuid
             xdmData = event.data
+            timestampInMillis = event.timestamp_in_millis
+            responseEvents = m._edgeModule.sendEvent(requestId, xdmData, timestampInMillis)
 
-            m._edgeRequestWorker.queue(requestId, xdmData, event.timestamp_in_millis)
-            m.processQueuedRequests()
+            for each event in responseEvents
+                m._sendResponseEvent(event)
+            end for
+
         end function,
 
         processQueuedRequests: function() as void
-            if m._edgeRequestWorker.isReadyToProcess() then
-                responses = m._edgeRequestWorker.processRequests()
-                if responses = invalid or Type(responses) <> "roArray"
-                    _adb_logError("processQueuedRequests() - not found valid edge response.")
-                    return
-                end if
-                for each response in responses
-                    m._sendResponseEvent({
-                        uuid: response.requestId,
-                        data: {
-                            code: response.code,
-                            message: response.message
-                        }
-                    })
-                end for
-            end if
+            responseEvents = m._edgeModule.processQueuedRequests()
+            for each event in responseEvents
+                m._sendResponseEvent(event)
+            end for
         end function
 
         _sendResponseEvent: function(event as object) as void
@@ -128,6 +120,13 @@ function _adb_EventProcessor(internalConstants as object, task as object) as obj
                 return
             end if
             m._task[m._CONSTANTS.TASK.RESPONSE_EVENT] = event
+        end function,
+
+        _sendResponseEvents: function(responseEvents as dynamic) as void
+            ' TODO: check if responseEvents is an array
+            for each event in responseEvents
+                m._sendResponseEvent(event)
+            end for
         end function,
     }
 
