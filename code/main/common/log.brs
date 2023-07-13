@@ -13,27 +13,27 @@
 
 ' *********************************** MODULE: log utils ***********************************
 
-function _adb_log_error(message as string) as object
+function _adb_logError(message as string) as object
     log = _adb_serviceProvider().loggingService
     log.error(message)
 end function
 
-function _adb_log_warning(message as string) as object
+function _adb_logWarning(message as string) as object
     log = _adb_serviceProvider().loggingService
     log.warning(message)
 end function
 
-function _adb_log_info(message as string) as object
+function _adb_logInfo(message as string) as object
     log = _adb_serviceProvider().loggingService
     log.info(message)
 end function
 
-function _adb_log_debug(message as string) as object
+function _adb_logDebug(message as string) as object
     log = _adb_serviceProvider().loggingService
     log.debug(message)
 end function
 
-function _adb_log_verbose(message as string) as object
+function _adb_logVerbose(message as string) as object
     log = _adb_serviceProvider().loggingService
     log.verbose(message)
 end function

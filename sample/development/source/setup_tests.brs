@@ -35,7 +35,7 @@ function _adb_test_functions() as dynamic
         AdobeEdgeTestSuite_SetUp
         AdobeEdgeTestSuite_TearDown
         TestCase_AdobeEdge_AdobeSDKConstants
-        TestCase_AdobeEdge_adb_sdk_version
+        TestCase_AdobeEdge_adb_sdkVersion
         TestCase_AdobeEdge_adb_serviceProvider
         TestCase_AdobeEdge_adb_isEmptyOrInvalidString
         TestCase_AdobeEdge_adb_optMapFromMap
@@ -90,7 +90,7 @@ function _adb_test_functions() as dynamic
         ' adb_test_AdobeEdge_Edge_utils.brs
         AdobeEdgeTestSuite_Edge_utils_SetUp
         AdobeEdgeTestSuite_Edge_utils_TearDown
-        TestCase_AdobeEdge_adb_generate_implementation_details
+        TestCase_AdobeEdge_adb_ImplementationDetails
         TestCase_AdobeEdge_adb_buildEdgeRequestURL_validDomain
         ' adb_test_AdobeEdge_EdgeRequestWorker.brs
         AdobeEdgeTestSuite_EdgeRequestWorker_SetUp

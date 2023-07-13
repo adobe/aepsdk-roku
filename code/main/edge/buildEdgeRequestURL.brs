@@ -29,6 +29,6 @@ function _adb_buildEdgeRequestURL(configId as string, requestId as string, edgeD
 
     requestUrl = scheme + host + path + query
 
-    _adb_log_debug("requestURL: (" + requestUrl + ")")
+    _adb_logDebug("requestURL: (" + requestUrl + ")")
     return requestUrl
 end function

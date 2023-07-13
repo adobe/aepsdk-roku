@@ -53,7 +53,7 @@ function AdobeSDKInit() as object
         return GetGlobalAA()._adb_public_api
     end if
 
-    _adb_log_debug("API: AdobeSDKInit() - Initializing the SDK.")
+    _adb_logDebug("API: AdobeSDKInit() - Initializing the SDK.")
     ' create the edge task node
     if GetGlobalAA()._adb_edge_task_node = invalid then
         edgeTask = CreateObject("roSGNode", "AdobeEdgeTask")
@@ -61,7 +61,7 @@ function AdobeSDKInit() as object
     end if
 
     if GetGlobalAA()._adb_edge_task_node = invalid
-        _adb_log_debug("AdobeSDKInit() - Failed to initialize the SDK, task node is invalid.")
+        _adb_logDebug("AdobeSDKInit() - Failed to initialize the SDK, task node is invalid.")
         return invalid
     end if
 
@@ -78,7 +78,7 @@ function AdobeSDKInit() as object
             ' ********************************
 
             getVersion: function() as string
-                return _adb_sdk_version()
+                return _adb_sdkVersion()
             end function,
 
             ' ********************************************************************************************************
@@ -95,9 +95,9 @@ function AdobeSDKInit() as object
             ' ********************************************************************************************************
 
             setLogLevel: function(level as integer) as void
-                _adb_log_debug("API: setLogLevel()")
+                _adb_logDebug("API: setLogLevel()")
                 if(level < 0 or level > 4) then
-                    _adb_log_error("setLogLevel() - Invalid log level:(" + StrI(level) + ").")
+                    _adb_logError("setLogLevel() - Invalid log level:(" + StrI(level) + ").")
                     return
                 end if
                 ' event data: { "level": level }
@@ -115,7 +115,7 @@ function AdobeSDKInit() as object
             ' ***********************************************************************
 
             shutdown: function() as void
-                _adb_log_debug("API: shutdown()")
+                _adb_logDebug("API: shutdown()")
                 ' stop the task node
                 GetGlobalAA()._adb_edge_task_node.control = "DONE"
                 ' clear the cached callback functions
@@ -132,7 +132,7 @@ function AdobeSDKInit() as object
             ' ***********************************************************************
 
             resetIdentities: function() as void
-                _adb_log_debug("API: resetIdentities()")
+                _adb_logDebug("API: resetIdentities()")
                 event = m._private.buildEvent(m._private.cons.PUBLIC_API.RESET_IDENTITIES, invalid)
                 m._private.dispatchEvent(event)
             end function,
@@ -158,9 +158,9 @@ function AdobeSDKInit() as object
             ' **********************************************************************************
 
             updateConfiguration: function(configuration as object) as void
-                _adb_log_debug("API: updateConfiguration()")
+                _adb_logDebug("API: updateConfiguration()")
                 if type(configuration) <> "roAssociativeArray" then
-                    _adb_log_error("updateConfiguration() - Cannot update configuration as the configuration is invalid.")
+                    _adb_logError("updateConfiguration() - Cannot update configuration as the configuration is invalid.")
                     return
                 end if
                 event = m._private.buildEvent(m._private.cons.PUBLIC_API.SET_CONFIGURATION, configuration)
@@ -205,10 +205,10 @@ function AdobeSDKInit() as object
             '
             ' *************************************************************************************
 
-            sendEvent: function(xdmData as object, callback = _adb_default_callback as function, context = invalid as dynamic) as void
-                _adb_log_debug("API: sendEvent()")
+            sendEvent: function(xdmData as object, callback = _adb_defaultCallback as function, context = invalid as dynamic) as void
+                _adb_logDebug("API: sendEvent()")
                 if type(xdmData) <> "roAssociativeArray" then
-                    _adb_log_error("sendEvent() - Cannot send event, invalid XDM data")
+                    _adb_logError("sendEvent() - Cannot send event, invalid XDM data")
                     return
                 end if
                 ' event data: { "xdm": xdmData }
@@ -217,7 +217,7 @@ function AdobeSDKInit() as object
                 })
                 ' add a timestamp to the XDM data
                 event.data.xdm.timestamp = event.timestamp
-                if callback <> _adb_default_callback then
+                if callback <> _adb_defaultCallback then
                     ' store callback function
                     callbackInfo = {
                         cb: callback,
@@ -251,9 +251,9 @@ function AdobeSDKInit() as object
             ' ****************************************************************************************************
 
             setExperienceCloudId: function(ecid as string) as void
-                _adb_log_debug("API: setExperienceCloudId()")
+                _adb_logDebug("API: setExperienceCloudId()")
                 if _adb_isEmptyOrInvalidString(ecid)
-                    _adb_log_error("setExperienceCloudId() - Cannot set ECID, invalid ecid:(" + FormatJson(ecid) + ") passed.")
+                    _adb_logError("setExperienceCloudId() - Cannot set ECID, invalid ecid:(" + FormatJson(ecid) + ") passed.")
                     return
                 end if
                 ' event data: { "ecid": ecid }
@@ -268,7 +268,7 @@ function AdobeSDKInit() as object
             ' ********************************
             _private: {
                 ' constants
-                cons: _adb_internal_constants(),
+                cons: _adb_InternalConstants(),
                 ' ************************************
                 '
                 ' Build an Adobe Event
@@ -299,9 +299,9 @@ function AdobeSDKInit() as object
                 end function,
                 ' dispatch events to the task node
                 dispatchEvent: function(event as object) as void
-                    _adb_log_debug("dispatchEvent() - Dispatching event:(" + FormatJson(event) + ")")
+                    _adb_logDebug("dispatchEvent() - Dispatching event:(" + FormatJson(event) + ")")
                     if m.taskNode = invalid then
-                        _adb_log_debug("dispatchEvent() - Cannot dispatch public API event after shutdown(). Please initialze the SDK using AdobeSDKInit() API.")
+                        _adb_logDebug("dispatchEvent() - Cannot dispatch public API event after shutdown(). Please initialze the SDK using AdobeSDKInit() API.")
                         return
                     end if
 
@@ -317,7 +317,7 @@ function AdobeSDKInit() as object
         }
         ' listen response events
         tmp_taskNode = GetGlobalAA()._adb_edge_task_node
-        tmp_taskNode.observeField("responseEvent", "_adb_handle_response_event")
+        tmp_taskNode.observeField("responseEvent", "_adb_handleResponseEvent")
     end if
 
     ' start the event loop on task node
@@ -326,11 +326,11 @@ function AdobeSDKInit() as object
     ' log error if instance is invalid
     _adb_public_api = GetGlobalAA()._adb_public_api
     if _adb_public_api = invalid
-        _adb_log_debug("AdobeSDKInit() - Failed to initialize the SDK, public API instance is invalid")
+        _adb_logDebug("AdobeSDKInit() - Failed to initialize the SDK, public API instance is invalid")
         return invalid
     end if
 
-    _adb_log_debug("AdobeSDKInit() - Successfully initialized the SDK")
+    _adb_logDebug("AdobeSDKInit() - Successfully initialized the SDK")
     return GetGlobalAA()._adb_public_api
 end function
 
@@ -338,11 +338,11 @@ end function
 '                                              Below functions are for internal use only
 ' ****************************************************************************************************************************************
 
-function _adb_default_callback(_context, _result) as void
+function _adb_defaultCallback(_context, _result) as void
 end function
 
 ' ********** response event observer **********
-function _adb_handle_response_event() as void
+function _adb_handleResponseEvent() as void
     sdk = GetGlobalAA()._adb_public_api
     if sdk <> invalid then
         ' remove timeout callbacks
@@ -360,19 +360,19 @@ function _adb_handle_response_event() as void
         if responseEvent <> invalid
             uuid = responseEvent.uuid
 
-            _adb_log_debug("_adb_handle_response_event() - Received response event:" + FormatJson(responseEvent) + " with uuid:" + FormatJson(uuid))
+            _adb_logDebug("_adb_handleResponseEvent() - Received response event:" + FormatJson(responseEvent) + " with uuid:" + FormatJson(uuid))
             if sdk._private.cachedCallbackInfo[uuid] <> invalid
                 context = sdk._private.cachedCallbackInfo[uuid].context
                 sdk._private.cachedCallbackInfo[uuid].cb(context, responseEvent)
                 sdk._private.cachedCallbackInfo[uuid] = invalid
             else
-                _adb_log_error("_adb_handle_response_event() - Not handling response event, callback not passed with the request event.")
+                _adb_logError("_adb_handleResponseEvent() - Not handling response event, callback not passed with the request event.")
             end if
         else
-            _adb_log_error("_adb_handle_response_event() - Failed to handle response event, response event is invalid")
+            _adb_logError("_adb_handleResponseEvent() - Failed to handle response event, response event is invalid")
         end if
     else
-        _adb_log_error("_adb_handle_response_event() - Failed to handle response event, SDK instance is invalid")
+        _adb_logError("_adb_handleResponseEvent() - Failed to handle response event, SDK instance is invalid")
     end if
 end function
 ' *********************************************

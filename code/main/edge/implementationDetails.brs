@@ -13,10 +13,10 @@
 
 ' **************************** MODULE: Implementation Details *****************************
 
-function _adb_generate_implementation_details() as object
+function _adb_ImplementationDetails() as object
     return {
         "name": "https://ns.adobe.com/experience/mobilesdk/roku",
-        "version": _adb_sdk_version(),
+        "version": _adb_sdkVersion(),
         "environment": "app"
     }
 end function

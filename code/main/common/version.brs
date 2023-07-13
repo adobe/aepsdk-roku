@@ -13,7 +13,7 @@
 
 ' ************************************ MODULE: version ************************************
 
-function _adb_sdk_version() as string
+function _adb_sdkVersion() as string
     VERSION = "1.0.0-alpha1"
     return VERSION
 end function

@@ -15,7 +15,7 @@
 
 function _adb_EdgeRequestWorker(stateManager as object) as object
     if stateManager = invalid
-        _adb_log_debug("stateManager is invalid")
+        _adb_logDebug("stateManager is invalid")
         return invalid
     end if
     instance = {
@@ -25,17 +25,17 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
 
         queue: function(requestId as string, xdmData as object, timestamp as integer) as void
             if _adb_isEmptyOrInvalidString(requestId)
-                _adb_log_debug("[EdgeRequestWorker.queue()] requestId is invalid")
+                _adb_logDebug("[EdgeRequestWorker.queue()] requestId is invalid")
                 return
             end if
 
-            if isEmptyOrInvalidMap(xdmData)
-                _adb_log_debug("[EdgeRequestWorker.queue()] xdmData is invalid")
+            if _adb_isEmptyOrInvalidMap(xdmData)
+                _adb_logDebug("[EdgeRequestWorker.queue()] xdmData is invalid")
                 return
             end if
 
             if timestamp <= 0
-                _adb_log_debug("[EdgeRequestWorker.queue()] timestamp is invalid")
+                _adb_logDebug("[EdgeRequestWorker.queue()] timestamp is invalid")
                 return
             end if
 
@@ -57,13 +57,13 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
             if size = 0
                 return false
             end if
-            _adb_log_verbose("isReadyToProcess() - Request queue size:(" + FormatJson(size) + ")")
+            _adb_logVerbose("isReadyToProcess() - Request queue size:(" + FormatJson(size) + ")")
 
             if not m._stateManager.isReadyForRequest()
                 return false
             end if
 
-            _adb_log_verbose("isReadyToProcess() - Ready to process queued requests.")
+            _adb_logVerbose("isReadyToProcess() - Ready to process queued requests.")
             return true
         end function,
 
@@ -80,14 +80,14 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
                 configId = m._stateManager.getConfigId()
                 edgeDomain = m._stateManager.getEdgeDomain()
 
-                _adb_log_verbose("processRequests() - Using ECID:(" + FormatJson(ecid) + ") and configId:(" + FormatJson(configId) + ")")
+                _adb_logVerbose("processRequests() - Using ECID:(" + FormatJson(ecid) + ") and configId:(" + FormatJson(configId) + ")")
                 if (not _adb_isEmptyOrInvalidString(ecid)) and (not _adb_isEmptyOrInvalidString(configId)) then
                     response = m._processRequest(xdmData, ecid, configId, requestId, edgeDomain)
                     if response = invalid
-                        _adb_log_error("processRequests() - Edge request dropped. Response is invalid.")
+                        _adb_logError("processRequests() - Edge request dropped. Response is invalid.")
                         ' drop the request
                     else
-                        _adb_log_verbose("processRequests() - Request with id:(" + FormatJson(requestId) + ") code:(" + FormatJson(response.code) + ") message:(" + response.message + ")")
+                        _adb_logVerbose("processRequests() - Request with id:(" + FormatJson(requestId) + ") code:(" + FormatJson(response.code) + ") message:(" + response.message + ")")
                         if response.code >= 200 and response.code <= 299 then
                             if responseArray = invalid
                                 responseArray = []
@@ -100,13 +100,13 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
                             exit while
                         else
                             ' drop the request
-                            _adb_log_error("processRequests() - Edge request dropped. Response code:(" + response.code.toStr() + ") Response body:(" + response.message + ")")
+                            _adb_logError("processRequests() - Edge request dropped. Response code:(" + response.code.toStr() + ") Response body:(" + response.message + ")")
                             exit while
                         end if
                     end if
 
                 else
-                    _adb_log_warning("processRequests() - Edge request skipped. ECID and/or configId not set.")
+                    _adb_logWarning("processRequests() - Edge request skipped. ECID and/or configId not set.")
                     m._queue.Unshift(requestEntity)
                     exit while
                 end if
@@ -128,7 +128,7 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
             jsonBody = {
                 "xdm": {
                     "identityMap": identityMap,
-                    "implementationDetails": _adb_generate_implementation_details()
+                    "implementationDetails": _adb_ImplementationDetails()
                 },
                 "events": []
             }
@@ -137,7 +137,7 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
             jsonBody.events[0] = xdmData
 
             url = _adb_buildEdgeRequestURL(configId, requestId, edgeDomain)
-            _adb_log_verbose("_processRequest() - Sending Request to url:(" + FormatJson(url) + ") with payload:(" + FormatJson(jsonBody) + ")")
+            _adb_logVerbose("_processRequest() - Sending Request to url:(" + FormatJson(url) + ") with payload:(" + FormatJson(jsonBody) + ")")
             response = _adb_serviceProvider().networkService.syncPostRequest(url, jsonBody)
             if response <> invalid
                 response.requestId = requestId

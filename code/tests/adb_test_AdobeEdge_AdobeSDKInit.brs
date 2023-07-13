@@ -49,7 +49,7 @@ sub TestCase_AdobeEdge_AdobeSDKInit_initialize_task_node()
         observeField: function(arg1 as string, arg2 as string) as void
             ' after the task node is created, the observeField function should be called
             UTF_assertEqual(arg1, "responseEvent")
-            UTF_assertEqual(arg2, "_adb_handle_response_event")
+            UTF_assertEqual(arg2, "_adb_handleResponseEvent")
         end function
     }
     sdkInstance = AdobeSDKInit()

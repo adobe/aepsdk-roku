@@ -30,7 +30,7 @@ sub TestCase_AdobeEdge_EventProcessor_handleEvent_setLogLevel()
     loggingService.setLogLevel(1)
     UTF_assertEqual(loggingService._logLevel, 1)
 
-    eventProcessor = _adb_task_node_EventProcessor(_adb_internal_constants(), {})
+    eventProcessor = _adb_EventProcessor(_adb_InternalConstants(), {})
     eventProcessor.handleEvent({
         owner: "adobe",
         apiName: "setLogLevel",
@@ -51,7 +51,7 @@ sub TestCase_AdobeEdge_EventProcessor_handleEvent_setLogLevel_invalid()
     loggingService.setLogLevel(1)
     UTF_assertEqual(loggingService._logLevel, 1)
 
-    eventProcessor = _adb_task_node_EventProcessor(_adb_internal_constants(), {})
+    eventProcessor = _adb_EventProcessor(_adb_InternalConstants(), {})
     eventProcessor.handleEvent({
         owner: "adobe",
         apiName: "setLogLevel",
@@ -69,7 +69,7 @@ end sub
 sub TestCase_AdobeEdge_EventProcessor_handleEvent_resetIdentities()
     GetGlobalAA().reset_is_called = false
 
-    eventProcessor = _adb_task_node_EventProcessor(_adb_internal_constants(), {})
+    eventProcessor = _adb_EventProcessor(_adb_InternalConstants(), {})
     eventProcessor._stateManager.resetIdentities = function() as void
         GetGlobalAA().reset_is_called = true
     end function
@@ -88,7 +88,7 @@ end sub
 sub TestCase_AdobeEdge_EventProcessor_handleEvent_setConfiguration()
     GetGlobalAA().updateConfiguration_is_called = false
 
-    eventProcessor = _adb_task_node_EventProcessor(_adb_internal_constants(), {})
+    eventProcessor = _adb_EventProcessor(_adb_InternalConstants(), {})
     eventProcessor._stateManager.updateConfiguration = function(data as object) as void
         GetGlobalAA().updateConfiguration_is_called = true
         UTF_assertEqual({
@@ -115,7 +115,7 @@ end sub
 sub TestCase_AdobeEdge_EventProcessor_handleEvent_setECID()
     GetGlobalAA().updateECID_is_called = false
 
-    eventProcessor = _adb_task_node_EventProcessor(_adb_internal_constants(), {})
+    eventProcessor = _adb_EventProcessor(_adb_InternalConstants(), {})
     eventProcessor._stateManager.updateECID = function(ecid as string) as void
         GetGlobalAA().updateECID_is_called = true
         UTF_assertEqual(ecid, "ecid_test")
@@ -134,7 +134,7 @@ end sub
 ' target: _hasXDMData()
 ' @Test
 sub TestCase_AdobeEdge_EventProcessor_hasXDMData()
-    eventProcessor = _adb_task_node_EventProcessor(_adb_internal_constants(), {})
+    eventProcessor = _adb_EventProcessor(_adb_InternalConstants(), {})
     UTF_assertFalse(eventProcessor._hasXDMData(invalid))
     UTF_assertFalse(eventProcessor._hasXDMData({}))
     UTF_assertFalse(eventProcessor._hasXDMData({ key: "value" }))
@@ -148,7 +148,7 @@ sub TestCase_AdobeEdge_EventProcessor_handleEvent_sendEvent()
     GetGlobalAA().queue_is_called = false
     GetGlobalAA().processQueuedRequests_is_called = false
 
-    eventProcessor = _adb_task_node_EventProcessor(_adb_internal_constants(), {})
+    eventProcessor = _adb_EventProcessor(_adb_InternalConstants(), {})
 
     eventProcessor._edgeRequestWorker.queue = function(requestId as string, xdmData as object, timestamp as integer) as void
         GetGlobalAA().queue_is_called = true
@@ -179,7 +179,7 @@ end sub
 ' target: _sendResponseEvent()
 ' @Test
 sub TestCase_AdobeEdge_EventProcessor_sendResponseEvent()
-    eventProcessor = _adb_task_node_EventProcessor(_adb_internal_constants(), {})
+    eventProcessor = _adb_EventProcessor(_adb_InternalConstants(), {})
     eventProcessor._task = { responseEvent: invalid }
 
     eventProcessor._sendResponseEvent({
@@ -205,7 +205,7 @@ end sub
 sub TestCase_AdobeEdge_EventProcessor_processQueuedRequests()
     GetGlobalAA()._sendResponseEvent_is_called = false
 
-    eventProcessor = _adb_task_node_EventProcessor(_adb_internal_constants(), {})
+    eventProcessor = _adb_EventProcessor(_adb_InternalConstants(), {})
 
     eventProcessor._edgeRequestWorker.isReadyToProcess = function() as boolean
         return true
@@ -238,7 +238,7 @@ end sub
 sub TestCase_AdobeEdge_EventProcessor_processQueuedRequests_multiple_requests()
     GetGlobalAA()._adb_response_events = []
 
-    eventProcessor = _adb_task_node_EventProcessor(_adb_internal_constants(), {})
+    eventProcessor = _adb_EventProcessor(_adb_InternalConstants(), {})
 
     eventProcessor._edgeRequestWorker.isReadyToProcess = function() as boolean
         return true
@@ -289,7 +289,7 @@ end sub
 sub TestCase_AdobeEdge_EventProcessor_processQueuedRequests_bad_request()
     GetGlobalAA()._sendResponseEvent_is_called = false
 
-    eventProcessor = _adb_task_node_EventProcessor(_adb_internal_constants(), {})
+    eventProcessor = _adb_EventProcessor(_adb_InternalConstants(), {})
 
     eventProcessor._edgeRequestWorker.isReadyToProcess = function() as boolean
         return true
@@ -311,7 +311,7 @@ end sub
 sub TestCase_AdobeEdge_EventProcessor_processQueuedRequests_empty_queue()
     GetGlobalAA().processRequests_is_called = false
 
-    eventProcessor = _adb_task_node_EventProcessor(_adb_internal_constants(), {})
+    eventProcessor = _adb_EventProcessor(_adb_InternalConstants(), {})
     eventProcessor._edgeRequestWorker.isReadyToProcess = function() as boolean
         return false
     end function
@@ -327,6 +327,6 @@ end sub
 ' target: init()
 ' @Test
 sub TestCase_AdobeEdge_EventProcessor_init()
-    eventProcessor = _adb_task_node_EventProcessor(_adb_internal_constants(), {})
+    eventProcessor = _adb_EventProcessor(_adb_InternalConstants(), {})
     UTF_assertEqual(eventProcessor._edgeRequestWorker._stateManager, eventProcessor._stateManager)
 end sub
