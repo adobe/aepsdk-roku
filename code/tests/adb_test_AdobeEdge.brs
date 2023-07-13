@@ -36,13 +36,13 @@ sub TestCase_AdobeEdge_AdobeSDKConstants()
     UTF_assertEqual(cons.CONFIGURATION.EDGE_DOMAIN, "edge.domain")
 end sub
 
-' target: _adb_sdk_version()
+' target: _adb_sdkVersion()
 ' @Test
-sub TestCase_AdobeEdge_adb_sdk_version()
-    UTF_assertEqual(_adb_sdk_version(), "1.0.0-alpha1")
+sub TestCase_AdobeEdge_adb_sdkVersion()
+    UTF_assertEqual(_adb_sdkVersion(), "1.0.0-alpha1")
 end sub
 
-' target: _adb_sdk_version()
+' target: _adb_sdkVersion()
 ' @Test
 sub TestCase_AdobeEdge_adb_serviceProvider()
     instance1 = _adb_serviceProvider()
@@ -65,47 +65,47 @@ end sub
 ' target: _adb_optMapFromMap()
 ' @Test
 sub TestCase_AdobeEdge_adb_optMapFromMap()
-    UTF_assertEqual({"key": "value"}, _adb_optMapFromMap({"map" :{"key" : "value"}}, "map"))
+    UTF_assertEqual({ "key": "value" }, _adb_optMapFromMap({ "map": { "key": "value" } }, "map"))
 
 
-    UTF_assertEqual(invalid, _adb_optMapFromMap({"map" : 1}, "map"))
-    UTF_assertEqual(invalid, _adb_optMapFromMap({"map" : "string"}, "map"))
-    UTF_assertEqual(invalid, _adb_optMapFromMap({"map" : true}, "map"))
+    UTF_assertEqual(invalid, _adb_optMapFromMap({ "map": 1 }, "map"))
+    UTF_assertEqual(invalid, _adb_optMapFromMap({ "map": "string" }, "map"))
+    UTF_assertEqual(invalid, _adb_optMapFromMap({ "map": true }, "map"))
     UTF_assertEqual(invalid, _adb_optMapFromMap(invalid, "map1"))
-    UTF_assertEqual(invalid, _adb_optMapFromMap({"map" :{"key" : "value"}}, "map1"))
+    UTF_assertEqual(invalid, _adb_optMapFromMap({ "map": { "key": "value" } }, "map1"))
 
-    UTF_assertEqual({}, _adb_optMapFromMap({"map" :{"key" : "value"}}, "map1", {}))
-    UTF_assertEqual(false, _adb_optMapFromMap({"map" :{"key" : "value"}}, "map1", false))
-    UTF_assertEqual("invalidMap", _adb_optMapFromMap({"map" :{"key" : "value"}}, "map1", "invalidMap"))
+    UTF_assertEqual({}, _adb_optMapFromMap({ "map": { "key": "value" } }, "map1", {}))
+    UTF_assertEqual(false, _adb_optMapFromMap({ "map": { "key": "value" } }, "map1", false))
+    UTF_assertEqual("invalidMap", _adb_optMapFromMap({ "map": { "key": "value" } }, "map1", "invalidMap"))
 end sub
 
 ' target: _adb_optStringFromMap()
 ' @Test
 sub TestCase_AdobeEdge_adb_optStringFromMap()
-    UTF_assertEqual("value", _adb_optStringFromMap({"key" : "value"}, "key"))
+    UTF_assertEqual("value", _adb_optStringFromMap({ "key": "value" }, "key"))
 
-    UTF_assertEqual(invalid, _adb_optStringFromMap({"key" : 1}, "key"))
-    UTF_assertEqual(invalid, _adb_optStringFromMap({"key" : true}, "key"))
-    UTF_assertEqual(invalid, _adb_optStringFromMap({"key" : "value"}, "key1"))
+    UTF_assertEqual(invalid, _adb_optStringFromMap({ "key": 1 }, "key"))
+    UTF_assertEqual(invalid, _adb_optStringFromMap({ "key": true }, "key"))
+    UTF_assertEqual(invalid, _adb_optStringFromMap({ "key": "value" }, "key1"))
     UTF_assertEqual(invalid, _adb_optStringFromMap(invalid, "key1"))
 
-    UTF_assertEqual("invalid", _adb_optStringFromMap({"key" : "value"}, "key1", "invalid"))
-    UTF_assertEqual(false, _adb_optStringFromMap({"key" : "value"}, "key1", false))
-    UTF_assertEqual({}, _adb_optStringFromMap({"key" : "value"}, "key1", {}))
+    UTF_assertEqual("invalid", _adb_optStringFromMap({ "key": "value" }, "key1", "invalid"))
+    UTF_assertEqual(false, _adb_optStringFromMap({ "key": "value" }, "key1", false))
+    UTF_assertEqual({}, _adb_optStringFromMap({ "key": "value" }, "key1", {}))
 end sub
 
 ' target: _adb_optIntFromMap()
 ' @Test
 sub TestCase_AdobeEdge_adb_optIntFromMap()
-    UTF_assertEqual(1, _adb_optIntFromMap({"key" : 1}, "key"))
+    UTF_assertEqual(1, _adb_optIntFromMap({ "key": 1 }, "key"))
 
-    UTF_assertEqual(invalid, _adb_optIntFromMap({"key" : "value"}, "key1"))
-    UTF_assertEqual(invalid, _adb_optIntFromMap({"key" : true}, "key1"))
-    UTF_assertEqual(invalid, _adb_optIntFromMap({"key" : 1}, "key1"))
+    UTF_assertEqual(invalid, _adb_optIntFromMap({ "key": "value" }, "key1"))
+    UTF_assertEqual(invalid, _adb_optIntFromMap({ "key": true }, "key1"))
+    UTF_assertEqual(invalid, _adb_optIntFromMap({ "key": 1 }, "key1"))
     UTF_assertEqual(invalid, _adb_optIntFromMap(invalid, "key1"))
 
-    UTF_assertEqual(-1, _adb_optIntFromMap({"key" : "value"}, "key1", -1))
-    UTF_assertEqual(false, _adb_optIntFromMap({"key" : "value"}, "key1", false))
-    UTF_assertEqual("invalid", _adb_optIntFromMap({"key" : "value"}, "key1", "invalid"))
-    UTF_assertEqual({}, _adb_optIntFromMap({"key" : "value"}, "key1", {}))
+    UTF_assertEqual(-1, _adb_optIntFromMap({ "key": "value" }, "key1", -1))
+    UTF_assertEqual(false, _adb_optIntFromMap({ "key": "value" }, "key1", false))
+    UTF_assertEqual("invalid", _adb_optIntFromMap({ "key": "value" }, "key1", "invalid"))
+    UTF_assertEqual({}, _adb_optIntFromMap({ "key": "value" }, "key1", {}))
 end sub

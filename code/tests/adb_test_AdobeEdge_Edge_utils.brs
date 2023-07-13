@@ -22,10 +22,10 @@ sub AdobeEdgeTestSuite_Edge_utils_TearDown()
     print "AdobeEdgeTestSuite_Edge_utils_TearDown"
 end sub
 
-' target: _adb_generate_implementation_details()
+' target: _adb_ImplementationDetails()
 ' @Test
-sub TestCase_AdobeEdge_adb_generate_implementation_details()
-    implementationDetails = _adb_generate_implementation_details()
+sub TestCase_AdobeEdge_adb_ImplementationDetails()
+    implementationDetails = _adb_ImplementationDetails()
     UTF_assertEqual(implementationDetails["name"], "https://ns.adobe.com/experience/mobilesdk/roku")
     UTF_assertEqual(implementationDetails["version"], "1.0.0-alpha1")
     UTF_assertEqual(implementationDetails["environment"], "app")

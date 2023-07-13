@@ -41,20 +41,20 @@ function _adb_StateManager() as object
 
         getECID: function() as dynamic
             if m._ecid = invalid
-                _adb_log_verbose("getECID() - ECID not found in cache, fetching it from presistence.")
+                _adb_logVerbose("getECID() - ECID not found in cache, fetching it from presistence.")
                 m._ecid = m._loadECID()
             end if
 
             if m._ecid = invalid
-                _adb_log_verbose("getECID() - ECID not found in persistence, fetching it from service side.")
+                _adb_logVerbose("getECID() - ECID not found in persistence, fetching it from service side.")
                 remote_ecid = m._queryECID()
                 if not _adb_isEmptyOrInvalidString(remote_ecid)
-                    _adb_log_verbose("getECID() - Fetched ECID:(" + FormatJson(m._ecid) + ") from service side")
+                    _adb_logVerbose("getECID() - Fetched ECID:(" + FormatJson(m._ecid) + ") from service side")
                     m.updateECID(remote_ecid)
                 end if
             end if
 
-            _adb_log_debug("getECID() - Returning ECID:(" + FormatJson(m._ecid) + ")")
+            _adb_logDebug("getECID() - Returning ECID:(" + FormatJson(m._ecid) + ")")
             return m._ecid
         end function,
 
@@ -68,13 +68,13 @@ function _adb_StateManager() as object
 
         updateECID: function(ecid as dynamic) as void
             if ecid <> invalid and ecid = m._ecid
-                _adb_log_verbose("updateECID() - Not updating ECID. Same value is cached and persisted.")
+                _adb_logVerbose("updateECID() - Not updating ECID. Same value is cached and persisted.")
                 return
             end if
             if ecid = invalid
-                _adb_log_debug("updateECID() - Deleting ECID.")
+                _adb_logDebug("updateECID() - Deleting ECID.")
             end if
-            _adb_log_verbose("updateECID() - Saving ECID:(" + FormatJson(ecid) + ") in cache and persistence.")
+            _adb_logVerbose("updateECID() - Saving ECID:(" + FormatJson(ecid) + ") in cache and persistence.")
             m._ecid = ecid
             m._saveECID(m._ecid)
         end function,
@@ -82,24 +82,24 @@ function _adb_StateManager() as object
         isReadyForRequest: function() as boolean
             configId = m.getConfigId()
             if _adb_isEmptyOrInvalidString(configId)
-                _adb_log_verbose("isReadyForRequest() - Confguration for edge.configId not found.")
+                _adb_logVerbose("isReadyForRequest() - Confguration for edge.configId not found.")
                 return false
             end if
             ecid = m.getECID()
             if _adb_isEmptyOrInvalidString(ecid)
-                _adb_log_verbose("isReadyForRequest() - ECID not set. Please verify the configuration.")
+                _adb_logVerbose("isReadyForRequest() - ECID not set. Please verify the configuration.")
                 return false
             end if
             return true
         end function,
 
         _loadECID: function() as dynamic
-            _adb_log_info("_loadECID() - Loading ECID from persistence.")
+            _adb_logInfo("_loadECID() - Loading ECID from persistence.")
             localDataStoreService = _adb_serviceProvider().localDataStoreService
-            ecid = localDataStoreService.readValue(_adb_internal_constants().LOCAL_DATA_STORE_KEYS.ECID)
+            ecid = localDataStoreService.readValue(_adb_InternalConstants().LOCAL_DATA_STORE_KEYS.ECID)
 
             if ecid = invalid
-                _adb_log_info("_loadECID() - Failed to load ECID from persistence, not found.")
+                _adb_logInfo("_loadECID() - Failed to load ECID from persistence, not found.")
             end if
 
             return ecid
@@ -109,22 +109,22 @@ function _adb_StateManager() as object
             localDataStoreService = _adb_serviceProvider().localDataStoreService
 
             if ecid = invalid
-                _adb_log_debug("_saveECID() - Removing ECID from persistence.")
-                localDataStoreService.removeValue(_adb_internal_constants().LOCAL_DATA_STORE_KEYS.ECID)
+                _adb_logDebug("_saveECID() - Removing ECID from persistence.")
+                localDataStoreService.removeValue(_adb_InternalConstants().LOCAL_DATA_STORE_KEYS.ECID)
                 return
             end if
 
-            _adb_log_verbose("_saveECID() - Saving ECID:(" + FormatJson(ecid) + ") to presistence.")
-            localDataStoreService.writeValue(_adb_internal_constants().LOCAL_DATA_STORE_KEYS.ECID, ecid)
+            _adb_logVerbose("_saveECID() - Saving ECID:(" + FormatJson(ecid) + ") to presistence.")
+            localDataStoreService.writeValue(_adb_InternalConstants().LOCAL_DATA_STORE_KEYS.ECID, ecid)
         end function,
 
         _queryECID: function() as dynamic
-            _adb_log_info("_queryECID() - Fetching ECID from service side.")
+            _adb_logInfo("_queryECID() - Fetching ECID from service side.")
             configId = m.getConfigId()
             edgeDomain = m.getEdgeDomain()
 
             if _adb_isEmptyOrInvalidString(configId)
-                _adb_log_error("_queryECID() - Unable to fetch ECID from service side, invalid configuration.")
+                _adb_logError("_queryECID() - Unable to fetch ECID from service side, invalid configuration.")
                 return invalid
             end if
 
@@ -145,15 +145,15 @@ function _adb_StateManager() as object
             if response.code >= 200 and response.code < 300 and response.message <> invalid
                 responseJson = ParseJson(response.message)
                 if responseJson <> invalid and responseJson.handle[0] <> invalid and responseJson.handle[0].payload[0] <> invalid
-                    _adb_log_verbose("_queryECID() - Received response with payload: (" + FormatJson(responseJson) + ").")
+                    _adb_logVerbose("_queryECID() - Received response with payload: (" + FormatJson(responseJson) + ").")
                     remote_ecid = responseJson.handle[0].payload[0].id
                     return remote_ecid
                 else
-                    _adb_log_error("_queryECID() - Error extracting ECID, invalid response from server.")
+                    _adb_logError("_queryECID() - Error extracting ECID, invalid response from server.")
                     return invalid
                 end if
             else
-                _adb_log_error("_queryECID() - Error occured while quering ECID from service side. Please verify the edge configuration.The response code : " + FormatJson(response.code))
+                _adb_logError("_queryECID() - Error occured while quering ECID from service side. Please verify the edge configuration.The response code : " + FormatJson(response.code))
                 return invalid
             end if
         end function,

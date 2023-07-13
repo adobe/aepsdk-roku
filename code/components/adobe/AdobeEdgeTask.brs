@@ -20,9 +20,9 @@ sub init()
 end sub
 
 sub eventLoop()
-    _adb_log_info("start the event loop")
-    internalConstants = _adb_internal_constants()
-    processor = _adb_task_node_EventProcessor(internalConstants, m.top)
+    _adb_logInfo("start the event loop")
+    internalConstants = _adb_InternalConstants()
+    processor = _adb_EventProcessor(internalConstants, m.top)
     while true
         msg = wait(250, m.port)
         ' kick off the queued requests

@@ -26,7 +26,7 @@ function _adb_NetworkService() as object
         '
         ' **************************************************************
         syncPostRequest: function(url as string, jsonObj as object, headers = [] as object) as object
-            _adb_log_verbose("syncPostRequest() - Attempting to send request with url:(" + FormatJson(url) + ") and body:(" + FormatJson(jsonObj) + ").")
+            _adb_logVerbose("syncPostRequest() - Attempting to send request with url:(" + FormatJson(url) + ") and body:(" + FormatJson(jsonObj) + ").")
 
             request = CreateObject("roUrlTransfer")
             port = CreateObject("roMessagePort")
@@ -47,7 +47,7 @@ function _adb_NetworkService() as object
                     if (type(msg) = "roUrlEvent")
                         code = msg.GetResponseCode()
                         repMessage = msg.getString()
-                        _adb_log_verbose("syncPostRequest() -  Sent edge request url:(" + FormatJson(url) + ") and body:(" + FormatJson(jsonObj) + ").")
+                        _adb_logVerbose("syncPostRequest() -  Sent edge request url:(" + FormatJson(url) + ") and body:(" + FormatJson(jsonObj) + ").")
 
                         return {
                             code: code,
@@ -55,7 +55,7 @@ function _adb_NetworkService() as object
                         }
                     end if
                     if (msg = invalid)
-                        _adb_log_verbose("syncPostRequest() - Failed to send edge request url:(" + FormatJson(url) + ") and body:(" + FormatJson(jsonObj) + ").")
+                        _adb_logVerbose("syncPostRequest() - Failed to send edge request url:(" + FormatJson(url) + ") and body:(" + FormatJson(jsonObj) + ").")
                         request.AsyncCancel()
                         return invalid
                     end if

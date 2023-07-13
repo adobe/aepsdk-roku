@@ -43,7 +43,7 @@ end sub
 ' target: setLogLevel()
 ' @Test
 sub TestCase_AdobeEdge_public_APIs_setLogLevel()
-    _internal_const = _adb_internal_constants()
+    _internal_const = _adb_InternalConstants()
     sdkInstance = AdobeSDKInit()
     sdkInstance.setLogLevel(3)
     event = GetGlobalAA()._adb_edge_task_node["requestEvent"]
@@ -84,7 +84,7 @@ end sub
 ' target: updateConfiguration()
 ' @Test
 sub TestCase_AdobeEdge_public_APIs_updateConfiguration()
-    _internal_const = _adb_internal_constants()
+    _internal_const = _adb_InternalConstants()
     sdkInstance = AdobeSDKInit()
     configuration = { "edge.configId": "test-config-id" }
     sdkInstance.updateConfiguration(configuration)
@@ -107,7 +107,7 @@ end sub
 ' target: sendEvent()
 ' @Test
 sub TestCase_AdobeEdge_public_APIs_sendEvent()
-    _internal_const = _adb_internal_constants()
+    _internal_const = _adb_InternalConstants()
     sdkInstance = AdobeSDKInit()
     xdmData = {
         eventType: "commerce.orderPlaced",
@@ -177,7 +177,7 @@ end sub
 ' target: setExperienceCloudId()
 ' @Test
 sub TestCase_AdobeEdge_public_APIs_setExperienceCloudId()
-    _internal_const = _adb_internal_constants()
+    _internal_const = _adb_InternalConstants()
     sdkInstance = AdobeSDKInit()
     test_id = "test-experience-cloud-id"
     sdkInstance.setExperienceCloudId(test_id)
@@ -191,7 +191,7 @@ end sub
 ' target: buildEvent()
 ' @Test
 sub TestCase_AdobeEdge_public_APIs_buildEvent()
-    _internal_const = _adb_internal_constants()
+    _internal_const = _adb_InternalConstants()
     sdkInstance = AdobeSDKInit()
     event = sdkInstance._private.buildEvent("apiname_1")
     UTF_assertEqual(event.apiName, "apiname_1")

@@ -13,7 +13,7 @@
 
 ' ********************************** MODULE: constants ************************************
 
-function _adb_internal_constants() as object
+function _adb_InternalConstants() as object
     return {
         PUBLIC_API: {
             SET_CONFIGURATION: "setConfiguration",
