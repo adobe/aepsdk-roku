@@ -15,7 +15,7 @@
 
 function _adb_EventProcessor(internalConstants as object, task as object) as object
     eventProcessor = {
-        _ADB_CONSTANTS: internalConstants,
+        _CONSTANTS: internalConstants,
         _task: task,
         _stateManager: _adb_StateManager(),
         _edgeRequestWorker: invalid,
@@ -27,17 +27,17 @@ function _adb_EventProcessor(internalConstants as object, task as object) as obj
         handleEvent: function(event as dynamic) as void
             eventOwner = _adb_optStringFromMap(event, "owner", "unknown")
 
-            if eventOwner = m._ADB_CONSTANTS.EVENT_OWNER
+            if eventOwner = m._CONSTANTS.EVENT_OWNER
                 _adb_logInfo("handleEvent() - handle event: " + FormatJson(event))
-                if event.apiname = m._ADB_CONSTANTS.PUBLIC_API.SEND_EDGE_EVENT
+                if event.apiname = m._CONSTANTS.PUBLIC_API.SEND_EDGE_EVENT
                     m._sendEvent(event)
-                else if event.apiname = m._ADB_CONSTANTS.PUBLIC_API.SET_CONFIGURATION
+                else if event.apiname = m._CONSTANTS.PUBLIC_API.SET_CONFIGURATION
                     m._setConfiguration(event)
-                else if event.apiname = m._ADB_CONSTANTS.PUBLIC_API.SET_LOG_LEVEL
+                else if event.apiname = m._CONSTANTS.PUBLIC_API.SET_LOG_LEVEL
                     m._setLogLevel(event)
-                else if event.apiname = m._ADB_CONSTANTS.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID
+                else if event.apiname = m._CONSTANTS.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID
                     m._setECID(event)
-                else if event.apiname = m._ADB_CONSTANTS.PUBLIC_API.RESET_IDENTITIES
+                else if event.apiname = m._CONSTANTS.PUBLIC_API.RESET_IDENTITIES
                     m._resetIdentities(event)
                 end if
             else
@@ -46,7 +46,7 @@ function _adb_EventProcessor(internalConstants as object, task as object) as obj
         end function,
 
         _setLogLevel: function(event as object) as void
-            logLevel = _adb_optIntFromMap(event.data, m._ADB_CONSTANTS.EVENT_DATA_KEY.LOG.LEVEL)
+            logLevel = _adb_optIntFromMap(event.data, m._CONSTANTS.EVENT_DATA_KEY.LOG.LEVEL)
             if logLevel <> invalid
                 loggingService = _adb_serviceProvider().loggingService
                 loggingService.setLogLevel(logLevel)
@@ -71,7 +71,7 @@ function _adb_EventProcessor(internalConstants as object, task as object) as obj
         _setECID: function(event as object) as void
             _adb_logInfo("_setECID() - Handle setECID.")
 
-            ecid = _adb_optStringFromMap(event.data, m._ADB_CONSTANTS.EVENT_DATA_KEY.ECID)
+            ecid = _adb_optStringFromMap(event.data, m._CONSTANTS.EVENT_DATA_KEY.ECID)
             if ecid <> invalid
                 m._stateManager.updateECID(ecid)
             else
@@ -127,7 +127,7 @@ function _adb_EventProcessor(internalConstants as object, task as object) as obj
                 _adb_logError("_sendResponseEvent() - Cannot send response event, task node instance is invalid.")
                 return
             end if
-            m._task[m._ADB_CONSTANTS.TASK.RESPONSE_EVENT] = event
+            m._task[m._CONSTANTS.TASK.RESPONSE_EVENT] = event
         end function,
     }
 
