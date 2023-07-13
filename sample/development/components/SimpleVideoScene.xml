@@ -30,4 +30,5 @@
   <script type="text/brightscript" uri="pkg:/source/adobe/services/networkService.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/services/serviceProvider.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/task/eventProcessor.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/task/taskNode.brs"/>
 </component>
