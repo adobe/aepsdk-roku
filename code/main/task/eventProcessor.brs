@@ -17,11 +17,14 @@ function _adb_EventProcessor(internalConstants as object, task as object) as obj
     eventProcessor = {
         _CONSTANTS: internalConstants,
         _task: task,
-        _stateManager: _adb_StateManager(),
+        _configurationModule: invalid,
+        _identityModule: invalid,
         _edgeModule: invalid,
 
         init: function() as void
-            m._edgeModule = _adb_EdgeModule(m._stateManager)
+            m._configurationModule = _adb_ConfigurationModule()
+            m._identityModule = _adb_IdentityModule(m._configurationModule)
+            m._edgeModule = _adb_EdgeModule(m._configurationModule, m._identityModule)
         end function
 
         handleEvent: function(event as dynamic) as void
@@ -31,14 +34,19 @@ function _adb_EventProcessor(internalConstants as object, task as object) as obj
                 _adb_logInfo("handleEvent() - handle event: " + FormatJson(event))
                 if event.apiname = m._CONSTANTS.PUBLIC_API.SEND_EDGE_EVENT
                     m._sendEvent(event)
+                    return
                 else if event.apiname = m._CONSTANTS.PUBLIC_API.SET_CONFIGURATION
                     m._setConfiguration(event)
+                    return
                 else if event.apiname = m._CONSTANTS.PUBLIC_API.SET_LOG_LEVEL
                     m._setLogLevel(event)
+                    return
                 else if event.apiname = m._CONSTANTS.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID
                     m._setECID(event)
+                    return
                 else if event.apiname = m._CONSTANTS.PUBLIC_API.RESET_IDENTITIES
                     m._resetIdentities(event)
+                    return
                 end if
             else
                 _adb_logWarning("handleEvent() - event is invalid: " + FormatJson(event))
@@ -58,14 +66,14 @@ function _adb_EventProcessor(internalConstants as object, task as object) as obj
 
         _resetIdentities: function(_event as object) as void
             _adb_logInfo("_resetIdentities() - Reset presisted Identities.")
-            m._stateManager.resetIdentities()
+            m._identityModule.resetIdentities()
         end function,
 
         _setConfiguration: function(event as object) as void
             _adb_logInfo("_setConfiguration() - set configuration")
-            _adb_logVerbose("configuration before: " + FormatJson(m._stateManager.dump()))
-            m._stateManager.updateConfiguration(event.data)
-            _adb_logVerbose("configuration after: " + FormatJson(m._stateManager.dump()))
+            _adb_logVerbose("configuration before: " + FormatJson(m._configurationModule.dump()))
+            m._configurationModule.updateConfiguration(event.data)
+            _adb_logVerbose("configuration after: " + FormatJson(m._configurationModule.dump()))
         end function,
 
         _setECID: function(event as object) as void
@@ -73,7 +81,7 @@ function _adb_EventProcessor(internalConstants as object, task as object) as obj
 
             ecid = _adb_optStringFromMap(event.data, m._CONSTANTS.EVENT_DATA_KEY.ECID)
             if ecid <> invalid
-                m._stateManager.updateECID(ecid)
+                m._identityModule.updateECID(ecid)
             else
                 _adb_logWarning("_setECID() - ECID not found in event data.")
             end if
@@ -98,10 +106,10 @@ function _adb_EventProcessor(internalConstants as object, task as object) as obj
             requestId = event.uuid
             xdmData = event.data
             timestampInMillis = event.timestamp_in_millis
-            responseEvents = m._edgeModule.sendEvent(requestId, xdmData, timestampInMillis)
+            responseEvents = m._edgeModule.processEvent(requestId, xdmData, timestampInMillis)
 
-            for each event in responseEvents
-                m._sendResponseEvent(event)
+            for each responseEvent in responseEvents
+                m._sendResponseEvent(responseEvent)
             end for
 
         end function,

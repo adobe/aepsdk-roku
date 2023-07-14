@@ -22,7 +22,8 @@ governing permissions and limitations under the License.-->
   <script type="text/brightscript" uri="pkg:/source/adobe/common/id.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/common/log.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/common/map.brs"/>
-  <script type="text/brightscript" uri="pkg:/source/adobe/common/stateManager.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/common/configurationModule.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/common/identityModule.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/common/string.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/common/version.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/edge/edgeModule.brs"/>

@@ -13,14 +13,9 @@
 
 ' ******************************* MODULE: EdgeRequestWorker *******************************
 
-function _adb_EdgeRequestWorker(stateManager as object) as object
-    if stateManager = invalid
-        _adb_logDebug("stateManager is invalid")
-        return invalid
-    end if
+function _adb_EdgeRequestWorker() as object
     instance = {
         _queue: [],
-        _stateManager: stateManager
         _queue_size_max: 50,
 
         queue: function(requestId as string, xdmData as object, timestamp as integer) as void
@@ -51,23 +46,16 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
             m._queue.Push(requestEntity)
         end function,
 
-        isReadyToProcess: function() as boolean
+        hasQueuedEvent: function() as boolean
             size = m._queue.count()
-
             if size = 0
                 return false
             end if
-            _adb_logVerbose("isReadyToProcess() - Request queue size:(" + FormatJson(size) + ")")
-
-            if not m._stateManager.isReadyForRequest()
-                return false
-            end if
-
-            _adb_logVerbose("isReadyToProcess() - Ready to process queued requests.")
+            _adb_logVerbose("hasQueuedEvent() - Request queue size:(" + FormatJson(size) + ")")
             return true
         end function,
 
-        processRequests: function() as dynamic
+        processRequests: function(configId as string, ecid as string, edgeDomain = invalid as dynamic) as dynamic
             responseArray = invalid
             while m._queue.count() > 0
                 ' grab oldest hit in the queue
@@ -75,10 +63,6 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
 
                 xdmData = requestEntity.xdmData
                 requestId = requestEntity.requestId
-
-                ecid = m._stateManager.getECID()
-                configId = m._stateManager.getConfigId()
-                edgeDomain = m._stateManager.getEdgeDomain()
 
                 _adb_logVerbose("processRequests() - Using ECID:(" + FormatJson(ecid) + ") and configId:(" + FormatJson(configId) + ")")
                 if (not _adb_isEmptyOrInvalidString(ecid)) and (not _adb_isEmptyOrInvalidString(configId)) then
