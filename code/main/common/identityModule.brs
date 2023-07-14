@@ -11,29 +11,12 @@
 ' *
 ' *****************************************************************************************
 
-' ******************************** MODULE: StateManager ***********************************
+' ******************************* MODULE: Identity ***********************************
 
-function _adb_StateManager() as object
+function _adb_IdentityModule(configurationModule as object) as object
     return {
-        CONFIG_KEY: AdobeSDKConstants().CONFIGURATION,
-        _edge_configId: invalid,
-        _edge_domain: invalid,
+        _configurationModule: configurationModule,
         _ecid: invalid,
-        ' example config = {edge.configId:"1234567890", edge.domain:"xyz.net"}
-        updateConfiguration: function(configuration as object) as void
-            configId = _adb_optStringFromMap(configuration, m.CONFIG_KEY.EDGE_CONFIG_ID)
-            domain = _adb_optStringFromMap(configuration, m.CONFIG_KEY.EDGE_DOMAIN)
-
-            if not _adb_isEmptyOrInvalidString(configId)
-                m._edge_configId = configId
-            end if
-
-            ' example domain: company.data.adobedc.net
-            regexPattern = CreateObject("roRegex", "^((?!-)[A-Za-z0-9-]+(?<!-)\.)+[A-Za-z]{2,6}$", "")
-            if not _adb_isEmptyOrInvalidString(domain) and regexPattern.isMatch(domain)
-                m._edge_domain = domain
-            end if
-        end function,
 
         resetIdentities: function() as void
             m.updateECID(invalid)
@@ -58,14 +41,6 @@ function _adb_StateManager() as object
             return m._ecid
         end function,
 
-        getConfigId: function() as dynamic
-            return m._edge_configId
-        end function,
-
-        getEdgeDomain: function() as dynamic
-            return m._edge_domain
-        end function,
-
         updateECID: function(ecid as dynamic) as void
             if ecid <> invalid and ecid = m._ecid
                 _adb_logVerbose("updateECID() - Not updating ECID. Same value is cached and persisted.")
@@ -77,20 +52,6 @@ function _adb_StateManager() as object
             _adb_logVerbose("updateECID() - Saving ECID:(" + FormatJson(ecid) + ") in cache and persistence.")
             m._ecid = ecid
             m._saveECID(m._ecid)
-        end function,
-
-        isReadyForRequest: function() as boolean
-            configId = m.getConfigId()
-            if _adb_isEmptyOrInvalidString(configId)
-                _adb_logVerbose("isReadyForRequest() - Confguration for edge.configId not found.")
-                return false
-            end if
-            ecid = m.getECID()
-            if _adb_isEmptyOrInvalidString(ecid)
-                _adb_logVerbose("isReadyForRequest() - ECID not set. Please verify the configuration.")
-                return false
-            end if
-            return true
         end function,
 
         _loadECID: function() as dynamic
@@ -120,8 +81,8 @@ function _adb_StateManager() as object
 
         _queryECID: function() as dynamic
             _adb_logInfo("_queryECID() - Fetching ECID from service side.")
-            configId = m.getConfigId()
-            edgeDomain = m.getEdgeDomain()
+            configId = m._configurationModule.getConfigId()
+            edgeDomain = m._configurationModule.getEdgeDomain()
 
             if _adb_isEmptyOrInvalidString(configId)
                 _adb_logError("_queryECID() - Unable to fetch ECID from service side, invalid configuration.")
@@ -160,9 +121,7 @@ function _adb_StateManager() as object
 
         dump: function() as object
             return {
-                edge_configId: m._edge_configId,
-                edge_domain: m._edge_domain,
-                ecid: m._ecid
+                ecid: m._ecid,
             }
         end function
     }
