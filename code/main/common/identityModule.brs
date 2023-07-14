@@ -13,8 +13,16 @@
 
 ' ******************************* MODULE: Identity ***********************************
 
+function _adb_isIdentityModule(module as object) as boolean
+    if module <> invalid and module.type = "com.adobe.module.identity" then
+        return true
+    end if
+    return false
+end function
+
 function _adb_IdentityModule(configurationModule as object) as object
-    return {
+    module = _adb_AdobeObject("com.adobe.module.identity")
+    module.Append({
         _configurationModule: configurationModule,
         _ecid: invalid,
 
@@ -124,5 +132,6 @@ function _adb_IdentityModule(configurationModule as object) as object
                 ecid: m._ecid,
             }
         end function
-    }
+    })
+    return module
 end function

@@ -13,8 +13,26 @@
 
 ' ************************************ MODULE: Edge ***************************************
 
+function _adb_isEdgeModule(module as object) as boolean
+    if module <> invalid and module.type = "com.adobe.module.edge" then
+        return true
+    end if
+    return false
+end function
+
 function _adb_EdgeModule(configurationModule as object, identityModule as object) as object
-    return {
+    if _adb_isConfigurationModule(configurationModule) = false then
+        _adb_logError("_adb_EdgeModule() - configurationModule is not valid.")
+        return invalid
+    end if
+
+    if _adb_isIdentityModule(identityModule) = false = false then
+        _adb_logError("_adb_EdgeModule() - identityModule is not valid.")
+        return invalid
+    end if
+
+    module = _adb_AdobeObject("com.adobe.module.edge")
+    module.Append({
         _configurationModule: configurationModule,
         _identityModule: identityModule,
         _edgeRequestWorker: _adb_EdgeRequestWorker(),
@@ -63,5 +81,6 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
             end if
             return responseEvents
         end function,
-    }
+    })
+    return module
 end function

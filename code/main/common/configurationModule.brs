@@ -13,8 +13,16 @@
 
 ' ******************************* MODULE: Configuration ***********************************
 
+function _adb_isConfigurationModule(module as object) as boolean
+    if module <> invalid and module.type = "com.adobe.module.configuration" then
+        return true
+    end if
+    return false
+end function
+
 function _adb_ConfigurationModule() as object
-    return {
+    module = _adb_AdobeObject("com.adobe.module.configuration")
+    module.Append({
         CONFIG_KEY: AdobeSDKConstants().CONFIGURATION,
         _edge_configId: invalid,
         _edge_domain: invalid,
@@ -48,5 +56,6 @@ function _adb_ConfigurationModule() as object
                 edge_domain: m._edge_domain
             }
         end function
-    }
+    })
+    return module
 end function
