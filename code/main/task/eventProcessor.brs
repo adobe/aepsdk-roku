@@ -13,9 +13,9 @@
 
 ' ******************************** MODULE: EventProcessor *********************************
 
-function _adb_EventProcessor(internalConstants as object, task as object) as object
+function _adb_EventProcessor(task as object) as object
     eventProcessor = {
-        _CONSTANTS: internalConstants,
+        _CONSTANTS: _adb_InternalConstants(),
         _task: task,
         _configurationModule: invalid,
         _identityModule: invalid,
