@@ -28,23 +28,22 @@ function _adb_EventProcessor(task as object) as object
         end function
 
         handleEvent: function(event as dynamic) as void
-            eventOwner = _adb_optStringFromMap(event, "owner", "unknown")
 
-            if eventOwner = m._CONSTANTS.EVENT_OWNER
+            if _adb_isRequestEvent(event)
                 _adb_logInfo("handleEvent() - handle event: " + FormatJson(event))
-                if event.apiname = m._CONSTANTS.PUBLIC_API.SEND_EDGE_EVENT
+                if event.apiName = m._CONSTANTS.PUBLIC_API.SEND_EDGE_EVENT
                     m._sendEvent(event)
                     return
-                else if event.apiname = m._CONSTANTS.PUBLIC_API.SET_CONFIGURATION
+                else if event.apiName = m._CONSTANTS.PUBLIC_API.SET_CONFIGURATION
                     m._setConfiguration(event)
                     return
-                else if event.apiname = m._CONSTANTS.PUBLIC_API.SET_LOG_LEVEL
+                else if event.apiName = m._CONSTANTS.PUBLIC_API.SET_LOG_LEVEL
                     m._setLogLevel(event)
                     return
-                else if event.apiname = m._CONSTANTS.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID
+                else if event.apiName = m._CONSTANTS.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID
                     m._setECID(event)
                     return
-                else if event.apiname = m._CONSTANTS.PUBLIC_API.RESET_IDENTITIES
+                else if event.apiName = m._CONSTANTS.PUBLIC_API.RESET_IDENTITIES
                     m._resetIdentities(event)
                     return
                 end if
@@ -105,7 +104,7 @@ function _adb_EventProcessor(task as object) as object
 
             requestId = event.uuid
             xdmData = event.data
-            timestampInMillis = event.timestamp_in_millis
+            timestampInMillis = event.timestampInMillis
             responseEvents = m._edgeModule.processEvent(requestId, xdmData, timestampInMillis)
 
             for each responseEvent in responseEvents

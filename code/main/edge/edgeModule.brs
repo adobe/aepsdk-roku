@@ -26,7 +26,7 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
         return invalid
     end if
 
-    if _adb_isIdentityModule(identityModule) = false = false then
+    if _adb_isIdentityModule(identityModule) = false then
         _adb_logError("_adb_EdgeModule() - identityModule is not valid.")
         return invalid
     end if
@@ -68,14 +68,14 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
                 if responses = invalid or Type(responses) <> "roArray" then
                     _adb_logError("processQueuedRequests() - not found valid edge response.")
                 else
-                    for each response in responses
-                        responseEvents.Push({
-                            uuid: response.requestId,
-                            data: {
-                                code: response.code,
-                                message: response.message
-                            }
-                        })
+                    for each edgeResponse in responses
+                        if _adb_isEdgeResponse(edgeResponse) then
+                            responseEvent = _adb_ResponseEvent(edgeResponse.getRequestId(), {
+                                code: edgeResponse.getResponseCode(),
+                                message: edgeResponse.getResponseString()
+                            })
+                            responseEvents.Push(responseEvent)
+                        end if
                     end for
                 end if
             end if

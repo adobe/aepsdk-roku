@@ -66,25 +66,26 @@ function _adb_EdgeRequestWorker() as object
 
                 _adb_logVerbose("processRequests() - Using ECID:(" + FormatJson(ecid) + ") and configId:(" + FormatJson(configId) + ")")
                 if (not _adb_isEmptyOrInvalidString(ecid)) and (not _adb_isEmptyOrInvalidString(configId)) then
-                    response = m._processRequest(xdmData, ecid, configId, requestId, edgeDomain)
-                    if response = invalid
+                    networkResponse = m._processRequest(xdmData, ecid, configId, requestId, edgeDomain)
+                    if not _adb_isNetworkResponse(networkResponse)
                         _adb_logError("processRequests() - Edge request dropped. Response is invalid.")
                         ' drop the request
                     else
-                        _adb_logVerbose("processRequests() - Request with id:(" + FormatJson(requestId) + ") code:(" + FormatJson(response.code) + ") message:(" + response.message + ")")
-                        if response.code >= 200 and response.code <= 299 then
+                        _adb_logVerbose("processRequests() - Request with id:(" + FormatJson(requestId) + ") response:(" + FormatJson(networkResponse) + ")")
+                        if networkResponse.isSuccessful() then
                             if responseArray = invalid
                                 responseArray = []
                             end if
-                            responseArray.Push(response)
+                            ' TODO: add request id
+                            edgeResponse = _adb_EdgeResponse(requestId, networkResponse.getResponseCode(), networkResponse.getResponseString())
+                            responseArray.Push(edgeResponse)
 
-                        else if response.code = 408 or response.code = 504 or response.code = 503
-                            ' RECOVERABLE_ERROR_CODES = [408, 504, 503]
+                        else if networkResponse.isRecoverable()
                             m._queue.Unshift(requestEntity)
                             exit while
                         else
                             ' drop the request
-                            _adb_logError("processRequests() - Edge request dropped. Response code:(" + response.code.toStr() + ") Response body:(" + response.message + ")")
+                            _adb_logError("processRequests() - Edge request dropped. Response response:(" + FormatJson(networkResponse) + ")")
                             exit while
                         end if
                     end if
@@ -122,11 +123,8 @@ function _adb_EdgeRequestWorker() as object
 
             url = _adb_buildEdgeRequestURL(configId, requestId, edgeDomain)
             _adb_logVerbose("_processRequest() - Sending Request to url:(" + FormatJson(url) + ") with payload:(" + FormatJson(jsonBody) + ")")
-            response = _adb_serviceProvider().networkService.syncPostRequest(url, jsonBody)
-            if response <> invalid
-                response.requestId = requestId
-            end if
-            return response
+            networkResponse = _adb_serviceProvider().networkService.syncPostRequest(url, jsonBody)
+            return networkResponse
         end function
 
         clear: function() as void
@@ -135,4 +133,34 @@ function _adb_EdgeRequestWorker() as object
     }
 
     return instance
+end function
+
+
+function _adb_EdgeResponse(requestId as string, code as integer, responseBody as string) as object
+    networkResponse = _adb_AdobeObject("com.adobe.module.edge.response")
+    networkResponse.Append({
+        _requestId: requestId,
+        _responseBody: responseBody,
+        _responseCode: code,
+
+        getRequestId: function() as string
+            return m._requestId
+        end function,
+
+        getResponseCode: function() as integer
+            return m._responseCode
+        end function,
+
+        getResponseString: function() as string
+            return m._responseBody
+        end function
+    })
+    return networkResponse
+end function
+
+function _adb_isEdgeResponse(edgeResponse as object) as boolean
+    if edgeResponse <> invalid and edgeResponse.type = "com.adobe.module.edge.response" then
+        return true
+    end if
+    return false
 end function
