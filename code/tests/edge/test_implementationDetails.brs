@@ -11,25 +11,11 @@
 
 ' *****************************************************************************************
 
-
-' @BeforeEach
-sub AdobeEdgeTestSuite_localDataStoreService_BeforeEach()
-    print "AdobeEdgeTestSuite_localDataStoreService_BeforeEach"
-end sub
-
-' @AfterAll
-sub AdobeEdgeTestSuite_localDataStoreService_TearDown()
-    print "AdobeEdgeTestSuite_loggingService_TearDown"
-end sub
-
-' target: writeValue()/readValue()/removeValue()
+' target: _adb_ImplementationDetails()
 ' @Test
-sub TestCase_AdobeEdge_localDataStoreService_write()
-    serviceProvider = _adb_serviceProvider()
-    localDataStoreService = serviceProvider.localDataStoreService
-    localDataStoreService.writeValue("testKey", "string-value")
-    UTF_assertEqual(localDataStoreService.readValue("testKey"), "string-value")
-    localDataStoreService.removeValue("testKey")
-    UTF_assertInvalid(localDataStoreService.readValue("testKey"))
+sub TC_adb_ImplementationDetails()
+    implementationDetails = _adb_ImplementationDetails()
+    UTF_assertEqual(implementationDetails["name"], "https://ns.adobe.com/experience/mobilesdk/roku")
+    UTF_assertEqual(implementationDetails["version"], "1.0.0-alpha1")
+    UTF_assertEqual(implementationDetails["environment"], "app")
 end sub
-

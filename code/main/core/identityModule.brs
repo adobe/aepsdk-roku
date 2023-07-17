@@ -21,6 +21,9 @@ function _adb_isIdentityModule(module as object) as boolean
 end function
 
 function _adb_IdentityModule(configurationModule as object) as object
+    if not _adb_isConfigurationModule(configurationModule) then
+        return invalid
+    end if
     module = _adb_AdobeObject("com.adobe.module.identity")
     module.Append({
         _configurationModule: configurationModule,

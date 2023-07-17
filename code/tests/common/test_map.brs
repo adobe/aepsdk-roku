@@ -11,60 +11,9 @@
 
 ' *****************************************************************************************
 
-
-' @BeforeAll
-sub AdobeEdgeTestSuite_SetUp()
-    print "AdobeEdgeTestSuite_SetUp"
-end sub
-
-' @AfterAll
-sub AdobeEdgeTestSuite_TearDown()
-    print "AdobeEdgeTestSuite_TearDown"
-end sub
-
-' target: AdobeSDKConstants()
-' @Test
-sub TestCase_AdobeEdge_AdobeSDKConstants()
-    cons = AdobeSDKConstants()
-    UTF_assertEqual(cons.LOG_LEVEL.VERBOSE, 0)
-    UTF_assertEqual(cons.LOG_LEVEL.DEBUG, 1)
-    UTF_assertEqual(cons.LOG_LEVEL.INFO, 2)
-    UTF_assertEqual(cons.LOG_LEVEL.WARNING, 3)
-    UTF_assertEqual(cons.LOG_LEVEL.ERROR, 4)
-
-    UTF_assertEqual(cons.CONFIGURATION.EDGE_CONFIG_ID, "edge.configId")
-    UTF_assertEqual(cons.CONFIGURATION.EDGE_DOMAIN, "edge.domain")
-end sub
-
-' target: _adb_sdkVersion()
-' @Test
-sub TestCase_AdobeEdge_adb_sdkVersion()
-    UTF_assertEqual(_adb_sdkVersion(), "1.0.0-alpha1")
-end sub
-
-' target: _adb_sdkVersion()
-' @Test
-sub TestCase_AdobeEdge_adb_serviceProvider()
-    instance1 = _adb_serviceProvider()
-    instance1.test = "test123"
-    instance2 = _adb_serviceProvider()
-    UTF_assertEqual(instance1.test, instance2.test)
-    UTF_assertEqual(GetGlobalAA()._adb_serviceProvider_instance.test, instance1.test)
-end sub
-
-' target: _adb_isEmptyOrInvalidString()
-' @Test
-sub TestCase_AdobeEdge_adb_isEmptyOrInvalidString()
-    UTF_assertTrue(_adb_isEmptyOrInvalidString(invalid))
-    UTF_assertTrue(_adb_isEmptyOrInvalidString(""))
-    UTF_assertFalse(_adb_isEmptyOrInvalidString("test"))
-    UTF_assertTrue(_adb_isEmptyOrInvalidString(123))
-    UTF_assertTrue(_adb_isEmptyOrInvalidString({}))
-end sub
-
 ' target: _adb_optMapFromMap()
 ' @Test
-sub TestCase_AdobeEdge_adb_optMapFromMap()
+sub TC_adb_optMapFromMap()
     UTF_assertEqual({ "key": "value" }, _adb_optMapFromMap({ "map": { "key": "value" } }, "map"))
 
 
@@ -79,9 +28,10 @@ sub TestCase_AdobeEdge_adb_optMapFromMap()
     UTF_assertEqual("invalidMap", _adb_optMapFromMap({ "map": { "key": "value" } }, "map1", "invalidMap"))
 end sub
 
+
 ' target: _adb_optStringFromMap()
 ' @Test
-sub TestCase_AdobeEdge_adb_optStringFromMap()
+sub TC_adb_optStringFromMap()
     UTF_assertEqual("value", _adb_optStringFromMap({ "key": "value" }, "key"))
 
     UTF_assertEqual(invalid, _adb_optStringFromMap({ "key": 1 }, "key"))
@@ -96,7 +46,7 @@ end sub
 
 ' target: _adb_optIntFromMap()
 ' @Test
-sub TestCase_AdobeEdge_adb_optIntFromMap()
+sub TC_adb_optIntFromMap()
     UTF_assertEqual(1, _adb_optIntFromMap({ "key": 1 }, "key"))
 
     UTF_assertEqual(invalid, _adb_optIntFromMap({ "key": "value" }, "key1"))

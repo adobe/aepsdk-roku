@@ -115,22 +115,30 @@ function _adb_EventProcessor(task as object) as object
 
         processQueuedRequests: function() as void
             responseEvents = m._edgeModule.processQueuedRequests()
-            for each event in responseEvents
-                m._sendResponseEvent(event)
-            end for
+            m._sendResponseEvents(responseEvents)
         end function
 
         _sendResponseEvent: function(event as object) as void
             _adb_logInfo("_sendResponseEvent() - Send response event: (" + FormatJson(event) + ").")
+
             if m._task = invalid
                 _adb_logError("_sendResponseEvent() - Cannot send response event, task node instance is invalid.")
                 return
             end if
-            m._task[m._CONSTANTS.TASK.RESPONSE_EVENT] = event
+
+            if _adb_isResponseEvent(event)
+                m._task[m._CONSTANTS.TASK.RESPONSE_EVENT] = event
+            else
+                _adb_logError("_sendResponseEvent() - the given event is invalid.")
+            end if
         end function,
 
         _sendResponseEvents: function(responseEvents as dynamic) as void
             ' TODO: check if responseEvents is an array
+            if Type(responseEvents) <> "roArray"
+                _adb_logError("_sendResponseEvents() - responseEvents is not an array.")
+                return
+            end if
             for each event in responseEvents
                 m._sendResponseEvent(event)
             end for

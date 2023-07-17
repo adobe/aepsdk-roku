@@ -153,7 +153,11 @@ function _adb_EdgeResponse(requestId as string, code as integer, responseBody as
 
         getResponseString: function() as string
             return m._responseBody
-        end function
+        end function,
+
+        toString: function() as string
+            return "_requestId = " + m._requestId + " , _responseBody = " + m._responseBody + " , _responseCode = " + FormatJson(m._responseCode)
+        end function,
     })
     return networkResponse
 end function
