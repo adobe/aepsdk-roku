@@ -37,7 +37,7 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
         _identityModule: identityModule,
         _edgeRequestWorker: _adb_EdgeRequestWorker(),
 
-        processEvent: function(requestId as string, xdmData as object, timestampInMillis as integer) as dynamic
+        processEvent: function(requestId as string, xdmData as object, timestampInMillis as longinteger) as dynamic
             m._edgeRequestWorker.queue(requestId, xdmData, timestampInMillis)
             return m.processQueuedRequests()
         end function,
@@ -65,7 +65,7 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
             edgeConfig = m._getEdgeConfig()
             if m._edgeRequestWorker.hasQueuedEvent() and edgeConfig <> invalid then
                 responses = m._edgeRequestWorker.processRequests(edgeConfig.configId, edgeConfig.ecid, edgeConfig.edgeDomain)
-                if responses = invalid or Type(responses) <> "roArray" then
+                if not _adb_isArray(responses) then
                     _adb_logError("processQueuedRequests() - not found valid edge response.")
                 else
                     for each edgeResponse in responses

@@ -24,6 +24,7 @@ governing permissions and limitations under the License.-->
   <script type="text/brightscript" uri="pkg:/source/adobe/common/map.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/common/string.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/common/version.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/common/utils.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/core/event.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/core/adobeObject.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/core/configurationModule.brs"/>

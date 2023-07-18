@@ -11,10 +11,3 @@
 
 ' *****************************************************************************************
 
-' target: _adb_timestampInMillis()
-' @Test
-sub TC_adb_timestampInMillis()
-    timestampInMillis = _adb_timestampInMillis()
-    UTF_assertEqual("LongInteger", Type(timestampInMillis), "timestampInMillis is not a long int")
-    UTF_assertTrue(FormatJson(timestampInMillis).Len() > 12, "timestampInMillis should be longer than 12 digits")
-end sub

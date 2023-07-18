@@ -32,7 +32,8 @@ end sub
 ' target: _adb_optStringFromMap()
 ' @Test
 sub TC_adb_optStringFromMap()
-    UTF_assertEqual("value", _adb_optStringFromMap({ "key": "value" }, "key"))
+    value$ = _adb_optStringFromMap({ "key": "value" }, "key")
+    UTF_assertEqual("value", value$)
 
     UTF_assertEqual(invalid, _adb_optStringFromMap({ "key": 1 }, "key"))
     UTF_assertEqual(invalid, _adb_optStringFromMap({ "key": true }, "key"))
@@ -47,7 +48,8 @@ end sub
 ' target: _adb_optIntFromMap()
 ' @Test
 sub TC_adb_optIntFromMap()
-    UTF_assertEqual(1, _adb_optIntFromMap({ "key": 1 }, "key"))
+    value% = _adb_optIntFromMap({ "key": 1 }, "key")
+    UTF_assertEqual(1, value%)
 
     UTF_assertEqual(invalid, _adb_optIntFromMap({ "key": "value" }, "key1"))
     UTF_assertEqual(invalid, _adb_optIntFromMap({ "key": true }, "key1"))

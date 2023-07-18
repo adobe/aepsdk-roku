@@ -13,13 +13,13 @@
 
 
 ' @BeforeEach
-sub AdobeSDKInit_SetUp()
+sub TS_AdobeSDKInit_SetUp()
     GetGlobalAA()._adb_main_task_node = invalid
     GetGlobalAA()._adb_public_api = invalid
 end sub
 
 ' @AfterAll
-sub AdobeSDKInit_TearDown()
+sub TS_AdobeSDKInit_TearDown()
     GetGlobalAA()._adb_main_task_node = invalid
     GetGlobalAA()._adb_public_api = invalid
 end sub

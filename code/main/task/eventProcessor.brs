@@ -134,8 +134,7 @@ function _adb_EventProcessor(task as object) as object
         end function,
 
         _sendResponseEvents: function(responseEvents as dynamic) as void
-            ' TODO: check if responseEvents is an array
-            if Type(responseEvents) <> "roArray"
+            if not _adb_isArray(responseEvents)
                 _adb_logError("_sendResponseEvents() - responseEvents is not an array.")
                 return
             end if

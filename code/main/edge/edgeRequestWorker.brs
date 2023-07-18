@@ -18,7 +18,7 @@ function _adb_EdgeRequestWorker() as object
         _queue: [],
         _queue_size_max: 50,
 
-        queue: function(requestId as string, xdmData as object, timestamp as integer) as void
+        queue: function(requestId as string, xdmData as object, timestampInMillis as longinteger) as void
             if _adb_isEmptyOrInvalidString(requestId)
                 _adb_logDebug("[EdgeRequestWorker.queue()] requestId is invalid")
                 return
@@ -29,15 +29,15 @@ function _adb_EdgeRequestWorker() as object
                 return
             end if
 
-            if timestamp <= 0
-                _adb_logDebug("[EdgeRequestWorker.queue()] timestamp is invalid")
+            if timestampInMillis <= 0
+                _adb_logDebug("[EdgeRequestWorker.queue()] timestampInMillis is invalid")
                 return
             end if
 
             requestEntity = {
                 requestId: requestId,
                 xdmData: xdmData,
-                timestamp: timestamp
+                timestampInMillis: timestampInMillis
             }
             ' remove the oldest entity if reaching the limit
             if m._queue.count() >= m._queue_size_max

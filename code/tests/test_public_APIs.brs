@@ -12,7 +12,7 @@
 ' *****************************************************************************************
 
 ' @BeforeEach
-sub public_APIs_BeforeEach()
+sub TS_public_APIs_BeforeEach()
     GetGlobalAA()._adb_public_api = invalid
     GetGlobalAA()._adb_main_task_node = {
         observeField: function(_arg1 as string, _arg2 as string) as void
@@ -24,7 +24,7 @@ sub public_APIs_BeforeEach()
 end sub
 
 ' @AfterAll
-sub public_APIs_TearDown()
+sub TS_public_APIs_TearDown()
     GetGlobalAA()._adb_public_api = invalid
     GetGlobalAA()._adb_main_task_node = invalid
 end sub

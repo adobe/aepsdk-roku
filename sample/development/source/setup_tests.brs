@@ -41,6 +41,17 @@ function _adb_test_functions() as dynamic
         TC_adb_optIntFromMap
         'test_string.brs
         TC_adb_isEmptyOrInvalidString
+        'test_datetime.brs
+        TC_adb_timestampInMillis
+        ' test_log.brs
+        TS_logUtils_SetUp
+        TS_logUtils_BeforeEach
+        TS_logUtils_TearDown
+        TC_adb_logError
+        TC_adb_logWarning
+        TC_adb_logInfo
+        TC_adb_logDebug
+        TC_adb_logVerbose
     ]
     services = [
         'test_serviceProvider.brs
@@ -52,6 +63,10 @@ function _adb_test_functions() as dynamic
         TC_loggingService_logLevel
         TC_loggingService_logLevel_default
         TC_loggingService_utility_functions
+        'test_networkResponse.brs
+        TC_adb_NetworkResponse
+        TC_adb_NetworkResponse_isSuccessful
+        TC_adb_NetworkResponse_isRecoverable
     ]
     core = [
         'test_configurationModule.brs
@@ -69,6 +84,13 @@ function _adb_test_functions() as dynamic
         TC_adb_IdentityModule_updateECID_validString_updatesECID
         TC_adb_IdentityModule_updateECID_invalid_deletesECID
         TC_adb_IdentityModule_resetIdentities_deletesECIDAndOtherIdentities
+        'test_adobeObject.brs
+        TC_adb_AdobeObject
+        'test_event.brs
+        TC_adb_RequestEvent
+        TC_adb_RequestEvent_empty_data
+        TC_adb_ResponseEvent
+        TC_adb_ResponseEvent_empty_data
     ]
     edge = [
         'test_buildEdgeRequestURL.brs
@@ -78,7 +100,7 @@ function _adb_test_functions() as dynamic
         ' test_edgeRequestWorker.brs
         TC_adb_EdgeRequestWorker_init
         TC_adb_EdgeRequestWorker_hasQueuedEvent
-        TestCase_AdobeEdge_adb_EdgeRequestWorker_queue
+        TC_adb_EdgeRequestWorker_queue
         TC_adb_EdgeRequestWorker_queue_bad_input
         TC_adb_EdgeRequestWorker_queue_limit
         TC_adb_EdgeRequestWorker_clear
@@ -87,18 +109,22 @@ function _adb_test_functions() as dynamic
         TC_adb_EdgeRequestWorker_processRequests
         TC_adb_EdgeRequestWorker_processRequests_empty_queue
         TC_adb_EdgeRequestWorker_processRequests_recoverable_error
+        'test_edgeModule.brs
+        TC_adb_EdgeModule_init
+        TC_adb_EdgeModule_processEvent
+        TC_adb_EdgeModule_processQueuedRequests
     ]
     initSDK = [
         'test_AdobeSDKInit.brs
-        AdobeSDKInit_SetUp
-        AdobeSDKInit_TearDown
+        TS_AdobeSDKInit_SetUp
+        TS_AdobeSDKInit_TearDown
         TC_AdobeSDKInit_singleton
         TC_AdobeSDKInit_initialize_task_node
     ]
     api = [
         'test_public_APIs.brs
-        public_APIs_BeforeEach
-        public_APIs_TearDown
+        TS_public_APIs_BeforeEach
+        TS_public_APIs_TearDown
         TC_APIs_getVersion
         TC_APIs_setLogLevel
         TC_APIs_setLogLevel_invalid

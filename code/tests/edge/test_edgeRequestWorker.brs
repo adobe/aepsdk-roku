@@ -32,15 +32,16 @@ end sub
 
 ' target: queue()
 ' @Test
-sub TestCase_AdobeEdge_adb_EdgeRequestWorker_queue()
+sub TC_adb_EdgeRequestWorker_queue()
     worker = _adb_EdgeRequestWorker()
     worker._queue = []
-    worker.queue("request_id", { xdm: {} }, 12345534)
+    timestampInMillis& = _adb_timestampInMillis()
+    worker.queue("request_id", { xdm: {} }, timestampInMillis&)
     UTF_assertEqual(1, worker._queue.Count())
     expectedObj = {
         requestId: "request_id",
         xdmData: { xdm: {} },
-        timestamp: 12345534
+        timestampInMillis: timestampInMillis&
     }
     UTF_assertEqual(expectedObj, worker._queue[0])
 

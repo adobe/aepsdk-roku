@@ -11,10 +11,11 @@
 
 ' *****************************************************************************************
 
-' target: _adb_timestampInMillis()
+' target: _adb_AdobeObject()
 ' @Test
-sub TC_adb_timestampInMillis()
-    timestampInMillis = _adb_timestampInMillis()
-    UTF_assertEqual("LongInteger", Type(timestampInMillis), "timestampInMillis is not a long int")
-    UTF_assertTrue(FormatJson(timestampInMillis).Len() > 12, "timestampInMillis should be longer than 12 digits")
+sub TC_adb_AdobeObject()
+    object = _adb_AdobeObject("object_type_1")
+    UTF_assertEqual("adobe", object.owner)
+    UTF_assertEqual("object_type_1", object.type)
+    UTF_assertEqual("LongInteger", Type(object.timestampInMillis), "timestampInMillis is not a long int")
 end sub
