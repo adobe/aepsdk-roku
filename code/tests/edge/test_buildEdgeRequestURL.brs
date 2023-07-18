@@ -11,25 +11,12 @@
 
 ' *****************************************************************************************
 
-
-' @BeforeEach
-sub AdobeEdgeTestSuite_localDataStoreService_BeforeEach()
-    print "AdobeEdgeTestSuite_localDataStoreService_BeforeEach"
-end sub
-
-' @AfterAll
-sub AdobeEdgeTestSuite_localDataStoreService_TearDown()
-    print "AdobeEdgeTestSuite_loggingService_TearDown"
-end sub
-
-' target: writeValue()/readValue()/removeValue()
+' target: _adb_buildEdgeRequestURL()
 ' @Test
-sub TestCase_AdobeEdge_localDataStoreService_write()
-    serviceProvider = _adb_serviceProvider()
-    localDataStoreService = serviceProvider.localDataStoreService
-    localDataStoreService.writeValue("testKey", "string-value")
-    UTF_assertEqual(localDataStoreService.readValue("testKey"), "string-value")
-    localDataStoreService.removeValue("testKey")
-    UTF_assertInvalid(localDataStoreService.readValue("testKey"))
-end sub
+sub TC_adb_buildEdgeRequestURL_validDomain()
+    url = _adb_buildEdgeRequestURL("config_id_1", "request_id_1")
+    UTF_assertEqual("https://edge.adobedc.net/ee/v1/interact?configId=config_id_1&requestId=request_id_1", url)
 
+    urlWithCustomDomain = _adb_buildEdgeRequestURL("config_id_2", "request_id_2", "custom.domain.net")
+    UTF_assertEqual("https://custom.domain.net/ee/v1/interact?configId=config_id_2&requestId=request_id_2", urlWithCustomDomain)
+end sub

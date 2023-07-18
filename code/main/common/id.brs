@@ -13,6 +13,7 @@
 
 ' ************************************ MODULE: ID utils ***********************************
 
+' Returns a random UUID
 function _adb_generate_UUID() as string
     return CreateObject("roDeviceInfo").GetRandomUUID()
 end function

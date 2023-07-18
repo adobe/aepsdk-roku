@@ -67,7 +67,7 @@ function _adb_optIntFromMap(map as object, key as string, fallback = invalid as 
 
 end function
 
-function isEmptyOrInvalidMap(input as object) as boolean
+function _adb_isEmptyOrInvalidMap(input as object) as boolean
     if input = invalid or type(input) <> "roAssociativeArray"
         return true
     end if

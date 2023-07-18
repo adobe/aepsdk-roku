@@ -11,21 +11,9 @@
 
 ' *****************************************************************************************
 
-
-' @BeforeEach
-sub AdobeEdgeTestSuite_loggingService_BeforeEach()
-    print "AdobeEdgeTestSuite_loggingService_BeforeEach"
-    GetGlobalAA()._adb_serviceProvider_instance = invalid
-end sub
-
-' @AfterAll
-sub AdobeEdgeTestSuite_loggingService_TearDown()
-    print "AdobeEdgeTestSuite_loggingService_TearDown"
-end sub
-
 ' target: setLogLevel()
 ' @Test
-sub TestCase_AdobeEdge_loggingService_logLevel()
+sub TC_loggingService_logLevel()
 
     GetGlobalAA()._adb_test_last_called_method = ""
 
@@ -79,15 +67,15 @@ end sub
 
 ' target: setLogLevel()
 ' @Test
-sub TestCase_AdobeEdge_loggingService_logLevel_default()
+sub TC_loggingService_logLevel_default()
     serviceProvider = _adb_serviceProvider()
     loggingService = serviceProvider.loggingService
-    UTF_assertEqual(loggingService._logLevel, 2)
+    UTF_assertEqual(loggingService._logLevel, 1)
 end sub
 
 ' target: Log utility functions
 ' @Test
-sub TestCase_AdobeEdge_loggingService_utility_functions()
+sub TC_loggingService_utility_functions()
 
     serviceProvider = _adb_serviceProvider()
     loggingService = serviceProvider.loggingService
@@ -98,29 +86,29 @@ sub TestCase_AdobeEdge_loggingService_utility_functions()
         GetGlobalAA()._adb_printed_message = message
     end function
 
-    ' _adb_log_verbose()
+    ' _adb_logVerbose()
     GetGlobalAA()._adb_printed_message = ""
-    _adb_log_verbose("test-123")
+    _adb_logVerbose("test-123")
     UTF_assertEqual(GetGlobalAA()._adb_printed_message, "[ADB-EDGE][V] test-123")
 
-    ' _adb_log_debug()
+    ' _adb_logDebug()
     GetGlobalAA()._adb_printed_message = ""
-    _adb_log_debug("test-123")
+    _adb_logDebug("test-123")
     UTF_assertEqual(GetGlobalAA()._adb_printed_message, "[ADB-EDGE][D] test-123")
 
-    ' _adb_log_info()
+    ' _adb_logInfo()
     GetGlobalAA()._adb_printed_message = ""
-    _adb_log_info("test-123")
+    _adb_logInfo("test-123")
     UTF_assertEqual(GetGlobalAA()._adb_printed_message, "[ADB-EDGE][I] test-123")
 
-    ' _adb_log_warning()
+    ' _adb_logWarning()
     GetGlobalAA()._adb_printed_message = ""
-    _adb_log_warning("test-123")
+    _adb_logWarning("test-123")
     UTF_assertEqual(GetGlobalAA()._adb_printed_message, "[ADB-EDGE][W] test-123")
 
-    ' _adb_log_error()
+    ' _adb_logError()
     GetGlobalAA()._adb_printed_message = ""
-    _adb_log_error("test-123")
+    _adb_logError("test-123")
     UTF_assertEqual(GetGlobalAA()._adb_printed_message, "[ADB-EDGE][E] test-123")
 
     loggingService._adb_print = func

@@ -11,59 +11,37 @@
 
 ' *****************************************************************************************
 
-' @BeforeAll
-sub AdobeEdgeTestSuite_EdgeRequestWorker_SetUp()
-    print "AdobeEdgeTestSuite_EdgeRequestWorker_SetUp"
-end sub
-
-' @BeforeEach
-sub AdobeEdgeTestSuite_EdgeRequestWorker_BeforeEach()
-end sub
-
-' @AfterAll
-sub AdobeEdgeTestSuite_EdgeRequestWorker_TearDown()
-    print "AdobeEdgeTestSuite_EdgeRequestWorker_TearDown"
-end sub
-
 ' target: _adb_EdgeRequestWorker()
 ' @Test
-sub TestCase_AdobeEdge_adb_EdgeRequestWorker_init()
-    worker = _adb_EdgeRequestWorker({})
+sub TC_adb_EdgeRequestWorker_init()
+    worker = _adb_EdgeRequestWorker()
     UTF_AssertNotInvalid(worker)
 end sub
 
-' target: _adb_EdgeRequestWorker()
+' target: hasQueuedEvent()
 ' @Test
-sub TestCase_AdobeEdge_adb_EdgeRequestWorker_init_invalid()
-    worker = _adb_EdgeRequestWorker(invalid)
-    UTF_assertInvalid(worker)
-end sub
-
-' target: isReadyToProcess()
-' @Test
-sub TestCase_AdobeEdge_adb_EdgeRequestWorker_isReadyToProcess()
-    worker = _adb_EdgeRequestWorker(_adb_StateManager())
+sub TC_adb_EdgeRequestWorker_hasQueuedEvent()
+    worker = _adb_EdgeRequestWorker()
     worker._queue = []
-    UTF_assertFalse(worker.isReadyToProcess())
+    UTF_assertFalse(worker.hasQueuedEvent())
     worker._queue.Push({})
-    worker._stateManager._edge_configId = "config_id_test"
-    worker._stateManager._ecid = "ecid_test"
-    UTF_assertTrue(worker.isReadyToProcess())
+    UTF_assertTrue(worker.hasQueuedEvent())
     worker._queue.Shift()
-    UTF_assertFalse(worker.isReadyToProcess())
+    UTF_assertFalse(worker.hasQueuedEvent())
 end sub
 
 ' target: queue()
 ' @Test
-sub TestCase_AdobeEdge_adb_EdgeRequestWorker_queue()
-    worker = _adb_EdgeRequestWorker({})
+sub TC_adb_EdgeRequestWorker_queue()
+    worker = _adb_EdgeRequestWorker()
     worker._queue = []
-    worker.queue("request_id", { xdm: {} }, 12345534)
+    timestampInMillis& = _adb_timestampInMillis()
+    worker.queue("request_id", { xdm: {} }, timestampInMillis&)
     UTF_assertEqual(1, worker._queue.Count())
     expectedObj = {
         requestId: "request_id",
         xdmData: { xdm: {} },
-        timestamp: 12345534
+        timestampInMillis: timestampInMillis&
     }
     UTF_assertEqual(expectedObj, worker._queue[0])
 
@@ -71,8 +49,8 @@ end sub
 
 ' target: queue()
 ' @Test
-sub TestCase_AdobeEdge_adb_EdgeRequestWorker_queue_bad_input()
-    worker = _adb_EdgeRequestWorker({})
+sub TC_adb_EdgeRequestWorker_queue_bad_input()
+    worker = _adb_EdgeRequestWorker()
     worker._queue = []
     worker.queue("request_id", { xdm: {} }, -1)
     worker.queue("request_id", {}, 12345534)
@@ -85,8 +63,8 @@ end sub
 
 ' target: queue()
 ' @Test
-sub TestCase_AdobeEdge_adb_EdgeRequestWorker_queue_limit()
-    worker = _adb_EdgeRequestWorker({})
+sub TC_adb_EdgeRequestWorker_queue_limit()
+    worker = _adb_EdgeRequestWorker()
     worker._queue = []
     worker._queue_size_max = 2
     worker.queue("request_id", { xdm: {} }, 12345534)
@@ -97,8 +75,8 @@ end sub
 
 ' target: clear()
 ' @Test
-sub TestCase_AdobeEdge_adb_EdgeRequestWorker_clear()
-    worker = _adb_EdgeRequestWorker({})
+sub TC_adb_EdgeRequestWorker_clear()
+    worker = _adb_EdgeRequestWorker()
     worker._queue = []
     worker.queue("request_id", { xdm: {} }, 12345534)
     worker.queue("request_id", { xdm: {} }, 12345535)
@@ -110,7 +88,7 @@ end sub
 
 ' target: _processRequest()
 ' @Test
-sub TestCase_AdobeEdge_adb_EdgeRequestWorker_processRequest()
+sub TC_adb_EdgeRequestWorker_processRequest()
     cachedFuntion = _adb_serviceProvider().networkService.syncPostRequest
     _adb_serviceProvider().networkService.syncPostRequest = function(url as string, jsonObj as object, headers = [] as object) as object
         UTF_assertEqual(0, headers.Count())
@@ -143,25 +121,21 @@ sub TestCase_AdobeEdge_adb_EdgeRequestWorker_processRequest()
             }
         ]
         UTF_assertEqual(expectedEventsArray, jsonObj.events, "validate the xdm data")
-        return {
-            statusCode: 200,
-            body: "response body"
-        }
+        return _adb_NetworkResponse(200, "response body")
     end function
 
-    worker = _adb_EdgeRequestWorker({})
-    result = worker._processRequest({ xdm: { key: "value" } }, "ecid_test", "config_id", "request_id", invalid)
+    worker = _adb_EdgeRequestWorker()
+    networkResponse = worker._processRequest({ xdm: { key: "value" } }, "ecid_test", "config_id", "request_id", invalid)
 
-    UTF_assertEqual("request_id", result.requestId)
-    UTF_assertEqual(200, result.statusCode)
-    UTF_assertEqual("response body", result.body)
+    UTF_assertEqual(200, networkResponse.getResponseCode())
+    UTF_assertEqual("response body", networkResponse.getResponseString())
 
     _adb_serviceProvider().networkService.syncPostRequest = cachedFuntion
 end sub
 
 ' target: _processRequest()
 ' @Test
-sub TestCase_AdobeEdge_adb_EdgeRequestWorker_processRequest_invalid_response()
+sub TC_adb_EdgeRequestWorker_processRequest_invalid_response()
     cachedFuntion = _adb_serviceProvider().networkService.syncPostRequest
     _adb_serviceProvider().networkService.syncPostRequest = function(url as string, jsonObj as object, headers = [] as object) as object
         UTF_assertEqual(0, headers.Count())
@@ -172,7 +146,7 @@ sub TestCase_AdobeEdge_adb_EdgeRequestWorker_processRequest_invalid_response()
         return invalid
     end function
 
-    worker = _adb_EdgeRequestWorker({})
+    worker = _adb_EdgeRequestWorker()
     result = worker._processRequest({ xdm: { key: "value" } }, "ecid_test", "config_id", "request_id", invalid)
 
     UTF_assertInvalid(result)
@@ -182,57 +156,49 @@ end sub
 
 ' target: processRequests()
 ' @Test
-sub TestCase_AdobeEdge_adb_EdgeRequestWorker_processRequests()
+sub TC_adb_EdgeRequestWorker_processRequests()
     cachedFuntion = _adb_serviceProvider().networkService.syncPostRequest
     _adb_serviceProvider().networkService.syncPostRequest = function(url as string, jsonObj as object, headers = [] as object) as object
         UTF_assertEqual(0, headers.Count())
         UTF_assertNotInvalid(url)
         UTF_assertNotInvalid(jsonObj)
         if url.Instr("request_id_1") > 0 then
-            return {
-                code: 200,
-                message: "response body 1"
-            }
+            return _adb_NetworkResponse(200, "response body 1")
         end if
         if url.Instr("request_id_2") > 0 then
-            return {
-                code: 200,
-                message: "response body 2"
-            }
+            return _adb_NetworkResponse(200, "response body 2")
         end if
     end function
-    stateManager = _adb_stateManager()
-    stateManager._edge_configId = "config_id"
-    stateManager._edge_domain = invalid
-    stateManager._ecid = "ecid_test"
-    worker = _adb_EdgeRequestWorker(stateManager)
+
+    worker = _adb_EdgeRequestWorker()
     worker.queue("request_id_1", { xdm: { key: "value" } }, 12345534)
     worker.queue("request_id_2", { xdm: { key: "value" } }, 12345534)
-    responseArray = worker.processRequests()
+
+    responseArray = worker.processRequests("config_id", "ecid_test")
+    ' processRequests: function(configId as string, ecid as string, edgeDomain = invalid as dynamic) as dynamic
 
     UTF_assertEqual(2, responseArray.Count())
     ' queued request should be processed in order
-    UTF_assertEqual("request_id_1", responseArray[0].requestId)
-    UTF_assertEqual("request_id_2", responseArray[1].requestId)
+
+    UTF_assertTrue(_adb_isEdgeResponse(responseArray[0]))
+    UTF_assertEqual("request_id_1", responseArray[0].getRequestId())
+    UTF_assertTrue(_adb_isEdgeResponse(responseArray[1]))
+    UTF_assertEqual("request_id_2", responseArray[1].getRequestId())
 
     _adb_serviceProvider().networkService.syncPostRequest = cachedFuntion
 end sub
 
 ' target: processRequests()
 ' @Test
-sub TestCase_AdobeEdge_adb_EdgeRequestWorker_processRequests_empty_queue()
+sub TC_adb_EdgeRequestWorker_processRequests_empty_queue()
     cachedFuntion = _adb_serviceProvider().networkService.syncPostRequest
     _adb_serviceProvider().networkService.syncPostRequest = function(_url as string, _jsonObj as object, _headers = [] as object) as object
         UTF_fail("should not be called")
         return invalid
     end function
 
-    stateManager = _adb_stateManager()
-    stateManager._edge_configId = "config_id"
-    stateManager._edge_domain = invalid
-    stateManager._ecid = "ecid_test"
-    worker = _adb_EdgeRequestWorker(stateManager)
-    result = worker.processRequests()
+    worker = _adb_EdgeRequestWorker()
+    result = worker.processRequests("config_id", "ecid_test")
     UTF_assertInvalid(result)
 
     _adb_serviceProvider().networkService.syncPostRequest = cachedFuntion
@@ -240,47 +206,35 @@ end sub
 
 ' target: processRequests()
 ' @Test
-sub TestCase_AdobeEdge_adb_EdgeRequestWorker_processRequests_recoverable_error()
+sub TC_adb_EdgeRequestWorker_processRequests_recoverable_error()
     cachedFuntion = _adb_serviceProvider().networkService.syncPostRequest
     _adb_serviceProvider().networkService.syncPostRequest = function(url as string, jsonObj as object, headers = [] as object) as object
         UTF_assertEqual(0, headers.Count())
         UTF_assertNotInvalid(url)
         UTF_assertNotInvalid(jsonObj)
         if url.Instr("request_id_1") > 0 then
-            return {
-                code: 200,
-                message: "response body 1"
-            }
+            return _adb_NetworkResponse(200, "response body 1")
         end if
         if url.Instr("request_id_2") > 0 then
-            return {
-                code: 408,
-                message: "response body 2"
-            }
+            return _adb_NetworkResponse(408, "response body 2")
         end if
         if url.Instr("request_id_3") > 0 then
-            return {
-                code: 200,
-                message: "response body 3"
-            }
+            return _adb_NetworkResponse(200, "response body 3")
         end if
     end function
-    stateManager = _adb_stateManager()
-    stateManager._edge_configId = "config_id"
-    stateManager._edge_domain = invalid
-    stateManager._ecid = "ecid_test"
-    worker = _adb_EdgeRequestWorker(stateManager)
+
+    worker = _adb_EdgeRequestWorker()
     worker.queue("request_id_1", { xdm: { key: "value" } }, 12345534)
     worker.queue("request_id_2", { xdm: { key: "value" } }, 12345534)
     worker.queue("request_id_3", { xdm: { key: "value" } }, 12345534)
-    responseArray = worker.processRequests()
+    responseArray = worker.processRequests("config_id", "ecid_test")
 
     UTF_assertEqual(1, responseArray.Count())
     ' queued reqeust shoudl be processed in order
-    UTF_assertEqual("request_id_1", responseArray[0].requestId)
+    UTF_assertTrue(_adb_isEdgeResponse(responseArray[0]))
+    UTF_assertEqual("request_id_1", responseArray[0].getRequestId())
 
     UTF_assertEqual(2, worker._queue.Count())
-
     UTF_assertEqual("request_id_2", worker._queue[0].requestId)
 
     _adb_serviceProvider().networkService.syncPostRequest = cachedFuntion

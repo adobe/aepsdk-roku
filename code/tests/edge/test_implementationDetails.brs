@@ -11,32 +11,11 @@
 
 ' *****************************************************************************************
 
-
-' @BeforeAll
-sub AdobeEdgeTestSuite_Edge_utils_SetUp()
-    print "AdobeEdgeTestSuite_Edge_utils_SetUp"
-end sub
-
-' @AfterAll
-sub AdobeEdgeTestSuite_Edge_utils_TearDown()
-    print "AdobeEdgeTestSuite_Edge_utils_TearDown"
-end sub
-
-' target: _adb_generate_implementation_details()
+' target: _adb_ImplementationDetails()
 ' @Test
-sub TestCase_AdobeEdge_adb_generate_implementation_details()
-    implementationDetails = _adb_generate_implementation_details()
+sub TC_adb_ImplementationDetails()
+    implementationDetails = _adb_ImplementationDetails()
     UTF_assertEqual(implementationDetails["name"], "https://ns.adobe.com/experience/mobilesdk/roku")
     UTF_assertEqual(implementationDetails["version"], "1.0.0-alpha1")
     UTF_assertEqual(implementationDetails["environment"], "app")
-end sub
-
-' target: _adb_buildEdgeRequestURL()
-' @Test
-sub TestCase_AdobeEdge_adb_buildEdgeRequestURL_validDomain()
-    url = _adb_buildEdgeRequestURL("config_id_1", "request_id_1")
-    UTF_assertEqual("https://edge.adobedc.net/ee/v1/interact?configId=config_id_1&requestId=request_id_1", url)
-
-    urlWithCustomDomain = _adb_buildEdgeRequestURL("config_id_2", "request_id_2", "custom.domain.net")
-    UTF_assertEqual("https://custom.domain.net/ee/v1/interact?configId=config_id_2&requestId=request_id_2", urlWithCustomDomain)
 end sub

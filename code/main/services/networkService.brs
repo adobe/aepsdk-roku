@@ -22,11 +22,11 @@ function _adb_NetworkService() as object
         ' @param url: the URL to send the request to
         ' @param jsonObj: the JSON object to send
         ' @param headers: the headers to send with the request
-        ' @return the response object
+        ' @return the [NetworkResponse] object
         '
         ' **************************************************************
         syncPostRequest: function(url as string, jsonObj as object, headers = [] as object) as object
-            _adb_log_verbose("syncPostRequest() - Attempting to send request with url:(" + FormatJson(url) + ") and body:(" + FormatJson(jsonObj) + ").")
+            _adb_logVerbose("syncPostRequest() - Attempting to send request with url:(" + FormatJson(url) + ") and body:(" + FormatJson(jsonObj) + ").")
 
             request = CreateObject("roUrlTransfer")
             port = CreateObject("roMessagePort")
@@ -45,17 +45,14 @@ function _adb_NetworkService() as object
                 while (true)
                     msg = wait(0, port)
                     if (type(msg) = "roUrlEvent")
-                        code = msg.GetResponseCode()
-                        repMessage = msg.getString()
-                        _adb_log_verbose("syncPostRequest() -  Sent edge request url:(" + FormatJson(url) + ") and body:(" + FormatJson(jsonObj) + ").")
+                        responseCode = msg.GetResponseCode()
+                        responseString = msg.getString()
+                        _adb_logVerbose("syncPostRequest() -  Sent edge request url:(" + FormatJson(url) + ") and body:(" + FormatJson(jsonObj) + ").")
 
-                        return {
-                            code: code,
-                            message: repMessage
-                        }
+                        return _adb_NetworkResponse(responseCode, responseString)
                     end if
                     if (msg = invalid)
-                        _adb_log_verbose("syncPostRequest() - Failed to send edge request url:(" + FormatJson(url) + ") and body:(" + FormatJson(jsonObj) + ").")
+                        _adb_logVerbose("syncPostRequest() - Failed to send edge request url:(" + FormatJson(url) + ") and body:(" + FormatJson(jsonObj) + ").")
                         request.AsyncCancel()
                         return invalid
                     end if

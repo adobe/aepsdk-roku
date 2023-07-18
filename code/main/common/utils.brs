@@ -11,12 +11,8 @@
 ' *
 ' *****************************************************************************************
 
-' **************************** MODULE: Implementation Details *****************************
+' ********************************** MODULE: other utils **********************************
 
-function _adb_ImplementationDetails() as object
-    return {
-        "name": "https://ns.adobe.com/experience/mobilesdk/roku",
-        "version": _adb_sdkVersion(),
-        "environment": "app"
-    }
+function _adb_isArray(object as dynamic) as boolean
+    return object <> invalid and Type(object) = "roArray"
 end function

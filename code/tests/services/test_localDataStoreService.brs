@@ -11,30 +11,14 @@
 
 ' *****************************************************************************************
 
-sub init()
-    m.port = createObject("roMessagePort")
-    m.top.observeField("requestEvent", m.port)
-    m.top.functionName = "eventLoop"
-    ' m.top.control = "STOP"
-    m.top.control = "INIT"
-end sub
-
-sub eventLoop()
-    _adb_logInfo("start the event loop")
-    processor = _adb_EventProcessor(m.top)
-    while true
-        msg = wait(250, m.port)
-        ' kick off the queued requests
-        processor.processQueuedRequests()
-
-        if msg <> invalid
-            msg_type = type(msg)
-            if msg_type = "roSGNodeEvent"
-                ' get the payload of the observed field -> [requestEvent]
-                payload = msg.getData()
-                processor.handleEvent(payload)
-            end if
-        end if
-    end while
+' target: writeValue()/readValue()/removeValue()
+' @Test
+sub TC_localDataStoreService_write()
+    serviceProvider = _adb_serviceProvider()
+    localDataStoreService = serviceProvider.localDataStoreService
+    localDataStoreService.writeValue("testKey", "string-value")
+    UTF_assertEqual(localDataStoreService.readValue("testKey"), "string-value")
+    localDataStoreService.removeValue("testKey")
+    UTF_assertInvalid(localDataStoreService.readValue("testKey"))
 end sub
 

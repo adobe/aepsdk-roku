@@ -11,29 +11,12 @@
 ' *
 ' *****************************************************************************************
 
-' ********************************** MODULE: constants ************************************
+' ********************************* MODULE: Adobe Object **********************************
 
-function _adb_InternalConstants() as object
+function _adb_AdobeObject(objectType as string) as object
     return {
-        PUBLIC_API: {
-            SET_CONFIGURATION: "setConfiguration",
-            SET_EXPERIENCE_CLOUD_ID: "setExperienceCloudId",
-            RESET_IDENTITIES: "resetIdentities",
-            SEND_EDGE_EVENT: "sendEvent",
-            SET_LOG_LEVEL: "setLogLevel",
-        },
-        EVENT_DATA_KEY: {
-            LOG: { LEVEL: "level" },
-            ECID: "ecid",
-        },
-        LOCAL_DATA_STORE_KEYS: {
-            ECID: "ecid"
-        },
-        TASK: {
-            REQUEST_EVENT: "requestEvent",
-            RESPONSE_EVENT: "responseEvent",
-        },
-        CALLBACK_TIMEOUT_MS: 5000,
-        EVENT_OWNER: "adobe",
+        owner: "adobe",
+        type: objectType,
+        timestampInMillis: _adb_timestampInMillis(),
     }
 end function

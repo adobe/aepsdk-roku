@@ -8,6 +8,7 @@ link-sdk:
 	(ln -s ../../../../code/main/edge ./source/adobe/edge)
 	(ln -s ../../../../code/main/services ./source/adobe/services)
 	(ln -s ../../../../code/main/task ./source/adobe/task)
+	(ln -s ../../../../code/main/core ./source/adobe/core)
 	
 
 link-tests:

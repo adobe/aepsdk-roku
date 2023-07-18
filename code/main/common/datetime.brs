@@ -18,7 +18,10 @@ function _adb_ISO8601_timestamp() as string
     return dateTime.toIsoString()
 end function
 
-function _adb_timestampInMillis() as integer
+' Returns the current time in milliseconds.
+function _adb_timestampInMillis() as longinteger
+    longInt& = 0
+
     dateTime = CreateObject("roDateTime")
     currMS = dateTime.GetMilliseconds()
     timeInSeconds = dateTime.AsSeconds()
@@ -32,5 +35,15 @@ function _adb_timestampInMillis() as integer
         timeInMillis = timeInMillis + "00" + currMS.ToStr()
     end if
 
-    return box(timeInMillis).ToInt()
+    if timeInMillis.Len() < 13
+        _adb_logError("_adb_timestampInMillis() - timeInMillis is not 13 digits long: " + timeInMillis)
+        return longInt&
+    end if
+
+    ' BrightScript does not have a built-in function to convert a string to a long integer.
+    ' However, you can use the following workaround instead:
+    longInt& = parseJson(timeInMillis)
+
+    return longInt&
+
 end function

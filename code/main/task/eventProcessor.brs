@@ -13,69 +13,76 @@
 
 ' ******************************** MODULE: EventProcessor *********************************
 
-function _adb_task_node_EventProcessor(internalConstants as object, task as object) as object
+function _adb_EventProcessor(task as object) as object
     eventProcessor = {
-        _ADB_CONSTANTS: internalConstants,
+        _CONSTANTS: _adb_InternalConstants(),
         _task: task,
-        _stateManager: _adb_StateManager(),
-        _edgeRequestWorker: invalid,
+        _configurationModule: invalid,
+        _identityModule: invalid,
+        _edgeModule: invalid,
 
         init: function() as void
-            m._edgeRequestWorker = _adb_EdgeRequestWorker(m._stateManager)
+            m._configurationModule = _adb_ConfigurationModule()
+            m._identityModule = _adb_IdentityModule(m._configurationModule)
+            m._edgeModule = _adb_EdgeModule(m._configurationModule, m._identityModule)
         end function
 
         handleEvent: function(event as dynamic) as void
-            eventOwner = _adb_optStringFromMap(event, "owner", "unknown")
 
-            if eventOwner = m._ADB_CONSTANTS.EVENT_OWNER
-                _adb_log_info("handleEvent() - handle event: " + FormatJson(event))
-                if event.apiname = m._ADB_CONSTANTS.PUBLIC_API.SEND_EDGE_EVENT
+            if _adb_isRequestEvent(event)
+                _adb_logInfo("handleEvent() - handle event: " + FormatJson(event))
+                if event.apiName = m._CONSTANTS.PUBLIC_API.SEND_EDGE_EVENT
                     m._sendEvent(event)
-                else if event.apiname = m._ADB_CONSTANTS.PUBLIC_API.SET_CONFIGURATION
+                    return
+                else if event.apiName = m._CONSTANTS.PUBLIC_API.SET_CONFIGURATION
                     m._setConfiguration(event)
-                else if event.apiname = m._ADB_CONSTANTS.PUBLIC_API.SET_LOG_LEVEL
+                    return
+                else if event.apiName = m._CONSTANTS.PUBLIC_API.SET_LOG_LEVEL
                     m._setLogLevel(event)
-                else if event.apiname = m._ADB_CONSTANTS.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID
+                    return
+                else if event.apiName = m._CONSTANTS.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID
                     m._setECID(event)
-                else if event.apiname = m._ADB_CONSTANTS.PUBLIC_API.RESET_IDENTITIES
+                    return
+                else if event.apiName = m._CONSTANTS.PUBLIC_API.RESET_IDENTITIES
                     m._resetIdentities(event)
+                    return
                 end if
             else
-                _adb_log_warning("handleEvent() - event is invalid: " + FormatJson(event))
+                _adb_logWarning("handleEvent() - event is invalid: " + FormatJson(event))
             end if
         end function,
 
         _setLogLevel: function(event as object) as void
-            logLevel = _adb_optIntFromMap(event.data, m._ADB_CONSTANTS.EVENT_DATA_KEY.LOG.LEVEL)
+            logLevel = _adb_optIntFromMap(event.data, m._CONSTANTS.EVENT_DATA_KEY.LOG.LEVEL)
             if logLevel <> invalid
                 loggingService = _adb_serviceProvider().loggingService
                 loggingService.setLogLevel(logLevel)
-                _adb_log_info("_setLogLevel() - set log level: " + FormatJson(logLevel))
+                _adb_logInfo("_setLogLevel() - set log level: " + FormatJson(logLevel))
             else
-                _adb_log_warning("_setLogLevel() - log level is not found in event data")
+                _adb_logWarning("_setLogLevel() - log level is not found in event data")
             end if
         end function,
 
         _resetIdentities: function(_event as object) as void
-            _adb_log_info("_resetIdentities() - Reset presisted Identities.")
-            m._stateManager.resetIdentities()
+            _adb_logInfo("_resetIdentities() - Reset presisted Identities.")
+            m._identityModule.resetIdentities()
         end function,
 
         _setConfiguration: function(event as object) as void
-            _adb_log_info("_setConfiguration() - set configuration")
-            _adb_log_verbose("configuration before: " + FormatJson(m._stateManager.dump()))
-            m._stateManager.updateConfiguration(event.data)
-            _adb_log_verbose("configuration after: " + FormatJson(m._stateManager.dump()))
+            _adb_logInfo("_setConfiguration() - set configuration")
+            _adb_logVerbose("configuration before: " + FormatJson(m._configurationModule.dump()))
+            m._configurationModule.updateConfiguration(event.data)
+            _adb_logVerbose("configuration after: " + FormatJson(m._configurationModule.dump()))
         end function,
 
         _setECID: function(event as object) as void
-            _adb_log_info("_setECID() - Handle setECID.")
+            _adb_logInfo("_setECID() - Handle setECID.")
 
-            ecid = _adb_optStringFromMap(event.data, m._ADB_CONSTANTS.EVENT_DATA_KEY.ECID)
+            ecid = _adb_optStringFromMap(event.data, m._CONSTANTS.EVENT_DATA_KEY.ECID)
             if ecid <> invalid
-                m._stateManager.updateECID(ecid)
+                m._identityModule.updateECID(ecid)
             else
-                _adb_log_warning("_setECID() - ECID not found in event data.")
+                _adb_logWarning("_setECID() - ECID not found in event data.")
             end if
         end function,
 
@@ -88,46 +95,52 @@ function _adb_task_node_EventProcessor(internalConstants as object, task as obje
         end function,
 
         _sendEvent: function(event as object) as void
-            _adb_log_info("_sendEvent() - Try sending event with uuid:(" + FormatJson(event.uuid) + ").")
+            _adb_logInfo("_sendEvent() - Try sending event with uuid:(" + FormatJson(event.uuid) + ").")
 
             if not m._hasXDMData(event)
-                _adb_log_error("_sendEvent() - Not sending event, XDM data is empty.")
+                _adb_logError("_sendEvent() - Not sending event, XDM data is empty.")
                 return
             end if
 
             requestId = event.uuid
             xdmData = event.data
+            timestampInMillis = event.timestampInMillis
+            responseEvents = m._edgeModule.processEvent(requestId, xdmData, timestampInMillis)
 
-            m._edgeRequestWorker.queue(requestId, xdmData, event.timestamp_in_millis)
-            m.processQueuedRequests()
+            for each responseEvent in responseEvents
+                m._sendResponseEvent(responseEvent)
+            end for
+
         end function,
 
         processQueuedRequests: function() as void
-            if m._edgeRequestWorker.isReadyToProcess() then
-                responses = m._edgeRequestWorker.processRequests()
-                if responses = invalid or Type(responses) <> "roArray"
-                    _adb_log_error("processQueuedRequests() - not found valid edge response.")
-                    return
-                end if
-                for each response in responses
-                    m._sendResponseEvent({
-                        uuid: response.requestId,
-                        data: {
-                            code: response.code,
-                            message: response.message
-                        }
-                    })
-                end for
-            end if
+            responseEvents = m._edgeModule.processQueuedRequests()
+            m._sendResponseEvents(responseEvents)
         end function
 
         _sendResponseEvent: function(event as object) as void
-            _adb_log_info("_sendResponseEvent() - Send response event: (" + FormatJson(event) + ").")
+            _adb_logInfo("_sendResponseEvent() - Send response event: (" + FormatJson(event) + ").")
+
             if m._task = invalid
-                _adb_log_error("_sendResponseEvent() - Cannot send response event, task node instance is invalid.")
+                _adb_logError("_sendResponseEvent() - Cannot send response event, task node instance is invalid.")
                 return
             end if
-            m._task[m._ADB_CONSTANTS.TASK.RESPONSE_EVENT] = event
+
+            if _adb_isResponseEvent(event)
+                m._task[m._CONSTANTS.TASK.RESPONSE_EVENT] = event
+            else
+                _adb_logError("_sendResponseEvent() - the given event is invalid.")
+            end if
+        end function,
+
+        _sendResponseEvents: function(responseEvents as dynamic) as void
+            if not _adb_isArray(responseEvents)
+                _adb_logError("_sendResponseEvents() - responseEvents is not an array.")
+                return
+            end if
+            for each event in responseEvents
+                m._sendResponseEvent(event)
+            end for
         end function,
     }
 
