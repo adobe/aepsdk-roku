@@ -11,9 +11,12 @@
 ' *
 ' *****************************************************************************************
 
-' ************************************ MODULE: ID utils ***********************************
+' ********************************* MODULE: Adobe Object **********************************
 
-' Returns a random UUID
-function _adb_generate_UUID() as string
-    return CreateObject("roDeviceInfo").GetRandomUUID()
+function _adb_AdobeObject(objectType as string) as object
+    return {
+        owner: "adobe",
+        type: objectType,
+        timestampInMillis: _adb_timestampInMillis(),
+    }
 end function

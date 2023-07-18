@@ -104,7 +104,7 @@ function AdobeSDKInit() as object
             data = {}
             data[m._private.cons.EVENT_DATA_KEY.LOG.LEVEL] = level
 
-            event = m._private.buildEvent(m._private.cons.PUBLIC_API.SET_LOG_LEVEL, data)
+            event = _adb_RequestEvent(m._private.cons.PUBLIC_API.SET_LOG_LEVEL, data)
             m._private.dispatchEvent(event)
         end function,
 
@@ -117,11 +117,10 @@ function AdobeSDKInit() as object
         shutdown: function() as void
             _adb_logDebug("API: shutdown()")
             ' stop the task node
-            GetGlobalAA()._adb_edge_task_node.control = "DONE"
+            _adb_stopTaskNode()
             ' clear the cached callback functions
             m._private.cachedCallbackInfo = {}
-            ' clear global references
-            GetGlobalAA()._adb_edge_task_node = invalid
+            ' clear the global reference
             GetGlobalAA()._adb_public_api = invalid
         end function,
 
@@ -133,7 +132,7 @@ function AdobeSDKInit() as object
 
         resetIdentities: function() as void
             _adb_logDebug("API: resetIdentities()")
-            event = m._private.buildEvent(m._private.cons.PUBLIC_API.RESET_IDENTITIES, invalid)
+            event = _adb_RequestEvent(m._private.cons.PUBLIC_API.RESET_IDENTITIES, invalid)
             m._private.dispatchEvent(event)
         end function,
 
@@ -163,7 +162,7 @@ function AdobeSDKInit() as object
                 _adb_logError("updateConfiguration() - Cannot update configuration as the configuration is invalid.")
                 return
             end if
-            event = m._private.buildEvent(m._private.cons.PUBLIC_API.SET_CONFIGURATION, configuration)
+            event = _adb_RequestEvent(m._private.cons.PUBLIC_API.SET_CONFIGURATION, configuration)
             m._private.dispatchEvent(event)
         end function,
 
@@ -212,17 +211,19 @@ function AdobeSDKInit() as object
                 return
             end if
             ' event data: { "xdm": xdmData }
-            event = m._private.buildEvent(m._private.cons.PUBLIC_API.SEND_EDGE_EVENT, {
-                xdm: xdmData
-            })
             ' add a timestamp to the XDM data
-            event.data.xdm.timestamp = event.timestamp
+            xdmData.timestamp = _adb_ISO8601_timestamp()
+            event = _adb_RequestEvent(m._private.cons.PUBLIC_API.SEND_EDGE_EVENT, {
+                xdm: xdmData,
+            })
+
+            ' event.data.xdm.timestamp = event.getISOTimestamp()
             if callback <> _adb_defaultCallback then
                 ' store callback function
                 callbackInfo = {
                     cb: callback,
                     context: context,
-                    timestamp_in_millis: event.timestamp_in_millis
+                    timestampInMillis: event.timestampInMillis
                 }
                 m._private.cachedCallbackInfo[event.uuid] = callbackInfo
             end if
@@ -259,7 +260,7 @@ function AdobeSDKInit() as object
             ' event data: { "ecid": ecid }
             data = {}
             data[m._private.cons.EVENT_DATA_KEY.ecid] = ecid
-            event = m._private.buildEvent(m._private.cons.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID, data)
+            event = _adb_RequestEvent(m._private.cons.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID, data)
             m._private.dispatchEvent(event)
         end function
 
@@ -269,34 +270,6 @@ function AdobeSDKInit() as object
         _private: {
             ' constants
             cons: _adb_InternalConstants(),
-            ' ************************************
-            '
-            ' Build an Adobe Event
-            '
-            ' @param apiName : string
-            ' @param data    : object
-            ' @return event  : object
-            '
-            ' Example:
-            ' event = {
-            '   uuid: string,
-            '   timestamp: string,
-            '   apiName: string,
-            '   data: object,
-            '   timestamp_in_millis: integer,
-            '   owner: string
-            ' }
-            ' ************************************
-            buildEvent: function(apiName as string, data = {} as object) as object
-                return {
-                    uuid: _adb_generate_UUID(),
-                    timestamp: _adb_ISO8601_timestamp(),
-                    apiName: apiName,
-                    data: data,
-                    timestamp_in_millis: _adb_timestampInMillis(),
-                    owner: m.cons.EVENT_OWNER
-                }
-            end function,
             ' dispatch events to the task node
             dispatchEvent: function(event as object) as void
                 _adb_logDebug("dispatchEvent() - Dispatching event:(" + FormatJson(event) + ")")
@@ -340,7 +313,7 @@ function _adb_handleResponseEvent() as void
         for each key in sdk._private.cachedCallbackInfo
             cachedCallback = sdk._private.cachedCallbackInfo[key]
 
-            if cachedCallback <> invalid and ((current_time - cachedCallback.timestamp_in_millis) > timeout_ms)
+            if cachedCallback <> invalid and ((current_time - cachedCallback.timestampInMillis) > timeout_ms)
                 sdk._private.cachedCallbackInfo.Delete(key)
             end if
         end for

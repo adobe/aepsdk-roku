@@ -22,7 +22,7 @@ function _adb_NetworkService() as object
         ' @param url: the URL to send the request to
         ' @param jsonObj: the JSON object to send
         ' @param headers: the headers to send with the request
-        ' @return the response object
+        ' @return the [NetworkResponse] object
         '
         ' **************************************************************
         syncPostRequest: function(url as string, jsonObj as object, headers = [] as object) as object
@@ -45,14 +45,11 @@ function _adb_NetworkService() as object
                 while (true)
                     msg = wait(0, port)
                     if (type(msg) = "roUrlEvent")
-                        code = msg.GetResponseCode()
-                        repMessage = msg.getString()
+                        responseCode = msg.GetResponseCode()
+                        responseString = msg.getString()
                         _adb_logVerbose("syncPostRequest() -  Sent edge request url:(" + FormatJson(url) + ") and body:(" + FormatJson(jsonObj) + ").")
 
-                        return {
-                            code: code,
-                            message: repMessage
-                        }
+                        return _adb_NetworkResponse(responseCode, responseString)
                     end if
                     if (msg = invalid)
                         _adb_logVerbose("syncPostRequest() - Failed to send edge request url:(" + FormatJson(url) + ") and body:(" + FormatJson(jsonObj) + ").")

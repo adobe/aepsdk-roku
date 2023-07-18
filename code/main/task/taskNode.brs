@@ -14,13 +14,14 @@
 ' *********************************** MODULE: Task Node ***********************************
 
 function _adb_createTaskNode() as void
-    GetGlobalAA()._adb_edge_task_node = invalid
-    sdkThread = CreateObject("roSGNode", "AdobeEdgeTask")
-    GetGlobalAA()._adb_edge_task_node = sdkThread
+    if GetGlobalAA()._adb_main_task_node = invalid
+        sdkThread = CreateObject("roSGNode", "AdobeEdgeTask")
+        GetGlobalAA()._adb_main_task_node = sdkThread
+    end if
 end function
 
 function _adb_retrieveTaskNode() as object
-    return GetGlobalAA()._adb_edge_task_node
+    return GetGlobalAA()._adb_main_task_node
 end function
 
 function _adb_observeTaskNode(field as string, functionName as string) as void
@@ -31,5 +32,10 @@ function _adb_observeTaskNode(field as string, functionName as string) as void
 end function
 
 function _adb_startTaskNode() as void
-    GetGlobalAA()._adb_edge_task_node.control = "RUN"
+    GetGlobalAA()._adb_main_task_node.control = "RUN"
+end function
+
+function _adb_stopTaskNode() as void
+    GetGlobalAA()._adb_main_task_node.control = "DONE"
+    GetGlobalAA()._adb_main_task_node = invalid
 end function

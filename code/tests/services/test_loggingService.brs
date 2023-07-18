@@ -11,21 +11,9 @@
 
 ' *****************************************************************************************
 
-
-' @BeforeEach
-sub AdobeEdgeTestSuite_loggingService_BeforeEach()
-    print "AdobeEdgeTestSuite_loggingService_BeforeEach"
-    GetGlobalAA()._adb_serviceProvider_instance = invalid
-end sub
-
-' @AfterAll
-sub AdobeEdgeTestSuite_loggingService_TearDown()
-    print "AdobeEdgeTestSuite_loggingService_TearDown"
-end sub
-
 ' target: setLogLevel()
 ' @Test
-sub TestCase_AdobeEdge_loggingService_logLevel()
+sub TC_loggingService_logLevel()
 
     GetGlobalAA()._adb_test_last_called_method = ""
 
@@ -79,15 +67,15 @@ end sub
 
 ' target: setLogLevel()
 ' @Test
-sub TestCase_AdobeEdge_loggingService_logLevel_default()
+sub TC_loggingService_logLevel_default()
     serviceProvider = _adb_serviceProvider()
     loggingService = serviceProvider.loggingService
-    UTF_assertEqual(loggingService._logLevel, 2)
+    UTF_assertEqual(loggingService._logLevel, 1)
 end sub
 
 ' target: Log utility functions
 ' @Test
-sub TestCase_AdobeEdge_loggingService_utility_functions()
+sub TC_loggingService_utility_functions()
 
     serviceProvider = _adb_serviceProvider()
     loggingService = serviceProvider.loggingService

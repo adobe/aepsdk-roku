@@ -13,17 +13,12 @@
 
 ' ******************************* MODULE: EdgeRequestWorker *******************************
 
-function _adb_EdgeRequestWorker(stateManager as object) as object
-    if stateManager = invalid
-        _adb_logDebug("stateManager is invalid")
-        return invalid
-    end if
+function _adb_EdgeRequestWorker() as object
     instance = {
         _queue: [],
-        _stateManager: stateManager
         _queue_size_max: 50,
 
-        queue: function(requestId as string, xdmData as object, timestamp as integer) as void
+        queue: function(requestId as string, xdmData as object, timestampInMillis as longinteger) as void
             if _adb_isEmptyOrInvalidString(requestId)
                 _adb_logDebug("[EdgeRequestWorker.queue()] requestId is invalid")
                 return
@@ -34,15 +29,15 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
                 return
             end if
 
-            if timestamp <= 0
-                _adb_logDebug("[EdgeRequestWorker.queue()] timestamp is invalid")
+            if timestampInMillis <= 0
+                _adb_logDebug("[EdgeRequestWorker.queue()] timestampInMillis is invalid")
                 return
             end if
 
             requestEntity = {
                 requestId: requestId,
                 xdmData: xdmData,
-                timestamp: timestamp
+                timestampInMillis: timestampInMillis
             }
             ' remove the oldest entity if reaching the limit
             if m._queue.count() >= m._queue_size_max
@@ -51,23 +46,16 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
             m._queue.Push(requestEntity)
         end function,
 
-        isReadyToProcess: function() as boolean
+        hasQueuedEvent: function() as boolean
             size = m._queue.count()
-
             if size = 0
                 return false
             end if
-            _adb_logVerbose("isReadyToProcess() - Request queue size:(" + FormatJson(size) + ")")
-
-            if not m._stateManager.isReadyForRequest()
-                return false
-            end if
-
-            _adb_logVerbose("isReadyToProcess() - Ready to process queued requests.")
+            _adb_logVerbose("hasQueuedEvent() - Request queue size:(" + FormatJson(size) + ")")
             return true
         end function,
 
-        processRequests: function() as dynamic
+        processRequests: function(configId as string, ecid as string, edgeDomain = invalid as dynamic) as dynamic
             responseArray = invalid
             while m._queue.count() > 0
                 ' grab oldest hit in the queue
@@ -76,31 +64,28 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
                 xdmData = requestEntity.xdmData
                 requestId = requestEntity.requestId
 
-                ecid = m._stateManager.getECID()
-                configId = m._stateManager.getConfigId()
-                edgeDomain = m._stateManager.getEdgeDomain()
-
                 _adb_logVerbose("processRequests() - Using ECID:(" + FormatJson(ecid) + ") and configId:(" + FormatJson(configId) + ")")
                 if (not _adb_isEmptyOrInvalidString(ecid)) and (not _adb_isEmptyOrInvalidString(configId)) then
-                    response = m._processRequest(xdmData, ecid, configId, requestId, edgeDomain)
-                    if response = invalid
+                    networkResponse = m._processRequest(xdmData, ecid, configId, requestId, edgeDomain)
+                    if not _adb_isNetworkResponse(networkResponse)
                         _adb_logError("processRequests() - Edge request dropped. Response is invalid.")
                         ' drop the request
                     else
-                        _adb_logVerbose("processRequests() - Request with id:(" + FormatJson(requestId) + ") code:(" + FormatJson(response.code) + ") message:(" + response.message + ")")
-                        if response.code >= 200 and response.code <= 299 then
+                        _adb_logVerbose("processRequests() - Request with id:(" + FormatJson(requestId) + ") response:(" + FormatJson(networkResponse) + ")")
+                        if networkResponse.isSuccessful() then
                             if responseArray = invalid
                                 responseArray = []
                             end if
-                            responseArray.Push(response)
+                            ' TODO: add request id
+                            edgeResponse = _adb_EdgeResponse(requestId, networkResponse.getResponseCode(), networkResponse.getResponseString())
+                            responseArray.Push(edgeResponse)
 
-                        else if response.code = 408 or response.code = 504 or response.code = 503
-                            ' RECOVERABLE_ERROR_CODES = [408, 504, 503]
+                        else if networkResponse.isRecoverable()
                             m._queue.Unshift(requestEntity)
                             exit while
                         else
                             ' drop the request
-                            _adb_logError("processRequests() - Edge request dropped. Response code:(" + response.code.toStr() + ") Response body:(" + response.message + ")")
+                            _adb_logError("processRequests() - Edge request dropped. Response response:(" + FormatJson(networkResponse) + ")")
                             exit while
                         end if
                     end if
@@ -138,11 +123,8 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
 
             url = _adb_buildEdgeRequestURL(configId, requestId, edgeDomain)
             _adb_logVerbose("_processRequest() - Sending Request to url:(" + FormatJson(url) + ") with payload:(" + FormatJson(jsonBody) + ")")
-            response = _adb_serviceProvider().networkService.syncPostRequest(url, jsonBody)
-            if response <> invalid
-                response.requestId = requestId
-            end if
-            return response
+            networkResponse = _adb_serviceProvider().networkService.syncPostRequest(url, jsonBody)
+            return networkResponse
         end function
 
         clear: function() as void
@@ -151,4 +133,38 @@ function _adb_EdgeRequestWorker(stateManager as object) as object
     }
 
     return instance
+end function
+
+
+function _adb_EdgeResponse(requestId as string, code as integer, responseBody as string) as object
+    networkResponse = _adb_AdobeObject("com.adobe.module.edge.response")
+    networkResponse.Append({
+        _requestId: requestId,
+        _responseBody: responseBody,
+        _responseCode: code,
+
+        getRequestId: function() as string
+            return m._requestId
+        end function,
+
+        getResponseCode: function() as integer
+            return m._responseCode
+        end function,
+
+        getResponseString: function() as string
+            return m._responseBody
+        end function,
+
+        toString: function() as string
+            return "_requestId = " + m._requestId + " , _responseBody = " + m._responseBody + " , _responseCode = " + FormatJson(m._responseCode)
+        end function,
+    })
+    return networkResponse
+end function
+
+function _adb_isEdgeResponse(edgeResponse as object) as boolean
+    if edgeResponse <> invalid and edgeResponse.type = "com.adobe.module.edge.response" then
+        return true
+    end if
+    return false
 end function

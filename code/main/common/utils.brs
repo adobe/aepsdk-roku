@@ -11,9 +11,8 @@
 ' *
 ' *****************************************************************************************
 
-' ************************************ MODULE: ID utils ***********************************
+' ********************************** MODULE: other utils **********************************
 
-' Returns a random UUID
-function _adb_generate_UUID() as string
-    return CreateObject("roDeviceInfo").GetRandomUUID()
+function _adb_isArray(object as dynamic) as boolean
+    return object <> invalid and Type(object) = "roArray"
 end function

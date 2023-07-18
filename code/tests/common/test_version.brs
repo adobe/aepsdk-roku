@@ -11,30 +11,8 @@
 
 ' *****************************************************************************************
 
-sub init()
-    m.port = createObject("roMessagePort")
-    m.top.observeField("requestEvent", m.port)
-    m.top.functionName = "eventLoop"
-    ' m.top.control = "STOP"
-    m.top.control = "INIT"
+' target: _adb_sdkVersion()
+' @Test
+sub TC_adb_sdkVersion()
+    UTF_assertEqual(_adb_sdkVersion(), "1.0.0-alpha1")
 end sub
-
-sub eventLoop()
-    _adb_logInfo("start the event loop")
-    processor = _adb_EventProcessor(m.top)
-    while true
-        msg = wait(250, m.port)
-        ' kick off the queued requests
-        processor.processQueuedRequests()
-
-        if msg <> invalid
-            msg_type = type(msg)
-            if msg_type = "roSGNodeEvent"
-                ' get the payload of the observed field -> [requestEvent]
-                payload = msg.getData()
-                processor.handleEvent(payload)
-            end if
-        end if
-    end while
-end sub
-

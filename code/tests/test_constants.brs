@@ -11,30 +11,16 @@
 
 ' *****************************************************************************************
 
-sub init()
-    m.port = createObject("roMessagePort")
-    m.top.observeField("requestEvent", m.port)
-    m.top.functionName = "eventLoop"
-    ' m.top.control = "STOP"
-    m.top.control = "INIT"
+' target: AdobeSDKConstants()
+' @Test
+sub TC_AdobeSDKConstants()
+    cons = AdobeSDKConstants()
+    UTF_assertEqual(cons.LOG_LEVEL.VERBOSE, 0)
+    UTF_assertEqual(cons.LOG_LEVEL.DEBUG, 1)
+    UTF_assertEqual(cons.LOG_LEVEL.INFO, 2)
+    UTF_assertEqual(cons.LOG_LEVEL.WARNING, 3)
+    UTF_assertEqual(cons.LOG_LEVEL.ERROR, 4)
+
+    UTF_assertEqual(cons.CONFIGURATION.EDGE_CONFIG_ID, "edge.configId")
+    UTF_assertEqual(cons.CONFIGURATION.EDGE_DOMAIN, "edge.domain")
 end sub
-
-sub eventLoop()
-    _adb_logInfo("start the event loop")
-    processor = _adb_EventProcessor(m.top)
-    while true
-        msg = wait(250, m.port)
-        ' kick off the queued requests
-        processor.processQueuedRequests()
-
-        if msg <> invalid
-            msg_type = type(msg)
-            if msg_type = "roSGNodeEvent"
-                ' get the payload of the observed field -> [requestEvent]
-                payload = msg.getData()
-                processor.handleEvent(payload)
-            end if
-        end if
-    end while
-end sub
-

@@ -11,25 +11,11 @@
 
 ' *****************************************************************************************
 
-
-' @BeforeEach
-sub AdobeEdgeTestSuite_localDataStoreService_BeforeEach()
-    print "AdobeEdgeTestSuite_localDataStoreService_BeforeEach"
-end sub
-
-' @AfterAll
-sub AdobeEdgeTestSuite_localDataStoreService_TearDown()
-    print "AdobeEdgeTestSuite_loggingService_TearDown"
-end sub
-
-' target: writeValue()/readValue()/removeValue()
+' target: _adb_AdobeObject()
 ' @Test
-sub TestCase_AdobeEdge_localDataStoreService_write()
-    serviceProvider = _adb_serviceProvider()
-    localDataStoreService = serviceProvider.localDataStoreService
-    localDataStoreService.writeValue("testKey", "string-value")
-    UTF_assertEqual(localDataStoreService.readValue("testKey"), "string-value")
-    localDataStoreService.removeValue("testKey")
-    UTF_assertInvalid(localDataStoreService.readValue("testKey"))
+sub TC_adb_AdobeObject()
+    object = _adb_AdobeObject("object_type_1")
+    UTF_assertEqual("adobe", object.owner)
+    UTF_assertEqual("object_type_1", object.type)
+    UTF_assertEqual("LongInteger", Type(object.timestampInMillis), "timestampInMillis is not a long int")
 end sub
-
