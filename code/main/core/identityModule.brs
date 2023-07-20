@@ -113,21 +113,28 @@ function _adb_IdentityModule(configurationModule as object) as object
                     }
                 ]
             }
-            response = _adb_serviceProvider().networkService.syncPostRequest(url, jsonBody)
-            if response.code >= 200 and response.code < 300 and response.message <> invalid
-                responseJson = ParseJson(response.message)
-                if responseJson <> invalid and responseJson.handle[0] <> invalid and responseJson.handle[0].payload[0] <> invalid
-                    _adb_logVerbose("_queryECID() - Received response with payload: (" + FormatJson(responseJson) + ").")
-                    remote_ecid = responseJson.handle[0].payload[0].id
-                    return remote_ecid
+            networkResponse = _adb_serviceProvider().networkService.syncPostRequest(url, jsonBody)
+
+            if not _adb_isNetworkResponse(networkResponse)
+                _adb_logError("processRequests() - Edge response is invalid.")
+                return invalid
+            else
+                if networkResponse.isSuccessful() and networkResponse.getResponseString() <> invalid
+                    responseJson = ParseJson(networkResponse.getResponseString())
+                    if responseJson <> invalid and responseJson.handle[0] <> invalid and responseJson.handle[0].payload[0] <> invalid
+                        _adb_logVerbose("_queryECID() - Received response with payload: (" + FormatJson(responseJson) + ").")
+                        remote_ecid = responseJson.handle[0].payload[0].id
+                        return remote_ecid
+                    else
+                        _adb_logError("_queryECID() - Error extracting ECID, invalid response from server.")
+                        return invalid
+                    end if
                 else
-                    _adb_logError("_queryECID() - Error extracting ECID, invalid response from server.")
+                    _adb_logError("_queryECID() - Error occured while quering ECID from service side. Please verify the edge configuration.The response code : " + FormatJson(response.code))
                     return invalid
                 end if
-            else
-                _adb_logError("_queryECID() - Error occured while quering ECID from service side. Please verify the edge configuration.The response code : " + FormatJson(response.code))
-                return invalid
             end if
+
         end function,
 
         dump: function() as object

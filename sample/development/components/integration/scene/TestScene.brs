@@ -67,6 +67,7 @@ function ADBTestRunner() as object
     _currentValidater: invalid,
     _testSuite: {},
     _testCaseNameArray: [],
+    _testCaseNameArrayForResultMap: [],
 
     _addDebugInfo: sub(info as object)
       m._debugInfoMap[info.eventId] = info
@@ -79,6 +80,7 @@ function ADBTestRunner() as object
         value = item.value
         if m._isFunction(value) and m._isStartWith(LCase(key), "tc_") then
           m._testCaseNameArray.Push(key)
+          m._testCaseNameArrayForResultMap.Push(key)
         end if
       end for
       _adb_logInfo("TestSuite loaded: " + FormatJson(m._testCaseNameArray))
@@ -115,7 +117,54 @@ function ADBTestRunner() as object
       end if
 
       if m._hasNoExecutor() then
-        _adb_logInfo("TestSuite finished: " + FormatJson(_adb_resetResultMap()))
+        resultMap = _adb_resetResultMap()
+        _adb_logInfo("")
+        _adb_logInfo("")
+        _adb_logInfo("Integration test result in JSON: ")
+        _adb_logInfo("")
+        _adb_logInfo(FormatJson(resultMap))
+        _adb_logInfo("")
+        _adb_logInfo("")
+
+        _adb_logInfo("======================================================")
+        _adb_logInfo("            Integration Tests Report                  ")
+        _adb_logInfo("======================================================")
+        failedTestCaseNameArray = []
+        for each testCaseName in m._testCaseNameArrayForResultMap
+          _adb_logInfo("")
+          _adb_logInfo("  Test Case:    <<" + testCaseName + ">>")
+          resultFlag = true
+          for each item in resultMap[testCaseName]
+            _adb_logInfo("")
+            _adb_logInfo("- linenumber  : " + FormatJson(item._lineNumber))
+            _adb_logInfo("- msg         : " + item._msg)
+            _adb_logInfo("- result      : " + FormatJson(item._result))
+            _adb_logInfo("")
+            if item._result = false then
+              resultFlag = false
+              failedTestCaseNameArray.Push(testCaseName)
+            end if
+          end for
+          if resultFlag = true then
+            _adb_logInfo("  SUCCESS")
+          else
+            _adb_logInfo("FAILED")
+          end if
+          _adb_logInfo("")
+          _adb_logInfo("----------------------------------------------")
+          _adb_logInfo("")
+        end for
+
+        _adb_logInfo("======================================================")
+        _adb_logInfo("")
+        if failedTestCaseNameArray.count() > 0 then
+          _adb_logInfo("      Integration Tests: FAILED")
+          _adb_logInfo("  in: " + FormatJson(failedTestCaseNameArray))
+        else
+          _adb_logInfo("      Integration Tests: SUCCESS")
+        end if
+        _adb_logInfo("")
+        _adb_logInfo("======================================================")
       end if
 
       return true
@@ -128,13 +177,14 @@ function ADBTestRunner() as object
           value = item.value
           if m._isFunction(value) then
             _adb_logInfo("start to validate: " + key)
-            _adb_logInfo("with debugInfo: " + FormatJson(m._debugInfoMap[key]))
+            ' _adb_logInfo("with debugInfo: " + FormatJson(m._debugInfoMap[key]))
             m._currentValidater[key](m._debugInfoMap[key])
           end if
         end for
       catch e
         _adb_logInfo("exception: " + e.message)
         _adb_reportResult(false, LINE_NUM, e.message)
+        print e
       end try
       m._currentValidater = invalid
     end sub
@@ -148,6 +198,7 @@ function ADBTestRunner() as object
       catch e
         _adb_logInfo("exception: " + e.message)
         _adb_reportResult(false, LINE_NUM, e.message)
+        print e
       end try
 
       return invalid
@@ -224,3 +275,7 @@ function ADB_retrieveSDKInstance() as object
   end if
   return invalid
 end function
+
+sub ADB_resetSDK(instance as object)
+  instance._private.resetSDK()
+end sub

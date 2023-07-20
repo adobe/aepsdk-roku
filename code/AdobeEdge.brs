@@ -270,7 +270,13 @@ function AdobeSDKInit() as object
         _private: {
             ' constants
             cons: _adb_InternalConstants(),
+            ' for testing purpose
             lastEventId: invalid,
+            ' for testing purpose
+            resetSDK: sub ()
+                event = _adb_RequestEvent(m.cons.PUBLIC_API.RESET_SDK, {})
+                m.dispatchEvent(event)
+            end sub,
             ' dispatch events to the task node
             dispatchEvent: function(event as object) as void
                 _adb_logDebug("dispatchEvent() - Dispatching event:(" + FormatJson(event) + ")")
