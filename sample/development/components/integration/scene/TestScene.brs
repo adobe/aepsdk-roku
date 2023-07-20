@@ -56,8 +56,8 @@ function ADBTestRunner() as object
     end sub,
 
     init: sub(testSuite as object)
-      GetGlobalAA()._adb_assert_result_map = {}
-      GetGlobalAA()._adb_assert_current_tc_name = "unknown"
+      _adb_resetResultMap()
+      _adb_updateCurrentTestCaseName("unknown")
       m._loadTestSuite(testSuite)
     end sub
   }
@@ -67,7 +67,6 @@ function ADBTestRunner() as object
     _currentValidater: invalid,
     _testSuite: {},
     _testCaseNameArray: [],
-    _resultMap: {},
 
     _addDebugInfo: sub(info as object)
       m._debugInfoMap[info.eventId] = info
@@ -98,30 +97,8 @@ function ADBTestRunner() as object
         return false
       end if
 
-      resultMap = GetGlobalAA()._adb_assert_result_map
-
       if m._currentValidater <> invalid then
-        if resultMap[GetGlobalAA()._adb_assert_current_tc_name] = invalid then
-          resultMap[GetGlobalAA()._adb_assert_current_tc_name] = []
-        end if
-
-        currentResultArray = resultMap[GetGlobalAA()._adb_assert_current_tc_name]
-        try
-          m._validate()
-        catch e
-          _adb_logInfo("exception: " + e.message)
-
-          currentResultArray.Push({
-            _result: false,
-            _lineNumber: LINE_NUM,
-            _msg: e.message,
-          })
-          m._currentValidater = invalid
-        end try
-        if m._resultMap[GetGlobalAA()._adb_assert_current_tc_name] = invalid then
-          m._resultMap[GetGlobalAA()._adb_assert_current_tc_name] = []
-        end if
-        m._resultMap[GetGlobalAA()._adb_assert_current_tc_name].Append(currentResultArray)
+        m._validate()
       end if
 
       if m._currentValidater = invalid and m._testCaseNameArray.Count() > 0 then
@@ -130,51 +107,49 @@ function ADBTestRunner() as object
           return false
         end if
 
-        try
-          GetGlobalAA()._adb_assert_current_tc_name = name
-          m._currentValidater = m._executeTestCase(name)
-        catch e
-          _adb_logInfo("exception: " + e.message)
-          if resultMap[name] = invalid then
-            resultMap[name] = []
-          end if
-          resultArray = resultMap[name]
-          resultArray.Push({
-            _result: false,
-            _lineNumber: LINE_NUM,
-            _msg: e.message,
-          })
-          m._currentValidater = invalid
-        end try
+        _adb_updateCurrentTestCaseName(name)
+        m._run_beforeEach(m._testSuite)
+        m._currentValidater = m._executeTestCase(name)
+        m._run_afterEach(m._testSuite)
 
-        m._resultMap[name] = resultMap[name]
       end if
 
       if m._hasNoExecutor() then
-        _adb_logInfo("TestSuite finished: " + FormatJson(m._resultMap))
+        _adb_logInfo("TestSuite finished: " + FormatJson(_adb_resetResultMap()))
       end if
 
       return true
     end function,
 
     _validate: sub()
-      for each item in m._currentValidater.Items()
-        key = item.key
-        value = item.value
-        if m._isFunction(value) then
-          _adb_logInfo("start to validate: " + key)
-          _adb_logInfo("with debugInfo: " + FormatJson(m._debugInfoMap[key]))
-          m._currentValidater[key](m._debugInfoMap[key])
-        end if
-      end for
+      try
+        for each item in m._currentValidater.Items()
+          key = item.key
+          value = item.value
+          if m._isFunction(value) then
+            _adb_logInfo("start to validate: " + key)
+            _adb_logInfo("with debugInfo: " + FormatJson(m._debugInfoMap[key]))
+            m._currentValidater[key](m._debugInfoMap[key])
+          end if
+        end for
+      catch e
+        _adb_logInfo("exception: " + e.message)
+        _adb_reportResult(false, LINE_NUM, e.message)
+      end try
       m._currentValidater = invalid
     end sub
 
     ' return a validater object
     _executeTestCase: function(testCasename as string) as object
-      if testCasename <> invalid then
-        return m._testSuite[testCasename]()
-      end if
+      try
+        if testCasename <> invalid then
+          return m._testSuite[testCasename]()
+        end if
+      catch e
+        _adb_logInfo("exception: " + e.message)
+        _adb_reportResult(false, LINE_NUM, e.message)
+      end try
+
       return invalid
     end function,
 
@@ -193,19 +168,31 @@ function ADBTestRunner() as object
     _isStartWith: function(string as string, prefix as string) as boolean
       return string <> invalid and prefix <> invalid and string.left(prefix.len()) = prefix
     end function,
+
+    _run_beforeEach: sub(testSuiteObject as object)
+      if m._isFunction(testSuiteObject.TS_beforeEach) then
+        testSuiteObject.TS_beforeEach()
+      end if
+    end sub,
+
+    _run_afterEach: sub(testSuiteObject as object)
+      if m._isFunction(testSuiteObject.TS_afterEach) then
+        testSuiteObject.TS_afterEach()
+      end if
+    end sub,
   })
   return runner
 end function
 
-sub ADB_assertTrue(expr as dynamic, lineNumber as integer, msg = "assertTrue()" as string)
+sub ADB_assertTrue(expr as dynamic, lineNumber as integer, msg as string)
   if expr <> invalid and GetInterface(expr, "ifBoolean") <> invalid and expr then
-    _reportResult(true, lineNumber, msg)
+    _adb_reportResult(true, lineNumber, msg)
   else
-    _reportResult(false, lineNumber, msg)
+    _adb_reportResult(false, lineNumber, msg)
   end if
 end sub
 
-sub _reportResult(result as boolean, lineNumber as integer, msg as string)
+sub _adb_reportResult(result as boolean, lineNumber as integer, msg as string)
 
   tcName = GetGlobalAA()._adb_assert_current_tc_name
   resultMap = GetGlobalAA()._adb_assert_result_map
@@ -219,3 +206,21 @@ sub _reportResult(result as boolean, lineNumber as integer, msg as string)
     _msg: msg,
   })
 end sub
+
+function _adb_resetResultMap() as object
+  resultMap = GetGlobalAA()._adb_assert_result_map
+  GetGlobalAA()._adb_assert_result_map = {}
+  GetGlobalAA()._adb_assert_current_tc_name = "unknown"
+  return resultMap
+end function
+
+sub _adb_updateCurrentTestCaseName(name as string)
+  GetGlobalAA()._adb_assert_current_tc_name = name
+end sub
+
+function ADB_retrieveSDKInstance() as object
+  if GetGlobalAA()._adb_public_api <> invalid then
+    return GetGlobalAA()._adb_public_api
+  end if
+  return invalid
+end function

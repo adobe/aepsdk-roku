@@ -19,11 +19,9 @@ sub init()
   m.ButtonGroup.setFocus(true)
   m.ButtonGroup.observeField("buttonSelected", "onButtonSelected")
 
-
   '------------------------------------
   ' Initalize Adobe Edge SDK
   '------------------------------------
-
 
   m.adobeEdgeSdk = AdobeSDKInit()
   print "Adobe SDK version : " + m.adobeEdgeSdk.getVersion()

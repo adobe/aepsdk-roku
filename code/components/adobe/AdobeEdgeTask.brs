@@ -24,7 +24,6 @@ sub eventLoop()
     processor = _adb_EventProcessor(m.top)
     while true
         msg = wait(250, m.port)
-        print _adb_timestampInMillis()
         ' kick off the queued requests
         processor.processQueuedRequests()
 

@@ -13,41 +13,32 @@
 
 function TS_SDK_integration() as object
     return {
-        _message: "xxx",
+        _message: "TS_SDK_integration",
 
         TS_beforeEach: sub()
             print "T_beforeEach"
         end sub,
-        TS_setup: sub()
-            print "T_setup"
-        end sub,
-        TS_teardown: sub()
-            print "T_teardown"
+
+        TS_afterEach: sub()
+            print "T_afterEach"
         end sub,
 
-        TC_SDK_init: function() as dynamic
-            _adb_logWarning("T_SDK_init" + m._message)
-            adobeEdgeSdk = AdobeSDKInit()
+        TC_SDK_setLogLevel_debug: function() as dynamic
+
+            adobeEdgeSdk = ADB_retrieveSDKInstance()
+
             ADB_CONSTANTS = AdobeSDKConstants()
             adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.DEBUG)
 
-            eventId = adobeEdgeSdk._private.lastEventId
+            eventIdForSetLogLevel = adobeEdgeSdk._private.lastEventId
 
             version$ = adobeEdgeSdk.getVersion()
 
-            _adb_logWarning("lalala")
-            ' debugInfo = ADB_retrieveDebugInof()
-            xx = _adb_retrieveTaskNode().threadinfo()
-            ' print xx
-            ' print _adb_timestampInMillis()
-
-            ' ADB_assertTrue((_adb_retrieveTaskNode() <> invalid), "assert _adb_retrieveTaskNode")
-            ' if version$ <> "1.0.0" then
-            '     throw "xxxxxx"
-            ' end if
+            ADB_assertTrue((_adb_retrieveTaskNode() <> invalid), LINE_NUM, "assert _adb_retrieveTaskNode")
 
             validator = {}
-            validator[eventId] = sub(debugInfo)
+            validator[eventIdForSetLogLevel] = sub(debugInfo)
+                _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
                 abc = "abc"
                 ADB_assertTrue((abc <> "xyz"), LINE_NUM, " assert abc <> xyz")
                 ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "setLogLevel"), LINE_NUM, " assert debugInfo <> invalid")
@@ -56,15 +47,17 @@ function TS_SDK_integration() as object
             return validator
         end function,
 
-        TC_SDK_init_2: function() as dynamic
-            _adb_logWarning("T_SDK_init_2" + m._message)
-            adobeEdgeSdk = AdobeSDKInit()
+        TC_SDK_setLogLevel_info: function() as dynamic
+
+            adobeEdgeSdk = ADB_retrieveSDKInstance()
+
             ADB_CONSTANTS = AdobeSDKConstants()
             adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.INFO)
 
             eventId = adobeEdgeSdk._private.lastEventId
             validator = {}
             validator[eventId] = sub(debugInfo)
+                _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
                 ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "setLogLevel"), LINE_NUM, " assert debugInfo <> invalid")
             end sub
 
