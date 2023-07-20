@@ -50,5 +50,6 @@ governing permissions and limitations under the License.-->
   <script type="text/brightscript" uri="pkg:/source/adobe/task/eventProcessor.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/task/taskNode.brs"/>
   <!--  -->
+  <script type="text/brightscript" uri="pkg:/components/integration/scene/ADBTestRunner.brs"/>
   <script type="text/brightscript" uri="pkg:/components/integration/test/integrationTests.brs"/>
 </component>
