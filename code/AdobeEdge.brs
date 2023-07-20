@@ -270,6 +270,7 @@ function AdobeSDKInit() as object
         _private: {
             ' constants
             cons: _adb_InternalConstants(),
+            lastEventId: invalid,
             ' dispatch events to the task node
             dispatchEvent: function(event as object) as void
                 _adb_logDebug("dispatchEvent() - Dispatching event:(" + FormatJson(event) + ")")
@@ -280,6 +281,7 @@ function AdobeSDKInit() as object
                 end if
 
                 taskNode[m.cons.TASK.REQUEST_EVENT] = event
+                m.lastEventId = event.uuid
             end function,
 
             ' API callbacks to be called later

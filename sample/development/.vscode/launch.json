@@ -8,8 +8,8 @@
             "host": "${config:roku_ip}",
             "password": "${config:roku_password}",
             "rootDir": "${workspaceFolder}",
-            "injectRdbOnDeviceComponent": true,
-            "stopDebuggerOnAppExit": true
+            // "injectRdbOnDeviceComponent": true,
+            // "stopDebuggerOnAppExit": true
             // "deepLinkUrl": "http://${host}:8060/launch/dev?RunUnitTests=true"
         }
     ]

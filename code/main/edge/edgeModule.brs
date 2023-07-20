@@ -45,12 +45,12 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
         _getEdgeConfig: function() as object
             configId = m._configurationModule.getConfigId()
             if _adb_isEmptyOrInvalidString(configId)
-                _adb_logVerbose("isReadyForRequest() - Confguration for edge.configId not found.")
+                _adb_logVerbose("_getEdgeConfig() - Confguration for edge.configId not found.")
                 return invalid
             end if
             ecid = m._identityModule.getECID()
             if _adb_isEmptyOrInvalidString(ecid)
-                _adb_logVerbose("isReadyForRequest() - ECID not set. Please verify the configuration.")
+                _adb_logVerbose("_getEdgeConfig() - ECID not set. Please verify the configuration.")
                 return invalid
             end if
             return {
@@ -81,6 +81,11 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
             end if
             return responseEvents
         end function,
+        dump: function() as object
+            return {
+                requestQueue: m._edgeRequestWorker._queue
+            }
+        end function
     })
     return module
 end function
