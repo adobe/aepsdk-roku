@@ -18,10 +18,21 @@ sub Main(input as dynamic)
     end if
   end if
 
-  ' _adb_run_tests()
+  #if unitTests
+    _adb_run_tests()
 
-  ' showHomeScreen()
-  showHomeScreen("TestScene")
+  #end if
+
+  #if integrationTests
+
+    showHomeScreen("TestScene")
+
+  #else
+
+    showHomeScreen()
+
+  #end if
+
 end sub
 
 sub showHomeScreen(scenenName = "MainScene" as string)
