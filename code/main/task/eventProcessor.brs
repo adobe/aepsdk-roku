@@ -25,28 +25,39 @@ function _adb_EventProcessor(task as object) as object
             m._configurationModule = _adb_ConfigurationModule()
             m._identityModule = _adb_IdentityModule(m._configurationModule)
             m._edgeModule = _adb_EdgeModule(m._configurationModule, m._identityModule)
-        end function
+
+            ' enable debug mode if needed
+            if m._isInDebugMode()
+                networkService = _adb_serviceProvider().networkService
+                networkService._debugMode = true
+            end if
+        end function,
 
         handleEvent: function(event as dynamic) as void
 
             if _adb_isRequestEvent(event)
                 _adb_logInfo("handleEvent() - handle event: " + FormatJson(event))
-                if m._task <> invalid and m._task.hasField("debugInfo")
-                    loggingService = _adb_serviceProvider().loggingService
 
-                    networkService = _adb_serviceProvider().networkService
-                    networkService._debugMode = true
-                    ' -------------------
+                try
                     m._processAdbRequestEvent(event)
-                    ' -------------------
-                    m._dumpDebugInfo(event, loggingService, networkService)
-                else
-                    m._processAdbRequestEvent(event)
+                catch ex
+                    _adb_logError("handleEvent() - Failed to process the request event, the exception message: " + ex.Message)
+                end try
+
+                if m._isInDebugMode()
+                    m._dumpDebugInfo(event, _adb_serviceProvider().loggingService, _adb_serviceProvider().networkService)
                 end if
 
             else
                 _adb_logWarning("handleEvent() - event is invalid: " + FormatJson(event))
             end if
+        end function,
+
+        _isInDebugMode: function() as boolean
+            if m._task <> invalid and m._task.hasField("debugInfo")
+                return true
+            end if
+            return false
         end function,
 
         _dumpDebugInfo: function(event as object, loggingService as object, networkService as object) as void
