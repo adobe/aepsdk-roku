@@ -32,3 +32,6 @@ ui_resolutions=fhd
 #sprof_enable_lines=1
 #sprof_enable_mem=1
 #run_as_process=1
+
+
+bs_const=integrationTests=false;unitTests=false

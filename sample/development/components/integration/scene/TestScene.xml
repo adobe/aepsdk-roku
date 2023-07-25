@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!--****************** Copyright 2023 Adobe.  All Rights Reserved. ******************--> 
+
+<!-- This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.-->
+
+<component name="TestScene" extends="Scene">
+  <children>
+    <Dialog
+      id="WarningDialog"
+      title="Message"
+      message="PUT A WARNING MESSAGE HERE"
+      visible="false" />
+    <Timer
+      id="testTimer"
+      repeat="true"
+      duration="1"
+    />
+  </children>
+
+  <script type="text/brightscript" uri="pkg:/components/integration/scene/TestScene.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/AdobeEdge.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/common/constants.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/common/datetime.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/common/id.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/common/log.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/common/map.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/common/string.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/common/version.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/common/utils.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/core/event.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/core/adobeObject.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/core/configurationModule.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/core/identityModule.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/edge/edgeModule.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/edge/buildEdgeRequestURL.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/edge/edgeRequestWorker.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/edge/implementationDetails.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/services/localDataStoreService.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/services/loggingService.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/services/networkService.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/services/networkResponse.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/services/serviceProvider.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/task/eventProcessor.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/task/taskNode.brs"/>
+  <!--  -->
+  <script type="text/brightscript" uri="pkg:/components/integration/scene/ADBTestRunner.brs"/>
+  <script type="text/brightscript" uri="pkg:/components/integration/test/integrationTests.brs"/>
+</component>

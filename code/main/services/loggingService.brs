@@ -22,6 +22,10 @@ function _adb_LoggingService() as object
             m._logLevel = logLevel
         end function,
 
+        getLogLevel: function() as integer
+            return m._logLevel
+        end function,
+
         error: function(message as string) as void
             m._adb_print("[ADB-EDGE][E] " + message)
         end function,

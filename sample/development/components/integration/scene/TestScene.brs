@@ -11,43 +11,32 @@
 
 ' *****************************************************************************************
 
-sub Main(input as dynamic)
-  if input <> invalid
-    if input.RunTests = "true" and type(TestRunner) = "Function" then
-      _adb_run_tests()
-    end if
-  end if
+sub init()
+  m.Warning = m.top.findNode("WarningDialog")
+  m.timer = m.top.findNode("testTimer")
+  m.timer.control = "start"
+  m.timer.ObserveField("fire", "executeTests")
 
-  #if unitTests
-    _adb_run_tests()
-
-  #end if
-
-  #if integrationTests
-
-    showHomeScreen("TestScene")
-
-  #else
-
-    showHomeScreen()
-
-  #end if
-
+  setupTest()
 end sub
 
-sub showHomeScreen(scenenName = "MainScene" as string)
-  screen = CreateObject("roSGScreen")
-  m.port = CreateObject("roMessagePort")
-  screen.setMessagePort(m.port)
-  _scene = screen.CreateScene(scenenName)
-  screen.show()
-  ' vscode_rdb_on_device_component_entry
+sub setupTest()
+  AdobeSDKInit()
+  taskNode = _adb_retrieveTaskNode()
+  taskNode.addField("debugInfo", "assocarray", true)
+  taskNode.observeField("debugInfo", "onDebugInfoChange")
 
-  while(true)
-    msg = wait(0, m.port)
-    msgType = type(msg)
-    if msgType = "roSGScreenEvent"
-      if msg.isScreenClosed() then return
-    end if
-  end while
+  m.testRunner = ADBTestRunner()
+  testSuite = TS_SDK_integration()
+  m.testRunner.init(testSuite)
+end sub
+
+sub onDebugInfoChange()
+  taskNode = _adb_retrieveTaskNode()
+  info = taskNode.getField("debugInfo")
+  m.testRunner.addDebugInfo(info)
+end sub
+
+sub executeTests()
+  m.testRunner.execute()
 end sub

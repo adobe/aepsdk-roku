@@ -25,28 +25,74 @@ function _adb_EventProcessor(task as object) as object
             m._configurationModule = _adb_ConfigurationModule()
             m._identityModule = _adb_IdentityModule(m._configurationModule)
             m._edgeModule = _adb_EdgeModule(m._configurationModule, m._identityModule)
-        end function
+
+            ' enable debug mode if needed
+            if m._isInDebugMode()
+                networkService = _adb_serviceProvider().networkService
+                networkService._debugMode = true
+            end if
+        end function,
 
         handleEvent: function(event as dynamic) as void
 
             if _adb_isRequestEvent(event)
                 _adb_logInfo("handleEvent() - handle event: " + FormatJson(event))
-                if event.apiName = m._CONSTANTS.PUBLIC_API.SEND_EDGE_EVENT
-                    m._sendEvent(event)
-                    return
-                else if event.apiName = m._CONSTANTS.PUBLIC_API.SET_CONFIGURATION
-                    m._setConfiguration(event)
-                    return
-                else if event.apiName = m._CONSTANTS.PUBLIC_API.SET_LOG_LEVEL
-                    m._setLogLevel(event)
-                    return
-                else if event.apiName = m._CONSTANTS.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID
-                    m._setECID(event)
-                    return
-                else if event.apiName = m._CONSTANTS.PUBLIC_API.RESET_IDENTITIES
-                    m._resetIdentities(event)
-                    return
+
+                try
+                    m._processAdbRequestEvent(event)
+                catch ex
+                    _adb_logError("handleEvent() - Failed to process the request event, the exception message: " + ex.Message)
+                end try
+
+                if m._isInDebugMode()
+                    m._dumpDebugInfo(event, _adb_serviceProvider().loggingService, _adb_serviceProvider().networkService)
                 end if
+
+            else
+                _adb_logWarning("handleEvent() - event is invalid: " + FormatJson(event))
+            end if
+        end function,
+
+        _isInDebugMode: function() as boolean
+            if m._task <> invalid and m._task.hasField("debugInfo")
+                return true
+            end if
+            return false
+        end function,
+
+        _dumpDebugInfo: function(event as object, loggingService as object, networkService as object) as void
+            debugInfo = {
+                eventId: event.uuid,
+                apiName: event.apiName
+            }
+
+            debugInfo.logLevel = loggingService.getLogLevel()
+            if _adb_isConfigurationModule(m._configurationModule)
+                debugInfo["configuration"] = m._configurationModule.dump()
+            end if
+            if _adb_isIdentityModule(m._identityModule)
+                debugInfo["identity"] = m._identityModule.dump()
+            end if
+            if _adb_isEdgeModule(m._edgeModule)
+                debugInfo["edge"] = m._edgeModule.dump()
+            end if
+            debugInfo["networkRequests"] = networkService.dump()
+            m._task.setField("debugInfo", debugInfo)
+        end function,
+
+        _processAdbRequestEvent: function(event) as void
+            if event.apiName = m._CONSTANTS.PUBLIC_API.SEND_EDGE_EVENT
+                m._sendEvent(event)
+            else if event.apiName = m._CONSTANTS.PUBLIC_API.SET_CONFIGURATION
+                m._setConfiguration(event)
+            else if event.apiName = m._CONSTANTS.PUBLIC_API.SET_LOG_LEVEL
+                m._setLogLevel(event)
+            else if event.apiName = m._CONSTANTS.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID
+                m._setECID(event)
+            else if event.apiName = m._CONSTANTS.PUBLIC_API.RESET_IDENTITIES
+                m._resetIdentities(event)
+            else if event.apiName = m._CONSTANTS.PUBLIC_API.RESET_SDK
+                m._resetSDK(event)
             else
                 _adb_logWarning("handleEvent() - event is invalid: " + FormatJson(event))
             end if
@@ -66,6 +112,11 @@ function _adb_EventProcessor(task as object) as object
         _resetIdentities: function(_event as object) as void
             _adb_logInfo("_resetIdentities() - Reset presisted Identities.")
             m._identityModule.resetIdentities()
+        end function,
+
+        _resetSDK: function(_event as object) as void
+            _adb_logInfo("_resetSDK() - Reset SDK.")
+            m.init()
         end function,
 
         _setConfiguration: function(event as object) as void

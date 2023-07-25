@@ -15,6 +15,9 @@
 
 function _adb_NetworkService() as object
     return {
+        _debugMode: false,
+        _debugQueue: [],
+
         ' **************************************************************
         '
         ' Sned POST request to the given URL with the given JSON object
@@ -25,7 +28,40 @@ function _adb_NetworkService() as object
         ' @return the [NetworkResponse] object
         '
         ' **************************************************************
-        syncPostRequest: function(url as string, jsonObj as object, headers = [] as object) as object
+        syncPostRequest: function(url as string, jsonObj as object, headers = [] as dynamic) as object
+            networkResponse = m._syncPostRequest(url, jsonObj, headers)
+
+            if m._debugMode then
+                m._queueDebugInfo(url, jsonObj, headers, networkResponse)
+            end if
+
+            return networkResponse
+        end function,
+
+        dump: function() as dynamic
+            queue = m._debugQueue
+            m._debugQueue = []
+            return queue
+        end function
+
+        _queueDebugInfo: sub(url as string, jsonObj as object, headers as dynamic, networkResponse as object)
+            response = invalid
+            if _adb_isNetworkResponse(networkResponse) then
+                response = {
+                    "code": networkResponse.getResponseCode(),
+                    "body": networkResponse.getResponseString()
+                }
+            end if
+            m._debugQueue.Push({
+                "method": "syncPostRequest",
+                "url": url,
+                "jsonObj": jsonObj,
+                "headers": headers,
+                "response": response
+            })
+        end sub,
+
+        _syncPostRequest: function(url as string, jsonObj as object, headers = [] as dynamic) as object
             _adb_logVerbose("syncPostRequest() - Attempting to send request with url:(" + FormatJson(url) + ") and body:(" + FormatJson(jsonObj) + ").")
 
             request = CreateObject("roUrlTransfer")
@@ -59,6 +95,6 @@ function _adb_NetworkService() as object
                 end while
             end if
             return invalid
-        end function,
+        end function
     }
 end function
