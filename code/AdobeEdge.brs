@@ -158,7 +158,7 @@ function AdobeSDKInit() as object
 
         updateConfiguration: function(configuration as object) as void
             _adb_logDebug("API: updateConfiguration()")
-            if type(configuration) <> "roAssociativeArray" then
+            if _adb_isEmptyOrInvalidMap(configuration) then
                 _adb_logError("updateConfiguration() - Cannot update configuration as the configuration is invalid.")
                 return
             end if
@@ -206,7 +206,7 @@ function AdobeSDKInit() as object
 
         sendEvent: function(xdmData as object, callback = _adb_defaultCallback as function, context = invalid as dynamic) as void
             _adb_logDebug("API: sendEvent()")
-            if type(xdmData) <> "roAssociativeArray" then
+            if _adb_isEmptyOrInvalidMap(xdmData) then
                 _adb_logError("sendEvent() - Cannot send event, invalid XDM data")
                 return
             end if
