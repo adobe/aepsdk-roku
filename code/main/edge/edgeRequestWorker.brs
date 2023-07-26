@@ -56,45 +56,41 @@ function _adb_EdgeRequestWorker() as object
         end function,
 
         processRequests: function(configId as string, ecid as string, edgeDomain = invalid as dynamic) as dynamic
-            responseArray = invalid
+            responseArray = []
             while m._queue.count() > 0
+
+                if _adb_isEmptyOrInvalidString(ecid) or _adb_isEmptyOrInvalidString(configId) then
+                    _adb_logWarning("processRequests() - Edge request skipped. ECID and/or configId not set.")
+                    exit while
+                end if
+
                 ' grab oldest hit in the queue
                 requestEntity = m._queue.Shift()
 
                 xdmData = requestEntity.xdmData
                 requestId = requestEntity.requestId
 
-                _adb_logVerbose("processRequests() - Using ECID:(" + FormatJson(ecid) + ") and configId:(" + FormatJson(configId) + ")")
-                if (not _adb_isEmptyOrInvalidString(ecid)) and (not _adb_isEmptyOrInvalidString(configId)) then
-                    networkResponse = m._processRequest(xdmData, ecid, configId, requestId, edgeDomain)
-                    if not _adb_isNetworkResponse(networkResponse)
-                        _adb_logError("processRequests() - Edge request dropped. Response is invalid.")
-                        ' drop the request
-                    else
-                        _adb_logVerbose("processRequests() - Request with id:(" + FormatJson(requestId) + ") response:(" + FormatJson(networkResponse) + ")")
-                        if networkResponse.isSuccessful() then
-                            if responseArray = invalid
-                                responseArray = []
-                            end if
-                            ' TODO: add request id
-                            edgeResponse = _adb_EdgeResponse(requestId, networkResponse.getResponseCode(), networkResponse.getResponseString())
-                            responseArray.Push(edgeResponse)
+                networkResponse = m._processRequest(xdmData, ecid, configId, requestId, edgeDomain)
+                if not _adb_isNetworkResponse(networkResponse)
+                    _adb_logError("processRequests() - Edge request dropped. Response is invalid.")
+                    ' drop the request
+                    continue while
+                end if
 
-                        else if networkResponse.isRecoverable()
-                            m._queue.Unshift(requestEntity)
-                            exit while
-                        else
-                            ' drop the request
-                            _adb_logError("processRequests() - Edge request dropped. Response response:(" + FormatJson(networkResponse) + ")")
-                            exit while
-                        end if
-                    end if
-
-                else
-                    _adb_logWarning("processRequests() - Edge request skipped. ECID and/or configId not set.")
+                _adb_logVerbose("processRequests() - Request with id:(" + FormatJson(requestId) + ") response:(" + FormatJson(networkResponse) + ")")
+                if networkResponse.isSuccessful()
+                    ' TODO: add request id
+                    edgeResponse = _adb_EdgeResponse(requestId, networkResponse.getResponseCode(), networkResponse.getResponseString())
+                    responseArray.Push(edgeResponse)
+                else if networkResponse.isRecoverable()
                     m._queue.Unshift(requestEntity)
                     exit while
+                else
+                    ' drop the request
+                    _adb_logError("processRequests() - Edge request dropped due to unrecoverable error. Response:(" + FormatJson(networkResponse) + ")")
+                    exit while
                 end if
+
             end while
             return responseArray
         end function,

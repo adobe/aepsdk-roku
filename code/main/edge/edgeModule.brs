@@ -45,12 +45,10 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
         _getEdgeConfig: function() as object
             configId = m._configurationModule.getConfigId()
             if _adb_isEmptyOrInvalidString(configId)
-                _adb_logVerbose("_getEdgeConfig() - Confguration for edge.configId not found.")
                 return invalid
             end if
             ecid = m._identityModule.getECID()
             if _adb_isEmptyOrInvalidString(ecid)
-                _adb_logVerbose("_getEdgeConfig() - ECID not set. Please verify the configuration.")
                 return invalid
             end if
             return {
@@ -62,25 +60,34 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
 
         processQueuedRequests: function() as dynamic
             responseEvents = []
-            edgeConfig = m._getEdgeConfig()
-            if m._edgeRequestWorker.hasQueuedEvent() and edgeConfig <> invalid then
-                responses = m._edgeRequestWorker.processRequests(edgeConfig.configId, edgeConfig.ecid, edgeConfig.edgeDomain)
-                if not _adb_isArray(responses) then
-                    _adb_logError("processQueuedRequests() - not found valid edge response.")
-                else
-                    for each edgeResponse in responses
-                        if _adb_isEdgeResponse(edgeResponse) then
-                            responseEvent = _adb_ResponseEvent(edgeResponse.getRequestId(), {
-                                code: edgeResponse.getResponseCode(),
-                                message: edgeResponse.getResponseString()
-                            })
-                            responseEvents.Push(responseEvent)
-                        end if
-                    end for
-                end if
+
+            if not m._edgeRequestWorker.hasQueuedEvent()
+                ''' no requests to process
+                return responseEvents
             end if
+
+            edgeConfig = m._getEdgeConfig()
+            if edgeConfig = invalid
+                _adb_logVerbose("processQueuedRequests() - Cannot send network request, invalid configuration.")
+                return responseEvents
+            end if
+
+            responses = m._edgeRequestWorker.processRequests(edgeConfig.configId, edgeConfig.ecid, edgeConfig.edgeDomain)
+
+            for each edgeResponse in responses
+                if _adb_isEdgeResponse(edgeResponse) then
+                    responseEvent = _adb_ResponseEvent(edgeResponse.getRequestId(), {
+                        code: edgeResponse.getResponseCode(),
+                        message: edgeResponse.getResponseString()
+                    })
+                    responseEvents.Push(responseEvent)
+                end if
+            end for
+
+
             return responseEvents
         end function,
+
         dump: function() as object
             return {
                 requestQueue: m._edgeRequestWorker._queue
