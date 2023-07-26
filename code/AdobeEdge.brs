@@ -272,11 +272,6 @@ function AdobeSDKInit() as object
             cons: _adb_InternalConstants(),
             ' for testing purpose
             lastEventId: invalid,
-            ' for testing purpose
-            resetSDK: sub ()
-                event = _adb_RequestEvent(m.cons.PUBLIC_API.RESET_SDK, {})
-                m.dispatchEvent(event)
-            end sub,
             ' dispatch events to the task node
             dispatchEvent: function(event as object) as void
                 _adb_logDebug("dispatchEvent() - Dispatching event:(" + FormatJson(event) + ")")
@@ -337,7 +332,7 @@ function _adb_handleResponseEvent() as void
             _adb_logDebug("_adb_handleResponseEvent() - Received response event:" + FormatJson(responseEvent) + " with uuid:" + FormatJson(uuid))
             if sdk._private.cachedCallbackInfo[uuid] <> invalid
                 context = sdk._private.cachedCallbackInfo[uuid].context
-                sdk._private.cachedCallbackInfo[uuid].cb(context, responseEvent)
+                sdk._private.cachedCallbackInfo[uuid].cb(context, responseEvent.data)
                 sdk._private.cachedCallbackInfo[uuid] = invalid
             else
                 _adb_logError("_adb_handleResponseEvent() - Not handling response event, callback not passed with the request event.")

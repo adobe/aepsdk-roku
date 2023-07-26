@@ -16,12 +16,12 @@ sub init()
   m.timer = m.top.findNode("testTimer")
   m.timer.control = "start"
   m.timer.ObserveField("fire", "executeTests")
-
+  m.sdkInstance = invalid
   setupTest()
 end sub
 
 sub setupTest()
-  AdobeSDKInit()
+  m.sdkInstance = AdobeSDKInit()
   taskNode = _adb_retrieveTaskNode()
   taskNode.addField("debugInfo", "assocarray", true)
   taskNode.observeField("debugInfo", "onDebugInfoChange")
@@ -38,5 +38,8 @@ sub onDebugInfoChange()
 end sub
 
 sub executeTests()
-  m.testRunner.execute()
+  hasNext = m.testRunner.execute()
+  if not hasNext then
+    m.sdkInstance.shutdown()
+  end if
 end sub

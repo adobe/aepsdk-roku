@@ -99,6 +99,7 @@ function ADBTestRunner() as object
                     _adb_logInfo("")
                     _adb_logInfo("  Test Case:    <<" + testCaseName + ">>")
                     resultFlag = true
+                    failedTestCaseNameMap = {}
                     for each item in resultMap[testCaseName]
                         _adb_logInfo("")
                         _adb_logInfo("- linenumber  : " + FormatJson(item._lineNumber))
@@ -107,7 +108,11 @@ function ADBTestRunner() as object
                         _adb_logInfo("")
                         if item._result = false then
                             resultFlag = false
-                            failedTestCaseNameArray.Push(testCaseName)
+                            if not failedTestCaseNameMap.DoesExist(testCaseName) then
+                                failedTestCaseNameArray.Push(testCaseName)
+                                failedTestCaseNameMap[testCaseName] = true
+                            end if
+
                         end if
                     end for
                     if resultFlag = true then
@@ -130,6 +135,7 @@ function ADBTestRunner() as object
                 end if
                 _adb_logInfo("")
                 _adb_logInfo("======================================================")
+
             end if
 
             return true
@@ -242,5 +248,36 @@ function ADB_retrieveSDKInstance() as object
 end function
 
 sub ADB_resetSDK(instance as object)
-    instance._private.resetSDK()
+    event = _adb_RequestEvent(instance._private.cons.PUBLIC_API.RESET_SDK, {})
+    instance._private.dispatchEvent(event)
 end sub
+
+function ADB_removeRegistryValue(key) as void
+    _registry = CreateObject("roRegistrySection", "adb_edge_mobile")
+    _registry.Delete(key)
+    _registry.Flush()
+end function
+
+function ADB_clearPersistedECID() as void
+    ADB_removeRegistryValue("ecid")
+end function
+
+function ADB_getPersistedECID() as dynamic
+    persistedECID = ADB_readRegistryValue("ecid")
+    return persistedECID
+end function
+
+function ADB_readRegistryValue(key as string) as dynamic
+    _registry = CreateObject("roRegistrySection", "adb_edge_mobile")
+    if _registry.Exists(key) and _registry.Read(key).Len() > 0
+        return _registry.Read(key)
+    end if
+
+    return invalid
+end function
+
+function ADB_persisteECIDInRegistry(value as string) as dynamic
+    _registry = CreateObject("roRegistrySection", "adb_edge_mobile")
+    _registry.Write("ecid", value)
+    return invalid
+end function

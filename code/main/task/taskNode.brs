@@ -37,5 +37,7 @@ end function
 
 function _adb_stopTaskNode() as void
     GetGlobalAA()._adb_main_task_node.control = "DONE"
-    GetGlobalAA()._adb_main_task_node = invalid
+    if invalid <> GetGlobalAA()._adb_main_task_nodethen
+        GetGlobalAA()._adb_main_task_node = invalid
+    end if
 end function

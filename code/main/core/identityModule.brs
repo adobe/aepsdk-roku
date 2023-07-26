@@ -131,7 +131,7 @@ function _adb_IdentityModule(configurationModule as object) as object
                     return invalid
                 end if
             else
-                _adb_logError("_queryECID() - Error occured while quering ECID from service side. Please verify the edge configuration.The response code : " + FormatJson(responseJson.code))
+                _adb_logError("_queryECID() - Error occured while quering ECID from service side. Please verify the edge configuration.The response code : " + FormatJson(networkResponse))
                 return invalid
             end if
 
