@@ -175,15 +175,11 @@ function _adb_EventProcessor(task as object) as object
             if _adb_isResponseEvent(event)
                 m._task[m._CONSTANTS.TASK.RESPONSE_EVENT] = event
             else
-                _adb_logError("_sendResponseEvent() - the given event is invalid.")
+                _adb_logError("_sendResponseEvent() - Invalid response event:(" + FormatJson(event) + ").")
             end if
         end function,
 
         _sendResponseEvents: function(responseEvents as dynamic) as void
-            if not _adb_isArray(responseEvents)
-                _adb_logError("_sendResponseEvents() - responseEvents is not an array.")
-                return
-            end if
             for each event in responseEvents
                 m._sendResponseEvent(event)
             end for
