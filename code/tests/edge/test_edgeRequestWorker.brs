@@ -199,7 +199,7 @@ sub TC_adb_EdgeRequestWorker_processRequests_empty_queue()
 
     worker = _adb_EdgeRequestWorker()
     result = worker.processRequests("config_id", "ecid_test")
-    UTF_assertInvalid(result)
+    UTF_assertEqual(0, result.count())
 
     _adb_serviceProvider().networkService.syncPostRequest = cachedFuntion
 end sub
