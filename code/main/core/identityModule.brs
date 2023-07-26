@@ -48,7 +48,7 @@ function _adb_IdentityModule(configurationModule as object) as object
                 end if
             end if
 
-            _adb_logDebug("getECID() - Returning ECID:(" + FormatJson(m._ecid) + ")")
+            _adb_logVerbose("getECID() - Returning ECID:(" + FormatJson(m._ecid) + ")")
             return m._ecid
         end function,
 

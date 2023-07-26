@@ -20,7 +20,6 @@ governing permissions and limitations under the License.-->
       message="PUT A WARNING MESSAGE HERE"
       visible="false" />
 
-    <Exiter id="Exiter"/>
   </children>
 
   <script type="text/brightscript" uri="pkg:/components/MainScene.brs"/>

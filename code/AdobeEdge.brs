@@ -332,7 +332,7 @@ function _adb_handleResponseEvent() as void
         end if
         responseEvent = taskNode[sdk._private.cons.TASK.RESPONSE_EVENT]
         if responseEvent <> invalid
-            uuid = responseEvent.uuid
+            uuid = responseEvent.parentId
 
             _adb_logDebug("_adb_handleResponseEvent() - Received response event:" + FormatJson(responseEvent) + " with uuid:" + FormatJson(uuid))
             if sdk._private.cachedCallbackInfo[uuid] <> invalid

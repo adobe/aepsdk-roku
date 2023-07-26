@@ -23,22 +23,22 @@ sub init()
   print "Adobe SDK version : " + m.adobeEdgeSdk.getVersion()
 
   ADB_CONSTANTS = AdobeSDKConstants()
-  m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
+  m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.DEBUG)
 
   ' get_mid_from_media_sdk = "12340203495818708"
   ' m.adobeEdgeSdk.setExperienceCloudId(get_mid_from_media_sdk)
 
   configuration = {}
-  configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = ""
+  configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = "291f33f7-8e3c-406c-b4a8-0b6a0e088323"
   'configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = ""
   m.adobeEdgeSdk.updateConfiguration(configuration)
 
-  m.adobeEdgeSdk.sendEvent({
-    "eventType": "commerce.orderPlaced",
-    "commerce": {
-      "key1": "value1"
-    }
-  })
+  ' m.adobeEdgeSdk.sendEvent({
+  '   "eventType": "commerce.orderPlaced",
+  '   "commerce": {
+  '     "key1": "value1"
+  '   }
+  ' })
 
   ' m.adobeEdgeSdk.resetIdentities()
 
@@ -74,10 +74,21 @@ sub onButtonSelected()
       print "callback result: "
       print result
       print context
+      jsonObj = ParseJson(result.data.message)
+      message = ""
+      for each item in jsonObj.handle
+        if item.type = "locationHint:result" then
+          for each data in item.payload
+            if data.scope = "EdgeNetwork" then
+              message = "locationHint:EdgeNetwork: " + data.hint
+            end if
+          end for
+        end if
+      end for
 
       ' show result in dialog
-      ' context.Warning.visible = "true"
-      ' context.Warning.message = result.data.message
+      context.Warning.visible = "true"
+      context.Warning.message = message
     end sub, m)
 
   else
