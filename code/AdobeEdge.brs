@@ -116,12 +116,16 @@ function AdobeSDKInit() as object
 
         shutdown: function() as void
             _adb_logDebug("API: shutdown()")
-            ' stop the task node
-            _adb_stopTaskNode()
-            ' clear the cached callback functions
-            m._private.cachedCallbackInfo = {}
-            ' clear the global reference
-            GetGlobalAA()._adb_public_api = invalid
+
+            if GetGlobalAA()._adb_public_api <> invalid then
+                ' stop the task node
+                _adb_stopTaskNode()
+                ' clear the cached callback functions
+                m._private.cachedCallbackInfo = {}
+                ' clear the global reference
+                GetGlobalAA()._adb_public_api = invalid
+            end if
+
         end function,
 
         ' ***********************************************************************
