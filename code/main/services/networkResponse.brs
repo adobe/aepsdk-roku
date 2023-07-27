@@ -47,8 +47,5 @@ function _adb_NetworkResponse(responseCode as integer, responseBody as string) a
 end function
 
 function _adb_isNetworkResponse(networkResponse as object) as boolean
-    if networkResponse <> invalid and networkResponse.type = "com.adobe.service.network.response" then
-        return true
-    end if
-    return false
+    return (networkResponse <> invalid and networkResponse.type = "com.adobe.service.network.response")
 end function

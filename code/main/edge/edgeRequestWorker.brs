@@ -78,6 +78,12 @@ function _adb_EdgeRequestWorker() as object
                 end if
 
                 _adb_logVerbose("processRequests() - Request with id:(" + FormatJson(requestId) + ") response:(" + FormatJson(networkResponse) + ")")
+                if not networkResponse.isSuccessful()
+                    ' drop the request
+                    _adb_logError("processRequests() - Edge request dropped due to unrecoverable error. Response:(" + FormatJson(networkResponse) + ")")
+                    continue while
+                end if
+
                 if networkResponse.isSuccessful()
                     ' TODO: add request id
                     edgeResponse = _adb_EdgeResponse(requestId, networkResponse.getResponseCode(), networkResponse.getResponseString())
@@ -85,43 +91,46 @@ function _adb_EdgeRequestWorker() as object
                 else if networkResponse.isRecoverable()
                     m._queue.Unshift(requestEntity)
                     exit while
-                else
-                    ' drop the request
-                    _adb_logError("processRequests() - Edge request dropped due to unrecoverable error. Response:(" + FormatJson(networkResponse) + ")")
-                    exit while
                 end if
-
             end while
             return responseArray
         end function,
 
         _processRequest: function(xdmData as object, ecid as string, configId as string, requestId as string, edgeDomain = invalid as dynamic) as object
-            identityMap = {
-                "ECID": [
-                    {
-                        "id": ecid,
-                        "primary": true,
-                        "authenticatedState": "ambiguous"
-                    }
-                ]
-            }
+            requestBody = m._createEdgeRequestBody(xdmData, ecid)
 
-            jsonBody = {
+            url = _adb_buildEdgeRequestURL(configId, requestId, edgeDomain)
+            _adb_logVerbose("_processRequest() - Sending Request to url:(" + FormatJson(url) + ") with payload:(" + FormatJson(requestBody) + ")")
+            networkResponse = _adb_serviceProvider().networkService.syncPostRequest(url, requestBody)
+            return networkResponse
+        end function
+
+        _createEdgeRequestBody: function(xdmData as object, ecid as string) as object
+            requestBody = {
                 "xdm": {
-                    "identityMap": identityMap,
+                    "identityMap": m._getIdentityMap(ecid),
                     "implementationDetails": _adb_ImplementationDetails()
                 },
                 "events": []
             }
 
-            ' Add customer provided xdmData
-            jsonBody.events[0] = xdmData
+            requestBody.events[0] = xdmData
 
-            url = _adb_buildEdgeRequestURL(configId, requestId, edgeDomain)
-            _adb_logVerbose("_processRequest() - Sending Request to url:(" + FormatJson(url) + ") with payload:(" + FormatJson(jsonBody) + ")")
-            networkResponse = _adb_serviceProvider().networkService.syncPostRequest(url, jsonBody)
-            return networkResponse
-        end function
+            return requestBody
+        end function,
+
+        _getIdentityMap: function(ecid as String) as object
+            identityMap = {
+                "ECID": [
+                    {
+                        "id": ecid,
+                        "primary": false,
+                        "authenticatedState": "ambiguous"
+                    }
+                ]
+            }
+            return identityMap
+        end function,
 
         clear: function() as void
             m._queue.Clear()
@@ -130,7 +139,6 @@ function _adb_EdgeRequestWorker() as object
 
     return instance
 end function
-
 
 function _adb_EdgeResponse(requestId as string, code as integer, responseBody as string) as object
     networkResponse = _adb_AdobeObject("com.adobe.module.edge.response")
@@ -159,8 +167,5 @@ function _adb_EdgeResponse(requestId as string, code as integer, responseBody as
 end function
 
 function _adb_isEdgeResponse(edgeResponse as object) as boolean
-    if edgeResponse <> invalid and edgeResponse.type = "com.adobe.module.edge.response" then
-        return true
-    end if
-    return false
+    return (edgeResponse <> invalid and edgeResponse.type = "com.adobe.module.edge.response")
 end function
