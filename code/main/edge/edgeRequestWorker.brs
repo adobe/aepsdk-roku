@@ -60,7 +60,7 @@ function _adb_EdgeRequestWorker() as object
 
         processRequests: function(configId as string, ecid as string, edgeDomain = invalid as dynamic) as dynamic
             responseArray = []
-            while m._queue.count() > 0
+            while m.hasQueuedEvent()
 
                 currTS = _adb_timestampInMillis()
                 if (m._lastFailedRequestTS <> m._INVALID_WAIT_TIME) and ((currTS - m._lastFailedRequestTS) < m._RETRY_WAIT_TIME)
@@ -84,7 +84,6 @@ function _adb_EdgeRequestWorker() as object
                 _adb_logVerbose("processRequests() - Request with id:(" + FormatJson(requestId) + ") response:(" + networkResponse.toString() + ")")
 
                 if networkResponse.isSuccessful()
-                    ' TODO: add request id
                     edgeResponse = _adb_EdgeResponse(requestId, networkResponse.getResponseCode(), networkResponse.getResponseString())
                     responseArray.Push(edgeResponse)
                     ' Request sent out successfully

@@ -14,10 +14,7 @@
 ' *********************************** MODULE: Events **************************************
 
 function _adb_isRequestEvent(event as object) as boolean
-    if event <> invalid and event.owner = "adobe" and event.type = "com.adobe.event.request" then
-        return true
-    end if
-    return false
+    return event <> invalid and event.owner = "adobe" and event.type = "com.adobe.event.request"
 end function
 
 function _adb_RequestEvent(apiName as string, data = {} as object) as object
@@ -32,10 +29,7 @@ function _adb_RequestEvent(apiName as string, data = {} as object) as object
 end function
 
 function _adb_isResponseEvent(event as object) as boolean
-    if event <> invalid and event.owner = "adobe" and event.type = "com.adobe.event.response" then
-        return true
-    end if
-    return false
+    return event <> invalid and event.owner = "adobe" and event.type = "com.adobe.event.response"
 end function
 
 function _adb_ResponseEvent(parentId as string, data = {} as object) as object
