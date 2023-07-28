@@ -15,7 +15,7 @@
 
 function _adb_EdgeRequestWorker() as object
     instance = {
-        _RETRY_WAIT_TIME: 5000, ' 5 seconds
+        _RETRY_WAIT_TIME_MS: 30000, ' 30 seconds
         _INVALID_WAIT_TIME: -1,
         _lastFailedRequestTS: -1,
         _queue: [],
@@ -63,8 +63,8 @@ function _adb_EdgeRequestWorker() as object
             while m.hasQueuedEvent()
 
                 currTS = _adb_timestampInMillis()
-                if (m._lastFailedRequestTS <> m._INVALID_WAIT_TIME) and ((currTS - m._lastFailedRequestTS) < m._RETRY_WAIT_TIME)
-                    ' Wait for 5 seconds before retrying the hit failed with recoverable error.
+                if (m._lastFailedRequestTS <> m._INVALID_WAIT_TIME) and ((currTS - m._lastFailedRequestTS) < m._RETRY_WAIT_TIME_MS)
+                    ' Wait for 30 seconds before retrying the hit failed with recoverable error.
                     exit while
                 end if
 
@@ -90,7 +90,7 @@ function _adb_EdgeRequestWorker() as object
                     m._lastFailedRequestTS = m._INVALID_WAIT_TIME
                 else if networkResponse.isRecoverable()
                     m._lastFailedRequestTS = _adb_timestampInMillis()
-                    _adb_logError("processRequests() - Edge request failed with recoverable error:(" + networkResponse.getResponseString() + "). Request will be retried.")
+                    _adb_logWarning("processRequests() - Edge request with id:(" + FormatJson(requestId)  + ") failed with recoverable error code:(" + FormatJson(networkResponse.getResponseCode()) + "). Request will be retried after (" + FormatJson(m._RETRY_WAIT_TIME_MS) + ") ms.")
                     m._queue.Unshift(requestEntity)
                     exit while
                 end if

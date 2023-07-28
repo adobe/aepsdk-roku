@@ -62,7 +62,7 @@ function _adb_NetworkService() as object
         end sub,
 
         _syncPostRequest: function(url as string, jsonObj as object, headers = [] as dynamic) as object
-            _adb_logVerbose("syncPostRequest() - Attempting to send request with url:(" + FormatJson(url) + ") and body:(" + FormatJson(jsonObj) + ").")
+            _adb_logDebug("syncPostRequest() - Attempting to send request with url:(" + FormatJson(url) + ") and body:(" + FormatJson(jsonObj) + ").")
 
             request = CreateObject("roUrlTransfer")
             port = CreateObject("roMessagePort")
