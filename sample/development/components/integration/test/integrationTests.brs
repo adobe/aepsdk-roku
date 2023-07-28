@@ -42,7 +42,7 @@ function TS_SDK_integration() as object
 
             version$ = adobeEdgeSdk.getVersion()
 
-            ADB_assertTrue((version$ = "1.0.0"), LINE_NUM, "assert getVersion() = 1.0.0")
+            ADB_assertTrue((version$ = "1.0.0-alpha1"), LINE_NUM, "assert getVersion() = 1.0.0-alpha1")
 
             return invalid
         end function,
