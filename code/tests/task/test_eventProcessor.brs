@@ -11,6 +11,14 @@
 
 ' *****************************************************************************************
 
+function _createMockedEventProcessor() as object
+    return _adb_EventProcessor({
+        hasField: function(key as string) as boolean
+            return false
+        end function
+    })
+end function
+
 ' target: _setLogLevel()
 ' @Test
 sub TC_adb_EventProcessor_handleEvent_setLogLevel()
@@ -19,7 +27,7 @@ sub TC_adb_EventProcessor_handleEvent_setLogLevel()
     loggingService.setLogLevel(1)
     UTF_assertEqual(loggingService._logLevel, 1)
 
-    eventProcessor = _adb_EventProcessor({})
+    eventProcessor = _createMockedEventProcessor()
 
     event = _adb_RequestEvent("setLogLevel", {
         level: 3
@@ -37,7 +45,7 @@ sub TC_adb_eventProcessor_handleEvent_setLogLevel_invalid()
     loggingService.setLogLevel(1)
     UTF_assertEqual(loggingService._logLevel, 1)
 
-    eventProcessor = _adb_EventProcessor({})
+    eventProcessor = _createMockedEventProcessor()
 
     event = _adb_RequestEvent("setLogLevel", {
         invalid_key: 3
@@ -51,7 +59,7 @@ end sub
 sub TC_adb_eventProcessor_handleEvent_resetIdentities()
     GetGlobalAA().reset_is_called = false
 
-    eventProcessor = _adb_EventProcessor({})
+    eventProcessor = _createMockedEventProcessor()
     eventProcessor._identityModule.resetIdentities = function() as void
         GetGlobalAA().reset_is_called = true
     end function
@@ -68,7 +76,7 @@ end sub
 sub TC_adb_eventProcessor_handleEvent_setConfiguration()
     GetGlobalAA().updateConfiguration_is_called = false
 
-    eventProcessor = _adb_EventProcessor({})
+    eventProcessor = _createMockedEventProcessor()
     eventProcessor._configurationModule.updateConfiguration = function(data as object) as void
         GetGlobalAA().updateConfiguration_is_called = true
         UTF_assertEqual({
@@ -90,7 +98,7 @@ end sub
 sub TC_adb_eventProcessor_handleEvent_setECID()
     GetGlobalAA().updateECID_is_called = false
 
-    eventProcessor = _adb_EventProcessor({})
+    eventProcessor = _createMockedEventProcessor()
     eventProcessor._identityModule.updateECID = function(ecid as string) as void
         GetGlobalAA().updateECID_is_called = true
         UTF_assertEqual(ecid, "ecid_test")
@@ -107,7 +115,7 @@ end sub
 ' target: _hasXDMData()
 ' @Test
 sub TC_adb_eventProcessor_hasXDMData()
-    eventProcessor = _adb_EventProcessor({})
+    eventProcessor = _createMockedEventProcessor()
     UTF_assertFalse(eventProcessor._hasXDMData(invalid))
     UTF_assertFalse(eventProcessor._hasXDMData({}))
     UTF_assertFalse(eventProcessor._hasXDMData({ key: "value" }))
@@ -120,7 +128,7 @@ end sub
 sub TC_adb_eventProcessor_handleEvent_sendEvent()
     GetGlobalAA().processEvent_is_called = false
 
-    eventProcessor = _adb_EventProcessor({})
+    eventProcessor = _createMockedEventProcessor()
 
     eventProcessor._edgeModule.processEvent = function(requestId as string, xdmData as object, timestampInMillis as integer) as void
         GetGlobalAA().processEvent_is_called = true
@@ -145,7 +153,7 @@ end sub
 ' target: _sendResponseEvent()
 ' @Test
 sub TC_adb_eventProcessor_sendResponseEvent()
-    eventProcessor = _adb_EventProcessor({})
+    eventProcessor = _createMockedEventProcessor()
     eventProcessor._task = { responseEvent: invalid }
 
     responseEvent = _adb_ResponseEvent("uuid", {
@@ -162,7 +170,7 @@ end sub
 sub TC_adb_eventProcessor_processQueuedRequests()
     GetGlobalAA()._sendResponseEvents_is_called = false
 
-    eventProcessor = _adb_EventProcessor({})
+    eventProcessor = _createMockedEventProcessor()
     eventProcessor._edgeModule.processQueuedRequests = function() as dynamic
         array = []
         array.Push(_adb_ResponseEvent("request_id_test", {
@@ -189,7 +197,7 @@ end sub
 sub TC_adb_eventProcessor_processQueuedRequests_multiple()
     GetGlobalAA()._sendResponseEvents_is_called = false
 
-    eventProcessor = _adb_EventProcessor({})
+    eventProcessor = _createMockedEventProcessor()
     eventProcessor._edgeModule.processQueuedRequests = function() as dynamic
         array = []
         array.Push(_adb_ResponseEvent("request_id_test_1", {
@@ -225,7 +233,7 @@ end sub
 sub TC_adb_eventProcessor_processQueuedRequests_bad_request()
     GetGlobalAA()._sendResponseEvents_is_called = false
 
-    eventProcessor = _adb_EventProcessor({})
+    eventProcessor = _createMockedEventProcessor()
     eventProcessor._edgeModule.processQueuedRequests = function() as dynamic
         array = []
         return array
@@ -241,7 +249,7 @@ end sub
 ' target: init()
 ' @Test
 sub TC_adb_eventProcessor_init()
-    eventProcessor = _adb_EventProcessor({})
+    eventProcessor = _createMockedEventProcessor()
     UTF_AssertNotInvalid(eventProcessor._configurationModule)
     UTF_AssertNotInvalid(eventProcessor._identityModule)
     UTF_AssertNotInvalid(eventProcessor._edgeModule)

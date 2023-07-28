@@ -57,7 +57,7 @@ function _adb_EdgeRequestWorker() as object
 
         processRequests: function(configId as string, ecid as string, edgeDomain = invalid as dynamic) as dynamic
             responseArray = []
-            while m._queue.count() > 0
+            while m.hasQueuedEvent()
 
                 if _adb_isEmptyOrInvalidString(ecid) or _adb_isEmptyOrInvalidString(configId) then
                     _adb_logWarning("processRequests() - Edge request skipped. ECID and/or configId not set.")
@@ -80,7 +80,6 @@ function _adb_EdgeRequestWorker() as object
                 _adb_logVerbose("processRequests() - Request with id:(" + FormatJson(requestId) + ") response:(" + networkResponse.toString() + ")")
 
                 if networkResponse.isSuccessful()
-                    ' TODO: add request id
                     edgeResponse = _adb_EdgeResponse(requestId, networkResponse.getResponseCode(), networkResponse.getResponseString())
                     responseArray.Push(edgeResponse)
                 else if networkResponse.isRecoverable()
