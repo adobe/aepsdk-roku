@@ -42,6 +42,10 @@ function _adb_NetworkResponse(responseCode as integer, responseBody as string) a
             end if
             return false
         end function,
+
+        toString: function() as String
+            return "Network request completed with response code:(" + StrI(m.getResponseCode()) + ") body:(" + FormatJson(m.getResponseString()) + ")"
+        end function
     })
     return networkResponse
 end function

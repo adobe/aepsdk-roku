@@ -77,18 +77,14 @@ function _adb_EdgeRequestWorker() as object
                     continue while
                 end if
 
-                _adb_logVerbose("processRequests() - Request with id:(" + FormatJson(requestId) + ") response:(" + FormatJson(networkResponse) + ")")
-                if not networkResponse.isSuccessful()
-                    ' drop the request
-                    _adb_logError("processRequests() - Edge request dropped due to unrecoverable error. Response:(" + FormatJson(networkResponse) + ")")
-                    continue while
-                end if
+                _adb_logVerbose("processRequests() - Request with id:(" + FormatJson(requestId) + ") response:(" + networkResponse.toString() + ")")
 
                 if networkResponse.isSuccessful()
                     ' TODO: add request id
                     edgeResponse = _adb_EdgeResponse(requestId, networkResponse.getResponseCode(), networkResponse.getResponseString())
                     responseArray.Push(edgeResponse)
                 else if networkResponse.isRecoverable()
+                    _adb_logError("processRequests() - Edge request failed with recoverable error. Request will be retried.")
                     m._queue.Unshift(requestEntity)
                     exit while
                 end if
