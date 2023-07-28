@@ -14,10 +14,7 @@
 ' ******************************* MODULE: Configuration ***********************************
 
 function _adb_isConfigurationModule(module as object) as boolean
-    if module <> invalid and module.type = "com.adobe.module.configuration" then
-        return true
-    end if
-    return false
+    return (module <> invalid and module.type = "com.adobe.module.configuration")
 end function
 
 function _adb_ConfigurationModule() as object

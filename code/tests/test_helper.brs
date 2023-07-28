@@ -12,12 +12,6 @@
 ' *****************************************************************************************
 
 ' ************************ Registry Helpers ************************
-function removeValue(key) as void
-    _registry = CreateObject("roRegistrySection", "adb_edge_mobile")
-    _registry.Delete(key)
-    _registry.Flush()
-end function
-
 function clearPersistedECID() as void
     removeValue("ecid")
 end function
@@ -25,6 +19,12 @@ end function
 function getPersistedECID() as dynamic
     persistedECID = readValueFromRegistry("ecid")
     return persistedECID
+end function
+
+function removeValue(key) as void
+    _registry = CreateObject("roRegistrySection", "adb_edge_mobile")
+    _registry.Delete(key)
+    _registry.Flush()
 end function
 
 function readValueFromRegistry(key as string) as dynamic

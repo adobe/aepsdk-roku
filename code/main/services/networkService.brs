@@ -68,27 +68,30 @@ function _adb_NetworkService() as object
             port = CreateObject("roMessagePort")
             request.SetPort(port)
             request.SetCertificatesFile("common:/certs/ca-bundle.crt")
-            ' request.InitClientCertificates()
+
             request.SetUrl(url)
+            ' set default headers
             request.AddHeader("Content-Type", "application/json")
             request.AddHeader("accept", "application/json")
             request.AddHeader("Accept-Language", "en-US")
+
             for each header in headers
                 request.AddHeader(header.key, header.value)
             end for
-            ' request.EnableEncodings(true)
+
             if (request.AsyncPostFromString(FormatJson(jsonObj)))
                 while (true)
                     msg = wait(0, port)
                     if (type(msg) = "roUrlEvent")
                         responseCode = msg.GetResponseCode()
                         responseString = msg.getString()
-                        _adb_logVerbose("syncPostRequest() -  Sent edge request url:(" + FormatJson(url) + ") and body:(" + FormatJson(jsonObj) + ").")
+                        failureMessage = msg.GetFailureReason()
+                        _adb_logDebug("syncPostRequest() -  Received response code:(" + FormatJson(responseCode) + ") and body:(" + FormatJson(responseString) + ") and error message:(" + FormatJson(failureMessage) + ").")
 
                         return _adb_NetworkResponse(responseCode, responseString)
                     end if
                     if (msg = invalid)
-                        _adb_logVerbose("syncPostRequest() - Failed to send edge request url:(" + FormatJson(url) + ") and body:(" + FormatJson(jsonObj) + ").")
+                        _adb_logDebug("syncPostRequest() - Failed to send edge request url:(" + FormatJson(url) + ") and body:(" + FormatJson(jsonObj) + ").")
                         request.AsyncCancel()
                         return invalid
                     end if

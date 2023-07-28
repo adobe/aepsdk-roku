@@ -117,7 +117,14 @@ function _adb_EventProcessor(task as object) as object
         _setConfiguration: function(event as object) as void
             _adb_logInfo("_setConfiguration() - set configuration")
             _adb_logVerbose("configuration before: " + FormatJson(m._configurationModule.dump()))
-            m._configurationModule.updateConfiguration(event.data)
+
+            if _adb_isEmptyOrInvalidMap(event.data)
+                _adb_logWarning("_setConfiguration() - configuration map is not found in event data")
+                return
+            else
+                m._configurationModule.updateConfiguration(event.data)
+            end if
+
             _adb_logVerbose("configuration after: " + FormatJson(m._configurationModule.dump()))
         end function,
 
@@ -125,19 +132,15 @@ function _adb_EventProcessor(task as object) as object
             _adb_logInfo("_setECID() - Handle setECID.")
 
             ecid = _adb_optStringFromMap(event.data, m._CONSTANTS.EVENT_DATA_KEY.ECID)
-            if ecid <> invalid
-                m._identityModule.updateECID(ecid)
-            else
+            if _adb_isEmptyOrInvalidString(ecid)
                 _adb_logWarning("_setECID() - ECID not found in event data.")
+            else
+                m._identityModule.updateECID(ecid)
             end if
         end function,
 
         _hasXDMData: function(event as object) as boolean
-            if event <> invalid and event.DoesExist("data") and event.data.DoesExist("xdm") and event.data.xdm.Count() > 0 then
-                return true
-            end if
-
-            return false
+            return event <> invalid and event.DoesExist("data") and event.data.DoesExist("xdm") and event.data.xdm.Count() > 0
         end function,
 
         _sendEvent: function(event as object) as void
