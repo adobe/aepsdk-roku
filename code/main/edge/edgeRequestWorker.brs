@@ -15,6 +15,9 @@
 
 function _adb_EdgeRequestWorker() as object
     instance = {
+        _RETRY_WAIT_TIME: 5000, ' 5 seconds
+        _INVALID_WAIT_TIME: -1,
+        _lastFailedRequestTS: -1,
         _queue: [],
         _queue_size_max: 50,
 
@@ -59,8 +62,9 @@ function _adb_EdgeRequestWorker() as object
             responseArray = []
             while m._queue.count() > 0
 
-                if _adb_isEmptyOrInvalidString(ecid) or _adb_isEmptyOrInvalidString(configId) then
-                    _adb_logWarning("processRequests() - Edge request skipped. ECID and/or configId not set.")
+                currTS = _adb_timestampInMillis()
+                if (m._lastFailedRequestTS <> m._INVALID_WAIT_TIME) and ((currTS - m._lastFailedRequestTS) < m._RETRY_WAIT_TIME)
+                    ' Wait for 5 seconds before retrying the hit failed with recoverable error.
                     exit while
                 end if
 
@@ -83,8 +87,11 @@ function _adb_EdgeRequestWorker() as object
                     ' TODO: add request id
                     edgeResponse = _adb_EdgeResponse(requestId, networkResponse.getResponseCode(), networkResponse.getResponseString())
                     responseArray.Push(edgeResponse)
+                    ' Request sent out successfully
+                    m._lastFailedRequestTS = m._INVALID_WAIT_TIME
                 else if networkResponse.isRecoverable()
-                    _adb_logError("processRequests() - Edge request failed with recoverable error. Request will be retried.")
+                    m._lastFailedRequestTS = _adb_timestampInMillis()
+                    _adb_logError("processRequests() - Edge request failed with recoverable error:(" + networkResponse.getResponseString() + "). Request will be retried.")
                     m._queue.Unshift(requestEntity)
                     exit while
                 end if
