@@ -14,7 +14,6 @@
 sub init()
   m.ButtonGroup = m.top.findNode("ButtonGroup")
   m.Warning = m.top.findNode("WarningDialog")
-  m.Exiter = m.top.findNode("Exiter")
   setContent()
   m.ButtonGroup.setFocus(true)
   m.ButtonGroup.observeField("buttonSelected", "onButtonSelected")
@@ -43,12 +42,12 @@ sub init()
   'configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = ""
   m.adobeEdgeSdk.updateConfiguration(configuration)
 
-  m.adobeEdgeSdk.sendEvent({
-    "eventType": "commerce.orderPlaced",
-    "commerce": {
-      "key1": "value1"
-    }
-  })
+  ' m.adobeEdgeSdk.sendEvent({
+  '   "eventType": "commerce.orderPlaced",
+  '   "commerce": {
+  '     "key1": "value1"
+  '   }
+  ' })
 
   ' m.adobeEdgeSdk.resetIdentities()
 
@@ -62,15 +61,8 @@ sub init()
 end sub
 
 sub onButtonSelected()
-  'Ok'
+  'SendEvent button pressed
   if m.ButtonGroup.buttonSelected = 0
-    m.Video.visible = "true"
-    m.Video.control = "play"
-    m.Video.setFocus(true)
-    'Exit button pressed'
-    'SendEvent button pressed
-  else if m.ButtonGroup.buttonSelected = 1
-
     '----------------------------------------
     ' Send an Experience Event with callback
     '----------------------------------------
@@ -84,14 +76,29 @@ sub onButtonSelected()
       print "callback result: "
       print result
       print context
+      jsonObj = ParseJson(result.data.message)
+      message = ""
+      for each item in jsonObj.handle
+        if item.type = "locationHint:result" then
+          for each data in item.payload
+            if data.scope = "EdgeNetwork" then
+              message = "locationHint:EdgeNetwork: " + data.hint
+            end if
+          end for
+        end if
+      end for
 
       ' show result in dialog
-      ' context.Warning.visible = "true"
-      ' context.Warning.message = result.data.message
+      context.Warning.visible = "true"
+
+      context.Warning.message = message
     end sub, m)
 
+  else if m.ButtonGroup.buttonSelected = 1
+
+
+
   else
-    m.Exiter.control = "RUN"
   end if
 end sub
 
@@ -99,7 +106,7 @@ end sub
 sub setContent()
 
   'Change the buttons
-  Buttons = ["Play", "SendEvent", "Exit"]
+  Buttons = ["SendEvent", "1", "2"]
   m.ButtonGroup.buttons = Buttons
 
 end sub

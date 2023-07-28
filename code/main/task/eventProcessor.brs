@@ -67,16 +67,11 @@ function _adb_EventProcessor(task as object) as object
             }
 
             debugInfo.logLevel = loggingService.getLogLevel()
-            if _adb_isConfigurationModule(m._configurationModule)
-                debugInfo["configuration"] = m._configurationModule.dump()
-            end if
-            if _adb_isIdentityModule(m._identityModule)
-                debugInfo["identity"] = m._identityModule.dump()
-            end if
-            if _adb_isEdgeModule(m._edgeModule)
-                debugInfo["edge"] = m._edgeModule.dump()
-            end if
+            debugInfo["configuration"] = m._configurationModule.dump()
+            debugInfo["identity"] = m._identityModule.dump()
+            debugInfo["edge"] = m._edgeModule.dump()
             debugInfo["networkRequests"] = networkService.dump()
+
             m._task.setField("debugInfo", debugInfo)
         end function,
 

@@ -12,10 +12,20 @@
 ' *****************************************************************************************
 
 function TS_SDK_integration() as object
-    return {
-        _message: "TS_SDK_integration",
+    instance = {
+
+        configId: invalid,
+
+        init: sub()
+            test_config = ParseJson(ReadAsciiFile("pkg:/source/test_config.json"))
+            m.configId = test_config.config_id
+            if _adb_isEmptyOrInvalidString(m.configId) then
+                throw "Not found a valid config_id in test_config.json"
+            end if
+        end sub,
 
         TS_beforeEach: sub()
+            ADB_clearPersistedECID()
             adobeEdgeSdk = ADB_retrieveSDKInstance()
             ADB_resetSDK(adobeEdgeSdk)
         end sub,
@@ -32,7 +42,7 @@ function TS_SDK_integration() as object
 
             version$ = adobeEdgeSdk.getVersion()
 
-            ADB_assertTrue((version$ = "1.0.0"), LINE_NUM, "assert getVersion() = 1.0.0")
+            ADB_assertTrue((version$ = "1.0.0-alpha1"), LINE_NUM, "assert getVersion() = 1.0.0-alpha1")
 
             return invalid
         end function,
@@ -78,7 +88,7 @@ function TS_SDK_integration() as object
             end sub
 
             return validator
-        end function
+        end function,
 
         TC_SDK_resetIdentities: function() as dynamic
 
@@ -97,11 +107,31 @@ function TS_SDK_integration() as object
             validator[eventIdForResetIdentities] = sub(debugInfo)
                 ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
                 ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "resetIdentities"), LINE_NUM, "assert debugInfo.apiName = resetIdentities")
-                ADB_assertTrue((debugInfo.identity.ecid = invalid <> invalid), LINE_NUM, "assert ecid is invalid")
+                ADB_assertTrue((debugInfo.identity.ecid = invalid), LINE_NUM, "assert ecid is invalid")
+                ecidInRegistry = ADB_getPersistedECID()
+                ADB_assertTrue((ecidInRegistry = invalid), LINE_NUM, "assert the persisted ecid is invalid")
             end sub
 
             return validator
-        end function
+        end function,
+
+        TC_SDK_resetIdentities_withoutValidECID: function() as dynamic
+
+            adobeEdgeSdk = ADB_retrieveSDKInstance()
+
+            adobeEdgeSdk.resetIdentities()
+            eventIdForResetIdentities = adobeEdgeSdk._private.lastEventId
+            validator = {}
+            validator[eventIdForResetIdentities] = sub(debugInfo)
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "resetIdentities"), LINE_NUM, "assert debugInfo.apiName = resetIdentities")
+                ADB_assertTrue((debugInfo.identity.ecid = invalid), LINE_NUM, "assert ecid is invalid")
+                ecidInRegistry = ADB_getPersistedECID()
+                ADB_assertTrue((ecidInRegistry = invalid), LINE_NUM, "assert the persisted ecid is invalid")
+            end sub
+
+            return validator
+        end function,
 
         TC_SDK_updateConfiguration: function() as dynamic
 
@@ -132,7 +162,7 @@ function TS_SDK_integration() as object
             end sub
 
             return validator
-        end function
+        end function,
 
         TC_SDK_updateConfiguration_seperateKey: function() as dynamic
 
@@ -162,8 +192,9 @@ function TS_SDK_integration() as object
             end sub
 
             return validator
-        end function
-        TC_SDK_updateConfiguration_badKey: function() as dynamic
+        end function,
+
+        TC_SDK_updateConfiguration_wrongKey: function() as dynamic
 
             adobeEdgeSdk = ADB_retrieveSDKInstance()
 
@@ -191,7 +222,7 @@ function TS_SDK_integration() as object
             end sub
 
             return validator
-        end function
+        end function,
 
         TC_SDK_sendEvent: function() as dynamic
 
@@ -200,10 +231,9 @@ function TS_SDK_integration() as object
             ADB_CONSTANTS = AdobeSDKConstants()
 
             configuration = {}
-            test_config = ParseJson(ReadAsciiFile("pkg:/source/test_config.json"))
-            if test_config <> invalid and test_config.count() > 0
-                configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = test_config.config_id
-            end if
+
+            configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = m.configId
+
             adobeEdgeSdk.updateConfiguration(configuration)
             eventIdForUpdateConfiguration = adobeEdgeSdk._private.lastEventId
 
@@ -219,7 +249,7 @@ function TS_SDK_integration() as object
             end sub
 
             validator[eventIdForSendEvent] = sub(debugInfo)
-                _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
                 ecid = debugInfo.identity.ecid
                 eventid = debugInfo.eventid
                 ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "sendEvent"), LINE_NUM, "assert debugInfo.apiName = sendEvent")
@@ -237,9 +267,271 @@ function TS_SDK_integration() as object
                 secondResponseJson = ParseJson(debugInfo.networkRequests[1].response.body)
                 ADB_assertTrue((secondResponseJson.requestId = eventid), LINE_NUM, "assert response (2) verify request ID")
                 ADB_assertTrue((debugInfo.networkRequests[1].response.code = 200), LINE_NUM, "assert response (2) returns 200")
+
+                ecidInRegistry = ADB_getPersistedECID()
+                ADB_assertTrue((ecidInRegistry = ecid), LINE_NUM, "assert ecid is persisted in Registry")
             end sub
 
             return validator
-        end function
+        end function,
+
+        TC_SDK_sendEvent_withoutValidConfig: function() as dynamic
+
+            adobeEdgeSdk = ADB_retrieveSDKInstance()
+
+            adobeEdgeSdk.sendEvent({ key: "value1" })
+            eventIdForFirstSendEvent = adobeEdgeSdk._private.lastEventId
+
+            adobeEdgeSdk.sendEvent({ key: "value2" })
+            eventIdForSecondSendEvent = adobeEdgeSdk._private.lastEventId
+
+            validator = {}
+
+            validator[eventIdForFirstSendEvent] = sub(debugInfo)
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+                ecid = debugInfo.identity.ecid
+                eventid = debugInfo.eventid
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "sendEvent"), LINE_NUM, "assert debugInfo.apiName = sendEvent")
+                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 0), LINE_NUM, "assert networkRequests = 0")
+                ADB_assertTrue((debugInfo.edge.requestQueue <> invalid and debugInfo.edge.requestQueue.count() = 1), LINE_NUM, "assert requestQueue = 1")
+                ADB_assertTrue((debugInfo.edge.requestQueue[0].requestId = eventid), LINE_NUM, "assert request ID is correct")
+            end sub
+
+            validator[eventIdForSecondSendEvent] = sub(debugInfo)
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+                ecid = debugInfo.identity.ecid
+                eventid = debugInfo.eventid
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "sendEvent"), LINE_NUM, "assert debugInfo.apiName = sendEvent")
+                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 0), LINE_NUM, "assert networkRequests = 0")
+                ADB_assertTrue((debugInfo.edge.requestQueue <> invalid and debugInfo.edge.requestQueue.count() = 2), LINE_NUM, "assert requestQueue = 2")
+                ADB_assertTrue((debugInfo.edge.requestQueue[1].requestId = eventid), LINE_NUM, "assert request ID is correct")
+            end sub
+
+            return validator
+        end function,
+
+        TC_SDK_sendEvent_provideValidConfigLater: function() as dynamic
+
+            adobeEdgeSdk = ADB_retrieveSDKInstance()
+
+            adobeEdgeSdk.sendEvent({ key: "value1" })
+            eventIdForFirstSendEvent = adobeEdgeSdk._private.lastEventId
+
+            adobeEdgeSdk.sendEvent({ key: "value2" })
+            eventIdForSecondSendEvent = adobeEdgeSdk._private.lastEventId
+
+            ADB_CONSTANTS = AdobeSDKConstants()
+
+            configuration = {}
+            configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = m.configId
+
+            adobeEdgeSdk.updateConfiguration(configuration)
+
+            adobeEdgeSdk.sendEvent({ key: "value3" })
+            eventIdForThirdSendEvent = adobeEdgeSdk._private.lastEventId
+
+            validator = {}
+
+            validator[eventIdForFirstSendEvent] = sub(debugInfo)
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+                ecid = debugInfo.identity.ecid
+                eventid = debugInfo.eventid
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "sendEvent"), LINE_NUM, "assert debugInfo.apiName = sendEvent")
+                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 0), LINE_NUM, "assert networkRequests = 0")
+                ADB_assertTrue((debugInfo.edge.requestQueue <> invalid and debugInfo.edge.requestQueue.count() = 1), LINE_NUM, "assert requestQueue = 1")
+                ADB_assertTrue((debugInfo.edge.requestQueue[0].requestId = eventid), LINE_NUM, "assert request ID is correct")
+            end sub
+
+            validator[eventIdForSecondSendEvent] = sub(debugInfo)
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+                ecid = debugInfo.identity.ecid
+                eventid = debugInfo.eventid
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "sendEvent"), LINE_NUM, "assert debugInfo.apiName = sendEvent")
+                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 0), LINE_NUM, "assert networkRequests = 0")
+                ADB_assertTrue((debugInfo.edge.requestQueue <> invalid and debugInfo.edge.requestQueue.count() = 2), LINE_NUM, "assert requestQueue = 2")
+                ADB_assertTrue((debugInfo.edge.requestQueue[1].requestId = eventid), LINE_NUM, "assert request ID is correct")
+            end sub
+
+            validator[eventIdForThirdSendEvent] = sub(debugInfo)
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+
+                ecid = debugInfo.identity.ecid
+                eventid = debugInfo.eventid
+                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 4), LINE_NUM, "assert networkRequests = 4")
+
+                ' Fetch ECID
+                ADB_assertTrue((debugInfo.networkRequests[0].jsonObj.events[0].query.identity.fetch[0] = "ECID"), LINE_NUM, "assert networkRequests(1) is to fetch ECID")
+                ADB_assertTrue((debugInfo.networkRequests[0].response.code = 200), LINE_NUM, "assert response (1) returns 200")
+                firstResponseJson = ParseJson(debugInfo.networkRequests[0].response.body)
+                ADB_assertTrue((firstResponseJson.handle[0].payload[0].id = ecid), LINE_NUM, "assert response (1) verify ECID")
+                ADB_assertTrue((firstResponseJson.requestId <> eventid), LINE_NUM, "assert response (1) verify request ID")
+
+                ' Send event 1
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.key = "value1"), LINE_NUM, "assert networkRequests(2) is to send Edge event")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.xdm.identityMap.ECID[0].id = ecid), LINE_NUM, "assert networkRequests(2) is to send Edge event with ecid")
+                secondResponseJson = ParseJson(debugInfo.networkRequests[1].response.body)
+                ADB_assertTrue((debugInfo.networkRequests[1].response.code = 200), LINE_NUM, "assert response (2) returns 200")
+
+                ' Send event 2
+                ADB_assertTrue((debugInfo.networkRequests[2].jsonObj.events[0].xdm.key = "value2"), LINE_NUM, "assert networkRequests(3) is to send Edge event")
+                ADB_assertTrue((debugInfo.networkRequests[2].jsonObj.xdm.identityMap.ECID[0].id = ecid), LINE_NUM, "assert networkRequests(3) is to send Edge event with ecid")
+                secondResponseJson = ParseJson(debugInfo.networkRequests[2].response.body)
+                ADB_assertTrue((debugInfo.networkRequests[1].response.code = 200), LINE_NUM, "assert response (3) returns 200")
+
+                ' Send event 3
+                ADB_assertTrue((debugInfo.networkRequests[3].jsonObj.events[0].xdm.key = "value3"), LINE_NUM, "assert networkRequests(4) is to send Edge event")
+                ADB_assertTrue((debugInfo.networkRequests[3].jsonObj.xdm.identityMap.ECID[0].id = ecid), LINE_NUM, "assert networkRequests(4) is to send Edge event with ecid")
+                secondResponseJson = ParseJson(debugInfo.networkRequests[3].response.body)
+                ADB_assertTrue((debugInfo.networkRequests[1].response.code = 200), LINE_NUM, "assert response (4) returns 200")
+
+                ecidInRegistry = ADB_getPersistedECID()
+                ADB_assertTrue((ecidInRegistry = ecid), LINE_NUM, "assert ecid is persisted in Registry")
+            end sub
+
+            return validator
+        end function,
+
+        TC_SDK_sendEvent_withCallback: function() as dynamic
+
+            adobeEdgeSdk = ADB_retrieveSDKInstance()
+
+            ADB_CONSTANTS = AdobeSDKConstants()
+
+            configuration = {}
+            configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = m.configId
+
+            adobeEdgeSdk.updateConfiguration(configuration)
+
+            GetGlobalAA()._adb_integration_test_callback_result = invalid
+            adobeEdgeSdk.sendEvent({ key: "value" }, sub(context, result)
+                GetGlobalAA()._adb_integration_test_callback_result = result
+            end sub, {})
+
+            eventIdForSendEvent = adobeEdgeSdk._private.lastEventId
+
+            validator = {}
+
+            validator[eventIdForSendEvent] = sub(debugInfo)
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+                eventid = debugInfo.eventid
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "sendEvent"), LINE_NUM, "assert debugInfo.apiName = sendEvent")
+                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 2), LINE_NUM, "assert networkRequests = 2")
+                ADB_assertTrue((debugInfo.networkRequests[0].response.code = 200), LINE_NUM, "assert response (1) returns 200")
+
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.key = "value"), LINE_NUM, "assert networkRequests(2) is to send Edge event")
+                secondResponseJson = ParseJson(debugInfo.networkRequests[1].response.body)
+                ADB_assertTrue((secondResponseJson.requestId = eventid), LINE_NUM, "assert response (2) verify request ID")
+                ADB_assertTrue((debugInfo.networkRequests[1].response.code = 200), LINE_NUM, "assert response (2) returns 200")
+                callbackResult = GetGlobalAA()._adb_integration_test_callback_result
+                ADB_assertTrue((callbackResult.code = 200), LINE_NUM, "assert callback received 200 response")
+                ADB_assertTrue((not _adb_isEmptyOrInvalidString(callbackResult.message)), LINE_NUM, "assert callback received response message")
+            end sub
+
+            return validator
+        end function,
+
+        TC_SDK_setExperienceCloudId: function() as dynamic
+
+            adobeEdgeSdk = ADB_retrieveSDKInstance()
+
+            adobeEdgeSdk.setExperienceCloudId("test_ecid")
+            eventIdForSetExperienceCloudId = adobeEdgeSdk._private.lastEventId
+
+            ADB_CONSTANTS = AdobeSDKConstants()
+
+            configuration = {}
+            configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = m.configId
+
+            adobeEdgeSdk.updateConfiguration(configuration)
+            eventIdForUpdateConfiguration = adobeEdgeSdk._private.lastEventId
+
+            adobeEdgeSdk.sendEvent({ key: "value" })
+
+            eventIdForSendEvent = adobeEdgeSdk._private.lastEventId
+
+            validator = {}
+            validator[eventIdForSetExperienceCloudId] = sub(debugInfo)
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "setExperienceCloudId"), LINE_NUM, "assert debugInfo.apiName = setConfiguration")
+                ecidInRegistry = ADB_getPersistedECID()
+                ADB_assertTrue((ecidInRegistry = "test_ecid"), LINE_NUM, "assert test_ecid is persisted in Registry")
+            end sub
+            validator[eventIdForUpdateConfiguration] = sub(debugInfo)
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "setConfiguration"), LINE_NUM, "assert debugInfo.apiName = setConfiguration")
+                ADB_assertTrue((debugInfo.configuration.edge_configid <> invalid and Len(debugInfo.configuration.edge_configid) > 10), LINE_NUM, "assert edge_configid is valid")
+            end sub
+
+            validator[eventIdForSendEvent] = sub(debugInfo)
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+                ecid = debugInfo.identity.ecid
+                ADB_assertTrue((ecid = "test_ecid"), LINE_NUM, "assert debugInfo.identity.ecid = test_ecid")
+                eventid = debugInfo.eventid
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "sendEvent"), LINE_NUM, "assert debugInfo.apiName = sendEvent")
+                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 1), LINE_NUM, "assert networkRequests = 1")
+
+                ADB_assertTrue((debugInfo.networkRequests[0].jsonObj.events[0].xdm.key = "value"), LINE_NUM, "assert networkRequests(1) is to send Edge event")
+                ADB_assertTrue((debugInfo.networkRequests[0].response.code = 400), LINE_NUM, "assert response (1) returns 200")
+
+                ecidInRegistry = ADB_getPersistedECID()
+                ADB_assertTrue((ecidInRegistry = "test_ecid"), LINE_NUM, "assert test_ecid is persisted in Registry")
+            end sub
+
+            return validator
+        end function,
+
+        TC_SDK_ecid_consistence: function() as dynamic
+
+            ADB_persisteECIDInRegistry("test_ecid_x")
+
+            adobeEdgeSdk = ADB_retrieveSDKInstance()
+
+            ADB_resetSDK(adobeEdgeSdk)
+
+            ADB_CONSTANTS = AdobeSDKConstants()
+
+            configuration = {}
+            configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = m.configId
+
+            adobeEdgeSdk.updateConfiguration(configuration)
+            eventIdForUpdateConfiguration = adobeEdgeSdk._private.lastEventId
+
+            adobeEdgeSdk.sendEvent({ key: "value" })
+
+            eventIdForSendEvent = adobeEdgeSdk._private.lastEventId
+
+            validator = {}
+            validator[eventIdForUpdateConfiguration] = sub(debugInfo)
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "setConfiguration"), LINE_NUM, "assert debugInfo.apiName = setConfiguration")
+                ADB_assertTrue((debugInfo.configuration.edge_configid <> invalid and Len(debugInfo.configuration.edge_configid) > 10), LINE_NUM, "assert edge_configid is valid")
+
+                ecidInRegistry = ADB_getPersistedECID()
+                ADB_assertTrue((ecidInRegistry = "test_ecid_x"), LINE_NUM, "assert test_ecid_x is persisted in Registry")
+            end sub
+
+            validator[eventIdForSendEvent] = sub(debugInfo)
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+
+                eventid = debugInfo.eventid
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "sendEvent"), LINE_NUM, "assert debugInfo.apiName = sendEvent")
+                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 1), LINE_NUM, "assert networkRequests = 1")
+
+                ADB_assertTrue((debugInfo.networkRequests[0].jsonObj.events[0].xdm.key = "value"), LINE_NUM, "assert networkRequests(1) is to send Edge event")
+                ADB_assertTrue((debugInfo.networkRequests[0].response.code = 400), LINE_NUM, "assert response (1) returns 200")
+
+                ecidInRegistry = ADB_getPersistedECID()
+                ecid = debugInfo.identity.ecid
+                ADB_assertTrue((ecid = "test_ecid_x"), LINE_NUM, "assert in-memory ecid is test_ecid_x")
+                ADB_assertTrue((ecidInRegistry = "test_ecid_x"), LINE_NUM, "assert test_ecid_x is persisted in Registry")
+            end sub
+
+            return validator
+        end function,
+
     }
+
+    instance.init()
+
+    return instance
 end function
