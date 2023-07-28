@@ -121,9 +121,9 @@ function _adb_EventProcessor(task as object) as object
             if _adb_isEmptyOrInvalidMap(event.data)
                 _adb_logWarning("_setConfiguration() - configuration map is not found in event data")
                 return
-            else
-                m._configurationModule.updateConfiguration(event.data)
             end if
+
+            m._configurationModule.updateConfiguration(event.data)
 
             _adb_logVerbose("configuration after: " + FormatJson(m._configurationModule.dump()))
         end function,
