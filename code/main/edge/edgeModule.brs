@@ -14,10 +14,7 @@
 ' ************************************ MODULE: Edge ***************************************
 
 function _adb_isEdgeModule(module as object) as boolean
-    if module <> invalid and module.type = "com.adobe.module.edge" then
-        return true
-    end if
-    return false
+    return (module <> invalid and module.type = "com.adobe.module.edge")
 end function
 
 function _adb_EdgeModule(configurationModule as object, identityModule as object) as object
