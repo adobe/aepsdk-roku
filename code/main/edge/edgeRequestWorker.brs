@@ -47,6 +47,9 @@ function _adb_EdgeRequestWorker() as object
                 m._queue.Shift()
             end if
             m._queue.Push(requestEntity)
+
+            ''' force retry the hits by disabling wait
+            m._lastFailedRequestTS = m._INVALID_WAIT_TIME
         end function,
 
         hasQueuedEvent: function() as boolean
