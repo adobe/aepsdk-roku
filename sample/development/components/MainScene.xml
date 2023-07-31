@@ -19,6 +19,12 @@ governing permissions and limitations under the License.-->
       title="Message"
       message="PUT A WARNING MESSAGE HERE"
       visible="false" />
+    
+    <Timer
+      id="MainTimer"
+      repeat="true"
+      duration="2"
+    />
 
   </children>
 
