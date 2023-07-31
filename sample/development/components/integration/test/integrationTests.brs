@@ -237,7 +237,24 @@ function TS_SDK_integration() as object
             adobeEdgeSdk.updateConfiguration(configuration)
             eventIdForUpdateConfiguration = adobeEdgeSdk._private.lastEventId
 
-            adobeEdgeSdk.sendEvent({ key: "value" })
+            idMap = {
+                "RIDA" : [
+                    {
+                        "id" : "test-ad-id",
+                        "authenticatedState": "ambiguous",
+                        "primary": false
+                    }
+                  ],
+                "EMAIL" : [
+                    {
+                        "id" : "test@test.com",
+                        "authenticatedState": "ambiguous",
+                        "primary": false
+                    }
+                ]
+            }
+
+            adobeEdgeSdk.sendEvent({ key: "value", "identityMap": idMap })
 
             eventIdForSendEvent = adobeEdgeSdk._private.lastEventId
 
@@ -252,7 +269,20 @@ function TS_SDK_integration() as object
                 ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
                 ecid = debugInfo.identity.ecid
                 eventid = debugInfo.eventid
+
                 ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "sendEvent"), LINE_NUM, "assert debugInfo.apiName = sendEvent")
+
+                xdmData = debugInfo.eventData
+                ADB_assertTrue((xdmData <> invalid), LINE_NUM, "Event Data should not be invalid")
+                ADB_assertTrue((xdmData.xdm <> invalid), LINE_NUM, "XDM data should not be invalid")
+                ADB_assertTrue((xdmData.xdm.identityMap <> invalid), LINE_NUM, "XDM data should contain the identityMap")
+                ADB_assertTrue((xdmData.xdm.timestamp <> invalid), LINE_NUM, "XDM data should contain valid timestamp")
+
+                expectedXDMData = {"EMAIL":[{"authenticatedState":"ambiguous","id":"test@test.com","primary":false}],"RIDA":[{"authenticatedState":"ambiguous","id":"test-ad-id","primary":false}]}
+                xdmDataJson = FormatJson(xdmData.xdm.identityMap)
+                expectedXDMDataJson = FormatJson(expectedXDMData)
+                ADB_assertTrue((xdmDataJson = expectedXDMDataJson), LINE_NUM, "Actual XDM data(" + xdmDataJson + ") != Expected XDM data(" + expectedXDMDataJson + ") ")
+
                 ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 2), LINE_NUM, "assert networkRequests = 2")
                 ADB_assertTrue((debugInfo.networkRequests[0].jsonObj.events[0].query.identity.fetch[0] = "ECID"), LINE_NUM, "assert networkRequests(1) is to fetch ECID")
                 ADB_assertTrue((debugInfo.networkRequests[0].response.code = 200), LINE_NUM, "assert response (1) returns 200")
@@ -263,6 +293,16 @@ function TS_SDK_integration() as object
                 ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.key = "value"), LINE_NUM, "assert networkRequests(2) is to send Edge event")
                 ADB_assertTrue((Len(debugInfo.networkRequests[1].jsonObj.events[0].xdm.timestamp) > 10), LINE_NUM, "assert networkRequests(2) is to send Edge event with timestamp")
                 ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.xdm.identityMap.ECID <> invalid), LINE_NUM, "assert networkRequests(2) is to send Edge event with ecid")
+
+                ' Verify identity map
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.identityMap <> invalid), LINE_NUM, "assert networkRequests(2) has identity map passed from the API")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.identityMap.EMAIL[0].id = "test@test.com"), LINE_NUM, "assert networkRequests(2) has identity map containing valid email id value")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.identityMap.EMAIL[0].authenticatedState = "ambiguous"), LINE_NUM, "assert networkRequests(2) has identity map containing EMAIL with authenticated state ambiguous")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.identityMap.EMAIL[0].primary = false), LINE_NUM, "assert networkRequests(2) has identity map containing EMAIL as not a primary id")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.identityMap.RIDA[0].id = "test-ad-id"), LINE_NUM, "assert networkRequests(2) has identity map containing valid RIDA id value")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.identityMap.RIDA[0].authenticatedState = "ambiguous"), LINE_NUM, "assert networkRequests(2) has identity map containing RIDA with authenticated state ambiguous")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.identityMap.RIDA[0].primary = false), LINE_NUM, "assert networkRequests(2) has identity map containing RIDA as not a primary id")
+
                 ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.xdm.implementationDetails.name = "https://ns.adobe.com/experience/mobilesdk/roku"), LINE_NUM, "assert networkRequests(2) is to send Edge event with implementationDetails")
                 secondResponseJson = ParseJson(debugInfo.networkRequests[1].response.body)
                 ADB_assertTrue((secondResponseJson.requestId = eventid), LINE_NUM, "assert response (2) verify request ID")
