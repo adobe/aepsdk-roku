@@ -42,6 +42,7 @@ sub init()
   'configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = ""
   m.adobeEdgeSdk.updateConfiguration(configuration)
 
+
   ' m.adobeEdgeSdk.sendEvent({
   '   "eventType": "commerce.orderPlaced",
   '   "commerce": {
@@ -76,7 +77,7 @@ sub onButtonSelected()
       print "callback result: "
       print result
       print context
-      jsonObj = ParseJson(result.data.message)
+      jsonObj = ParseJson(result.message)
       message = ""
       for each item in jsonObj.handle
         if item.type = "locationHint:result" then

@@ -27,11 +27,12 @@ ui_resolutions=fhd
 
 # Profiler settings
 #bsprof_data_dest=local
-#sprof_data_dest=network
-#sprof_enable=1
-#sprof_enable_lines=1
-#sprof_enable_mem=1
-#run_as_process=1
+bsprof_data_dest=network
+bsprof_enable=1
+bsprof_enable_lines=1
+bsprof_pause_on_start=1
+bsprof_enable_mem=1
+# run_as_process=1
 
 
 bs_const=integrationTests=false;unitTests=false
