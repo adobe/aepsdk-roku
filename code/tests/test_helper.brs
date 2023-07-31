@@ -48,3 +48,10 @@ function isEmptyOrInvalidString(str as dynamic) as boolean
 
     return false
 end function
+
+
+' ************************ Wait Timer Helper ************************
+function _adb_waitFor(time = 1 as integer)
+    port = CreateObject("roMessagePort")
+    msg = wait(time, port)
+end function
