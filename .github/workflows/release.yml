@@ -16,7 +16,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        ref: build_script_order
+        ref: main
 
     - name: Install bsc
       run: make install-bsc
