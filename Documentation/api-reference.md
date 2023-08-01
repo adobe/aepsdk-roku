@@ -180,7 +180,7 @@ sendEvent: function(xdmData as object, callback = _adb_default_callback as funct
 
 IdentityMap looks like this:
 ```brightscript
- identityMap = {
+ customIdentityMap = {
     "CustomAdvertisingIdentifier" : [
           {
                 "id" : "SampleAdIdentifier",
@@ -212,7 +212,7 @@ Attach the IdentityMap to your XDM data payload in the sendEvent API:
           .....
         },
 
-      "identityMap": identitMap
+      "identityMap": customIdentityMap
   )
 ```
 
