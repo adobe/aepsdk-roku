@@ -1,6 +1,5 @@
 GIT_HASH:=$(shell git show --name-status | grep commit | awk '{print $$2}' | head -c6)
-SDK_VERSION:=$(shell cat ./output/AdobeEdge.brs | egrep '\s*VERSION\s*=\s*\"(.*)\"' | sed -e 's/.*= //; s/,//g; s/"//g')
-
+SDK_VERSION:=$(shell ./build/sdkversion.sh)
 # bsc: https://github.com/rokucommunity/brighterscript
 install-bsc:
 	(npm install brighterscript -g)
@@ -13,8 +12,11 @@ archive:clean build-sdk
 	@echo "######################################################################"
 	@echo "##### Archiving AdobeEdge SDK"
 	@echo "######################################################################"
+
+	chmod u+r+x ./build/sdkversion.sh
 	@echo git-hash=$(GIT_HASH)
-	@echo version=$(SDK_VERSION)
+	@echo version=  $(SDK_VERSION)
+
 
 	mkdir -p ./out
 
