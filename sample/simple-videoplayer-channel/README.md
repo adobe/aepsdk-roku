@@ -6,7 +6,7 @@ To run the project on your Roku device, follow the steps below to set it up befo
 
 ## Install the Roku SDK
 
- To install the Roku SDK in this sample project, you can copy the SDK files to this sample project by following the [install instruction](../../Documentation/getting-started.md).
+To install the Roku SDK in this sample project, you can copy the SDK files to this sample project by following the [install instruction](../../Documentation/getting-started.md).
 
 ## Initialize and configure the Roku SDK
 

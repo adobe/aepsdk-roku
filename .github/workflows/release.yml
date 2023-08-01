@@ -16,19 +16,27 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        ref: main
+        ref: build_script_order
+
+    - name: Install bsc
+      run: make install-bsc
 
     - name: Build Artifacts
-      if: ${{ github.event.inputs.action_tag == 'yes' }}
-      run: |
-        make archive
+      run: make archive
+
+    - name: Install SDK on the sample app 
+      working-directory: ./sample/simple-videoplayer-channel
+       run: make install-sdk
+
+    - name: Build Roku SDK with the sample app
+      working-directory: ./sample/simple-videoplayer-channel
+      run: make build
 
     - name: Check version
       run: |
         set -eo pipefail
         echo Target version: ${{ github.event.inputs.tag }}
         make check-version VERSION=${{ github.event.inputs.tag }}
-
 
     - name: Create GH Release
       id: create_release
@@ -49,6 +57,17 @@ jobs:
         upload_url: ${{ steps.create_release.outputs.upload_url }}
         asset_path: ./out/AEPRoku.zip
         asset_name: AEPRokuSDK-${{ github.event.inputs.tag }}.zip
+        asset_content_type: application/zip
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Upload - Sample channel
+      uses: actions/upload-release-asset@v1
+      if: ${{ github.event.inputs.action_tag == 'yes' }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./sample/simple-videoplayer-channel/out/simple-videoplayer-channel.zip
+        asset_name: Sample-channel-${{ github.event.inputs.tag }}.zip
         asset_content_type: application/zip
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

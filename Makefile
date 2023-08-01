@@ -1,4 +1,4 @@
-GIT_HASH:=$(shell git show --name-status | grep commit | awk '{print $$2}' | head -c6)
+GIT_HASH:=$(shell git rev-parse --short HEAD)
 SDK_VERSION:=$(shell cat ./code/main/common/version.brs | egrep '\s*VERSION\s*=\s*\"(.*)\"' | sed -e 's/.*= //; s/,//g; s/"//g')
 
 # bsc: https://github.com/rokucommunity/brighterscript
@@ -7,27 +7,26 @@ install-bsc:
 
 clean:
 	(rm -rf ./output)
+	(rm -rf ./AEPRokuSDK)
 	(rm -rf ./out)
 
 archive:clean build-sdk
 	@echo "######################################################################"
-	@echo "##### Archiving AdobeEdge SDK"
+	@echo "##### Archiving AEP Roku SDK"
 	@echo "######################################################################"
 	@echo git-hash=$(GIT_HASH)
 	@echo version=$(SDK_VERSION)
 
 	mkdir -p ./out
 
-	touch ./output/info.txt
-	@echo git-hash=$(GIT_HASH) >> ./output/info.txt
-	@echo version=$(SDK_VERSION) >> ./output/info.txt
-
 	test -f ./output/components/adobe/AdobeEdgeTask.brs
 	test -f ./output/components/adobe/AdobeEdgeTask.xml
 	test -f ./output/AdobeEdge.brs
 	test -f ./output/info.txt
 
-	zip -r ./out/AEPRoku.zip ./output/*
+	mv ./output ./AEPRokuSDK
+
+	zip -r ./out/AEPRoku.zip ./AEPRokuSDK/* -x '**/.DS_Store'
 
 version:
 	@echo $(SDK_VERSION)
