@@ -1,5 +1,5 @@
 GIT_HASH:=$(shell git show --name-status | grep commit | awk '{print $$2}' | head -c6)
-SDK_VERSION:=$(shell grep "VERSION = " ./output/AdobeEdge.brs | sed -e 's/.*= //; s/,//g; s/"//g')
+SDK_VERSION:=$(shell cat ./output/AdobeEdge.brs | egrep '\s*VERSION\s*=\s*\"(.*)\"' | sed -e 's/.*= //; s/,//g; s/"//g')
 
 # bsc: https://github.com/rokucommunity/brighterscript
 install-bsc:
@@ -29,6 +29,9 @@ archive:clean build-sdk
 
 	zip -r ./out/AEPRoku.zip ./output/*
 
+version:
+	echo $(SDK_VERSION)
+
 # Each *.brs should include a moulde name line as below:
 # *************** MODULE: {module name} ****************
 # This line will be used to generate the final SDK file.
@@ -40,5 +43,3 @@ build-sdk:
 # usage: make check-version VERSION=1.0.0
 check-version:
 	sh ./build/version.sh $(VERSION)
-
-
