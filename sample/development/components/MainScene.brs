@@ -104,7 +104,6 @@ sub _testShutdownAPI()
     })
     counter++
   end while
-  ' print "+++++++++++++++++++++++ counter:"; counter
 
   m.test_shutdown = true
 end sub
