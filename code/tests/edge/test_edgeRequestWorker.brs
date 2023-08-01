@@ -206,7 +206,7 @@ end sub
 
 ' target: processRequests()
 ' @Test
-sub TC_adb_EdgeRequestWorker_processRequests_recoverable_error()
+sub TC_adb_EdgeRequestWorker_processRequests_recoverableError_retriesAfterWaitTimeout()
     cachedFunction = _adb_serviceProvider().networkService.syncPostRequest
     _adb_serviceProvider().networkService.syncPostRequest = function(url as string, jsonObj as object, headers = [] as object) as object
         UTF_assertEqual(0, headers.Count())
@@ -224,6 +224,7 @@ sub TC_adb_EdgeRequestWorker_processRequests_recoverable_error()
     end function
 
     worker = _adb_EdgeRequestWorker()
+
     worker.queue("request_id_1", { xdm: { key: "value" } }, 12345534)
     worker.queue("request_id_2", { xdm: { key: "value" } }, 12345534)
     worker.queue("request_id_3", { xdm: { key: "value" } }, 12345534)
@@ -236,7 +237,93 @@ sub TC_adb_EdgeRequestWorker_processRequests_recoverable_error()
 
     UTF_assertEqual(2, worker._queue.Count())
     UTF_assertNotInvalid(worker._queue[0], "Request should not be invalid")
-    'UTF_assertEqual("request_id_2", worker._queue[0].requestId)
+    UTF_assertEqual("request_id_2", worker._queue[0].requestId)
+    UTF_assertNotEqual(-1, worker._lastFailedRequestTS, "Failed Request TS should be set")
+
+    ' Set the network to pass for the retry
+    _adb_serviceProvider().networkService.syncPostRequest = function(url as string, jsonObj as object, headers = [] as object) as object
+        UTF_assertEqual(0, headers.Count())
+        UTF_assertNotInvalid(url)
+        UTF_assertNotInvalid(jsonObj)
+        return _adb_NetworkResponse(200, "response body")
+    end function
+
+    ' Request should be not be sent since < 30 seconds
+    worker._lastFailedRequestTS = worker._lastFailedRequestTS - 20000 ' Mock 20 seconds elapsed timer
+    responseArray = worker.processRequests("config_id", "ecid_test")
+
+    UTF_assertEqual(0, responseArray.Count())
+    UTF_assertEqual(2, worker._queue.Count())
+
+    ' Request should be not be sent since < 30 seconds
+    worker._lastFailedRequestTS = worker._lastFailedRequestTS - 9000 ' Mock 9 seconds elapsed timer (total 29 seconds)
+    responseArray = worker.processRequests("config_id", "ecid_test")
+
+    UTF_assertEqual(0, responseArray.Count())
+    UTF_assertEqual(2, worker._queue.Count())
+
+    ' Request should be retried after 30 seconds
+    worker._lastFailedRequestTS = worker._lastFailedRequestTS - 1000 ' Mock 1 second elapsed timer (total 30 seconds)
+    responseArray = worker.processRequests("config_id", "ecid_test")
+
+    UTF_assertEqual(2, responseArray.Count())
+    UTF_assertEqual(0, worker._queue.Count())
+    UTF_assertEqual(-1, worker._lastFailedRequestTS, "Failed Request TS should be reset to -1")
+
+    _adb_serviceProvider().networkService.syncPostRequest = cachedFunction
+end sub
+
+' target: queue()
+' @Test
+sub TC_adb_EdgeRequestWorker_queue_newRequest_after_RecoverableError_retriesImmediately()
+    cachedFunction = _adb_serviceProvider().networkService.syncPostRequest
+    _adb_serviceProvider().networkService.syncPostRequest = function(url as string, jsonObj as object, headers = [] as object) as object
+        UTF_assertEqual(0, headers.Count())
+        UTF_assertNotInvalid(url)
+        UTF_assertNotInvalid(jsonObj)
+        if url.Instr("request_id_1") > 0 then
+            return _adb_NetworkResponse(200, "response body 1")
+        end if
+        if url.Instr("request_id_2") > 0 then
+            return _adb_NetworkResponse(408, "response body 2")
+        end if
+        if url.Instr("request_id_3") > 0 then
+            return _adb_NetworkResponse(200, "response body 3")
+        end if
+    end function
+
+    worker = _adb_EdgeRequestWorker()
+
+    worker.queue("request_id_1", { xdm: { key: "value" } }, 12345534)
+    worker.queue("request_id_2", { xdm: { key: "value" } }, 12345534)
+    worker.queue("request_id_3", { xdm: { key: "value" } }, 12345534)
+    responseArray = worker.processRequests("config_id", "ecid_test")
+
+    UTF_assertEqual(1, responseArray.Count())
+    ' queued reqeust shoudl be processed in order
+    UTF_assertTrue(_adb_isEdgeResponse(responseArray[0]))
+    UTF_assertEqual("request_id_1", responseArray[0].getRequestId())
+
+    UTF_assertEqual(2, worker._queue.Count())
+    UTF_assertNotInvalid(worker._queue[0], "Request should not be invalid")
+    UTF_assertEqual("request_id_2", worker._queue[0].requestId)
+    UTF_assertNotEqual(-1, worker._lastFailedRequestTS, "Failed Request TS should be set")
+
+    ' Set the network to pass for the retry
+    _adb_serviceProvider().networkService.syncPostRequest = function(url as string, jsonObj as object, headers = [] as object) as object
+        UTF_assertEqual(0, headers.Count())
+        UTF_assertNotInvalid(url)
+        UTF_assertNotInvalid(jsonObj)
+        return _adb_NetworkResponse(200, "response body")
+    end function
+
+    ' Request should be not be sent since < 30 seconds
+    worker.queue("request_id_4", { xdm: { key: "value" } }, 12345534)
+    UTF_assertEqual(-1, worker._lastFailedRequestTS, "Failed Request TS should be reset to -1")
+
+    responseArray = worker.processRequests("config_id", "ecid_test")
+    UTF_assertEqual(3, responseArray.Count())
+    UTF_assertEqual(0, worker._queue.Count())
 
     _adb_serviceProvider().networkService.syncPostRequest = cachedFunction
 end sub
