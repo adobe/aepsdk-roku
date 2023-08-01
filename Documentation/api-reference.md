@@ -166,6 +166,59 @@ sendEvent: function(xdmData as object, callback = _adb_default_callback as funct
   end sub, context)
 ```
 
+#### Example of SendEvent with IdentityMap:
+
+> **Note**
+> `sendEvent` API allows passing custom identityMap with custom identifiers to the edge network. Create the map as per the requirements,
+
+> **Note**
+> To set the idenfier as primary for profile, set the Identifier entry field `primary` to `true`. By Default `ECID` sent by the SDK is set as primary on the platform side if no other identifier is set as primary.
+
+> **Note**
+> Set the "authenticatedState" property as per the authentication status of the user. Use "ambiguous" as default if not known.
+
+> **Warning**
+> Do not pass ECID in this IdentityMap. ECID will be attached by the SDK automatically.
+
+
+IdentityMap looks like this:
+```brightscript
+ identityMap = {
+    "CustomAdvertisingIdentifier" : [
+          {
+                "id" : "SampleAdIdentifier",
+                "authenticatedState": "ambiguous",
+                "primary": false
+          }
+    ],
+    "CustomIdentifierNamespace" : [
+          {
+                "id" : "CustomIdentifier1",
+                "authenticatedState": "ambiguous",
+                "primary": false
+          },
+          {
+                "id" : "CustomIdentifier2",
+                "authenticatedState": "ambiguous",
+                "primary": false
+          }
+    ]
+}
+```
+
+Attach the IdentityMap to your XDM data payload in the sendEvent API:
+```brightscript
+  m.aepSdk.sendEvent(
+    {
+      "eventType": "commerce.orderPlaced",
+        "commerce": {
+          .....
+        },
+
+      "identityMap": identitMap
+  )
+```
+
 ---
 
 ### resetIdentities
