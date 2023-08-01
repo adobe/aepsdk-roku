@@ -17,7 +17,15 @@ sub init()
   setContent()
   m.ButtonGroup.setFocus(true)
   m.ButtonGroup.observeField("buttonSelected", "onButtonSelected")
+  m.timer = m.top.findNode("MainTimer")
+  m.timer.control = "start"
+  m.timer.ObserveField("fire", "timerExecutor")
+  m.test_shutdown = false
 
+  _initSDK()
+end sub
+
+sub _initSDK()
   '------------------------------------
   ' Initalize Adobe Edge SDK
   '------------------------------------
@@ -28,74 +36,87 @@ sub init()
   ADB_CONSTANTS = AdobeSDKConstants()
   m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
 
-  ' get_mid_from_media_sdk = "12340203495818708"
-  ' m.adobeEdgeSdk.setExperienceCloudId(get_mid_from_media_sdk)
-
   configuration = {}
-
   test_config = ParseJson(ReadAsciiFile("pkg:/source/test_config.json"))
   if test_config <> invalid and test_config.count() > 0
     configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = test_config.config_id
   end if
 
-  ' configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = ""
-  'configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = ""
   m.adobeEdgeSdk.updateConfiguration(configuration)
-
-  ' m.adobeEdgeSdk.sendEvent({
-  '   "eventType": "commerce.orderPlaced",
-  '   "commerce": {
-  '     "key1": "value1"
-  '   }
-  ' })
-
-  ' m.adobeEdgeSdk.resetIdentities()
-
-  ' m.adobeEdgeSdk.sendEvent({
-  '   "eventType": "commerce.orderPlaced",
-  '   "commerce": {
-  '     "key2": "value2"
-  '   }
-  ' })
 
 end sub
 
-sub onButtonSelected()
-  'SendEvent button pressed
-  if m.ButtonGroup.buttonSelected = 0
-    '----------------------------------------
-    ' Send an Experience Event with callback
-    '----------------------------------------
+sub _sendEventWithCallback()
+  '----------------------------------------
+  ' Send an Experience Event with callback
+  '----------------------------------------
 
+  m.adobeEdgeSdk.sendEvent({
+    "eventType": "commerce.orderPlaced",
+    "commerce": {
+      "key3": "value3"
+    },
+    "identityMap": {
+      "RIDA": [
+        {
+          "id": "SampleAdId",
+          "authenticatedState": "ambiguous",
+          "primary": false
+        }
+      ]
+    }
+  }, sub(context, result)
+    print "callback result: "
+    print result
+    print context
+    jsonObj = ParseJson(result.message)
+    message = ""
+    for each item in jsonObj.handle
+      if item.type = "locationHint:result" then
+        for each data in item.payload
+          if data.scope = "EdgeNetwork" then
+            message = "locationHint:EdgeNetwork: " + data.hint
+          end if
+        end for
+      end if
+    end for
+
+    ' show result in dialog
+    context.Warning.visible = "true"
+
+    context.Warning.message = message
+  end sub, m)
+end sub
+
+sub _testShutdownAPI()
+  if m.adobeEdgeSdk = invalid
+    throw "Adobe Edge SDK is not initialized"
+  end if
+
+  counter = 0
+  while counter < 20
     m.adobeEdgeSdk.sendEvent({
       "eventType": "commerce.orderPlaced",
       "commerce": {
-        "key3": "value3"
+        "key1": "value1",
+        "counter": counter
       }
-    }, sub(context, result)
-      print "callback result: "
-      print result
-      print context
-      jsonObj = ParseJson(result.data.message)
-      message = ""
-      for each item in jsonObj.handle
-        if item.type = "locationHint:result" then
-          for each data in item.payload
-            if data.scope = "EdgeNetwork" then
-              message = "locationHint:EdgeNetwork: " + data.hint
-            end if
-          end for
-        end if
-      end for
+    })
+    counter++
+  end while
 
-      ' show result in dialog
-      context.Warning.visible = "true"
+  m.test_shutdown = true
+end sub
 
-      context.Warning.message = message
-    end sub, m)
+sub onButtonSelected()
+
+  if m.ButtonGroup.buttonSelected = 0
+    'SendEventWithCallback button pressed
+    _sendEventWithCallback()
 
   else if m.ButtonGroup.buttonSelected = 1
-
+    'Shutdown button pressed
+    _testShutdownAPI()
 
 
   else
@@ -106,7 +127,7 @@ end sub
 sub setContent()
 
   'Change the buttons
-  Buttons = ["SendEvent", "1", "2"]
+  Buttons = ["SendEventWithCallback", "Shutdown", "2"]
   m.ButtonGroup.buttons = Buttons
 
 end sub
@@ -142,3 +163,49 @@ function onKeyEvent(key as string, press as boolean) as boolean
   end if
   return false
 end function
+
+sub timerExecutor()
+  if m.test_shutdown
+    m.adobeEdgeSdk.shutdown()
+    m.adobeEdgeSdk = invalid
+
+    m.adobeEdgeSdk_2 = AdobeSDKInit()
+    ADB_CONSTANTS = AdobeSDKConstants()
+    m.adobeEdgeSdk_2.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
+
+    configuration = {}
+
+    test_config = ParseJson(ReadAsciiFile("pkg:/source/test_config.json"))
+    if test_config <> invalid and test_config.count() > 0
+      configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = test_config.config_id
+    end if
+    m.adobeEdgeSdk_2.updateConfiguration(configuration)
+
+    m.adobeEdgeSdk_2.sendEvent({
+      "eventType": "commerce.orderPlaced",
+      "commerce": {
+        "key3": "value3"
+      }
+    }, sub(context, result)
+      jsonObj = ParseJson(result.message)
+      message = ""
+      for each item in jsonObj.handle
+        if item.type = "locationHint:result" then
+          for each data in item.payload
+            if data.scope = "EdgeNetwork" then
+              message = "shutdown -> re-init -> sendEvent: " + data.hint
+            end if
+          end for
+        end if
+      end for
+
+      ' show result in dialog
+      context.Warning.visible = "true"
+
+      context.Warning.message = message
+    end sub, m)
+
+  end if
+
+  m.test_shutdown = false
+end sub
