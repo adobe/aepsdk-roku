@@ -16,7 +16,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        ref: scripts
+        ref: main
 
     - name: Build Artifacts
       if: ${{ github.event.inputs.action_tag == 'yes' }}
