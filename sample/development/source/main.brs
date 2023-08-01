@@ -43,6 +43,7 @@ sub showHomeScreen(scenenName = "MainScene" as string)
   screen.show()
   ' vscode_rdb_on_device_component_entry
 
+
   while(true)
     msg = wait(0, m.port)
     msgType = type(msg)
