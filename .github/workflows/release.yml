@@ -16,7 +16,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        ref: gitAction
+        ref: main
 
     - name: Check version
       run: |
