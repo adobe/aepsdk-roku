@@ -169,13 +169,10 @@ sendEvent: function(xdmData as object, callback = _adb_default_callback as funct
 #### Example of SendEvent with IdentityMap:
 
 > **Note**
-> `sendEvent` API allows passing custom identityMap with custom identifiers to the edge network. Create the map as per the requirements,
+> `sendEvent` API allows passing custom identityMap with custom identifiers to the edge network. Create the map using identifier namespace and configure the "primary" and "authenticatedState" or the individual identity as per the application requirements.
 
 > **Note**
-> To set the idenfier as primary for profile, set the Identifier entry field `primary` to `true`. By Default `ECID` sent by the SDK is set as primary on the platform side if no other identifier is set as primary.
-
-> **Note**
-> Set the "authenticatedState" property as per the authentication status of the user. Use "ambiguous" as default if not known.
+> By Default `ECID` sent by the SDK is set as primary on the platform side if no other identifier is set as primary.
 
 > **Warning**
 > Do not pass ECID in this IdentityMap. ECID will be attached by the SDK automatically.
