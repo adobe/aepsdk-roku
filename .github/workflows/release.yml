@@ -16,13 +16,19 @@ jobs:
     steps:
       - uses: actions/checkout@v2
         with:
-          ref: build_script_order
+          ref: main
 
       - name: Install bsc
         run: make install-bsc
 
       - name: Build Artifacts
         run: make archive
+
+      - name: Check version
+        run: |
+          set -eo pipefail
+          echo Target version: ${{ github.event.inputs.tag }}
+          make check-version VERSION=${{ github.event.inputs.tag }}
 
       - name: Install SDK on the sample app
         working-directory: ./sample/simple-videoplayer-channel
@@ -31,12 +37,6 @@ jobs:
       - name: Build Roku SDK with the sample app
         working-directory: ./sample/simple-videoplayer-channel
         run: make build
-
-      - name: Check version
-        run: |
-          set -eo pipefail
-          echo Target version: ${{ github.event.inputs.tag }}
-          make check-version VERSION=${{ github.event.inputs.tag }}
 
       - name: Create GH Release
         id: create_release
@@ -67,7 +67,7 @@ jobs:
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
           asset_path: ./sample/simple-videoplayer-channel/out/simple-videoplayer-channel.zip
-          asset_name: Sample-channel-${{ github.event.inputs.tag }}.zip
+          asset_name: AEPSampleChannel-${{ github.event.inputs.tag }}.zip
           asset_content_type: application/zip
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
