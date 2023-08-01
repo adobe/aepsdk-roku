@@ -24,7 +24,13 @@ cp -r ./code/components ./output
 # Merge the souce files to one SDK file under output directory
 cat ./code/AdobeEdge.brs > ./output/AdobeEdge.brs
 
-brs_array=(`find ./code/main -maxdepth 2 -name "*.brs"`)
+core_array=(`find ./code/main/core -maxdepth 2 -name "*.brs"`)
+edge_array=(`find ./code/main/edge -maxdepth 2 -name "*.brs"`)
+task_array=(`find ./code/main/task -maxdepth 2 -name "*.brs"`)
+services_array=(`find ./code/main/services -maxdepth 2 -name "*.brs"`)
+common_array=(`find ./code/main/common -maxdepth 2 -name "*.brs"`)
+
+brs_array=("${core_array[@]}" "${edge_array[@]}" "${task_array[@]}" "${services_array[@]}" "${common_array[@]}")
 
 for file in ${brs_array[@]}; do
 # each *.brs should include a moulde name line, like: 
