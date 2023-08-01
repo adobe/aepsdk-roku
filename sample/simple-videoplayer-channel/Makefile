@@ -6,8 +6,8 @@ clean:
 
 install-sdk: clean
 	(cp -R ../../out .)
-	(test -f ./out/AdobeEdge-*.zip)
-	(unzip ./out/AdobeEdge-*.zip)
+	(test -f ./out/AEPRoku.zip)
+	(unzip ./out/AEPRoku.zip)
 	(test -f ./output/components/adobe/AdobeEdgeTask.brs)
 	(test -f ./output/components/adobe/AdobeEdgeTask.xml)
 	(test -f ./output/AdobeEdge.brs)
