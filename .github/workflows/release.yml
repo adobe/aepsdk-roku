@@ -16,17 +16,20 @@ jobs:
     steps:
     - uses: actions/checkout@v2
       with:
-        ref: main
+        ref: scripts
+
+    - name: Build Artifacts
+      if: ${{ github.event.inputs.action_tag == 'yes' }}
+      run: |
+        make archive
 
     - name: Check version
       run: |
         set -eo pipefail
         echo Target version: ${{ github.event.inputs.tag }}
         make check-version VERSION=${{ github.event.inputs.tag }}
-    - name: Build Artifacts
-      if: ${{ github.event.inputs.action_tag == 'yes' }}
-      run: |
-        make archive
+
+
     - name: Create GH Release
       id: create_release
       uses: release-drafter/release-drafter@v5
