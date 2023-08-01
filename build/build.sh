@@ -24,7 +24,20 @@ cp -r ./code/components ./output
 # Merge the souce files to one SDK file under output directory
 cat ./code/AdobeEdge.brs > ./output/AdobeEdge.brs
 
-brs_array=(`find ./code/main -maxdepth 2 -name "*.brs"`)
+core_array=(`find ./code/main/core -maxdepth 2 -name "*.brs"`)
+edge_array=(`find ./code/main/edge -maxdepth 2 -name "*.brs"`)
+task_array=(`find ./code/main/task -maxdepth 2 -name "*.brs"`)
+services_array=(`find ./code/main/services -maxdepth 2 -name "*.brs"`)
+common_array=(`find ./code/main/common -maxdepth 2 -name "*.brs"`)
+
+brs_array=("${core_array[@]}" "${edge_array[@]}" "${task_array[@]}" "${services_array[@]}" "${common_array[@]}")
+
+unordered_brs_array=(`find ./code/main -maxdepth 2 -name "*.brs"`)
+
+if [ "${#brs_array[@]}" -ne "${#unordered_brs_array[@]}" ]; then
+    echo "Error: miss some brs files when merging."
+    exit 1
+fi
 
 for file in ${brs_array[@]}; do
 # each *.brs should include a moulde name line, like: 
@@ -45,3 +58,14 @@ for file in ${brs_array[@]}; do
 
     tail +$line $file >> ./output/AdobeEdge.brs
 done
+
+# Add some meta data to the info.txt file
+touch ./output/info.txt
+
+MD5_HASH=$(md5 ./output/AdobeEdge.brs | awk -F '=' '{print $2}' | xargs)
+GIT_HASH=$(git rev-parse --short HEAD)
+SDK_VERSION=$(cat ./output/AdobeEdge.brs | egrep '\s*VERSION\s*=\s*\"(.*)\"' | sed -e 's/.*= //; s/,//g; s/"//g')
+
+echo "git-hash=$GIT_HASH" >> ./output/info.txt
+echo "version=$SDK_VERSION" >> ./output/info.txt
+echo "md5-hash(AdobeEdge.brs)=$MD5_HASH" >> ./output/info.txt

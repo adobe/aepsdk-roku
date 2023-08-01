@@ -113,6 +113,8 @@ sample/simple-videoplayer-channel/source/tests
 sample/simple-videoplayer-channel/.vscode/settings.json
 output/
 
+AEPRokuSDK/
+
 sample/development/components/adobe/AdobeEdgeTask.brs
 sample/development/source/adobe
 sample/development/source/tests
