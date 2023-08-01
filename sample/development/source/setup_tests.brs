@@ -108,7 +108,8 @@ function _adb_test_functions() as dynamic
         TC_adb_EdgeRequestWorker_processRequest_invalid_response
         TC_adb_EdgeRequestWorker_processRequests
         TC_adb_EdgeRequestWorker_processRequests_empty_queue
-        TC_adb_EdgeRequestWorker_processRequests_recoverable_error
+        TC_adb_EdgeRequestWorker_processRequests_recoverableError_retriesAfterWaitTimeout
+        TC_adb_EdgeRequestWorker_queue_newRequest_after_RecoverableError_retriesImmediately
         'test_edgeModule.brs
         TC_adb_EdgeModule_init
         TC_adb_EdgeModule_processEvent

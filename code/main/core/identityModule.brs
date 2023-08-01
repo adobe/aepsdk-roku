@@ -41,7 +41,7 @@ function _adb_IdentityModule(configurationModule as object) as object
                 m.updateECID(m._queryECID())
             end if
 
-            _adb_logDebug("getECID() - Returning ECID:(" + FormatJson(m._ecid) + ")")
+            _adb_logVerbose("getECID() - Returning ECID:(" + FormatJson(m._ecid) + ")")
             return m._ecid
         end function,
 
@@ -58,7 +58,7 @@ function _adb_IdentityModule(configurationModule as object) as object
         end function,
 
         _loadECID: function() as dynamic
-            _adb_logInfo("_loadECID() - Loading ECID from persistence.")
+            _adb_logVerbose("_loadECID() - Loading ECID from persistence.")
             localDataStoreService = _adb_serviceProvider().localDataStoreService
             ecid = localDataStoreService.readValue(_adb_InternalConstants().LOCAL_DATA_STORE_KEYS.ECID)
 
@@ -72,7 +72,7 @@ function _adb_IdentityModule(configurationModule as object) as object
         end function,
 
         _deleteECID: function() as void
-            _adb_logDebug("_deleteECID() - Removing ECID from persistence.")
+            _adb_logVerbose("_deleteECID() - Removing ECID from persistence.")
             localDataStoreService = _adb_serviceProvider().localDataStoreService
             localDataStoreService.removeValue(_adb_InternalConstants().LOCAL_DATA_STORE_KEYS.ECID)
             return

@@ -63,6 +63,7 @@ function _adb_EventProcessor(task as object) as object
         _dumpDebugInfo: function(event as object, loggingService as object, networkService as object) as void
             debugInfo = {
                 eventId: event.uuid,
+                eventData: event.data,
                 apiName: event.apiName
             }
 

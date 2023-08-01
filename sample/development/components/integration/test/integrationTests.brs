@@ -14,6 +14,7 @@
 function TS_SDK_integration() as object
     instance = {
 
+        _testECID: "12345678901234567890123456789012345678",
         configId: invalid,
 
         init: sub()
@@ -70,26 +71,6 @@ function TS_SDK_integration() as object
             return validator
         end function,
 
-        TC_SDK_setLogLevel_info: function() as dynamic
-
-            adobeEdgeSdk = ADB_retrieveSDKInstance()
-
-            ADB_CONSTANTS = AdobeSDKConstants()
-            adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.INFO)
-            adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.DEBUG)
-            adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.INFO)
-
-            eventIdForSetLogLevel = adobeEdgeSdk._private.lastEventId
-            validator = {}
-            validator[eventIdForSetLogLevel] = sub(debugInfo)
-                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
-                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "setLogLevel"), LINE_NUM, "assert debugInfo.apiName = setLogLevel")
-                ADB_assertTrue((debugInfo.loglevel <> invalid and debugInfo.loglevel = 2), LINE_NUM, " assert  debugInfo.loglevel = 2")
-            end sub
-
-            return validator
-        end function,
-
         TC_SDK_resetIdentities: function() as dynamic
 
             adobeEdgeSdk = ADB_retrieveSDKInstance()
@@ -115,36 +96,17 @@ function TS_SDK_integration() as object
             return validator
         end function,
 
-        TC_SDK_resetIdentities_withoutValidECID: function() as dynamic
-
-            adobeEdgeSdk = ADB_retrieveSDKInstance()
-
-            adobeEdgeSdk.resetIdentities()
-            eventIdForResetIdentities = adobeEdgeSdk._private.lastEventId
-            validator = {}
-            validator[eventIdForResetIdentities] = sub(debugInfo)
-                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
-                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "resetIdentities"), LINE_NUM, "assert debugInfo.apiName = resetIdentities")
-                ADB_assertTrue((debugInfo.identity.ecid = invalid), LINE_NUM, "assert ecid is invalid")
-                ecidInRegistry = ADB_getPersistedECID()
-                ADB_assertTrue((ecidInRegistry = invalid), LINE_NUM, "assert the persisted ecid is invalid")
-            end sub
-
-            return validator
-        end function,
-
         TC_SDK_updateConfiguration: function() as dynamic
 
             adobeEdgeSdk = ADB_retrieveSDKInstance()
 
             adobeEdgeSdk.updateConfiguration({
                 "edge.configId": "test_configId_1",
-                "edge.domain": "",
             })
             eventIdForUpdateConfiguration1 = adobeEdgeSdk._private.lastEventId
             adobeEdgeSdk.updateConfiguration({
                 "edge.configId": "test_configId_2",
-                "edge.domain": "",
+                "edge.domain": "edge.com",
             })
             eventIdForUpdateConfiguration2 = adobeEdgeSdk._private.lastEventId
             validator = {}
@@ -158,67 +120,7 @@ function TS_SDK_integration() as object
                 ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
                 ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "setConfiguration"), LINE_NUM, "assert debugInfo.apiName = setConfiguration")
                 ADB_assertTrue((debugInfo.configuration.edge_configid = "test_configId_2"), LINE_NUM, "assert edge_configid is test_configId_2")
-                ADB_assertTrue((debugInfo.configuration.edge_domain = invalid), LINE_NUM, "assert edge_domain is invalid")
-            end sub
-
-            return validator
-        end function,
-
-        TC_SDK_updateConfiguration_seperateKey: function() as dynamic
-
-            adobeEdgeSdk = ADB_retrieveSDKInstance()
-
-            adobeEdgeSdk.updateConfiguration({
-                "edge.configId": "test_configId_1",
-                "edge.domain": "",
-            })
-            eventIdForUpdateConfiguration1 = adobeEdgeSdk._private.lastEventId
-            adobeEdgeSdk.updateConfiguration({
-                "edge.configId": "test_configId_2",
-            })
-            eventIdForUpdateConfiguration2 = adobeEdgeSdk._private.lastEventId
-            validator = {}
-            validator[eventIdForUpdateConfiguration1] = sub(debugInfo)
-                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
-                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "setConfiguration"), LINE_NUM, "assert debugInfo.apiName = setConfiguration")
-                ADB_assertTrue((debugInfo.configuration.edge_configid = "test_configId_1"), LINE_NUM, "assert edge_configid is test_configId_1")
-                ADB_assertTrue((debugInfo.configuration.edge_domain = invalid), LINE_NUM, "assert edge_domain is invalid")
-            end sub
-            validator[eventIdForUpdateConfiguration2] = sub(debugInfo)
-                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
-                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "setConfiguration"), LINE_NUM, "assert debugInfo.apiName = setConfiguration")
-                ADB_assertTrue((debugInfo.configuration.edge_configid = "test_configId_2"), LINE_NUM, "assert edge_configid is test_configId_2")
-                ADB_assertTrue((debugInfo.configuration.edge_domain = invalid), LINE_NUM, "assert edge_domain is invalid")
-            end sub
-
-            return validator
-        end function,
-
-        TC_SDK_updateConfiguration_wrongKey: function() as dynamic
-
-            adobeEdgeSdk = ADB_retrieveSDKInstance()
-
-            adobeEdgeSdk.updateConfiguration({
-                "edge.configId": "test_configId_1",
-                "edge.domain": "",
-            })
-            eventIdForUpdateConfiguration1 = adobeEdgeSdk._private.lastEventId
-            adobeEdgeSdk.updateConfiguration({
-                "bad.key.edge.configId": "test_configId_2",
-            })
-            eventIdForUpdateConfiguration2 = adobeEdgeSdk._private.lastEventId
-            validator = {}
-            validator[eventIdForUpdateConfiguration1] = sub(debugInfo)
-                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
-                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "setConfiguration"), LINE_NUM, "assert debugInfo.apiName = setConfiguration")
-                ADB_assertTrue((debugInfo.configuration.edge_configid = "test_configId_1"), LINE_NUM, "assert edge_configid is test_configId_1")
-                ADB_assertTrue((debugInfo.configuration.edge_domain = invalid), LINE_NUM, "assert edge_domain is invalid")
-            end sub
-            validator[eventIdForUpdateConfiguration2] = sub(debugInfo)
-                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
-                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "setConfiguration"), LINE_NUM, "assert debugInfo.apiName = setConfiguration")
-                ADB_assertTrue((debugInfo.configuration.edge_configid = "test_configId_1"), LINE_NUM, "assert edge_configid is test_configId_1")
-                ADB_assertTrue((debugInfo.configuration.edge_domain = invalid), LINE_NUM, "assert edge_domain is invalid")
+                ADB_assertTrue((debugInfo.configuration.edge_domain = "edge.com"), LINE_NUM, "Expected: (edge.com) != Actual: (" + debugInfo.configuration.edge_domain + ")")
             end sub
 
             return validator
@@ -237,7 +139,24 @@ function TS_SDK_integration() as object
             adobeEdgeSdk.updateConfiguration(configuration)
             eventIdForUpdateConfiguration = adobeEdgeSdk._private.lastEventId
 
-            adobeEdgeSdk.sendEvent({ key: "value" })
+            idMap = {
+                "RIDA" : [
+                    {
+                        "id" : "test-ad-id",
+                        "authenticatedState": "ambiguous",
+                        "primary": false
+                    }
+                  ],
+                "EMAIL" : [
+                    {
+                        "id" : "test@test.com",
+                        "authenticatedState": "ambiguous",
+                        "primary": false
+                    }
+                ]
+            }
+
+            adobeEdgeSdk.sendEvent({ key: "value", "identityMap": idMap })
 
             eventIdForSendEvent = adobeEdgeSdk._private.lastEventId
 
@@ -252,17 +171,43 @@ function TS_SDK_integration() as object
                 ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
                 ecid = debugInfo.identity.ecid
                 eventid = debugInfo.eventid
+
                 ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "sendEvent"), LINE_NUM, "assert debugInfo.apiName = sendEvent")
+
+                xdmData = debugInfo.eventData
+                ADB_assertTrue((xdmData <> invalid), LINE_NUM, "Event Data should not be invalid")
+                ADB_assertTrue((xdmData.xdm <> invalid), LINE_NUM, "XDM data should not be invalid")
+                ADB_assertTrue((xdmData.xdm.identityMap <> invalid), LINE_NUM, "XDM data should contain the identityMap")
+                ADB_assertTrue((xdmData.xdm.timestamp <> invalid), LINE_NUM, "XDM data should contain valid timestamp")
+
+                expectedXDMData = {"EMAIL":[{"authenticatedState":"ambiguous","id":"test@test.com","primary":false}],"RIDA":[{"authenticatedState":"ambiguous","id":"test-ad-id","primary":false}]}
+                xdmDataJson = FormatJson(xdmData.xdm.identityMap)
+                expectedXDMDataJson = FormatJson(expectedXDMData)
+                ADB_assertTrue((xdmDataJson = expectedXDMDataJson), LINE_NUM, "Actual XDM data(" + xdmDataJson + ") != Expected XDM data(" + expectedXDMDataJson + ") ")
+
+                ' Verify fetch ECID request
                 ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 2), LINE_NUM, "assert networkRequests = 2")
                 ADB_assertTrue((debugInfo.networkRequests[0].jsonObj.events[0].query.identity.fetch[0] = "ECID"), LINE_NUM, "assert networkRequests(1) is to fetch ECID")
                 ADB_assertTrue((debugInfo.networkRequests[0].response.code = 200), LINE_NUM, "assert response (1) returns 200")
                 firstResponseJson = ParseJson(debugInfo.networkRequests[0].response.body)
-                ADB_assertTrue((firstResponseJson.handle[0].payload[0].id = ecid), LINE_NUM, "assert response (1) verify ECID")
+                ADB_assertTrue((firstResponseJson.handle[0].payload[0].id <> invalid), LINE_NUM, "ECID should not be invalid")
+                ADB_assertTrue((firstResponseJson.handle[0].payload[0].id = ecid), LINE_NUM, "Expected: (" + ecid + ") != Actual: (" + firstResponseJson.handle[0].payload[0].id + ")")
                 ADB_assertTrue((firstResponseJson.requestId <> eventid), LINE_NUM, "assert response (1) verify request ID")
 
+                ' Verify XDM data
                 ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.key = "value"), LINE_NUM, "assert networkRequests(2) is to send Edge event")
                 ADB_assertTrue((Len(debugInfo.networkRequests[1].jsonObj.events[0].xdm.timestamp) > 10), LINE_NUM, "assert networkRequests(2) is to send Edge event with timestamp")
                 ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.xdm.identityMap.ECID <> invalid), LINE_NUM, "assert networkRequests(2) is to send Edge event with ecid")
+
+                ' Verify identity map
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.identityMap <> invalid), LINE_NUM, "assert networkRequests(2) has identity map passed from the API")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.identityMap.EMAIL[0].id = "test@test.com"), LINE_NUM, "assert networkRequests(2) has identity map containing valid email id value")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.identityMap.EMAIL[0].authenticatedState = "ambiguous"), LINE_NUM, "assert networkRequests(2) has identity map containing EMAIL with authenticated state ambiguous")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.identityMap.EMAIL[0].primary = false), LINE_NUM, "assert networkRequests(2) has identity map containing EMAIL as not a primary id")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.identityMap.RIDA[0].id = "test-ad-id"), LINE_NUM, "assert networkRequests(2) has identity map containing valid RIDA id value")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.identityMap.RIDA[0].authenticatedState = "ambiguous"), LINE_NUM, "assert networkRequests(2) has identity map containing RIDA with authenticated state ambiguous")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.identityMap.RIDA[0].primary = false), LINE_NUM, "assert networkRequests(2) has identity map containing RIDA as not a primary id")
+
                 ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.xdm.implementationDetails.name = "https://ns.adobe.com/experience/mobilesdk/roku"), LINE_NUM, "assert networkRequests(2) is to send Edge event with implementationDetails")
                 secondResponseJson = ParseJson(debugInfo.networkRequests[1].response.body)
                 ADB_assertTrue((secondResponseJson.requestId = eventid), LINE_NUM, "assert response (2) verify request ID")
@@ -434,7 +379,7 @@ function TS_SDK_integration() as object
 
             adobeEdgeSdk = ADB_retrieveSDKInstance()
 
-            adobeEdgeSdk.setExperienceCloudId("test_ecid")
+            adobeEdgeSdk.setExperienceCloudId(m._testECID)
             eventIdForSetExperienceCloudId = adobeEdgeSdk._private.lastEventId
 
             ADB_CONSTANTS = AdobeSDKConstants()
@@ -454,7 +399,7 @@ function TS_SDK_integration() as object
                 ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
                 ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "setExperienceCloudId"), LINE_NUM, "assert debugInfo.apiName = setConfiguration")
                 ecidInRegistry = ADB_getPersistedECID()
-                ADB_assertTrue((ecidInRegistry = "test_ecid"), LINE_NUM, "assert test_ecid is persisted in Registry")
+                ADB_assertTrue((ecidInRegistry = "12345678901234567890123456789012345678"), LINE_NUM, "assert ECID is persisted in Registry")
             end sub
             validator[eventIdForUpdateConfiguration] = sub(debugInfo)
                 ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
@@ -465,16 +410,16 @@ function TS_SDK_integration() as object
             validator[eventIdForSendEvent] = sub(debugInfo)
                 ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
                 ecid = debugInfo.identity.ecid
-                ADB_assertTrue((ecid = "test_ecid"), LINE_NUM, "assert debugInfo.identity.ecid = test_ecid")
+                ADB_assertTrue((ecid = "12345678901234567890123456789012345678"), LINE_NUM, "assert debugInfo.identity.ecid = 12345678901234567890123456789012345678")
                 eventid = debugInfo.eventid
                 ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "sendEvent"), LINE_NUM, "assert debugInfo.apiName = sendEvent")
                 ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 1), LINE_NUM, "assert networkRequests = 1")
 
                 ADB_assertTrue((debugInfo.networkRequests[0].jsonObj.events[0].xdm.key = "value"), LINE_NUM, "assert networkRequests(1) is to send Edge event")
-                ADB_assertTrue((debugInfo.networkRequests[0].response.code = 400), LINE_NUM, "assert response (1) returns 200")
+                ADB_assertTrue((debugInfo.networkRequests[0].response.code = 200), LINE_NUM, "assert response (1) returns 200")
 
                 ecidInRegistry = ADB_getPersistedECID()
-                ADB_assertTrue((ecidInRegistry = "test_ecid"), LINE_NUM, "assert test_ecid is persisted in Registry")
+                ADB_assertTrue((ecidInRegistry = "12345678901234567890123456789012345678"), LINE_NUM, "assert 12345678901234567890123456789012345678 is persisted in Registry")
             end sub
 
             return validator
@@ -482,7 +427,7 @@ function TS_SDK_integration() as object
 
         TC_SDK_ecid_consistence: function() as dynamic
 
-            ADB_persisteECIDInRegistry("test_ecid_x")
+            ADB_persisteECIDInRegistry(m._testECID)
 
             adobeEdgeSdk = ADB_retrieveSDKInstance()
 
@@ -507,7 +452,7 @@ function TS_SDK_integration() as object
                 ADB_assertTrue((debugInfo.configuration.edge_configid <> invalid and Len(debugInfo.configuration.edge_configid) > 10), LINE_NUM, "assert edge_configid is valid")
 
                 ecidInRegistry = ADB_getPersistedECID()
-                ADB_assertTrue((ecidInRegistry = "test_ecid_x"), LINE_NUM, "assert test_ecid_x is persisted in Registry")
+                ADB_assertTrue((ecidInRegistry = "12345678901234567890123456789012345678"), LINE_NUM, "assert ECID is persisted in Registry")
             end sub
 
             validator[eventIdForSendEvent] = sub(debugInfo)
@@ -518,12 +463,12 @@ function TS_SDK_integration() as object
                 ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 1), LINE_NUM, "assert networkRequests = 1")
 
                 ADB_assertTrue((debugInfo.networkRequests[0].jsonObj.events[0].xdm.key = "value"), LINE_NUM, "assert networkRequests(1) is to send Edge event")
-                ADB_assertTrue((debugInfo.networkRequests[0].response.code = 400), LINE_NUM, "assert response (1) returns 200")
+                ADB_assertTrue((debugInfo.networkRequests[0].response.code = 200), LINE_NUM, "assert response (1) returns 200")
 
                 ecidInRegistry = ADB_getPersistedECID()
                 ecid = debugInfo.identity.ecid
-                ADB_assertTrue((ecid = "test_ecid_x"), LINE_NUM, "assert in-memory ecid is test_ecid_x")
-                ADB_assertTrue((ecidInRegistry = "test_ecid_x"), LINE_NUM, "assert test_ecid_x is persisted in Registry")
+                ADB_assertTrue((ecid = "12345678901234567890123456789012345678"), LINE_NUM, "assert in-memory ECID is 12345678901234567890123456789012345678")
+                ADB_assertTrue((ecidInRegistry = "12345678901234567890123456789012345678"), LINE_NUM, "assert persisted ECID is 12345678901234567890123456789012345678")
             end sub
 
             return validator

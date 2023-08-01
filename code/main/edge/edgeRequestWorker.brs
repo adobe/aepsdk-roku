@@ -15,6 +15,9 @@
 
 function _adb_EdgeRequestWorker() as object
     instance = {
+        _RETRY_WAIT_TIME_MS: 30000, ' 30 seconds
+        _INVALID_WAIT_TIME: -1,
+        _lastFailedRequestTS: -1,
         _queue: [],
         _queue_size_max: 50,
 
@@ -44,6 +47,9 @@ function _adb_EdgeRequestWorker() as object
                 m._queue.Shift()
             end if
             m._queue.Push(requestEntity)
+
+            ''' force retry the hits by disabling wait
+            m._lastFailedRequestTS = m._INVALID_WAIT_TIME
         end function,
 
         hasQueuedEvent: function() as boolean
@@ -59,8 +65,9 @@ function _adb_EdgeRequestWorker() as object
             responseArray = []
             while m.hasQueuedEvent()
 
-                if _adb_isEmptyOrInvalidString(ecid) or _adb_isEmptyOrInvalidString(configId) then
-                    _adb_logWarning("processRequests() - Edge request skipped. ECID and/or configId not set.")
+                currTS = _adb_timestampInMillis()
+                if (m._lastFailedRequestTS <> m._INVALID_WAIT_TIME) and ((currTS - m._lastFailedRequestTS) < m._RETRY_WAIT_TIME_MS)
+                    ' Wait for 30 seconds before retrying the hit failed with recoverable error.
                     exit while
                 end if
 
@@ -82,8 +89,11 @@ function _adb_EdgeRequestWorker() as object
                 if networkResponse.isSuccessful()
                     edgeResponse = _adb_EdgeResponse(requestId, networkResponse.getResponseCode(), networkResponse.getResponseString())
                     responseArray.Push(edgeResponse)
+                    ' Request sent out successfully
+                    m._lastFailedRequestTS = m._INVALID_WAIT_TIME
                 else if networkResponse.isRecoverable()
-                    _adb_logError("processRequests() - Edge request failed with recoverable error. Request will be retried.")
+                    m._lastFailedRequestTS = _adb_timestampInMillis()
+                    _adb_logWarning("processRequests() - Edge request with id:(" + FormatJson(requestId)  + ") failed with recoverable error code:(" + FormatJson(networkResponse.getResponseCode()) + "). Request will be retried after (" + FormatJson(m._RETRY_WAIT_TIME_MS) + ") ms.")
                     m._queue.Unshift(requestEntity)
                     exit while
                 end if
