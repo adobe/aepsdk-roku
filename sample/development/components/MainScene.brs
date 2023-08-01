@@ -187,9 +187,6 @@ sub timerExecutor()
         "key3": "value3"
       }
     }, sub(context, result)
-      ' print "callback result: "
-      print result
-      print context
       jsonObj = ParseJson(result.message)
       message = ""
       for each item in jsonObj.handle
