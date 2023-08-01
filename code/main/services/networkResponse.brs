@@ -29,18 +29,12 @@ function _adb_NetworkResponse(responseCode as integer, responseBody as string) a
 
         isSuccessful: function() as boolean
             ' https://developer.mozilla.org/en-US/docs/Web/HTTP/Status#successful_responses
-            if m._responseCode >= 200 and m._responseCode < 300 then
-                return true
-            end if
-            return false
+            return m._responseCode >= 200 and m._responseCode < 300
         end function,
 
         isRecoverable: function() as boolean
             ' RECOVERABLE_ERROR_CODES = [408, 504, 503]
-            if m._responseCode = 408 or m._responseCode = 504 or m._responseCode = 503 then
-                return true
-            end if
-            return false
+            return  m._responseCode = 408 or m._responseCode = 504 or m._responseCode = 503
         end function,
 
         toString: function() as String
