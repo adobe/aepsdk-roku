@@ -36,36 +36,14 @@ sub _initSDK()
   ADB_CONSTANTS = AdobeSDKConstants()
   m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
 
-  ' get_mid_from_media_sdk = "12340203495818708"
-  ' m.adobeEdgeSdk.setExperienceCloudId(get_mid_from_media_sdk)
-
   configuration = {}
-
   test_config = ParseJson(ReadAsciiFile("pkg:/source/test_config.json"))
   if test_config <> invalid and test_config.count() > 0
     configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = test_config.config_id
   end if
 
-  ' configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = ""
-  'configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = ""
   m.adobeEdgeSdk.updateConfiguration(configuration)
 
-
-  ' m.adobeEdgeSdk.sendEvent({
-  '   "eventType": "commerce.orderPlaced",
-  '   "commerce": {
-  '     "key1": "value1"
-  '   }
-  ' })
-
-  ' m.adobeEdgeSdk.resetIdentities()
-
-  ' m.adobeEdgeSdk.sendEvent({
-  '   "eventType": "commerce.orderPlaced",
-  '   "commerce": {
-  '     "key2": "value2"
-  '   }
-  ' })
 end sub
 
 sub _sendEventWithCallback()
@@ -77,6 +55,15 @@ sub _sendEventWithCallback()
     "eventType": "commerce.orderPlaced",
     "commerce": {
       "key3": "value3"
+    },
+    "identityMap": {
+      "RIDA": [
+        {
+          "id": "SampleAdId",
+          "authenticatedState": "ambiguous",
+          "primary": false
+        }
+      ]
     }
   }, sub(context, result)
     print "callback result: "
