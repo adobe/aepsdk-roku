@@ -22,7 +22,6 @@ jobs:
       if: ${{ github.event.inputs.action_tag == 'yes' }}
       run: |
         make archive
-      shell: bash
 
     - name: Check version
       run: |
