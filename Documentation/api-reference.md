@@ -135,7 +135,7 @@ sendEvent: function(xdmData as object, callback = _adb_default_callback as funct
 > **Note**
 > Variables are not case sensitive in [BrightScript](https://developer.roku.com/docs/references/brightscript/language/expressions-variables-types.md), so always use the `String literals` to present the XDM data **keys**.
 
-##### Sample: sendEvent
+##### Example: sendEvent
 
 ```brightscript
   m.aepSdk.sendEvent({
@@ -146,7 +146,7 @@ sendEvent: function(xdmData as object, callback = _adb_default_callback as funct
   })
 ```
 
-##### Sample: sendEvent with callback
+##### Example: sendEvent with callback
 
 ```brightscript
   m.aepSdk.sendEvent({
@@ -161,12 +161,15 @@ sendEvent: function(xdmData as object, callback = _adb_default_callback as funct
   end sub, context)
 ```
 
-#### Send Custom IdentityMap:
+#### Send Custom IdentityMap
 
 `sendEvent` API allows passing custom identifiers to the Edge Network using custom Identity map . Create the map using the identifier namespace as key and pass in the identity items for the namespace as an array. Configure the "primary" and "authenticatedState" per individual identity item per your application's requirements.
 
 > **Note**
-> Passing custom Identity map is optional. Do not pass the ECID with the sendEvent API, the ECID automatically attaches it on all requests. By default, the ECID is set as primary server-side if no other identifier is set uses "primary" : true.
+> Passing custom Identity map is optional. Do not pass the ECID with the sendEvent API, the ECID automatically attaches it on all requests. By default, the ECID is set as primary server-side if no other identifier uses "primary" : true.
+
+
+##### Example
 
 ```brightscript
 customIdentityMap = {
@@ -191,8 +194,6 @@ customIdentityMap = {
     ]
 }
 ```
-
-##### Sample:
 
 ```brightscript
   m.aepSdk.sendEvent({
