@@ -180,26 +180,52 @@ function AdobeSDKInit() as object
         ' If you would like to include this information in your dataset, add the "Implementation Details"
         ' field group to the schema tied to your dataset.
         '
+        ' This function allows passing custom identifiers using identityMap.
+        '
         ' @param data as object : xdm data
         ' @param [optional] callback as function(context, result) : handle Edge response
         ' @param [optional] context as dynamic : context to be passed to the callback function
         '
         ' Example 1:
         '
+        ' customIdentityMap = {
+        '   "CustomAdvertisingIdentifier" : [
+        '       {
+        '           "id" : "SampleAdIdentifier",
+        '           "authenticatedState": "ambiguous",
+        '           "primary": false
+        '       }
+        '    ],
+        '    "CustomIdentifierNamespace" : [
+        '       {
+        '           "id" : "CustomIdentifier1",
+        '           "authenticatedState": "ambiguous",
+        '            "primary": false
+        '       },
+        '       {
+        '           "id" : "CustomIdentifier2",
+        '           "authenticatedState": "ambiguous",
+        '           "primary": false
+        '       }
+        '    ]
+        ' }
+        '
         ' m.adobeEdgeSdk.sendEvent({
-        '   eventType: "commerce.orderPlaced",
-        '   commerce: {
+        '   "eventType": "commerce.orderPlaced",
+        '   "commerce": {
         '      .....
-        '   }
+        '   },
+        '   "identityMap": customIdentityMap
         ' })
         '
         ' Example 2:
         '
         ' m.adobeEdgeSdk.sendEvent({
-        '     eventType: "commerce.orderPlaced",
-        '     commerce: {
+        '     "eventType": "commerce.orderPlaced",
+        '     "commerce": {
         '        .....
-        '     }
+        '     },
+        '   "identityMap": customIdentityMap
         '   }, sub(context, result)
         '     print "callback result: "
         '     print result
