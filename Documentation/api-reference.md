@@ -126,8 +126,11 @@ sendEvent: function(xdmData as object, callback = _adb_default_callback as funct
 - `@param [optional] callback as function(context, result) : handle Edge response`
 - `@param [optional] context as dynamic : context to be passed to the callback function`
 
+
 > **Note**
-> `sendEvent` API will automatically collect and attach the identities synced with the SDK and the implementation details. That data is sent as `IdentityMap` and `Implementation Details` fieldgroups under the XDM payload and are sent with every Experience Edge Event. IdentityMap is added to the schema automatically but if you would like to include ImplementationDetails information in your dataset, add the `Implementation Details` field group to the schema tied to your dataset.
+> The `sendEvent` API automatically attaches the following information with each Experience Event:
+- `IdentityMap` with the ECID - included by default to Experience Event class based XDM schemas
+- `Implementation Details` - for more details see the [Implementation Details XDM field group](https://github.com/adobe/xdm/blob/master/components/datatypes/industry-verticals/implementationdetails.schema.json)
 
 #### Sample ImplementationDetails XDM attached by the SDK:
 ```json
@@ -142,38 +145,64 @@ sendEvent: function(xdmData as object, callback = _adb_default_callback as funct
 > `sendEvent` API allows passing custom identifiers to the edge network using custom Identity map . Create the Identity map using custom identifier namespace and configure the "primary" and "authenticatedState" for the individual identity as per the application requirements.
 
 > **Note**
-> Passing custom Identity map is optional. By Default SDK sends the IdentityMap with `ECID`. `ECID`` might be set as primary identifier on the edge network side if no other custom identifiers set as primary are sent.
+> Variables are not case sensitive in [BrightScript](https://developer.roku.com/docs/references/brightscript/language/expressions-variables-types.md), so please always use the `String literals` to present the XDM data **keys**.
 
-> **Warning**
-> Do not pass ECID in this IdentityMap. ECID will be attached by the SDK automatically.
+##### Sample: sendEvent
 
-#### Sample Custom IdentityMap:
+```brightscript
+  m.aepSdk.sendEvent({
+    "eventType": "commerce.orderPlaced",
+      "commerce": {
+        .....
+      }
+  })
+```
+
+##### Sample: sendEvent with callback
+
+```brightscript
+  m.aepSdk.sendEvent({
+      "eventType": "commerce.orderPlaced",
+      "commerce": {
+        .....
+      }
+  }, sub(context, result)
+      print "callback result: "
+      print result
+      print context
+  end sub, context)
+```
+
+#### Send Custom IdentityMap:
+
+> **Note**
+> Passing custom Identity map is optional. Do not pass the ECID with the sendEvent API, the ECID automatically attaches it on all requests. By default, the ECID is set as primary server-side if no other identifier is set uses "primary" : true.
 
 ```brightscript
 customIdentityMap = {
-    "CustomAdvertisingIdentifier" : [
+    "RIDA" : [
           {
-                "id" : "SampleAdIdentifier",
-                "authenticatedState": "ambiguous",
-                "primary": false
+            "id" : "SampleAdIdentifier",
+            "authenticatedState": "ambiguous",
+            "primary": false
           }
     ],
-    "CustomIdentifierNamespace" : [
+    "EMAIL" : [
           {
-                "id" : "CustomIdentifier1",
-                "authenticatedState": "ambiguous",
-                "primary": false
+            "id" : "user@example.com",
+            "authenticatedState": "ambiguous",
+            "primary": false
           },
           {
-                "id" : "CustomIdentifier2",
-                "authenticatedState": "ambiguous",
-                "primary": false
+            "id" : "useralias@example.com",
+            "authenticatedState": "ambiguous",
+            "primary": false
           }
     ]
 }
 ```
 
-##### Example 1
+##### Sample:
 
 ```brightscript
   m.aepSdk.sendEvent({
@@ -184,25 +213,6 @@ customIdentityMap = {
       "identityMap": customIdentityMap
   })
 ```
-
-> Identifiers are not case sensitive in [BrightScript](https://developer.roku.com/docs/references/brightscript/language/expressions-variables-types.md), so please always use the `String literals` to present the XDM data keys.
-
-##### Example 2
-
-```brightscript
-  m.aepSdk.sendEvent({
-      "eventType": "commerce.orderPlaced",
-      "commerce": {
-        .....
-      },
-      "identityMap": customIdentityMap
-  }, sub(context, result)
-      print "callback result: "
-      print result
-      print context
-  end sub, context)
-```
-
 
 ---
 
