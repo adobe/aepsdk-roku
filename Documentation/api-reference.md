@@ -132,18 +132,6 @@ sendEvent: function(xdmData as object, callback = _adb_default_callback as funct
 - `IdentityMap` with the ECID - included by default to Experience Event class based XDM schemas
 - `Implementation Details` - for more details see the [Implementation Details XDM field group](https://github.com/adobe/xdm/blob/master/components/datatypes/industry-verticals/implementationdetails.schema.json)
 
-#### Sample ImplementationDetails XDM attached by the SDK:
-```json
-"implementationDetails": {
-  "name": "https://ns.adobe.com/experience/mobilesdk/roku",
-  "version": "1.0.0-alpha1",
-  "environment": "app"
-}
-```
-
-> **Note**
-> `sendEvent` API allows passing custom identifiers to the edge network using custom Identity map . Create the Identity map using custom identifier namespace and configure the "primary" and "authenticatedState" for the individual identity as per the application requirements.
-
 > **Note**
 > Variables are not case sensitive in [BrightScript](https://developer.roku.com/docs/references/brightscript/language/expressions-variables-types.md), so please always use the `String literals` to present the XDM data **keys**.
 
@@ -174,6 +162,7 @@ sendEvent: function(xdmData as object, callback = _adb_default_callback as funct
 ```
 
 #### Send Custom IdentityMap:
+`sendEvent` API allows passing custom identifiers to the Edge Network using custom Identity map . Create the map using the identifier namespace as key and pass in the identity items for the namespace as an array. Configure the "primary" and "authenticatedState" per individual identity item per your application's requirements.
 
 > **Note**
 > Passing custom Identity map is optional. Do not pass the ECID with the sendEvent API, the ECID automatically attaches it on all requests. By default, the ECID is set as primary server-side if no other identifier is set uses "primary" : true.
