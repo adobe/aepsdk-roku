@@ -20,7 +20,7 @@ end function
 function _adb_ConfigurationModule() as object
     module = _adb_AdobeObject("com.adobe.module.configuration")
     module.Append({
-        CONFIG_KEY: AdobeSDKConstants().CONFIGURATION,
+        CONFIG_KEY: AdobeAEPSDKConstants().CONFIGURATION,
         _edge_configId: invalid,
         _edge_domain: invalid,
         ' example config = {edge.configId:"1234567890", edge.domain:"xyz.net"}

@@ -27,8 +27,8 @@ function TS_SDK_integration() as object
 
         TS_beforeEach: sub()
             ADB_clearPersistedECID()
-            adobeEdgeSdk = ADB_retrieveSDKInstance()
-            ADB_resetSDK(adobeEdgeSdk)
+            aepSdk = ADB_retrieveSDKInstance()
+            ADB_resetSDK(aepSdk)
         end sub,
 
         TS_afterEach: sub()
@@ -37,11 +37,11 @@ function TS_SDK_integration() as object
 
         TC_SDK_getVersion: function() as dynamic
 
-            adobeEdgeSdk = ADB_retrieveSDKInstance()
+            aepSdk = ADB_retrieveSDKInstance()
 
-            ADB_CONSTANTS = AdobeSDKConstants()
+            ADB_CONSTANTS = AdobeAEPSDKConstants()
 
-            version$ = adobeEdgeSdk.getVersion()
+            version$ = aepSdk.getVersion()
 
             ADB_assertTrue((version$ = "1.0.0-alpha1"), LINE_NUM, "assert getVersion() = 1.0.0-alpha1")
 
@@ -50,14 +50,14 @@ function TS_SDK_integration() as object
 
         TC_SDK_setLogLevel_debug: function() as dynamic
 
-            adobeEdgeSdk = ADB_retrieveSDKInstance()
+            aepSdk = ADB_retrieveSDKInstance()
 
-            ADB_CONSTANTS = AdobeSDKConstants()
-            adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.DEBUG)
+            ADB_CONSTANTS = AdobeAEPSDKConstants()
+            aepSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.DEBUG)
 
-            eventIdForSetLogLevel = adobeEdgeSdk._private.lastEventId
+            eventIdForSetLogLevel = aepSdk._private.lastEventId
 
-            version$ = adobeEdgeSdk.getVersion()
+            version$ = aepSdk.getVersion()
 
             ADB_assertTrue((_adb_retrieveTaskNode() <> invalid), LINE_NUM, "assert _adb_retrieveTaskNode")
 
@@ -73,12 +73,12 @@ function TS_SDK_integration() as object
 
         TC_SDK_resetIdentities: function() as dynamic
 
-            adobeEdgeSdk = ADB_retrieveSDKInstance()
+            aepSdk = ADB_retrieveSDKInstance()
 
-            adobeEdgeSdk.setExperienceCloudId("test_ecid")
-            eventIdForSetECID = adobeEdgeSdk._private.lastEventId
-            adobeEdgeSdk.resetIdentities()
-            eventIdForResetIdentities = adobeEdgeSdk._private.lastEventId
+            aepSdk.setExperienceCloudId("test_ecid")
+            eventIdForSetECID = aepSdk._private.lastEventId
+            aepSdk.resetIdentities()
+            eventIdForResetIdentities = aepSdk._private.lastEventId
             validator = {}
             validator[eventIdForSetECID] = sub(debugInfo)
                 ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
@@ -98,17 +98,17 @@ function TS_SDK_integration() as object
 
         TC_SDK_updateConfiguration: function() as dynamic
 
-            adobeEdgeSdk = ADB_retrieveSDKInstance()
+            aepSdk = ADB_retrieveSDKInstance()
 
-            adobeEdgeSdk.updateConfiguration({
+            aepSdk.updateConfiguration({
                 "edge.configId": "test_configId_1",
             })
-            eventIdForUpdateConfiguration1 = adobeEdgeSdk._private.lastEventId
-            adobeEdgeSdk.updateConfiguration({
+            eventIdForUpdateConfiguration1 = aepSdk._private.lastEventId
+            aepSdk.updateConfiguration({
                 "edge.configId": "test_configId_2",
                 "edge.domain": "edge.com",
             })
-            eventIdForUpdateConfiguration2 = adobeEdgeSdk._private.lastEventId
+            eventIdForUpdateConfiguration2 = aepSdk._private.lastEventId
             validator = {}
             validator[eventIdForUpdateConfiguration1] = sub(debugInfo)
                 ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
@@ -128,16 +128,16 @@ function TS_SDK_integration() as object
 
         TC_SDK_sendEvent: function() as dynamic
 
-            adobeEdgeSdk = ADB_retrieveSDKInstance()
+            aepSdk = ADB_retrieveSDKInstance()
 
-            ADB_CONSTANTS = AdobeSDKConstants()
+            ADB_CONSTANTS = AdobeAEPSDKConstants()
 
             configuration = {}
 
             configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = m.configId
 
-            adobeEdgeSdk.updateConfiguration(configuration)
-            eventIdForUpdateConfiguration = adobeEdgeSdk._private.lastEventId
+            aepSdk.updateConfiguration(configuration)
+            eventIdForUpdateConfiguration = aepSdk._private.lastEventId
 
             idMap = {
                 "RIDA" : [
@@ -156,9 +156,9 @@ function TS_SDK_integration() as object
                 ]
             }
 
-            adobeEdgeSdk.sendEvent({ key: "value", "identityMap": idMap })
+            aepSdk.sendEvent({ key: "value", "identityMap": idMap })
 
-            eventIdForSendEvent = adobeEdgeSdk._private.lastEventId
+            eventIdForSendEvent = aepSdk._private.lastEventId
 
             validator = {}
             validator[eventIdForUpdateConfiguration] = sub(debugInfo)
@@ -222,13 +222,13 @@ function TS_SDK_integration() as object
 
         TC_SDK_sendEvent_withoutValidConfig: function() as dynamic
 
-            adobeEdgeSdk = ADB_retrieveSDKInstance()
+            aepSdk = ADB_retrieveSDKInstance()
 
-            adobeEdgeSdk.sendEvent({ key: "value1" })
-            eventIdForFirstSendEvent = adobeEdgeSdk._private.lastEventId
+            aepSdk.sendEvent({ key: "value1" })
+            eventIdForFirstSendEvent = aepSdk._private.lastEventId
 
-            adobeEdgeSdk.sendEvent({ key: "value2" })
-            eventIdForSecondSendEvent = adobeEdgeSdk._private.lastEventId
+            aepSdk.sendEvent({ key: "value2" })
+            eventIdForSecondSendEvent = aepSdk._private.lastEventId
 
             validator = {}
 
@@ -257,23 +257,23 @@ function TS_SDK_integration() as object
 
         TC_SDK_sendEvent_provideValidConfigLater: function() as dynamic
 
-            adobeEdgeSdk = ADB_retrieveSDKInstance()
+            aepSdk = ADB_retrieveSDKInstance()
 
-            adobeEdgeSdk.sendEvent({ key: "value1" })
-            eventIdForFirstSendEvent = adobeEdgeSdk._private.lastEventId
+            aepSdk.sendEvent({ key: "value1" })
+            eventIdForFirstSendEvent = aepSdk._private.lastEventId
 
-            adobeEdgeSdk.sendEvent({ key: "value2" })
-            eventIdForSecondSendEvent = adobeEdgeSdk._private.lastEventId
+            aepSdk.sendEvent({ key: "value2" })
+            eventIdForSecondSendEvent = aepSdk._private.lastEventId
 
-            ADB_CONSTANTS = AdobeSDKConstants()
+            ADB_CONSTANTS = AdobeAEPSDKConstants()
 
             configuration = {}
             configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = m.configId
 
-            adobeEdgeSdk.updateConfiguration(configuration)
+            aepSdk.updateConfiguration(configuration)
 
-            adobeEdgeSdk.sendEvent({ key: "value3" })
-            eventIdForThirdSendEvent = adobeEdgeSdk._private.lastEventId
+            aepSdk.sendEvent({ key: "value3" })
+            eventIdForThirdSendEvent = aepSdk._private.lastEventId
 
             validator = {}
 
@@ -338,21 +338,21 @@ function TS_SDK_integration() as object
 
         TC_SDK_sendEvent_withCallback: function() as dynamic
 
-            adobeEdgeSdk = ADB_retrieveSDKInstance()
+            aepSdk = ADB_retrieveSDKInstance()
 
-            ADB_CONSTANTS = AdobeSDKConstants()
+            ADB_CONSTANTS = AdobeAEPSDKConstants()
 
             configuration = {}
             configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = m.configId
 
-            adobeEdgeSdk.updateConfiguration(configuration)
+            aepSdk.updateConfiguration(configuration)
 
             GetGlobalAA()._adb_integration_test_callback_result = invalid
-            adobeEdgeSdk.sendEvent({ key: "value" }, sub(context, result)
+            aepSdk.sendEvent({ key: "value" }, sub(context, result)
                 GetGlobalAA()._adb_integration_test_callback_result = result
             end sub, {})
 
-            eventIdForSendEvent = adobeEdgeSdk._private.lastEventId
+            eventIdForSendEvent = aepSdk._private.lastEventId
 
             validator = {}
 
@@ -377,22 +377,22 @@ function TS_SDK_integration() as object
 
         TC_SDK_setExperienceCloudId: function() as dynamic
 
-            adobeEdgeSdk = ADB_retrieveSDKInstance()
+            aepSdk = ADB_retrieveSDKInstance()
 
-            adobeEdgeSdk.setExperienceCloudId(m._testECID)
-            eventIdForSetExperienceCloudId = adobeEdgeSdk._private.lastEventId
+            aepSdk.setExperienceCloudId(m._testECID)
+            eventIdForSetExperienceCloudId = aepSdk._private.lastEventId
 
-            ADB_CONSTANTS = AdobeSDKConstants()
+            ADB_CONSTANTS = AdobeAEPSDKConstants()
 
             configuration = {}
             configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = m.configId
 
-            adobeEdgeSdk.updateConfiguration(configuration)
-            eventIdForUpdateConfiguration = adobeEdgeSdk._private.lastEventId
+            aepSdk.updateConfiguration(configuration)
+            eventIdForUpdateConfiguration = aepSdk._private.lastEventId
 
-            adobeEdgeSdk.sendEvent({ key: "value" })
+            aepSdk.sendEvent({ key: "value" })
 
-            eventIdForSendEvent = adobeEdgeSdk._private.lastEventId
+            eventIdForSendEvent = aepSdk._private.lastEventId
 
             validator = {}
             validator[eventIdForSetExperienceCloudId] = sub(debugInfo)
@@ -429,21 +429,21 @@ function TS_SDK_integration() as object
 
             ADB_persisteECIDInRegistry(m._testECID)
 
-            adobeEdgeSdk = ADB_retrieveSDKInstance()
+            aepSdk = ADB_retrieveSDKInstance()
 
-            ADB_resetSDK(adobeEdgeSdk)
+            ADB_resetSDK(aepSdk)
 
-            ADB_CONSTANTS = AdobeSDKConstants()
+            ADB_CONSTANTS = AdobeAEPSDKConstants()
 
             configuration = {}
             configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = m.configId
 
-            adobeEdgeSdk.updateConfiguration(configuration)
-            eventIdForUpdateConfiguration = adobeEdgeSdk._private.lastEventId
+            aepSdk.updateConfiguration(configuration)
+            eventIdForUpdateConfiguration = aepSdk._private.lastEventId
 
-            adobeEdgeSdk.sendEvent({ key: "value" })
+            aepSdk.sendEvent({ key: "value" })
 
-            eventIdForSendEvent = adobeEdgeSdk._private.lastEventId
+            eventIdForSendEvent = aepSdk._private.lastEventId
 
             validator = {}
             validator[eventIdForUpdateConfiguration] = sub(debugInfo)

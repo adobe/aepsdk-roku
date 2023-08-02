@@ -36,5 +36,5 @@
   </children>
 
   <script type="text/brightscript" uri="pkg:/components/SimpleVideoScene.brs"/>
-  <script type="text/brightscript" uri="pkg:/source/AdobeEdge.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/AEPSDK.brs"/>
 </component>

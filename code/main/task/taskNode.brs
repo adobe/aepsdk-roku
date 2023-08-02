@@ -15,7 +15,7 @@
 
 function _adb_createTaskNode() as void
     if GetGlobalAA()._adb_main_task_node = invalid
-        sdkThread = CreateObject("roSGNode", "AdobeEdgeTask")
+        sdkThread = CreateObject("roSGNode", "AEPSDKTask")
         GetGlobalAA()._adb_main_task_node = sdkThread
     end if
 end function

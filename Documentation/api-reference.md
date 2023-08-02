@@ -2,7 +2,7 @@
 
 This document lists the APIs provided by AEP Roku SDK, along with code samples for API usage.
 
-- [AdobeSDKInit](#AdobeSDKInit)
+- [AdobeAEPSDKInit](#AdobeAEPSDKInit)
 - [getVersion](#getVersion)
 - [setLogLevel](#setLogLevel)
 - [updateConfiguration](#updateConfiguration)
@@ -13,7 +13,7 @@ This document lists the APIs provided by AEP Roku SDK, along with code samples f
 
 ---
 
-### AdobeSDKInit
+### AdobeAEPSDKInit
 
 Initialize the AEP Roku SDK and return the public API instance. `*` The following variables are reserved to hold the SDK instances in GetGlobalAA():
 
@@ -24,7 +24,7 @@ Initialize the AEP Roku SDK and return the public API instance. `*` The followin
 ##### Syntax
 
 ```brightscript
-function AdobeSDKInit() as object
+function AdobeAEPSDKInit() as object
 ```
 
 - `@return instance as object : public API instance`
@@ -32,7 +32,7 @@ function AdobeSDKInit() as object
 ##### Example
 
 ```brightscript
-m.aepSdk = AdobeSDKInit()
+m.aepSdk = AdobeAEPSDKInit()
 ```
 
 ---
@@ -68,7 +68,7 @@ setLogLevel: function(level as integer) as void
 ##### Example
 
 ```brightscript
-ADB_CONSTANTS = AdobeSDKConstants()
+ADB_CONSTANTS = AdobeAEPSDKConstants()
 m.aepSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
 ```
 
@@ -97,7 +97,7 @@ updateConfiguration: function(configuration as object) as void
 ##### Example
 
 ```brightscript
-ADB_CONSTANTS = AdobeSDKConstants()
+ADB_CONSTANTS = AdobeAEPSDKConstants()
 
 configuration = {}
 configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = "<YOUR_CONFIG_ID>"

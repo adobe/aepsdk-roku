@@ -18,7 +18,7 @@ sub TS_public_APIs_BeforeEach()
         observeField: function(_arg1 as string, _arg2 as string) as void
         end function
     }
-    sdkInstance = AdobeSDKInit()
+    sdkInstance = AdobeAEPSDKInit()
     GetGlobalAA()._adb_main_task_node["requestEvent"] = {}
     sdkInstance._private.cachedCallbackInfo = {}
 end sub
@@ -32,7 +32,7 @@ end sub
 ' target: getVersion()
 ' @Test
 sub TC_APIs_getVersion()
-    sdkInstance = AdobeSDKInit()
+    sdkInstance = AdobeAEPSDKInit()
     UTF_assertEqual(sdkInstance.getVersion(), "1.0.0-alpha1")
 end sub
 
@@ -40,7 +40,7 @@ end sub
 ' @Test
 sub TC_APIs_setLogLevel()
     _internal_const = _adb_InternalConstants()
-    sdkInstance = AdobeSDKInit()
+    sdkInstance = AdobeAEPSDKInit()
     sdkInstance.setLogLevel(3)
     event = GetGlobalAA()._adb_main_task_node["requestEvent"]
     UTF_assertEqual(event.apiName, _internal_const.PUBLIC_API.SET_LOG_LEVEL)
@@ -52,7 +52,7 @@ end sub
 ' target: setLogLevel()
 ' @Test
 sub TC_APIs_setLogLevel_invalid()
-    sdkInstance = AdobeSDKInit()
+    sdkInstance = AdobeAEPSDKInit()
     sdkInstance.setLogLevel(5)
     sdkInstance.setLogLevel(-1)
     event = GetGlobalAA()._adb_main_task_node["requestEvent"]
@@ -62,7 +62,7 @@ end sub
 ' target: shutdown()
 ' @Test
 sub TC_APIs_shutdown()
-    sdkInstance = AdobeSDKInit()
+    sdkInstance = AdobeAEPSDKInit()
     sdkInstance._private.cachedCallbackInfo["xxx"] = {
         "callback": function() as void
         end function
@@ -81,7 +81,7 @@ end sub
 ' @Test
 sub TC_APIs_updateConfiguration()
     _internal_const = _adb_InternalConstants()
-    sdkInstance = AdobeSDKInit()
+    sdkInstance = AdobeAEPSDKInit()
     configuration = { "edge.configId": "test-config-id" }
     sdkInstance.updateConfiguration(configuration)
     event = GetGlobalAA()._adb_main_task_node["requestEvent"]
@@ -94,7 +94,7 @@ end sub
 ' target: updateConfiguration()
 ' @Test
 sub TC_APIs_updateConfiguration_invalid()
-    sdkInstance = AdobeSDKInit()
+    sdkInstance = AdobeAEPSDKInit()
     sdkInstance.updateConfiguration("x")
     event = GetGlobalAA()._adb_main_task_node["requestEvent"]
     UTF_assertEqual(0, event.Count())
@@ -104,7 +104,7 @@ end sub
 ' @Test
 sub TC_APIs_sendEvent()
     _internal_const = _adb_InternalConstants()
-    sdkInstance = AdobeSDKInit()
+    sdkInstance = AdobeAEPSDKInit()
     xdmData = {
         eventType: "commerce.orderPlaced",
         commerce: {
@@ -125,7 +125,7 @@ end sub
 ' target: sendEvent()
 ' @Test
 sub TC_APIs_sendEvent_invalid()
-    sdkInstance = AdobeSDKInit()
+    sdkInstance = AdobeAEPSDKInit()
     sdkInstance.sendEvent("invalid xdm data")
     event = GetGlobalAA()._adb_main_task_node["requestEvent"]
 
@@ -137,7 +137,7 @@ end sub
 ' target: sendEvent()
 ' @Test
 sub TC_APIs_sendEventWithCallback()
-    sdkInstance = AdobeSDKInit()
+    sdkInstance = AdobeAEPSDKInit()
     ' configuration = { "edge.configId": "test-config-id" }
     xdmData = {
         eventType: "commerce.orderPlaced",
@@ -174,7 +174,7 @@ end sub
 ' @Test
 sub TC_APIs_setExperienceCloudId()
     _internal_const = _adb_InternalConstants()
-    sdkInstance = AdobeSDKInit()
+    sdkInstance = AdobeAEPSDKInit()
     test_id = "test-experience-cloud-id"
     sdkInstance.setExperienceCloudId(test_id)
     event = GetGlobalAA()._adb_main_task_node["requestEvent"]

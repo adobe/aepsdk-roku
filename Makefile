@@ -19,14 +19,14 @@ archive:clean build-sdk
 
 	mkdir -p ./out
 
-	test -f ./output/components/adobe/AdobeEdgeTask.brs
-	test -f ./output/components/adobe/AdobeEdgeTask.xml
-	test -f ./output/AdobeEdge.brs
+	test -f ./output/components/adobe/AEPSDKTask.brs
+	test -f ./output/components/adobe/AEPSDKTask.xml
+	test -f ./output/AEPSDK.brs
 	test -f ./output/info.txt
 
 	mv ./output ./AEPRokuSDK
 
-	zip -r ./out/AEPRoku.zip ./AEPRokuSDK/* -x '**/.DS_Store'
+	zip -r ./out/AEPRokuSDK.zip ./AEPRokuSDK/* -x '**/.DS_Store'
 
 version:
 	@echo $(SDK_VERSION)

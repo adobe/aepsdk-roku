@@ -22,7 +22,7 @@ sub init()
 end sub
 
 sub setupTest()
-  m.sdkInstance = AdobeSDKInit()
+  m.sdkInstance = AdobeAEPSDKInit()
   taskNode = _adb_retrieveTaskNode()
   taskNode.addField("debugInfo", "assocarray", true)
   taskNode.observeField("debugInfo", "onDebugInfoChange")
