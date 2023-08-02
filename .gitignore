@@ -118,8 +118,6 @@ code/tests/tests
 AEPRokuSDK/
 
 sample/development/components/adobe/AEPSDKTask.brs
-
-sample/development/source/testFramework
 sample/development/source/adobe
 sample/development/source/AEPSDK.brs
 sample/development/source/tests
