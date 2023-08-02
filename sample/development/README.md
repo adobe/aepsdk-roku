@@ -10,6 +10,11 @@ To test with this Roku channel, create a `test_config.json` file under the [sour
 {"config_id":"your edge config id"}
 ```
 
+From the sample/development directory run the following command in a terminal window to link the development app to the SDK:
+```
+make link-sdk
+```
+
 ### VSCode plugin
 
 For developers using the [VSCode plugin (BrightScript Language extension for VSCode)](https://marketplace.visualstudio.com/items?itemName=RokuCommunity.brightscript), the `launch.json` under `.vscode` is configued to work with the plugin.

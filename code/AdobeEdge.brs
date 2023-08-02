@@ -293,7 +293,7 @@ function _adb_handleResponseEvent() as void
             if sdk._private.cachedCallbackInfo[uuid] <> invalid
                 context = sdk._private.cachedCallbackInfo[uuid].context
                 sdk._private.cachedCallbackInfo[uuid].cb(context, responseEvent.data)
-                sdk._private.cachedCallbackInfo[uuid] = invalid
+                sdk._private.cachedCallbackInfo.Delete(uuid)
             else
                 _adb_logError("_adb_handleResponseEvent() - Not handling response event, callback not passed with the request event.")
             end if

@@ -19,7 +19,7 @@ BLUE='\033[0;34m'
 
 echo "Target version - ${BLUE}$1${NC}"
 echo "------------------AEPRoku-------------------"
-SOURCE_CODE_VERSION=$(cat ./output/AdobeEdge.brs | egrep '\s*VERSION\s*=\s*\"(.*)\"' | sed -e 's/.*= //; s/,//g; s/"//g')
+SOURCE_CODE_VERSION=$(cat ./AEPRokuSDK/AdobeEdge.brs | egrep '\s*VERSION\s*=\s*\"(.*)\"' | sed -e 's/.*= //; s/,//g; s/"//g')
 echo "Souce code version - ${BLUE}${SOURCE_CODE_VERSION}${NC}"
 
 if [[ "$1" == "$SOURCE_CODE_VERSION" ]]; then

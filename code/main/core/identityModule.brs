@@ -109,7 +109,7 @@ function _adb_IdentityModule(configurationModule as object) as object
                 return invalid
             end if
 
-            if _adb_isInvalidOrEmptyArray(responseJson.handle) or _adb_isInvalidOrEmptyArray(responseJson.handle[0].payload) or _adb_isEmptyOrInvalidString(responseJson.handle[0].payload[0].id)
+            if _adb_isEmptyOrInvalidArray(responseJson.handle) or _adb_isEmptyOrInvalidArray(responseJson.handle[0].payload) or _adb_isEmptyOrInvalidString(responseJson.handle[0].payload[0].id)
                 _adb_logError("_getECIDFromQueryResponse() - Unable to parse ECID from the response: (" + FormatJson(responseJson) + ")")
                 return invalid
             end if
