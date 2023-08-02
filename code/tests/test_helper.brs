@@ -22,13 +22,13 @@ function getPersistedECID() as dynamic
 end function
 
 function removeValue(key) as void
-    _registry = CreateObject("roRegistrySection", "adb_edge_mobile")
+    _registry = CreateObject("roRegistrySection", "adb_aep_roku_sdk")
     _registry.Delete(key)
     _registry.Flush()
 end function
 
 function readValueFromRegistry(key as string) as dynamic
-    _registry = CreateObject("roRegistrySection", "adb_edge_mobile")
+    _registry = CreateObject("roRegistrySection", "adb_aep_roku_sdk")
     if _registry.Exists(key) and _registry.Read(key).Len() > 0
         return _registry.Read(key)
     end if
