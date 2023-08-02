@@ -17,7 +17,7 @@ function _adb_LocalDataStoreService() as object
     return {
 
         ''' private internal variables
-        _registry: CreateObject("roRegistrySection", "adb_aep_roku_sdk"),
+        _registry: CreateObject("roRegistrySection", "adb_edge_mobile"),
 
         ''' public Functions
         writeValue: function(key as string, value as string) as void

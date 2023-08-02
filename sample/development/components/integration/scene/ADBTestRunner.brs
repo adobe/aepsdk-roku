@@ -253,7 +253,7 @@ sub ADB_resetSDK(instance as object)
 end sub
 
 function ADB_removeRegistryValue(key) as void
-    _registry = CreateObject("roRegistrySection", "adb_aep_roku_sdk")
+    _registry = CreateObject("roRegistrySection", "adb_edge_mobile")
     _registry.Delete(key)
     _registry.Flush()
 end function
@@ -268,7 +268,7 @@ function ADB_getPersistedECID() as dynamic
 end function
 
 function ADB_readRegistryValue(key as string) as dynamic
-    _registry = CreateObject("roRegistrySection", "adb_aep_roku_sdk")
+    _registry = CreateObject("roRegistrySection", "adb_edge_mobile")
     if _registry.Exists(key) and _registry.Read(key).Len() > 0
         return _registry.Read(key)
     end if
@@ -277,7 +277,7 @@ function ADB_readRegistryValue(key as string) as dynamic
 end function
 
 function ADB_persisteECIDInRegistry(value as string) as dynamic
-    _registry = CreateObject("roRegistrySection", "adb_aep_roku_sdk")
+    _registry = CreateObject("roRegistrySection", "adb_edge_mobile")
     _registry.Write("ecid", value)
     return invalid
 end function
