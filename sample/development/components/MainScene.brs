@@ -30,11 +30,11 @@ sub _initSDK()
   ' Initalize Adobe Edge SDK
   '------------------------------------
 
-  m.adobeEdgeSdk = AdobeSDKInit()
-  print "Adobe SDK version : " + m.adobeEdgeSdk.getVersion()
+  m.aepSdk = AdobeAEPSDKInit()
+  print "Adobe SDK version : " + m.aepSdk.getVersion()
 
-  ADB_CONSTANTS = AdobeSDKConstants()
-  m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
+  ADB_CONSTANTS = AdobeAEPSDKConstants()
+  m.aepSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
 
   configuration = {}
   test_config = ParseJson(ReadAsciiFile("pkg:/source/test_config.json"))
@@ -42,7 +42,7 @@ sub _initSDK()
     configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = test_config.config_id
   end if
 
-  m.adobeEdgeSdk.updateConfiguration(configuration)
+  m.aepSdk.updateConfiguration(configuration)
 
 end sub
 
@@ -51,7 +51,7 @@ sub _sendEventWithCallback()
   ' Send an Experience Event with callback
   '----------------------------------------
 
-  m.adobeEdgeSdk.sendEvent({
+  m.aepSdk.sendEvent({
     "eventType": "commerce.orderPlaced",
     "commerce": {
       "key3": "value3"
@@ -89,13 +89,13 @@ sub _sendEventWithCallback()
 end sub
 
 sub _testShutdownAPI()
-  if m.adobeEdgeSdk = invalid
+  if m.aepSdk = invalid
     throw "Adobe Edge SDK is not initialized"
   end if
 
   counter = 0
   while counter < 20
-    m.adobeEdgeSdk.sendEvent({
+    m.aepSdk.sendEvent({
       "eventType": "commerce.orderPlaced",
       "commerce": {
         "key1": "value1",
@@ -166,12 +166,12 @@ end function
 
 sub timerExecutor()
   if m.test_shutdown
-    m.adobeEdgeSdk.shutdown()
-    m.adobeEdgeSdk = invalid
+    m.aepSdk.shutdown()
+    m.aepSdk = invalid
 
-    m.adobeEdgeSdk_2 = AdobeSDKInit()
-    ADB_CONSTANTS = AdobeSDKConstants()
-    m.adobeEdgeSdk_2.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
+    m.aepSdk_2 = AdobeAEPSDKInit()
+    ADB_CONSTANTS = AdobeAEPSDKConstants()
+    m.aepSdk_2.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
 
     configuration = {}
 
@@ -179,9 +179,9 @@ sub timerExecutor()
     if test_config <> invalid and test_config.count() > 0
       configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = test_config.config_id
     end if
-    m.adobeEdgeSdk_2.updateConfiguration(configuration)
+    m.aepSdk_2.updateConfiguration(configuration)
 
-    m.adobeEdgeSdk_2.sendEvent({
+    m.aepSdk_2.sendEvent({
       "eventType": "commerce.orderPlaced",
       "commerce": {
         "key3": "value3"

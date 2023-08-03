@@ -19,30 +19,46 @@ sub init()
   '------------------------------------
 
 
-  m.adobeEdgeSdk = AdobeSDKInit()
-  print "Adobe SDK version : " + m.adobeEdgeSdk.getVersion()
+  m.aepSdk = AdobeAEPSDKInit()
+  print "Adobe SDK version : " + m.aepSdk.getVersion()
 
-  ADB_CONSTANTS = AdobeSDKConstants()
-  m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.DEBUG)
+  ADB_CONSTANTS = AdobeAEPSDKConstants()
+  m.aepSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.DEBUG)
 
   ' get_mid_from_media_sdk = "12340203495818708"
-  ' m.adobeEdgeSdk.setExperienceCloudId(get_mid_from_media_sdk)
+  ' m.aepSdk.setExperienceCloudId(get_mid_from_media_sdk)
 
   configuration = {}
-  configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = "291f33f7-8e3c-406c-b4a8-0b6a0e088323"
+  configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = ""
   'configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = ""
-  m.adobeEdgeSdk.updateConfiguration(configuration)
+  m.aepSdk.updateConfiguration(configuration)
 
-  ' m.adobeEdgeSdk.sendEvent({
-  '   "eventType": "commerce.orderPlaced",
-  '   "commerce": {
-  '     "key1": "value1"
-  '   }
-  ' })
+   m.aepSdk.sendEvent({
+     "eventType": "commerce.orderPlaced",
+     "commerce": {
+       "key1": "value1"
+     },
+     "identityMap": {
+      "RIDA" : [
+          {
+            "id" : "Test-AdId",
+            "authenticatedState": "ambiguous",
+            "primary": false
+          }
+        ],
+         "EMAIL" : [
+          {
+            "id" : "test1@test.com",
+            "authenticatedState": "ambiguous",
+            "primary": false
+          }
+        ]
+  }
+  })
 
-  ' m.adobeEdgeSdk.resetIdentities()
+  ' m.aepSdk.resetIdentities()
 
-  ' m.adobeEdgeSdk.sendEvent({
+  ' m.aepSdk.sendEvent({
   '   "eventType": "commerce.orderPlaced",
   '   "commerce": {
   '     "key2": "value2"
@@ -65,7 +81,7 @@ sub onButtonSelected()
     ' Send an Experience Event with callback
     '----------------------------------------
 
-    m.adobeEdgeSdk.sendEvent({
+    m.aepSdk.sendEvent({
       "eventType": "commerce.orderPlaced",
       "commerce": {
         "key3": "value3"
@@ -74,7 +90,7 @@ sub onButtonSelected()
       print "callback result: "
       print result
       print context
-      jsonObj = ParseJson(result.data.message)
+      jsonObj = ParseJson(result.message)
       message = ""
       for each item in jsonObj.handle
         if item.type = "locationHint:result" then

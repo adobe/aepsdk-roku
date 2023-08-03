@@ -14,14 +14,14 @@ If no datastream was previously created, see [Configure datastreams](https://dev
 
 - Add the below SDK files to your Roku project
 
-  - Copy the `AdobeEdge.brs` file to the `source` directory
-  - Copy the `components/adobe/AdobeEdgeTask.brs` and `components/adobe/AdobeEdgeTask.xml` files to the `components/adobe` directory
+  - Copy the `AEPSDK.brs` file to the `source` directory
+  - Copy the `components/adobe/AEPSDKTask.brs` and `components/adobe/AEPSDKTask.xml` files to the `components/adobe` directory
 
-If you want to move `AdobeEdge.brs`, `AdobeEdgeTask.brs`, and `AdobeEdgeTask.xml` to different locations than the paths specified below, please update `AdobeEdgeTask.xml` file with the corresponding file path.
+If you want to move `AEPSDK.brs`, `AEPSDKTask.brs`, and `AEPSDKTask.xml` to different locations than the paths specified below, please update `AEPSDKTask.xml` file with the corresponding file path.
 
 ```xml
-  <script type="text/brightscript" uri="pkg:/components/adobe/AdobeEdgeTask.brs"/>
-  <script type="text/brightscript" uri="pkg:/source/AdobeEdge.brs"/>
+  <script type="text/brightscript" uri="pkg:/components/adobe/AEPSDKTask.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/AEPSDK.brs"/>
 ```
 
 ## Initialize and configure the AEP Roku SDK
@@ -29,19 +29,19 @@ If you want to move `AdobeEdge.brs`, `AdobeEdgeTask.brs`, and `AdobeEdgeTask.xml
 Initialize and configure the AEP Roku SDK inside your `scene` script.
 
 ```xml
-  <script type="text/brightscript" uri="pkg:/source/AdobeEdge.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/AEPSDK.brs"/>
 ```
 
 ```brightscript
-  m.aepSdk = AdobeSDKInit()
-  ADB_CONSTANTS = AdobeSDKConstants()
+  m.aepSdk = AdobeAEPSDKInit()
+  ADB_CONSTANTS = AdobeAEPSDKConstants()
 
   configuration = {}
   configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = "<YOUR_CONFIG_ID>"
   configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = "<YOUR_DOMAIN_NAME>"
-  m.adobeEdgeSdk.updateConfiguration(configuration)
+  m.aepSdk.updateConfiguration(configuration)
 
-  m.adobeEdgeSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.DEBUG)
+  m.aepSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.DEBUG)
 
   ' send XDM data to Adobe Edge Network '
 

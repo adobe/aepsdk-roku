@@ -15,7 +15,7 @@
 
 ' Return the Adobe SDK constants
 
-function AdobeSDKConstants() as object
+function AdobeAEPSDKConstants() as object
     return {
         CONFIGURATION: {
             EDGE_CONFIG_ID: "edge.configId",
@@ -43,20 +43,20 @@ end function
 '
 ' *****************************************************************************
 
-function AdobeSDKInit() as object
+function AdobeAEPSDKInit() as object
 
     if GetGlobalAA()._adb_public_api <> invalid then
-        _adb_logInfo("API: AdobeSDKInit() - Please shut down the previous SDK instance before initializing a new one.")
+        _adb_logInfo("API: AdobeAEPSDKInit() - Please shut down the previous SDK instance before initializing a new one.")
         return GetGlobalAA()._adb_public_api
     end if
 
-    _adb_logDebug("API: AdobeSDKInit() - Initializing the SDK.")
+    _adb_logDebug("API: AdobeAEPSDKInit() - Initializing the SDK.")
 
     ' create the SDK thread
     _adb_createTaskNode()
 
     if _adb_retrieveTaskNode() = invalid then
-        _adb_logDebug("AdobeSDKInit() - Failed to initialize the SDK, task node is invalid.")
+        _adb_logDebug("AdobeAEPSDKInit() - Failed to initialize the SDK, task node is invalid.")
         return invalid
     end if
 
@@ -237,7 +237,7 @@ function AdobeSDKInit() as object
                 _adb_logDebug("dispatchEvent() - Dispatching event:(" + FormatJson(event) + ")")
                 taskNode = _adb_retrieveTaskNode()
                 if taskNode = invalid then
-                    _adb_logDebug("dispatchEvent() - Cannot dispatch public API event after shutdown(). Please initialze the SDK using AdobeSDKInit() API.")
+                    _adb_logDebug("dispatchEvent() - Cannot dispatch public API event after shutdown(). Please initialze the SDK using AdobeAEPSDKInit() API.")
                     return
                 end if
 
@@ -255,7 +255,7 @@ function AdobeSDKInit() as object
     ' start the event loop on the SDK thread
     _adb_startTaskNode()
 
-    _adb_logDebug("AdobeSDKInit() - Successfully initialized the SDK")
+    _adb_logDebug("AdobeAEPSDKInit() - Successfully initialized the SDK")
     return GetGlobalAA()._adb_public_api
 end function
 

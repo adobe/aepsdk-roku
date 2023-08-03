@@ -25,7 +25,7 @@ sub TC_loggingService_logLevel()
     ' debug() should print message
     loggingService._adb_print = function(message as string)
         GetGlobalAA()._adb_test_last_called_method = "_adb_print1"
-        UTF_assertEqual(message, "[ADB-EDGE][D] test-123")
+        UTF_assertEqual(message, "[AEPRokuSDK][D] test-123")
     end function
     loggingService.debug("test-123")
     UTF_assertEqual(GetGlobalAA()._adb_test_last_called_method, "_adb_print1")
@@ -33,7 +33,7 @@ sub TC_loggingService_logLevel()
     ' info() should print message
     loggingService._adb_print = function(message as string)
         GetGlobalAA()._adb_test_last_called_method = "_adb_print2"
-        UTF_assertEqual(message, "[ADB-EDGE][I] test-123")
+        UTF_assertEqual(message, "[AEPRokuSDK][I] test-123")
     end function
     loggingService.info("test-123")
     UTF_assertEqual(GetGlobalAA()._adb_test_last_called_method, "_adb_print2")
@@ -41,7 +41,7 @@ sub TC_loggingService_logLevel()
     ' warning() should print message
     loggingService._adb_print = function(message as string)
         GetGlobalAA()._adb_test_last_called_method = "_adb_print3"
-        UTF_assertEqual(message, "[ADB-EDGE][W] test-123")
+        UTF_assertEqual(message, "[AEPRokuSDK][W] test-123")
     end function
     loggingService.warning("test-123")
     UTF_assertEqual(GetGlobalAA()._adb_test_last_called_method, "_adb_print3")
@@ -49,7 +49,7 @@ sub TC_loggingService_logLevel()
     ' error() should print message
     loggingService._adb_print = function(message as string)
         GetGlobalAA()._adb_test_last_called_method = "_adb_print4"
-        UTF_assertEqual(message, "[ADB-EDGE][E] test-123")
+        UTF_assertEqual(message, "[AEPRokuSDK][E] test-123")
     end function
     loggingService.error("test-123")
     UTF_assertEqual(GetGlobalAA()._adb_test_last_called_method, "_adb_print4")
@@ -89,27 +89,27 @@ sub TC_loggingService_utility_functions()
     ' _adb_logVerbose()
     GetGlobalAA()._adb_printed_message = ""
     _adb_logVerbose("test-123")
-    UTF_assertEqual(GetGlobalAA()._adb_printed_message, "[ADB-EDGE][V] test-123")
+    UTF_assertEqual(GetGlobalAA()._adb_printed_message, "[AEPRokuSDK][V] test-123")
 
     ' _adb_logDebug()
     GetGlobalAA()._adb_printed_message = ""
     _adb_logDebug("test-123")
-    UTF_assertEqual(GetGlobalAA()._adb_printed_message, "[ADB-EDGE][D] test-123")
+    UTF_assertEqual(GetGlobalAA()._adb_printed_message, "[AEPRokuSDK][D] test-123")
 
     ' _adb_logInfo()
     GetGlobalAA()._adb_printed_message = ""
     _adb_logInfo("test-123")
-    UTF_assertEqual(GetGlobalAA()._adb_printed_message, "[ADB-EDGE][I] test-123")
+    UTF_assertEqual(GetGlobalAA()._adb_printed_message, "[AEPRokuSDK][I] test-123")
 
     ' _adb_logWarning()
     GetGlobalAA()._adb_printed_message = ""
     _adb_logWarning("test-123")
-    UTF_assertEqual(GetGlobalAA()._adb_printed_message, "[ADB-EDGE][W] test-123")
+    UTF_assertEqual(GetGlobalAA()._adb_printed_message, "[AEPRokuSDK][W] test-123")
 
     ' _adb_logError()
     GetGlobalAA()._adb_printed_message = ""
     _adb_logError("test-123")
-    UTF_assertEqual(GetGlobalAA()._adb_printed_message, "[ADB-EDGE][E] test-123")
+    UTF_assertEqual(GetGlobalAA()._adb_printed_message, "[AEPRokuSDK][E] test-123")
 
     loggingService._adb_print = func
 end sub

@@ -108,15 +108,18 @@ dist
 /.vscode
 out/
 sample/simple-videoplayer-channel/components/adobe
-sample/simple-videoplayer-channel/source/AdobeEdge.brs
+sample/simple-videoplayer-channel/source/AEPSDK.brs
 sample/simple-videoplayer-channel/source/tests
 sample/simple-videoplayer-channel/.vscode/settings.json
 output/
 
+code/tests/tests
+
 AEPRokuSDK/
 
-sample/development/components/adobe/AdobeEdgeTask.brs
+sample/development/components/adobe/AEPSDKTask.brs
 sample/development/source/adobe
+sample/development/source/AEPSDK.brs
 sample/development/source/tests
 
 

@@ -34,7 +34,7 @@ function _adb_test_functions() as dynamic
         'test_datetime.brs
         TC_adb_sdkVersion
         'test_constants.brs
-        TC_AdobeSDKConstants
+        TC_AdobeAEPSDKConstants
         'test_map.brs
         TC_adb_optMapFromMap
         TC_adb_optStringFromMap
@@ -116,11 +116,11 @@ function _adb_test_functions() as dynamic
         TC_adb_EdgeModule_processQueuedRequests
     ]
     initSDK = [
-        'test_AdobeSDKInit.brs
-        TS_AdobeSDKInit_SetUp
-        TS_AdobeSDKInit_TearDown
-        TC_AdobeSDKInit_singleton
-        TC_AdobeSDKInit_initialize_task_node
+        'test_AdobeAEPSDKInit.brs
+        TS_AdobeAEPSDKInit_SetUp
+        TS_AdobeAEPSDKInit_TearDown
+        TC_AdobeAEPSDKInit_singleton
+        TC_AdobeAEPSDKInit_initialize_task_node
     ]
     api = [
         'test_public_APIs.brs

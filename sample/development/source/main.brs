@@ -21,9 +21,7 @@ sub Main(input as dynamic)
   #if unitTests
     _adb_run_tests()
 
-  #end if
-
-  #if integrationTests
+  #else if integrationTests
 
     showHomeScreen("TestScene")
 

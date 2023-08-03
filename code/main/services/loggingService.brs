@@ -27,30 +27,30 @@ function _adb_LoggingService() as object
         end function,
 
         error: function(message as string) as void
-            m._adb_print("[ADB-EDGE][E] " + message)
+            m._adb_print("[AEPRokuSDK][E] " + message)
         end function,
 
         verbose: function(message as string) as void
             if m._logLevel <= 0 then
-                m._adb_print("[ADB-EDGE][V] " + message)
+                m._adb_print("[AEPRokuSDK][V] " + message)
             end if
         end function,
 
         debug: function(message as string) as void
             if m._logLevel <= 1 then
-                m._adb_print("[ADB-EDGE][D] " + message)
+                m._adb_print("[AEPRokuSDK][D] " + message)
             end if
         end function,
 
         info: function(message as string) as void
             if m._logLevel <= 2 then
-                m._adb_print("[ADB-EDGE][I] " + message)
+                m._adb_print("[AEPRokuSDK][I] " + message)
             end if
         end function,
 
         warning: function(message as string) as void
             if m._logLevel <= 3 then
-                m._adb_print("[ADB-EDGE][W] " + message)
+                m._adb_print("[AEPRokuSDK][W] " + message)
             end if
         end function,
 

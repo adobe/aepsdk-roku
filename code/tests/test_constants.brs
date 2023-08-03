@@ -11,10 +11,10 @@
 
 ' *****************************************************************************************
 
-' target: AdobeSDKConstants()
+' target: AdobeAEPSDKConstants()
 ' @Test
-sub TC_AdobeSDKConstants()
-    cons = AdobeSDKConstants()
+sub TC_AdobeAEPSDKConstants()
+    cons = AdobeAEPSDKConstants()
     UTF_assertEqual(cons.LOG_LEVEL.VERBOSE, 0)
     UTF_assertEqual(cons.LOG_LEVEL.DEBUG, 1)
     UTF_assertEqual(cons.LOG_LEVEL.INFO, 2)
