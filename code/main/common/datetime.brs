@@ -15,7 +15,12 @@
 
 function _adb_ISO8601_timestamp() as string
     dateTime = createObject("roDateTime")
-    return dateTime.toIsoString()
+    isoString = dateTime.toIsoString()
+    if isoString.EndsWith("Z")
+        milliSeconds = StrI(dateTime.GetMilliseconds()).Trim()
+        isoString = isoString.Left(isoString.Len() - 1) + "." + milliSeconds + "Z"
+    end if
+    return isoString
 end function
 
 ' Returns the current time in milliseconds.

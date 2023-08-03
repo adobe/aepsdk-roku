@@ -43,6 +43,7 @@ function _adb_test_functions() as dynamic
         TC_adb_isEmptyOrInvalidString
         'test_datetime.brs
         TC_adb_timestampInMillis
+        TC_adb_ISO8601_timestamp
         ' test_log.brs
         TS_logUtils_SetUp
         TS_logUtils_BeforeEach
