@@ -39,8 +39,6 @@ function TS_SDK_integration() as object
 
             aepSdk = ADB_retrieveSDKInstance()
 
-            ADB_CONSTANTS = AdobeAEPSDKConstants()
-
             version$ = aepSdk.getVersion()
 
             ADB_assertTrue((version$ = "1.0.0"), LINE_NUM, "assert getVersion() = 1.0.0")
@@ -56,8 +54,6 @@ function TS_SDK_integration() as object
             aepSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.DEBUG)
 
             eventIdForSetLogLevel = aepSdk._private.lastEventId
-
-            version$ = aepSdk.getVersion()
 
             ADB_assertTrue((_adb_retrieveTaskNode() <> invalid), LINE_NUM, "assert _adb_retrieveTaskNode")
 
@@ -234,7 +230,7 @@ function TS_SDK_integration() as object
 
             validator[eventIdForFirstSendEvent] = sub(debugInfo)
                 ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
-                ecid = debugInfo.identity.ecid
+                _ecid = debugInfo.identity.ecid
                 eventid = debugInfo.eventid
                 ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "sendEvent"), LINE_NUM, "assert debugInfo.apiName = sendEvent")
                 ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 0), LINE_NUM, "assert networkRequests = 0")
@@ -244,7 +240,7 @@ function TS_SDK_integration() as object
 
             validator[eventIdForSecondSendEvent] = sub(debugInfo)
                 ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
-                ecid = debugInfo.identity.ecid
+                _ecid = debugInfo.identity.ecid
                 eventid = debugInfo.eventid
                 ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "sendEvent"), LINE_NUM, "assert debugInfo.apiName = sendEvent")
                 ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 0), LINE_NUM, "assert networkRequests = 0")
@@ -279,7 +275,7 @@ function TS_SDK_integration() as object
 
             validator[eventIdForFirstSendEvent] = sub(debugInfo)
                 ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
-                ecid = debugInfo.identity.ecid
+                _ecid = debugInfo.identity.ecid
                 eventid = debugInfo.eventid
                 ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "sendEvent"), LINE_NUM, "assert debugInfo.apiName = sendEvent")
                 ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 0), LINE_NUM, "assert networkRequests = 0")
@@ -289,7 +285,7 @@ function TS_SDK_integration() as object
 
             validator[eventIdForSecondSendEvent] = sub(debugInfo)
                 ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
-                ecid = debugInfo.identity.ecid
+                _ecid = debugInfo.identity.ecid
                 eventid = debugInfo.eventid
                 ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "sendEvent"), LINE_NUM, "assert debugInfo.apiName = sendEvent")
                 ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 0), LINE_NUM, "assert networkRequests = 0")
@@ -314,20 +310,20 @@ function TS_SDK_integration() as object
                 ' Send event 1
                 ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.key = "value1"), LINE_NUM, "assert networkRequests(2) is to send Edge event")
                 ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.xdm.identityMap.ECID[0].id = ecid), LINE_NUM, "assert networkRequests(2) is to send Edge event with ecid")
-                secondResponseJson = ParseJson(debugInfo.networkRequests[1].response.body)
+                _secondResponseJson = ParseJson(debugInfo.networkRequests[1].response.body)
                 ADB_assertTrue((debugInfo.networkRequests[1].response.code = 200), LINE_NUM, "assert response (2) returns 200")
 
                 ' Send event 2
                 ADB_assertTrue((debugInfo.networkRequests[2].jsonObj.events[0].xdm.key = "value2"), LINE_NUM, "assert networkRequests(3) is to send Edge event")
                 ADB_assertTrue((debugInfo.networkRequests[2].jsonObj.xdm.identityMap.ECID[0].id = ecid), LINE_NUM, "assert networkRequests(3) is to send Edge event with ecid")
-                secondResponseJson = ParseJson(debugInfo.networkRequests[2].response.body)
-                ADB_assertTrue((debugInfo.networkRequests[1].response.code = 200), LINE_NUM, "assert response (3) returns 200")
+                _thirdResponseJson = ParseJson(debugInfo.networkRequests[2].response.body)
+                ADB_assertTrue((debugInfo.networkRequests[2].response.code = 200), LINE_NUM, "assert response (3) returns 200")
 
                 ' Send event 3
                 ADB_assertTrue((debugInfo.networkRequests[3].jsonObj.events[0].xdm.key = "value3"), LINE_NUM, "assert networkRequests(4) is to send Edge event")
                 ADB_assertTrue((debugInfo.networkRequests[3].jsonObj.xdm.identityMap.ECID[0].id = ecid), LINE_NUM, "assert networkRequests(4) is to send Edge event with ecid")
-                secondResponseJson = ParseJson(debugInfo.networkRequests[3].response.body)
-                ADB_assertTrue((debugInfo.networkRequests[1].response.code = 200), LINE_NUM, "assert response (4) returns 200")
+                _fourthResponseJson = ParseJson(debugInfo.networkRequests[3].response.body)
+                ADB_assertTrue((debugInfo.networkRequests[3].response.code = 200), LINE_NUM, "assert response (4) returns 200")
 
                 ecidInRegistry = ADB_getPersistedECID()
                 ADB_assertTrue((ecidInRegistry = ecid), LINE_NUM, "assert ecid is persisted in Registry")
@@ -348,7 +344,7 @@ function TS_SDK_integration() as object
             aepSdk.updateConfiguration(configuration)
 
             GetGlobalAA()._adb_integration_test_callback_result = invalid
-            aepSdk.sendEvent({ key: "value" }, sub(context, result)
+            aepSdk.sendEvent({ key: "value" }, sub(_context, result)
                 GetGlobalAA()._adb_integration_test_callback_result = result
             end sub, {})
 
@@ -411,7 +407,7 @@ function TS_SDK_integration() as object
                 ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
                 ecid = debugInfo.identity.ecid
                 ADB_assertTrue((ecid = "12345678901234567890123456789012345678"), LINE_NUM, "assert debugInfo.identity.ecid = 12345678901234567890123456789012345678")
-                eventid = debugInfo.eventid
+                _eventid = debugInfo.eventid
                 ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "sendEvent"), LINE_NUM, "assert debugInfo.apiName = sendEvent")
                 ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 1), LINE_NUM, "assert networkRequests = 1")
 
@@ -458,7 +454,7 @@ function TS_SDK_integration() as object
             validator[eventIdForSendEvent] = sub(debugInfo)
                 ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
 
-                eventid = debugInfo.eventid
+                _eventid = debugInfo.eventid
                 ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "sendEvent"), LINE_NUM, "assert debugInfo.apiName = sendEvent")
                 ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 1), LINE_NUM, "assert networkRequests = 1")
 

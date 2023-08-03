@@ -76,7 +76,7 @@ function BaseTestSuite()
     this.assertArrayNotCount = BTS__AssertArrayNotCount
     this.assertEmpty = BTS__AssertEmpty
     this.assertNotEmpty = BTS__AssertNotEmpty
-    
+
     ' Type Comparison Functionality
     this.eqValues = TF_Utils__EqValues
     this.eqAssocArrays = TF_Utils__EqAssocArray
@@ -111,7 +111,7 @@ end sub
 ' @param arg (dynamic) A test function arguments.
 ' @param hasArgs (boolean) True if test function has parameters.
 ' @param skip (boolean) Skip test run.
-' 
+'
 ' @return TestCase object.
 ' ----------------------------------------------------------------
 function BTS__CreateTest(name as String, func as Object, setup = invalid as Object, teardown = invalid as Object, arg = invalid as Dynamic, hasArgs = false as Boolean, skip = false as Boolean) as Object
@@ -120,12 +120,12 @@ function BTS__CreateTest(name as String, func as Object, setup = invalid as Obje
         Func: func
         SetUp: setup
         TearDown: teardown
-	    
+
 	    perfData: {}
 
         hasArguments: hasArgs
         arg: arg
-        
+
         skip: skip
     }
 end function
@@ -516,7 +516,7 @@ function BTS__AssertArrayContainsSubset(array as Dynamic, subset as Dynamic, msg
                 key = item
                 value = subset[key]
             end if
-            
+
             if not TF_Utils__ArrayContains(array, value, key)
                 msg = "Array doesn't have the '" + TF_Utils__AsString(value) + "' value."
 
@@ -709,14 +709,14 @@ end function
 ' ----------------------------------------------------------------
 ' Main function to generate object according to specified scheme.
 
-' @param scheme (object) A scheme with desired object structure. Can be 
-' any simple type, array of types or associative array in form 
+' @param scheme (object) A scheme with desired object structure. Can be
+' any simple type, array of types or associative array in form
 '     { propertyName1 : "propertyType1"
 '       propertyName2 : "propertyType2"
 '       ...
 '       propertyNameN : "propertyTypeN" }
 
-' @return An object according to specified scheme or invalid, 
+' @return An object according to specified scheme or invalid,
 ' if scheme is not valid.
 ' ----------------------------------------------------------------
 function ItemGenerator(scheme as Object) as Object
@@ -743,11 +743,11 @@ end function
 ' ----------------------------------------------------------------
 ' Generate object according to specified scheme.
 
-' @param scheme (object) A scheme with desired object structure. 
+' @param scheme (object) A scheme with desired object structure.
 ' Can be any simple type, array of types or associative array.
 
-' @return An object according to specified scheme or invalid,  
-' if scheme is not one of simple type, array or 
+' @return An object according to specified scheme or invalid,
+' if scheme is not one of simple type, array or
 ' associative array.
 ' ----------------------------------------------------------------
 function IG_GetItem(scheme as Object) as Object
@@ -767,8 +767,8 @@ end function
 ' ----------------------------------------------------------------
 ' Generates associative array according to specified scheme.
 
-' @param scheme (object) An associative array with desired 
-'    object structure in form 
+' @param scheme (object) An associative array with desired
+'    object structure in form
 '     { propertyName1 : "propertyType1"
 '       propertyName2 : "propertyType2"
 '       ...
@@ -791,7 +791,7 @@ end function
 ' ----------------------------------------------------------------
 ' Generates array according to specified scheme.
 
-' @param scheme (object) An array with desired object types. 
+' @param scheme (object) An array with desired object types.
 
 ' @return An array according to specified scheme.
 ' ----------------------------------------------------------------
@@ -808,7 +808,7 @@ end function
 ' ----------------------------------------------------------------
 ' Generates random value of specified type.
 
-' @param typeStr (string) A name of desired object type. 
+' @param typeStr (string) A name of desired object type.
 
 ' @return A simple type object or invalid if type is not supported.
 ' ----------------------------------------------------------------
@@ -840,7 +840,7 @@ end function
 ' ----------------------------------------------------------------
 ' Generates random integer value from 1 to specified seed value.
 
-' @param seed (integer) A seed value for Rnd function. 
+' @param seed (integer) A seed value for Rnd function.
 ' Default value: 100.
 
 ' @return A random integer value.
@@ -1034,7 +1034,7 @@ end sub
 ' @param url (string) A storage server URL.
 ' Default value: ""
 ' ----------------------------------------------------------------
-sub Logger__SetServerURL(url = "" as String)
+sub Logger__SetServerURL(_url = "" as String)
     ? "This function is deprecated. Please use Logger__SetServer(host, port)"
 end sub
 
@@ -1048,11 +1048,11 @@ sub Logger__SendToServer(statObj as Object)
     if TF_Utils__IsNotEmptyString(m.serverURL) and TF_Utils__IsValid(statObj)
         ? "***"
         ? "***   Sending statsObj to server: "; m.serverURL
-        
+
         request = CreateObject("roUrlTransfer")
         request.SetUrl(m.serverURL)
         statString = FormatJson(statObj)
-        
+
         ? "***   Response: "; request.postFromString(statString)
         ? "***"
         ? "******************************************************************"
@@ -1084,7 +1084,7 @@ sub Logger__PrintStatistic(statObj as Object)
             end for
         end if
     end if
-    
+
     ? "***"
     ? "***   Total  = "; TF_Utils__AsString(statObj.Total); " ; Passed  = "; statObj.Correct; " ; Failed   = "; statObj.Fail; " ; Skipped   = "; statObj.skipped; " ; Crashes  = "; statObj.Crash;
     ? "***   Time spent: "; statObj.Time; "ms"
@@ -1528,7 +1528,7 @@ end function
 ' @param statObj (object, optional) statistic object to be used in tests
 ' @param testSuiteNamesList (array, optional) array of test suite function names to be used in tests
 
-' @return Statistic object if run in node mode, invalid otherwise 
+' @return Statistic object if run in node mode, invalid otherwise
 ' ----------------------------------------------------------------
 function TestRunner__Run(statObj = m.Logger.CreateTotalStatistic() as Object, testSuiteNamesList = [] as Object) as Object
     alltestCount = 0
@@ -1561,10 +1561,10 @@ function TestRunner__Run(statObj = m.Logger.CreateTotalStatistic() as Object, te
         for each testCase in testCases
             ' clear all existing errors
             globalErrorsList.clear()
-            
+
             if m.testCaseName = "" or (m.testCaseName <> "" and LCase(testCase.Name) = LCase(m.testCaseName))
                 skipTest = TF_Utils__AsBoolean(testCase.skip)
-                
+
                 if TF_Utils__IsFunction(testCase.SetUp) and not skipTest
                     m.Logger.PrintTestSetUp(testCase.Name)
                     if IS_NEW_APPROACH then
@@ -1577,17 +1577,17 @@ function TestRunner__Run(statObj = m.Logger.CreateTotalStatistic() as Object, te
 
                 testTimer = CreateObject("roTimespan")
                 testStatObj = m.Logger.CreateTestStatistic(testCase.Name)
-                
+
                 if skipTest
                     runResult = m.SKIP_TEST_MESSAGE_PREFIX + "Test was skipped according to specified filters"
                 else
                     testSuite.testInstance = testCase
                     testSuite.testCase = testCase.Func
-    
+
                     runResult = ""
                     if IS_NEW_APPROACH then
                         env.functionToCall = testCase.Func
-                        
+
                         if GetInterface(env.functionToCall, "ifFunction") <> invalid
                             if testCase.hasArguments then
                                 env.functionToCall(testCase.arg)
@@ -1611,7 +1611,7 @@ function TestRunner__Run(statObj = m.Logger.CreateTotalStatistic() as Object, te
                         testCase.TearDown()
                     end if
                 end if
-                
+
                 if IS_NEW_APPROACH then
                     if globalErrorsList.count() > 0
                         for each error in globalErrorsList
@@ -1619,7 +1619,7 @@ function TestRunner__Run(statObj = m.Logger.CreateTotalStatistic() as Object, te
                         end for
                     end if
                 end if
-                
+
                 if runResult <> ""
                     if InStr(0, runResult, m.SKIP_TEST_MESSAGE_PREFIX) = 1
                         testStatObj.result = "Skipped"
@@ -1635,7 +1635,7 @@ function TestRunner__Run(statObj = m.Logger.CreateTotalStatistic() as Object, te
 
                 testStatObj.Time = testTimer.TotalMilliseconds()
                 m.Logger.AppendTestStatistic(suiteStatObj, testStatObj)
-                
+
                 if testStatObj.Result = "Fail" and m.failFast
                     suiteStatObj.Result = "Fail"
                     exit for
@@ -1742,7 +1742,7 @@ function TestRunner__Run(statObj = m.Logger.CreateTotalStatistic() as Object, te
             title += totalStatObj.notFoundFunctionsMessage
         end if
         ? title
-    end if   
+    end if
 end function
 
 ' ----------------------------------------------------------------
@@ -1933,20 +1933,20 @@ function ScanFileForNewTests(souceCode, filePath)
             if not m.executedParametrizedAdding
                 if m.annotations.methodSource <> invalid and m.annotations.parameterizedTest <> invalid then
                     methodAnottation = m.annotations.methodSource.line
-    
+
                     allowedAnnotationsRegex = CreateObject("roRegex", "^'\s*@(methodsource)\(" + Chr(34) + "([A-Za-z0-9_]*)" + Chr(34) + "\)", "i")
-    
+
                     if allowedAnnotationsRegex.IsMatch(methodAnottation)
                         groups = allowedAnnotationsRegex.Match(methodAnottation)
                         providerFunction = groups[2]
-    
+
                         providerFunctionPointer = m.getFunctionPointer(providerFunction)
-    
+
                         if providerFunctionPointer <> invalid then
                             funcPointer = m.getFunctionPointer(m.functionName)
-    
+
                             args = providerFunctionPointer()
-                            
+
                             index = 1
                             for each arg in args
                                 skipTest = m.doSkipTest(m.functionName)
@@ -1992,11 +1992,11 @@ function ScanFileForNewTests(souceCode, filePath)
         doSkipTest: function(name as String)
             includeFilter = []
             excludeFilter = []
-            
+
             gthis = GetGlobalAA()
             if gthis.IncludeFilter <> invalid then includeFilter.append(gthis.IncludeFilter)
             if gthis.ExcludeFilter <> invalid then excludeFilter.append(gthis.ExcludeFilter)
-            
+
             ' apply test filters
             skipTest = false
             ' skip test if it is found in exclude filter
@@ -2006,7 +2006,7 @@ function ScanFileForNewTests(souceCode, filePath)
                     exit for
                 end if
             end for
-            
+
             ' skip test if it is not found in include filter
             if not skipTest and includeFilter.Count() > 0
                 foundInIncludeFilter = false
@@ -2017,10 +2017,10 @@ function ScanFileForNewTests(souceCode, filePath)
                         exit for
                     end if
                 end for
-                
+
                 skipTest = not foundInIncludeFilter
             end if
-            
+
             return skipTest
         end function
 
@@ -2078,7 +2078,7 @@ function ScanFileForNewTests(souceCode, filePath)
                             processors.functionName = groups[2]
                             processors.currentLine = line
 
-                            ' process all handlers                            
+                            ' process all handlers
                             if isParametrized then processors.executedParametrizedAdding = false
                             for each availableAnottation in currentAnottations
                                 processors[availableAnottation]()
@@ -2089,7 +2089,7 @@ function ScanFileForNewTests(souceCode, filePath)
                             foundAnyTest = true
                         end if
                     else
-                        ' invalidating annotation 
+                        ' invalidating annotation
                         ' TODO print message here that we skipped annotation
                         ? "WARNING: annotation " currentAnottations " isparametrized=" isParametrized " skipped at line " index ":[" line "]"
                         processors.annotations = {}
@@ -2121,7 +2121,7 @@ function TestFramework__getFunctionPointer(functionName as String) as Dynamic
             end if
         end for
     end if
-    
+
     if LCase(Type(result)) = "<uninitialized>" then result = invalid
     if result = invalid then
         if gthis.notFoundFunctionPointerList = invalid then gthis.notFoundFunctionPointerList = []
@@ -2161,7 +2161,7 @@ function TestRunner__GetIncludeFilter()
     if gthis.IncludeFilter = invalid
         gthis.IncludeFilter = []
     end if
-    
+
     return gthis.IncludeFilter
 end function
 
@@ -2171,7 +2171,7 @@ sub TestRunner__SetExcludeFilter(listOfFunctions as Dynamic)
     if gthis.ExcludeFilter = invalid
         gthis.ExcludeFilter = []
     end if
-    
+
     if TF_Utils__IsArray(listOfFunctions)
         gthis.ExcludeFilter.Append(listOfFunctions)
     else if TF_Utils__IsNotEmptyString(listOfFunctions)
@@ -2187,7 +2187,7 @@ function TestRunner__GetExcludeFilter()
     if gthis.ExcludeFilter = invalid
         gthis.ExcludeFilter = []
     end if
-    
+
     return gthis.ExcludeFilter
 end function
 
@@ -2243,7 +2243,7 @@ function TestRunner__GetTestFilesList(testsDirectory = m.testsDirectory as Strin
 
     if testsDirectory <> ""
         fileSystem = CreateObject("roFileSystem")
-        
+
         if m.isNodeMode
             ? String(2, Chr(10))
             ? String(10, "!!!")
@@ -2309,21 +2309,21 @@ end function
 ' ----------------------------------------------------------------
 function TestFramework__RunNodeTests(params as Object) as Object
     this = params[0]
-    
+
     statObj = params[1]
     testSuiteNamesList = params[2]
 
     Runner = TestRunner()
-    
+
     Runner.SetTestSuitePrefix(this.testSuitePrefix)
     Runner.SetTestFilePrefix(this.testFilePrefix)
     Runner.SetTestSuiteName(this.testSuiteName)
     Runner.SetTestCaseName(this.testCaseName)
     Runner.SetFailFast(this.failFast)
-    
+
     Runner.SetIncludeFilter(params[3])
     Runner.SetExcludeFilter(params[4])
-    
+
     return Runner.Run(statObj, testSuiteNamesList)
 end function
 function UTF_skip(msg = "")
@@ -2749,7 +2749,7 @@ function TF_Utils__FindElementIndexInArray(array as Object, value as Object, com
                 return i
             end if
 
-            item = array[i]
+            _item = array[i]
         next
     end if
 
