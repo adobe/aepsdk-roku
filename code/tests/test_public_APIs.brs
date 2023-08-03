@@ -138,7 +138,7 @@ end sub
 ' @Test
 sub TC_APIs_sendEventWithCallback()
     sdkInstance = AdobeAEPSDKInit()
-    ' configuration = { "edge.configId": "test-config-id" }
+    
     xdmData = {
         eventType: "commerce.orderPlaced",
         commerce: {
@@ -174,7 +174,7 @@ end sub
 ' @Test
 sub TC_APIs_sendEventWithCallback_timeout()
     sdkInstance = AdobeAEPSDKInit()
-    ' configuration = { "edge.configId": "test-config-id" }
+    
     xdmData = {
         eventType: "commerce.orderPlaced",
         commerce: {
