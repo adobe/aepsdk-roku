@@ -138,7 +138,7 @@ end sub
 ' @Test
 sub TC_APIs_sendEventWithCallback()
     sdkInstance = AdobeAEPSDKInit()
-    
+
     xdmData = {
         eventType: "commerce.orderPlaced",
         commerce: {
@@ -174,7 +174,7 @@ end sub
 ' @Test
 sub TC_APIs_sendEventWithCallback_timeout()
     sdkInstance = AdobeAEPSDKInit()
-    
+
     xdmData = {
         eventType: "commerce.orderPlaced",
         commerce: {
@@ -182,10 +182,10 @@ sub TC_APIs_sendEventWithCallback_timeout()
     context = {
         content: "test"
     }
-    callback_result = {
+    _callback_result = {
         "test": "test"
     }
-    sdkInstance.sendEvent(xdmData, sub(ctx, result)
+    sdkInstance.sendEvent(xdmData, sub(_ctx, _result)
         throw "should not be called"
     end sub, context)
 

@@ -73,7 +73,7 @@ sub TC_adb_EdgeModule_processQueuedRequests()
         return true
     end function
 
-    edgeModule._edgeRequestWorker.processRequests = function(x, y, z) as dynamic
+    edgeModule._edgeRequestWorker.processRequests = function(_x, _y, _z) as dynamic
         array = []
         array.Push(_adb_EdgeResponse("request_id", 200, "response_body"))
         return array

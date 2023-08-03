@@ -13,7 +13,7 @@
 
 function _createMockedEventProcessor() as object
     return _adb_EventProcessor({
-        hasField: function(key as string) as boolean
+        hasField: function(_key as string) as boolean
             return false
         end function
     })
