@@ -134,7 +134,7 @@ function _adb_EventProcessor(task as object) as object
 
             ecid = _adb_optStringFromMap(event.data, m._CONSTANTS.EVENT_DATA_KEY.ECID)
             if _adb_isEmptyOrInvalidString(ecid)
-                _adb_logWarning("_setECID() - ECID not found in event data.")
+                _adb_logWarning("_setECID() - valid ECID not found in event data.")
             else
                 m._identityModule.updateECID(ecid)
             end if

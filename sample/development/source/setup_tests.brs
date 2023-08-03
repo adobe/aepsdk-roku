@@ -135,6 +135,7 @@ function _adb_test_functions() as dynamic
         TC_APIs_sendEvent
         TC_APIs_sendEvent_invalid
         TC_APIs_sendEventWithCallback
+        TC_APIs_sendEventWithCallback_timeout
         TC_APIs_setExperienceCloudId
     ]
     task = [

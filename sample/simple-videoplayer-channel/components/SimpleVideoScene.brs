@@ -25,7 +25,6 @@ sub init()
   ADB_CONSTANTS = AdobeAEPSDKConstants()
   m.aepSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.DEBUG)
 
-  ' get_mid_from_media_sdk = "12340203495818708"
   ' m.aepSdk.setExperienceCloudId(get_mid_from_media_sdk)
 
   configuration = {}
@@ -33,27 +32,27 @@ sub init()
   'configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = ""
   m.aepSdk.updateConfiguration(configuration)
 
-   m.aepSdk.sendEvent({
-     "eventType": "commerce.orderPlaced",
-     "commerce": {
-       "key1": "value1"
-     },
-     "identityMap": {
-      "RIDA" : [
-          {
-            "id" : "Test-AdId",
-            "authenticatedState": "ambiguous",
-            "primary": false
-          }
-        ],
-         "EMAIL" : [
-          {
-            "id" : "test1@test.com",
-            "authenticatedState": "ambiguous",
-            "primary": false
-          }
-        ]
-  }
+  m.aepSdk.sendEvent({
+    "eventType": "commerce.orderPlaced",
+    "commerce": {
+      "key1": "value1"
+    },
+    "identityMap": {
+      "RIDA": [
+        {
+          "id": "Test-AdId",
+          "authenticatedState": "ambiguous",
+          "primary": false
+        }
+      ],
+      "EMAIL": [
+        {
+          "id": "test1@test.com",
+          "authenticatedState": "ambiguous",
+          "primary": false
+        }
+      ]
+    }
   })
 
   ' m.aepSdk.resetIdentities()

@@ -33,11 +33,10 @@ function _adb_NetworkResponse(responseCode as integer, responseBody as string) a
         end function,
 
         isRecoverable: function() as boolean
-            ' RECOVERABLE_ERROR_CODES = [408, 504, 503]
-            return  m._responseCode = 408 or m._responseCode = 504 or m._responseCode = 503
+            return m._responseCode = 408 or m._responseCode = 504 or m._responseCode = 503
         end function,
 
-        toString: function() as String
+        toString: function() as string
             return "Network request completed with response code:(" + StrI(m.getResponseCode()) + ") body:(" + FormatJson(m.getResponseString()) + ")"
         end function
     })

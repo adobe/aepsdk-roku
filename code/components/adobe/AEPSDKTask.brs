@@ -15,7 +15,6 @@ sub init()
     m.port = createObject("roMessagePort")
     m.top.observeField("requestEvent", m.port)
     m.top.functionName = "eventLoop"
-    ' m.top.control = "STOP"
     m.top.control = "INIT"
 end sub
 

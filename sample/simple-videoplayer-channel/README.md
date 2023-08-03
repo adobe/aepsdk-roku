@@ -10,8 +10,8 @@ To install the Roku SDK in this sample project, you can copy the SDK files to th
 
 ## Initialize and configure the Roku SDK
 
-The Roku SDK is initialized and configured in the [SimpleVideoScene](./components/SimpleVideoScene.brs) file. The default `configId` value is invalid. Please provide a valid value for it.
+The Roku SDK is initialized in the [SimpleVideoScene](./components/SimpleVideoScene.brs) file. Configuration is empty, update the configuration with valid configId before running the channel.
 
 ## Send XDM data to the Adobe Edge Network
 
-You can now use the `sendEvent` API to send XDM data to the Adobe Edge Network.
+Use the `sendEvent` API to send XDM data to the Adobe Edge Network.
