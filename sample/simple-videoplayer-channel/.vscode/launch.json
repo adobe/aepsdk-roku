@@ -1,0 +1,13 @@
+{
+    "version": "1.0.0",
+    "configurations": [
+        {
+            "name": "Launch Roku",
+            "type": "brightscript",
+            "request": "launch",
+            "host": "${config:roku_ip}",
+            "password": "${config:roku_password}",
+            "rootDir": "${workspaceFolder}",
+        }
+    ]
+}
