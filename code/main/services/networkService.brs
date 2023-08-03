@@ -86,7 +86,8 @@ function _adb_NetworkService() as object
                         responseCode = msg.GetResponseCode()
                         responseString = msg.getString()
                         failureMessage = msg.GetFailureReason()
-                        _adb_logDebug("syncPostRequest() -  Received response code:(" + FormatJson(responseCode) + ") and body:(" + FormatJson(responseString) + ") and error message:(" + FormatJson(failureMessage) + ").")
+
+                        _adb_logDebug("syncPostRequest() -  Received response code:(" + FormatJson(responseCode) + ") body:(" + FormatJson(responseString) + ") message:(" + FormatJson(failureMessage) + ").")
 
                         return _adb_NetworkResponse(responseCode, responseString)
                     end if

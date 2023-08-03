@@ -96,6 +96,8 @@ function _adb_EdgeRequestWorker() as object
                     _adb_logWarning("processRequests() - Edge request with id:(" + FormatJson(requestId)  + ") failed with recoverable error code:(" + FormatJson(networkResponse.getResponseCode()) + "). Request will be retried after (" + FormatJson(m._RETRY_WAIT_TIME_MS) + ") ms.")
                     m._queue.Unshift(requestEntity)
                     exit while
+                else
+                    _adb_logError("processRequests() - Failed to send request with id:(" + FormatJson(requestId) + ") code:(" + FormatJson(networkResponse.getResponseCode()) + ") response:(" + networkResponse.toString() + ")")
                 end if
             end while
             return responseArray
