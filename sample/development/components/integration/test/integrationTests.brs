@@ -43,7 +43,7 @@ function TS_SDK_integration() as object
 
             version$ = aepSdk.getVersion()
 
-            ADB_assertTrue((version$ = "1.0.0-alpha1"), LINE_NUM, "assert getVersion() = 1.0.0-alpha1")
+            ADB_assertTrue((version$ = "1.0.0"), LINE_NUM, "assert getVersion() = 1.0.0")
 
             return invalid
         end function,
@@ -140,16 +140,16 @@ function TS_SDK_integration() as object
             eventIdForUpdateConfiguration = aepSdk._private.lastEventId
 
             idMap = {
-                "RIDA" : [
+                "RIDA": [
                     {
-                        "id" : "test-ad-id",
+                        "id": "test-ad-id",
                         "authenticatedState": "ambiguous",
                         "primary": false
                     }
-                  ],
-                "EMAIL" : [
+                ],
+                "EMAIL": [
                     {
-                        "id" : "test@test.com",
+                        "id": "test@test.com",
                         "authenticatedState": "ambiguous",
                         "primary": false
                     }
@@ -180,7 +180,7 @@ function TS_SDK_integration() as object
                 ADB_assertTrue((xdmData.xdm.identityMap <> invalid), LINE_NUM, "XDM data should contain the identityMap")
                 ADB_assertTrue((xdmData.xdm.timestamp <> invalid), LINE_NUM, "XDM data should contain valid timestamp")
 
-                expectedXDMData = {"EMAIL":[{"authenticatedState":"ambiguous","id":"test@test.com","primary":false}],"RIDA":[{"authenticatedState":"ambiguous","id":"test-ad-id","primary":false}]}
+                expectedXDMData = { "EMAIL": [{ "authenticatedState": "ambiguous", "id": "test@test.com", "primary": false }], "RIDA": [{ "authenticatedState": "ambiguous", "id": "test-ad-id", "primary": false }] }
                 xdmDataJson = FormatJson(xdmData.xdm.identityMap)
                 expectedXDMDataJson = FormatJson(expectedXDMData)
                 ADB_assertTrue((xdmDataJson = expectedXDMDataJson), LINE_NUM, "Actual XDM data(" + xdmDataJson + ") != Expected XDM data(" + expectedXDMDataJson + ") ")

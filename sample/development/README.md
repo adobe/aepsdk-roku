@@ -10,7 +10,8 @@ To test with this Roku channel, create a `test_config.json` file under the [sour
 {"config_id":"your edge config id"}
 ```
 
-From the sample/development directory run the following command in a terminal window to link the development app to the SDK:
+From the sample/development directory run the following command in a terminal window to link the SDK to the development app.
+
 ```
 make link-sdk
 ```

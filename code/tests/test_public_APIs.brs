@@ -33,7 +33,7 @@ end sub
 ' @Test
 sub TC_APIs_getVersion()
     sdkInstance = AdobeAEPSDKInit()
-    UTF_assertEqual(sdkInstance.getVersion(), "1.0.0-alpha1")
+    UTF_assertEqual(sdkInstance.getVersion(), "1.0.0")
 end sub
 
 ' target: setLogLevel()
@@ -138,7 +138,7 @@ end sub
 ' @Test
 sub TC_APIs_sendEventWithCallback()
     sdkInstance = AdobeAEPSDKInit()
-    ' configuration = { "edge.configId": "test-config-id" }
+    
     xdmData = {
         eventType: "commerce.orderPlaced",
         commerce: {
@@ -170,6 +170,50 @@ sub TC_APIs_sendEventWithCallback()
     UTF_AssertNotInvalid(event.timestamp)
 end sub
 
+' target: sendEvent()
+' @Test
+sub TC_APIs_sendEventWithCallback_timeout()
+    sdkInstance = AdobeAEPSDKInit()
+    
+    xdmData = {
+        eventType: "commerce.orderPlaced",
+        commerce: {
+    } }
+    context = {
+        content: "test"
+    }
+    callback_result = {
+        "test": "test"
+    }
+    sdkInstance.sendEvent(xdmData, sub(ctx, result)
+        throw "should not be called"
+    end sub, context)
+
+    event = GetGlobalAA()._adb_main_task_node["requestEvent"]
+    callbackInfo = sdkInstance._private.cachedCallbackInfo[event.uuid]
+
+    UTF_assertEqual(callbackInfo.context, context)
+    UTF_AssertNotInvalid(callbackInfo.timestampInMillis)
+
+    UTF_assertEqual(event.apiName, "sendEvent")
+    UTF_assertEqual(event.data, { xdm: xdmData })
+    UTF_AssertNotInvalid(event.uuid)
+    UTF_AssertNotInvalid(event.timestamp)
+    requestId = event.uuid
+
+    sleep(5001)
+
+    responseEvent = _adb_ResponseEvent(requestId, {})
+    GetGlobalAA()._adb_main_task_node["responseEvent"] = responseEvent
+    try
+        _adb_handleResponseEvent()
+        UTF_assertFalse(sdkInstance._private.cachedCallbackInfo.DoesExist(requestId))
+    catch e
+        UTF_fail(e.message)
+    end try
+
+end sub
+
 ' target: setExperienceCloudId()
 ' @Test
 sub TC_APIs_setExperienceCloudId()
@@ -183,3 +227,4 @@ sub TC_APIs_setExperienceCloudId()
     UTF_AssertNotInvalid(event.uuid)
     UTF_AssertNotInvalid(event.timestamp)
 end sub
+

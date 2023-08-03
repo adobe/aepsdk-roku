@@ -133,6 +133,10 @@ sendEvent: function(xdmData as object, callback = _adb_default_callback as funct
 > - `Implementation Details` - for more details see the [Implementation Details XDM field group](https://github.com/adobe/xdm/blob/master/components/datatypes/industry-verticals/implementationdetails.schema.json)
 
 > **Note**
+> If the SDK fails to receive the Edge response within 5 seconds, the callback function will not be executed.
+
+
+> **Note**
 > Variables are not case sensitive in [BrightScript](https://developer.roku.com/docs/references/brightscript/language/expressions-variables-types.md), so always use the `String literals` to present the XDM data **keys**.
 
 ##### Example: sendEvent

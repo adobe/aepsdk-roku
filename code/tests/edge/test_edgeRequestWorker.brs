@@ -91,9 +91,9 @@ end sub
 sub TC_adb_EdgeRequestWorker_processRequest_valid_response()
     cachedFuntion = _adb_serviceProvider().networkService.syncPostRequest
     _adb_serviceProvider().networkService.syncPostRequest = function(url as string, jsonObj as object, headers = [] as object) as object
-        UTF_assertEqual(0, headers.Count(),"Expected != Actual (Number of headers)")
+        UTF_assertEqual(0, headers.Count(), "Expected != Actual (Number of headers)")
         UTF_assertEqual("https://edge.adobedc.net/ee/v1/interact?configId=config_id&requestId=request_id", url)
-        UTF_assertEqual(2, jsonObj.Count(),"Expected != Actual (Request json body size)")
+        UTF_assertEqual(2, jsonObj.Count(), "Expected != Actual (Request json body size)")
         UTF_assertNotInvalid(jsonObj.xdm)
         expectedXdmObj = {
             identitymap: {
@@ -108,7 +108,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_valid_response()
             implementationdetails: {
                 environment: "app",
                 name: "https://ns.adobe.com/experience/mobilesdk/roku",
-                version: "1.0.0-alpha1"
+                version: "1.0.0"
             }
         }
         UTF_assertEqual(expectedXdmObj, jsonObj.xdm, "Expected != actual (Top level XDM object in the request)")

@@ -14,5 +14,5 @@
 ' target: _adb_sdkVersion()
 ' @Test
 sub TC_adb_sdkVersion()
-    UTF_assertEqual(_adb_sdkVersion(), "1.0.0-alpha1")
+    UTF_assertEqual(_adb_sdkVersion(), "1.0.0")
 end sub
