@@ -191,6 +191,7 @@ function AdobeAEPSDKInit() as object
                     timestampInMillis: event.timestampInMillis
                 }
                 m._private.cachedCallbackInfo[event.uuid] = callbackInfo
+                _adb_logDebug("sendEvent() - Cached callback function for event: uuid/requestId =  " + FormatJson(event.uuid))
             end if
             m._private.dispatchEvent(event)
         end function,
