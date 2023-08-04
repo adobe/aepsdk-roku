@@ -58,6 +58,6 @@ Initialize and configure the AEP Roku SDK inside your `scene` script.
 
 ## Next Step
 
-- Get familiar with the various APIs offered by the Adobe Roku SDK by checking out the [API reference](./api-reference.md).
+- Get familiar with the various APIs offered by the AEP Roku SDK by checking out the [API reference](./api-reference.md).
 
-- Review the [sample app](../sample/simple-videoplayer-channel/README.md) that is integrated with the AEP Roku SDK.
+- Review the [sample app](../sample/simple-videoplayer-channel) that is integrated with the AEP Roku SDK.

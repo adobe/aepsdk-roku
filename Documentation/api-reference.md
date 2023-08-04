@@ -18,7 +18,7 @@ This document lists the APIs provided by AEP Roku SDK, along with code samples f
 Initialize the AEP Roku SDK and return the public API instance. `*` The following variables are reserved to hold the SDK instances in GetGlobalAA():
 
 - `GetGlobalAA()._adb_public_api`
-- `GetGlobalAA()._adb_edge_task_node`
+- `GetGlobalAA()._adb_main_task_node`
 - `GetGlobalAA()._adb_serviceProvider_instance`
 
 ##### Syntax

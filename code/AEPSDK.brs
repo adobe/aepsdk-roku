@@ -36,7 +36,7 @@ end function
 ' Initialize the Adobe SDK and return the public API instance.
 ' The following variables are reserved to hold SDK instances in GetGlobalAA():
 '   - GetGlobalAA()._adb_public_api
-'   - GetGlobalAA()._adb_edge_task_node
+'   - GetGlobalAA()._adb_main_task_node
 '   - GetGlobalAA()._adb_serviceProvider_instance
 '
 ' @return instance as object : public API instance
@@ -46,11 +46,11 @@ end function
 function AdobeAEPSDKInit() as object
 
     if GetGlobalAA()._adb_public_api <> invalid then
-        _adb_logInfo("API: AdobeAEPSDKInit() - Please shut down the previous SDK instance before initializing a new one.")
+        _adb_logInfo("AdobeAEPSDKInit() - Unable to initialize a new SDK instance as there is an existing active instance. Call shutdown() API for existing instance before initializing a new one.")
         return GetGlobalAA()._adb_public_api
     end if
 
-    _adb_logDebug("API: AdobeAEPSDKInit() - Initializing the SDK.")
+    _adb_logDebug("AdobeAEPSDKInit() - Initializing the SDK.")
 
     ' create the SDK thread
     _adb_createTaskNode()
