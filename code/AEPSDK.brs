@@ -295,7 +295,7 @@ function _adb_handleResponseEvent() as void
                 sdk._private.cachedCallbackInfo[uuid].cb(context, responseEvent.data)
                 sdk._private.cachedCallbackInfo.Delete(uuid)
             else
-                _adb_logError("_adb_handleResponseEvent() - Not handling response event, callback not passed with the request event.")
+                _adb_logDebug("_adb_handleResponseEvent() - Not handling response event, callback not passed with the request event.")
             end if
         else
             _adb_logError("_adb_handleResponseEvent() - Failed to handle response event, response event is invalid")
