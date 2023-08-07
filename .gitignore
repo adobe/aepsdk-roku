@@ -6,6 +6,9 @@ yarn-debug.log*
 yarn-error.log*
 lerna-debug.log*
 
+# DS_Store
+*.DS_Store
+
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
@@ -102,3 +105,23 @@ dist
 
 # TernJS port file
 .tern-port
+/.vscode
+out/
+sample/simple-videoplayer-channel/components/adobe
+sample/simple-videoplayer-channel/source/AEPSDK.brs
+sample/simple-videoplayer-channel/source/tests
+sample/simple-videoplayer-channel/.vscode/settings.json
+output/
+
+code/tests/tests
+
+AEPRokuSDK/
+
+sample/development/components/adobe/AEPSDKTask.brs
+sample/development/source/adobe
+sample/development/source/AEPSDK.brs
+sample/development/source/tests
+sample/development/source/testFramework/testFramework
+
+sample/development/source/test_config.json
+sample/development/.vscode/settings.json

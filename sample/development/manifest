@@ -1,0 +1,39 @@
+#
+#  Roku Channel Manifest File
+#  Full spec at bit.ly/roku-manifest-file
+#
+
+# Channel Details
+title=development
+subtitle=Adobe AEP Roku SDK Test Channel
+major_version=1
+minor_version=1
+build_version=1
+
+# Channel Assets
+mm_icon_focus_sd=pkg:/images/test-channel-poster_sd_adb.png
+mm_icon_focus_hd=pkg:/images/test-channel-poster_hd_adb.png
+mm_icon_focus_fhd=pkg:/images/test-channel-poster_fhd_adb.png
+
+# Splash Screen + Loading Screen Artwork
+splash_screen_sd=pkg:/images/test-splash-screen_sd_adb.png
+splash_screen_hd=pkg:/images/test-splash-screen_hd_adb.png
+splash_screen_fhd=pkg:/images/test-splash-screen_fhd_adb.png
+splash_color=#808080
+splash_min_time=0
+
+# Resolution
+ui_resolutions=fhd
+
+# Profiler settings
+#bsprof_data_dest=local
+#bsprof_data_dest=network
+#bsprof_enable=1
+#bsprof_enable_lines=1
+#bsprof_pause_on_start=1
+#bsprof_enable_mem=1
+
+# run_as_process=1
+
+
+bs_const=integrationTests=false;unitTests=false

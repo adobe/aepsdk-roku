@@ -1,0 +1,44 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Launch Roku",
+            "type": "brightscript",
+            "request": "launch",
+            "host": "${config:roku_ip}",
+            "password": "${config:roku_password}",
+            "rootDir": "${workspaceFolder}",
+            // "injectRdbOnDeviceComponent": true,
+            // "stopDebuggerOnAppExit": true
+            // "deepLinkUrl": "http://${host}:8060/launch/dev?RunUnitTests=true"
+            "bsConst": {
+                "integrationTests": false,
+                "unitTests": false,
+            }
+        },
+        {
+            "name": "Run Integration Tests",
+            "type": "brightscript",
+            "request": "launch",
+            "host": "${config:roku_ip}",
+            "password": "${config:roku_password}",
+            "rootDir": "${workspaceFolder}",
+            "bsConst": {
+                "integrationTests": true,
+                "unitTests": false,
+            }
+        },
+        {
+            "name": "Run Unit Tests",
+            "type": "brightscript",
+            "request": "launch",
+            "host": "${config:roku_ip}",
+            "password": "${config:roku_password}",
+            "rootDir": "${workspaceFolder}",
+            "bsConst": {
+                "integrationTests": false,
+                "unitTests": true,
+            }
+        }
+    ]
+}
