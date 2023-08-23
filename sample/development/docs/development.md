@@ -16,7 +16,7 @@ The VSCode project is configured to:
 | ------------- | ----------- |
 | **Launch Roku** | Launch the main screen to do manual testing |
 | **Run Integration Tests**   | Launch the channel and run integraiont tests |
-| **Run Unit Tests**   | Launch the channel and run integraiont tests |
+| **Run Unit Tests**   | Launch the channel and run unit tests |
 
 ## Unit Test
 
