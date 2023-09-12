@@ -30,8 +30,13 @@ sub _initSDK()
   ' Initalize Adobe Edge SDK
   '------------------------------------
 
-  m.aepSdk = AdobeAEPSDKInit()
+  m.adobeTaskNode = CreateObject("roSGNode", "AEPSDKTask")
+  m.adobeTaskNode.id = "adobeTaskNode"
+  m.top.appendChild(m.adobeTaskNode)
+
+  m.aepSdk = AdobeAEPSDK(m.adobeTaskNode)
   print "Adobe SDK version : " + m.aepSdk.getVersion()
+  GetGlobalAA()._aepSdk = m.aepSdk
 
   ADB_CONSTANTS = AdobeAEPSDKConstants()
   m.aepSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
@@ -118,6 +123,15 @@ sub onButtonSelected()
     'Shutdown button pressed
     _testShutdownAPI()
 
+  else if m.ButtonGroup.buttonSelected = 2
+    'NewScreen button pressed
+    m.newScreen = createObject("roSGNode", "ButtonExample")
+    m.top.appendChild(m.newScreen)
+
+    m.ButtonGroup.visible = false
+    m.newScreen.visible = true
+    m.newScreen.setFocus(true)
+    ' m.top.findNode("NewScreen").visible = true
 
   else
   end if
@@ -127,14 +141,14 @@ end sub
 sub setContent()
 
   'Change the buttons
-  Buttons = ["SendEventWithCallback", "Shutdown", "2"]
+  Buttons = ["SendEventWithCallback", "Shutdown", "NewScreen"]
   m.ButtonGroup.buttons = Buttons
 
 end sub
 
 ' Called when a key on the remote is pressed
 function onKeyEvent(key as string, press as boolean) as boolean
-  print "in MainScene.xml onKeyEvent ";key;" "; press
+  ' print "in MainScene.xml onKeyEvent ";key;" "; press
   if press then
     if key = "back"
       print "------ [back pressed] ------"
@@ -142,9 +156,9 @@ function onKeyEvent(key as string, press as boolean) as boolean
         m.Warning.visible = false
         m.ButtonGroup.setFocus(true)
         return true
-      else if m.Video.visible
-        m.Video.control = "stop"
-        m.Video.visible = false
+      else if m.newScreen.visible
+        m.newScreen.visible = false
+        m.ButtonGroup.visible = true
         m.ButtonGroup.setFocus(true)
         return true
       else

@@ -55,6 +55,18 @@ function AdobeAEPSDKInit() as object
     ' create the SDK thread
     _adb_createTaskNode()
 
+    return AdobeAEPSDK(_adb_retrieveTaskNode())
+
+end function
+
+function AdobeAEPSDK(taskNode as object) as object
+    if taskNode = invalid then
+        _adb_logDebug("AdobeAEPSDK() - Failed to initialize the SDK, task node is invalid.")
+        return invalid
+    end if
+
+    _adb_setTaskNode(taskNode)
+
     if _adb_retrieveTaskNode() = invalid then
         _adb_logDebug("AdobeAEPSDKInit() - Failed to initialize the SDK, task node is invalid.")
         return invalid

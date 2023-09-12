@@ -20,6 +20,12 @@ function _adb_createTaskNode() as void
     end if
 end function
 
+function _adb_setTaskNode(taskNode) as void
+    if GetGlobalAA()._adb_main_task_node = invalid
+        GetGlobalAA()._adb_main_task_node = taskNode
+    end if
+end function
+
 function _adb_retrieveTaskNode() as object
     return GetGlobalAA()._adb_main_task_node
 end function
