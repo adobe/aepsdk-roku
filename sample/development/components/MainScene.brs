@@ -51,10 +51,6 @@ sub _initSDK()
 
 end sub
 
-sub sendAEPEvent(data)
-  m.aepSdk.sendEvent(data)
-end sub
-
 sub _sendEventWithCallback()
   '----------------------------------------
   ' Send an Experience Event with callback
