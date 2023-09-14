@@ -51,6 +51,10 @@ sub _initSDK()
 
 end sub
 
+sub sendAEPEvent(data)
+  m.aepSdk.sendEvent(data)
+end sub
+
 sub _sendEventWithCallback()
   '----------------------------------------
   ' Send an Experience Event with callback
@@ -125,7 +129,17 @@ sub onButtonSelected()
 
   else if m.ButtonGroup.buttonSelected = 2
     'NewScreen button pressed
-    m.newScreen = createObject("roSGNode", "ButtonExample")
+    ' if m.newScreen = invalid
+    '   m.newScreen = createObject("roSGNode", "TestScreen")
+    '   m.top.appendChild(m.newScreen)
+    ' end if
+
+    if m.newScreen <> invalid
+      m.top.removeChild(m.newScreen)
+      m.newScreen.callFunc("destroy")
+      m.newScreen = invalid
+    end if
+    m.newScreen = createObject("roSGNode", "TestScreen")
     m.top.appendChild(m.newScreen)
 
     m.ButtonGroup.visible = false

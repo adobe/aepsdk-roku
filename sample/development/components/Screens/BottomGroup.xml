@@ -1,35 +1,37 @@
 <?xml version="1.0" encoding="utf-8" ?>
 
-<!-- This component will create a Button node example -->
-<component name="ButtonExample" extends="Group" initialFocus="exampleButton1" >
 
-  <children >
-    <!--
-        A button node. This button has predefined text and will have
-        feedback when the button is focused. This button will have
-        focus on launching this channel due to the initialFocus field
-        being set to this button id.
-    -->
-    <Button 
-      id="exampleButton1" 
-      text="Example Button" 
-      showFocusFootprint="true" 
-      minWidth="240" />
+<component name="BottomGroup" extends="Group">
+<interface>
+    <function name="destroy" />
+</interface>
 
-    <!--
-        Another button node. This button has predefined text and will
-        have feedback when the button is focused.
-    -->
-    <Button
-      id="exampleButton2"
-      text="Another Button!"
-      showFocusFootprint="true"
-      minWidth="240"
-      translation="[ 0, 80 ]" />
+  <children>
+    <Group>
+      <layoutGroup
+        translation = "[0,0]" 
+        itemSpacings = "[20]" 
+        layoutDirection = "horiz">
+        
+        <Label
+            id="testLabel1"
+            height="88"
+            font="font:MediumBoldSystemFont"
+            text = "SDK instance (2) in child node: "/>
+            
+        <Button 
+          id="sendEventButton2" 
+          text="Send Event" 
+          showFocusFootprint="true" 
+          minWidth="240" />
+
+      </layoutGroup>
+    </Group>
+
 
   </children>
 
-  <script type="text/brightscript" uri="pkg:/components/NewScreen/ButtonExample.brs" />
+  <script type="text/brightscript" uri="pkg:/components/Screens/BottomGroup.brs" />
   <script type="text/brightscript" uri="pkg:/source/adobe/AEPSDK.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/common/constants.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/common/datetime.brs"/>

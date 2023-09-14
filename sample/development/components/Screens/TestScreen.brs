@@ -1,13 +1,14 @@
 
 sub init()
-    m.exampleButton1 = m.top.findNode("exampleButton1")
-    m.exampleButton2 = m.top.findNode("exampleButton2")
+    m.sendEventButton = m.top.findNode("sendEventButton")
+    m.bottomLayoutGroup = m.top.findNode("bottomLayoutGroup")
+
+    m.sendEventButton.ObserveField("buttonSelected", "onButtonSelected")
 
     examplerect = m.top.boundingRect()
     centerx = (1280 - examplerect.width) / 2
     centery = (720 - examplerect.height) / 2
     m.top.translation = [centerx, centery]
-
 
     _initSDK()
 end sub
@@ -22,14 +23,7 @@ sub _initSDK()
 
 end sub
 
-' onKeyEvent will handle button presses it recognizes in this example.
-' If the "up" or "down" buttons are pressed on the remote control, the
-' focus will change to the other button that is not currently focused.
-' If a different button was pressed on the remote control (except the
-' home button), this onKeyEvent will not handle the button press and
-' pass this information up the focus chain until something handles
-' this button event.
-function onKeyEvent(key as string, press as boolean)
+sub onButtonSelected()
     m.aepSdk.sendEvent({
         "eventType": "commerce.orderPlaced",
         "commerce": {
@@ -49,19 +43,23 @@ function onKeyEvent(key as string, press as boolean)
         print result
         print context
     end sub, m)
+end sub
+
+function onKeyEvent(key as string, press as boolean)
+
     handled = false
     if press
-        if key = "up" or key = "down"
+        if key = "down"
             print "======"
-            if m.exampleButton1.hasFocus()
-                m.exampleButton2.setFocus(true)
+            if m.sendEventButton.hasFocus()
+                m.bottomLayoutGroup.findNode("sendEventButton2").setFocus(true)
             else
-                m.exampleButton1.setFocus(true)
+                m.sendEventButton.setFocus(true)
             end if
 
             handled = true
         end if
-    end if
 
+    end if
     return handled
 end function

@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="utf-8" ?>
+
+
+<component name="TestScreen" extends="Group" initialFocus="sendEventButton" >
+
+  <children >
+    <Group >
+      <layoutGroup
+        id = "topLayoutGroup" 
+        translation = "[0,0]" 
+        itemSpacings = "[20]" 
+        layoutDirection = "horiz">
+        
+        <Label
+            id="testLabel"
+            height="88"
+            font="font:MediumBoldSystemFont"
+            text = "SDK instance (1) in root node: "/>
+
+        <Button 
+          id="sendEventButton" 
+          text="Send Event" 
+          showFocusFootprint="true" 
+          minWidth="240" />
+
+      </layoutGroup>
+      <layoutGroup
+        id = "bottomLayoutGroup" 
+        translation = "[0,200]" 
+        itemSpacings = "[20]" 
+        layoutDirection = "horiz">
+        
+        <BottomGroup/>
+
+      </layoutGroup>
+      
+        
+    </Group>
+
+
+  </children>
+
+  <script type="text/brightscript" uri="pkg:/components/Screens/TestScreen.brs" />
+  <script type="text/brightscript" uri="pkg:/source/adobe/AEPSDK.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/common/constants.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/common/datetime.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/common/id.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/common/log.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/common/map.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/common/string.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/common/version.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/common/utils.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/core/event.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/core/adobeObject.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/core/configurationModule.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/core/identityModule.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/edge/edgeModule.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/edge/buildEdgeRequestURL.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/edge/edgeRequestWorker.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/edge/implementationDetails.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/services/localDataStoreService.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/services/loggingService.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/services/networkService.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/services/networkResponse.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/services/serviceProvider.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/task/eventProcessor.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/task/taskNode.brs"/>
+
+</component>
