@@ -240,6 +240,11 @@ function AdobeAEPSDK(taskNode as object) as object
             m._private.dispatchEvent(event)
         end function,
 
+        getTaskNode: function() as object
+            taskNode = _adb_retrieveTaskNode()
+            return taskNode
+        end function,
+
         destroy: function() as void
             taskNode = _adb_retrieveTaskNode()
             if taskNode <> invalid
