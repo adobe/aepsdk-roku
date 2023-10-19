@@ -20,6 +20,12 @@ function _adb_buildEdgeRequestURL(configId as string, requestId as string, path 
     query = "?configId=" + configId
 
     if not _adb_isEmptyOrInvalidString(path) then
+        if not path.startsWith("/")
+            path = "/" + path
+        end if
+        if _adb_isStringEndWith(path, "/") then
+            path = path.left(path.len() - 1)
+        end if
         overridablePath = path
     end if
 

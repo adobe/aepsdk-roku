@@ -35,7 +35,7 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
         _edgeRequestWorker: _adb_EdgeRequestWorker(),
 
         processEvent: function(requestId as string, xdmData as object, timestampInMillis as longinteger) as dynamic
-            m._edgeRequestWorker.queue(requestId, xdmData, timestampInMillis)
+            m._edgeRequestWorker.queue(requestId, [xdmData], timestampInMillis, {}, "")
             return m.processQueuedRequests()
         end function,
 
