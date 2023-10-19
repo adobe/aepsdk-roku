@@ -13,11 +13,15 @@
 
 ' ***************************** MODULE: buildEdgeRequestURL *******************************
 
-function _adb_buildEdgeRequestURL(configId as string, requestId as string, edgeDomain = invalid as dynamic) as string
+function _adb_buildEdgeRequestURL(configId as string, requestId as string, path as string, edgeDomain = invalid as dynamic) as string
     scheme = "https://"
     host = "edge.adobedc.net"
-    path = "/ee/v1/interact"
+    overridablePath = "/ee/v1/interact"
     query = "?configId=" + configId
+
+    if not _adb_isEmptyOrInvalidString(path) then
+        overridablePath = path
+    end if
 
     if not _adb_isEmptyOrInvalidString(edgeDomain)
         host = edgeDomain
@@ -27,7 +31,7 @@ function _adb_buildEdgeRequestURL(configId as string, requestId as string, edgeD
         query = query + "&requestId=" + requestId
     end if
 
-    requestUrl = scheme + host + path + query
+    requestUrl = scheme + host + overridablePath + query
 
     return requestUrl
 end function

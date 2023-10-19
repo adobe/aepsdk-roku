@@ -40,6 +40,8 @@ sub TC_adb_EdgeRequestWorker_queue()
     UTF_assertEqual(1, worker._queue.Count())
     expectedObj = {
         requestId: "request_id",
+        meta: {},
+        path: "",
         xdmData: { xdm: {} },
         timestampInMillis: timestampInMillis&
     }
@@ -125,7 +127,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_valid_response()
     end function
 
     worker = _adb_EdgeRequestWorker()
-    networkResponse = worker._processRequest({ xdm: { key: "value" } }, "ecid_test", "config_id", "request_id", invalid)
+    networkResponse = worker._processRequest({ xdm: { key: "value" } }, "ecid_test", "config_id", "request_id", "", invalid)
 
     UTF_assertEqual(200, networkResponse.getResponseCode())
     UTF_assertEqual("response body", networkResponse.getResponseString())
@@ -147,7 +149,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_invalid_response()
     end function
 
     worker = _adb_EdgeRequestWorker()
-    result = worker._processRequest({ xdm: { key: "value" } }, "ecid_test", "config_id", "request_id", invalid)
+    result = worker._processRequest({ xdm: { key: "value" } }, "ecid_test", "config_id", "request_id", "", invalid)
 
     UTF_assertInvalid(result)
 

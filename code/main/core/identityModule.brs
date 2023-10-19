@@ -88,7 +88,7 @@ function _adb_IdentityModule(configurationModule as object) as object
                 return invalid
             end if
 
-            url = _adb_buildEdgeRequestURL(configId, _adb_generate_UUID(), edgeDomain)
+            url = _adb_buildEdgeRequestURL(configId, _adb_generate_UUID(), "", edgeDomain)
             jsonBody = m._getECIDQueryPayload()
             networkResponse = _adb_serviceProvider().networkService.syncPostRequest(url, jsonBody)
             remoteECID = m._getECIDFromQueryResponse(networkResponse)

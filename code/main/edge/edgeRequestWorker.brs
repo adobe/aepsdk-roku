@@ -21,7 +21,7 @@ function _adb_EdgeRequestWorker() as object
         _queue: [],
         _queue_size_max: 50,
 
-        queue: function(requestId as string, xdmData as object, timestampInMillis as longinteger) as void
+        queue: function(requestId as string, xdmData as object, timestampInMillis as longinteger, meta = {} as object, path = "" as string) as void
             if _adb_isEmptyOrInvalidString(requestId)
                 _adb_logDebug("[EdgeRequestWorker.queue()] requestId is invalid")
                 return
@@ -40,7 +40,9 @@ function _adb_EdgeRequestWorker() as object
             requestEntity = {
                 requestId: requestId,
                 xdmData: xdmData,
-                timestampInMillis: timestampInMillis
+                timestampInMillis: timestampInMillis,
+                path: path,
+                meta: meta
             }
             ' remove the oldest entity if reaching the limit
             if m._queue.count() >= m._queue_size_max
@@ -76,8 +78,9 @@ function _adb_EdgeRequestWorker() as object
 
                 xdmData = requestEntity.xdmData
                 requestId = requestEntity.requestId
+                path = requestEntity.path
 
-                networkResponse = m._processRequest(xdmData, ecid, configId, requestId, edgeDomain)
+                networkResponse = m._processRequest(xdmData, ecid, configId, requestId, path, edgeDomain)
                 if not _adb_isNetworkResponse(networkResponse)
                     _adb_logError("processRequests() - Edge request dropped. Response is invalid.")
                     ' drop the request
@@ -93,7 +96,7 @@ function _adb_EdgeRequestWorker() as object
                     m._lastFailedRequestTS = m._INVALID_WAIT_TIME
                 else if networkResponse.isRecoverable()
                     m._lastFailedRequestTS = _adb_timestampInMillis()
-                    _adb_logWarning("processRequests() - Edge request with id:(" + FormatJson(requestId)  + ") failed with recoverable error code:(" + FormatJson(networkResponse.getResponseCode()) + "). Request will be retried after (" + FormatJson(m._RETRY_WAIT_TIME_MS) + ") ms.")
+                    _adb_logWarning("processRequests() - Edge request with id:(" + FormatJson(requestId) + ") failed with recoverable error code:(" + FormatJson(networkResponse.getResponseCode()) + "). Request will be retried after (" + FormatJson(m._RETRY_WAIT_TIME_MS) + ") ms.")
                     m._queue.Unshift(requestEntity)
                     exit while
                 else
@@ -103,10 +106,10 @@ function _adb_EdgeRequestWorker() as object
             return responseArray
         end function,
 
-        _processRequest: function(xdmData as object, ecid as string, configId as string, requestId as string, edgeDomain = invalid as dynamic) as object
+        _processRequest: function(xdmData as object, ecid as string, configId as string, requestId as string, path as string, edgeDomain = invalid as dynamic) as object
             requestBody = m._createEdgeRequestBody(xdmData, ecid)
 
-            url = _adb_buildEdgeRequestURL(configId, requestId, edgeDomain)
+            url = _adb_buildEdgeRequestURL(configId, requestId, path, edgeDomain)
             _adb_logVerbose("_processRequest() - Sending Request to url:(" + FormatJson(url) + ") with payload:(" + FormatJson(requestBody) + ")")
             networkResponse = _adb_serviceProvider().networkService.syncPostRequest(url, requestBody)
             return networkResponse
@@ -126,7 +129,7 @@ function _adb_EdgeRequestWorker() as object
             return requestBody
         end function,
 
-        _getIdentityMap: function(ecid as String) as object
+        _getIdentityMap: function(ecid as string) as object
             identityMap = {
                 "ECID": [
                     {
