@@ -16,7 +16,6 @@
 function _adb_buildEdgeRequestURL(configId as string, requestId as string, path as string, edgeDomain = invalid as dynamic) as string
     scheme = "https://"
     host = "edge.adobedc.net"
-    ' overridablePath = "/ee/v1/interact"
     query = "?configId=" + configId
 
     if not _adb_isEmptyOrInvalidString(path) then
