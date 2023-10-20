@@ -25,6 +25,6 @@ function _adb_isEmptyOrInvalidString(str as dynamic) as boolean
     return false
 end function
 
-function _adb_isStringEndWith(string as string, sufix as string) as boolean
+function _adb_isStringEndsWith(string as string, sufix as string) as boolean
     return sufix.len() <= string.len() and string.right(sufix.len()) = sufix
 end function
