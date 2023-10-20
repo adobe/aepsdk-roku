@@ -28,3 +28,17 @@ end function
 function _adb_isStringEndWith(string as string, sufix as string) as boolean
     return sufix.len() <= string.len() and string.right(sufix.len()) = sufix
 end function
+
+function _adb_isStringInArray(str as string, array as object) as boolean
+    if _adb_isEmptyOrInvalidString(str) or _adb_isEmptyOrInvalidArray(array)
+        return false
+    end if
+
+    for each item in array
+        if item = str
+            return true
+        end if
+    end for
+
+    return false
+end function

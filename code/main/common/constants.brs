@@ -22,6 +22,7 @@ function _adb_InternalConstants() as object
             SEND_EDGE_EVENT: "sendEvent",
             SET_LOG_LEVEL: "setLogLevel",
             RESET_SDK: "resetSDK",
+            SEND_MEDIA_EVENT: "sendMediaEvent",
         },
         EVENT_DATA_KEY: {
             LOG: { LEVEL: "level" },

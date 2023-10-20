@@ -20,11 +20,13 @@ function _adb_EventProcessor(task as object) as object
         _configurationModule: invalid,
         _identityModule: invalid,
         _edgeModule: invalid,
+        _mediaModule: invalid,
 
         init: function() as void
             m._configurationModule = _adb_ConfigurationModule()
             m._identityModule = _adb_IdentityModule(m._configurationModule)
             m._edgeModule = _adb_EdgeModule(m._configurationModule, m._identityModule)
+            m._mediaModule = _adb_MediaModule(m._configurationModule, m._identityModule)
 
             ' enable debug mode if needed
             if m._isInDebugMode()
@@ -89,9 +91,20 @@ function _adb_EventProcessor(task as object) as object
                 m._resetIdentities(event)
             else if event.apiName = m._CONSTANTS.PUBLIC_API.RESET_SDK
                 m._resetSDK(event)
+            else if event.apiName = m._CONSTANTS.PUBLIC_API.SEND_MEDIA_EVENT
+                m._handleMediaEvents(event)
             else
                 _adb_logWarning("handleEvent() - event is invalid: " + FormatJson(event))
             end if
+        end function,
+
+        _handleMediaEvents: function(event as object) as void
+            ' validate event object
+            requestId = event.uuid
+            data = event.data
+            timestampInMillis = event.timestampInMillis
+
+            m._mediaModule.processEvent(requestId, data, timestampInMillis)
         end function,
 
         _setLogLevel: function(event as object) as void

@@ -226,12 +226,74 @@ function AdobeAEPSDKInit() as object
             data[m._private.cons.EVENT_DATA_KEY.ecid] = ecid
             event = _adb_RequestEvent(m._private.cons.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID, data)
             m._private.dispatchEvent(event)
-        end function
+        end function,
+
+        ' ****************************************************************************************************
+        '
+        ' Call this function to start a new Media session with the given XDM data. The XDM data must be the type
+        ' of "media.sessionStart".
+        ' If the "playerName", "channel", and "appVersion" are not provided in the XDM data, the SDK will use
+        ' the global values passed via "updateConfiguration" API.
+        '
+        ' @param xdmData as object : the XDM data of type "media.sessionStart"
+        '
+        ' ****************************************************************************************************
+        createMediaSession: function(xdmData as object) as void
+            _adb_logDebug("API: _createMediaSession()")
+
+            if not _adb_isValidMediaXDMData(xdmData)
+                _adb_logError("createMediaSession() - Cannot create media session, invalid XDM data")
+                return
+            end if
+
+            m._private._currentPlayHead = 0
+            m._private.mediaSession.startNewSession()
+            m.sendMediaEvent(xdmData)
+
+        end function,
+
+        ' ****************************************************************************************************
+        '
+        ' Before calling this function to send a Media event with the given XDM data, it's required to call the
+        ' "createMediaSession" API to start a new session.
+        '
+        ' @param xdmData as object : the XDM data of the Media event
+        '
+        ' ****************************************************************************************************
+        sendMediaEvent: function(xdmData as object) as void
+            _adb_logDebug("API: _sendMediaEvent()")
+
+            if not m._private.mediaSession.isInValidSession()
+                _adb_logError("sendMediaEvent() - Cannot send media event, not in a valid media session. Call createMediaSession() API to start a new session.")
+                return
+            end if
+
+            if not _adb_isValidMediaXDMData(xdmData)
+                _adb_logError("sendMediaEvent() - Cannot send media event, invalid XDM data")
+                return
+            end if
+
+            timestamp = _adb_ISO8601_timestamp()
+            sessionId = m._private.mediaSession.getClientSessionIdAndRecordAction(xdmData.xdm.eventType, timestamp, xdmData)
+
+            data = {
+                clientSessionId: sessionId,
+                timestampInISO8601: timestamp,
+                param: xdmData
+            }
+            event = _adb_RequestEvent(m._private.cons.PUBLIC_API.SEND_MEDIA_EVENT, data)
+            m._private.dispatchEvent(event)
+
+            if xdmData.xdm.eventType = "media.sessionEnd"
+                m._private.mediaSession.endSession()
+            end if
+        end function,
 
         ' ********************************
         ' Add private memebers below
         ' ********************************
         _private: {
+            mediaSession: _adb_ClientMediaSession(),
             ' constants
             cons: _adb_InternalConstants(),
             ' for testing purpose
@@ -269,6 +331,55 @@ end function
 
 function _adb_defaultCallback(_context, _result) as void
 end function
+
+function _adb_isValidMediaXDMData(xdmData as object) as boolean
+    ' TODO: validate the XDM data against the schema or ????
+    return true
+end function
+
+function _adb_ClientMediaSession() as object
+    return {
+        _clientSessionId: invalid,
+        _trackActionQueue: [],
+        _currentPlayHead: 0,
+
+        startNewSession: function() as string
+            m._clientSessionId = _adb_generate_UUID()
+            m._trackActionQueue = []
+            return m._clientSessionId
+        end function,
+
+        isInValidSession: function() as boolean
+            return m._clientSessionId <> invalid
+        end function,
+
+        endSession: sub()
+            m._clientSessionId = invalid
+
+            lines = []
+            lines.Push("***************************************************************")
+            lines.Push("*  The media session is ended, the events are recorded below  *")
+            lines.Push("***************************************************************")
+            for each obj in m._trackActionQueue
+                lines.Push("action: " + obj.action + ", timestamp: " + obj.timestamp + ", param: " + FormatJson(obj.param))
+            end for
+            output = lines.Join(chr(10))
+            _adb_logVerbose(output)
+            m._trackActionQueue = []
+        end sub,
+
+        getClientSessionIdAndRecordAction: function(action as string, timestamp = "" as string, param = {} as object) as string
+            m._trackActionQueue.Push({
+                action: action,
+                timestamp: timestamp,
+                param: param
+            })
+            return m._clientSessionId
+        end function,
+
+    }
+end function
+
 
 ' ********** response event observer **********
 function _adb_handleResponseEvent() as void
