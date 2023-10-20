@@ -18,15 +18,6 @@ function _adb_buildEdgeRequestURL(configId as string, requestId as string, path 
     host = "edge.adobedc.net"
     query = "?configId=" + configId
 
-    if not _adb_isEmptyOrInvalidString(path) then
-        if not path.startsWith("/")
-            path = "/" + path
-        end if
-        if _adb_isStringEndsWith(path, "/") then
-            path = path.left(path.len() - 1)
-        end if
-    end if
-
     if not _adb_isEmptyOrInvalidString(edgeDomain)
         host = edgeDomain
     end if

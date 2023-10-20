@@ -27,21 +27,6 @@ sub TC_adb_buildEdgeRequestURL_validPathOverwriting()
     url = _adb_buildEdgeRequestURL("config_id_1", "request_id_1", "/ee/v1/interact")
     UTF_assertEqual("https://edge.adobedc.net/ee/v1/interact?configId=config_id_1&requestId=request_id_1", url)
 
-    url = _adb_buildEdgeRequestURL("config_id_1", "request_id_1", "/custom/path")
-    UTF_assertEqual("https://edge.adobedc.net/custom/path?configId=config_id_1&requestId=request_id_1", url)
-
-    url = _adb_buildEdgeRequestURL("config_id_1", "request_id_1", "custom/path")
-    UTF_assertEqual("https://edge.adobedc.net/custom/path?configId=config_id_1&requestId=request_id_1", url)
-
-    url = _adb_buildEdgeRequestURL("config_id_1", "request_id_1", "/custom/path/")
-    UTF_assertEqual("https://edge.adobedc.net/custom/path?configId=config_id_1&requestId=request_id_1", url)
-
-    url = _adb_buildEdgeRequestURL("config_id_1", "request_id_1", "custom/path/")
-    UTF_assertEqual("https://edge.adobedc.net/custom/path?configId=config_id_1&requestId=request_id_1", url)
-
-    urlWithCustomDomain = _adb_buildEdgeRequestURL("config_id_2", "request_id_2", "/ee/v1/interact", "custom.domain.net")
-    UTF_assertEqual("https://custom.domain.net/ee/v1/interact?configId=config_id_2&requestId=request_id_2", urlWithCustomDomain)
-
     urlWithCustomDomain = _adb_buildEdgeRequestURL("config_id_2", "request_id_2", "/custom/path", "custom.domain.net")
     UTF_assertEqual("https://custom.domain.net/custom/path?configId=config_id_2&requestId=request_id_2", urlWithCustomDomain)
 end sub
