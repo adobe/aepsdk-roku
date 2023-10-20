@@ -25,6 +25,7 @@ function _adb_IdentityModule(configurationModule as object) as object
     module = _adb_AdobeObject("com.adobe.module.identity")
 
     module.Append({
+        _EDGE_REQUEST_PATH: "/ee/v1/interact",
         _configurationModule: configurationModule,
         _ecid: invalid,
 
@@ -88,7 +89,7 @@ function _adb_IdentityModule(configurationModule as object) as object
                 return invalid
             end if
 
-            url = _adb_buildEdgeRequestURL(configId, _adb_generate_UUID(), "", edgeDomain)
+            url = _adb_buildEdgeRequestURL(configId, _adb_generate_UUID(), m._EDGE_REQUEST_PATH, edgeDomain)
             jsonBody = m._getECIDQueryPayload()
             networkResponse = _adb_serviceProvider().networkService.syncPostRequest(url, jsonBody)
             remoteECID = m._getECIDFromQueryResponse(networkResponse)

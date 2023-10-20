@@ -41,7 +41,7 @@ function _adb_test_functions() as dynamic
         TC_adb_optIntFromMap
         'test_string.brs
         TC_adb_isEmptyOrInvalidString
-        TC_adb_isStringEndWith
+        TC_adb_isStringEndsWith
         'test_datetime.brs
         TC_adb_timestampInMillis
         TC_adb_ISO8601_timestamp

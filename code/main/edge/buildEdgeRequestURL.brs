@@ -16,17 +16,16 @@
 function _adb_buildEdgeRequestURL(configId as string, requestId as string, path as string, edgeDomain = invalid as dynamic) as string
     scheme = "https://"
     host = "edge.adobedc.net"
-    overridablePath = "/ee/v1/interact"
+    ' overridablePath = "/ee/v1/interact"
     query = "?configId=" + configId
 
     if not _adb_isEmptyOrInvalidString(path) then
         if not path.startsWith("/")
             path = "/" + path
         end if
-        if _adb_isStringEndWith(path, "/") then
+        if _adb_isStringEndsWith(path, "/") then
             path = path.left(path.len() - 1)
         end if
-        overridablePath = path
     end if
 
     if not _adb_isEmptyOrInvalidString(edgeDomain)
@@ -37,7 +36,7 @@ function _adb_buildEdgeRequestURL(configId as string, requestId as string, path 
         query = query + "&requestId=" + requestId
     end if
 
-    requestUrl = scheme + host + overridablePath + query
+    requestUrl = scheme + host + path + query
 
     return requestUrl
 end function
