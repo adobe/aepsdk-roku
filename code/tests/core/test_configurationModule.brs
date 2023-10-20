@@ -97,6 +97,8 @@ sub TC_adb_ConfigurationModule_invalidConfigurationKeys()
     UTF_assertInvalid(configurationModule.getEdgeDomain())
 end sub
 
+' target: adb_ConfigurationModule()
+' @Test
 sub TC_adb_ConfigurationModule_invalidConfigurationValues()
     configurationModule = _adb_ConfigurationModule()
     invalidConfig = {
@@ -127,4 +129,63 @@ sub TC_adb_ConfigurationModule_invalidConfigurationValues()
     configurationModule.updateConfiguration(invalidConfig)
     UTF_assertInvalid(configurationModule.getConfigId())
     UTF_assertInvalid(configurationModule.getEdgeDomain())
+end sub
+
+' target: adb_ConfigurationModule()
+' @Test
+sub TC_adb_ConfigurationModule_validMediaConfig()
+    configurationModule = _adb_ConfigurationModule()
+    config = {
+        "edge.configId": "testConfigId"
+        "edge.domain": "abc.net",
+        "edgemedia.channel": "testChannel",
+        "edgemedia.playerName": "testPlayerName",
+        "edgemedia.appVersion": "1.1.0",
+
+    }
+    configurationModule.updateConfiguration(config)
+    UTF_assertEqual(configurationModule.getConfigId(), "testConfigId")
+    UTF_assertEqual(configurationModule.getEdgeDomain(), "abc.net")
+    UTF_assertEqual(configurationModule.getMediaConfiguration().count(), 3)
+    UTF_assertEqual(configurationModule.getMediaConfiguration()["edgemedia.channel"], "testChannel")
+    UTF_assertEqual(configurationModule.getMediaConfiguration()["edgemedia.playerName"], "testPlayerName")
+    UTF_assertEqual(configurationModule.getMediaConfiguration()["edgemedia.appVersion"], "1.1.0")
+end sub
+
+' target: adb_ConfigurationModule()
+' @Test
+sub TC_adb_ConfigurationModule_emptyMediaConfig()
+    configurationModule = _adb_ConfigurationModule()
+    config = {
+        "edge.configId": "testConfigId"
+        "edge.domain": "abc.net"
+    }
+    configurationModule.updateConfiguration(config)
+    UTF_assertEqual(configurationModule.getConfigId(), "testConfigId")
+    UTF_assertEqual(configurationModule.getEdgeDomain(), "abc.net")
+    UTF_assertEqual(configurationModule.getMediaConfiguration().count(), 0)
+end sub
+
+' target: adb_ConfigurationModule()
+' @Test
+sub TC_adb_ConfigurationModule_invalidMediaConfig()
+    configurationModule = _adb_ConfigurationModule()
+    config = {
+        "edge.configId": "testConfigId"
+        "edge.domain": "abc.net",
+        "edgemedia.channel": "testChannel",
+        "edgemedia.playerName": "testPlayerName",
+        "edgemedia.appVersion": "1.1.0",
+        "edgemedia.unsupportedKey": "unsupported",
+        "edgemediaX.unsupported": "edgemediaX",
+        "edgemediaY": "edgemediaY",
+    }
+    configurationModule.updateConfiguration(config)
+    UTF_assertEqual(configurationModule.getConfigId(), "testConfigId")
+    UTF_assertEqual(configurationModule.getEdgeDomain(), "abc.net")
+    UTF_assertEqual(configurationModule.getMediaConfiguration().count(), 4)
+    UTF_assertEqual(configurationModule.getMediaConfiguration()["edgemedia.channel"], "testChannel")
+    UTF_assertEqual(configurationModule.getMediaConfiguration()["edgemedia.unsupportedKey"], "unsupported")
+    UTF_assertEqual(configurationModule.getMediaConfiguration()["edgemedia.playerName"], "testPlayerName")
+    UTF_assertEqual(configurationModule.getMediaConfiguration()["edgemedia.appVersion"], "1.1.0")
 end sub

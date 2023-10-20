@@ -20,23 +20,35 @@ end function
 function _adb_ConfigurationModule() as object
     module = _adb_AdobeObject("com.adobe.module.configuration")
     module.Append({
-        CONFIG_KEY: AdobeAEPSDKConstants().CONFIGURATION,
+        _CONFIG_KEY: AdobeAEPSDKConstants().CONFIGURATION,
+        _MEDIA_CONFIG_KEY_PREFIX: "edgemedia.",
         _edge_configId: invalid,
         _edge_domain: invalid,
-        ' example config = {edge.configId:"1234567890", edge.domain:"xyz.net"}
+        ' example config = {edge.configId:"1234567890", edge.domain:"xyz.net"
+        _media_configuration: {},
+
         updateConfiguration: function(configuration as object) as void
-            configId = _adb_optStringFromMap(configuration, m.CONFIG_KEY.EDGE_CONFIG_ID)
-            domain = _adb_optStringFromMap(configuration, m.CONFIG_KEY.EDGE_DOMAIN)
+            configId = _adb_optStringFromMap(configuration, m._CONFIG_KEY.EDGE_CONFIG_ID)
+            domain = _adb_optStringFromMap(configuration, m._CONFIG_KEY.EDGE_DOMAIN)
 
             if not _adb_isEmptyOrInvalidString(configId)
                 m._edge_configId = configId
             end if
 
-            ' example domain: company.data.adobedc.net
+            '  example domain: company.data.adobedc.net
             regexPattern = CreateObject("roRegex", "^((?!-)[A-Za-z0-9-]+(?<!-)\.)+[A-Za-z]{2,6}$", "")
             if not _adb_isEmptyOrInvalidString(domain) and regexPattern.isMatch(domain)
                 m._edge_domain = domain
             end if
+
+            ' update Media configuration
+            for each key in configuration.keys()
+                if key.startsWith(m._MEDIA_CONFIG_KEY_PREFIX)
+                    ' add/overwrite the media configuration
+                    m._media_configuration[key] = configuration[key]
+                end if
+            end for
+
         end function,
 
         getConfigId: function() as dynamic
@@ -45,6 +57,10 @@ function _adb_ConfigurationModule() as object
 
         getEdgeDomain: function() as dynamic
             return m._edge_domain
+        end function,
+
+        getMediaConfiguration: function() as object
+            return m._media_configuration
         end function,
 
         dump: function() as object

@@ -79,6 +79,9 @@ function _adb_test_functions() as dynamic
         TC_adb_ConfigurationModule_separateUpdates
         TC_adb_ConfigurationModule_invalidConfigurationKeys
         TC_adb_ConfigurationModule_invalidConfigurationValues
+        TC_adb_ConfigurationModule_validMediaConfig
+        TC_adb_ConfigurationModule_emptyMediaConfig
+        TC_adb_ConfigurationModule_invalidMediaConfig
         ' test_identityModule.brs
         TS_identityModule_BeforeEach
         TC_adb_IdentityModule_bad_init
