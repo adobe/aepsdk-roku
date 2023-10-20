@@ -30,12 +30,13 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
 
     module = _adb_AdobeObject("com.adobe.module.edge")
     module.Append({
+        _EDGE_REQUEST_PATH: "/ee/v1/interact",
         _configurationModule: configurationModule,
         _identityModule: identityModule,
         _edgeRequestWorker: _adb_EdgeRequestWorker(),
 
         processEvent: function(requestId as string, xdmData as object, timestampInMillis as longinteger) as dynamic
-            m._edgeRequestWorker.queue(requestId, xdmData, timestampInMillis)
+            m._edgeRequestWorker.queue(requestId, [xdmData], timestampInMillis, {}, m._EDGE_REQUEST_PATH)
             return m.processQueuedRequests()
         end function,
 

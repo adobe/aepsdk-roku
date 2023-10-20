@@ -20,3 +20,17 @@ sub TC_adb_isEmptyOrInvalidString()
     UTF_assertTrue(_adb_isEmptyOrInvalidString(123))
     UTF_assertTrue(_adb_isEmptyOrInvalidString({}))
 end sub
+
+' target: _adb_isStringEndsWith()
+' @Test
+sub TC_adb_isStringEndsWith()
+    UTF_assertTrue(_adb_isStringEndsWith("xyz", "z"))
+    UTF_assertTrue(_adb_isStringEndsWith("xyz", "yz"))
+    UTF_assertTrue(_adb_isStringEndsWith("xyz", "xyz"))
+    UTF_assertTrue(_adb_isStringEndsWith("xyz&", "&"))
+    UTF_assertTrue(_adb_isStringEndsWith("xyz&8", "8"))
+    UTF_assertTrue(_adb_isStringEndsWith("xyz ", ""))
+    UTF_assertTrue(_adb_isStringEndsWith("xyz", ""))
+    UTF_assertFalse(_adb_isStringEndsWith("xyz", "y"))
+    UTF_assertFalse(_adb_isStringEndsWith("x", "xyz"))
+end sub

@@ -41,6 +41,7 @@ function _adb_test_functions() as dynamic
         TC_adb_optIntFromMap
         'test_string.brs
         TC_adb_isEmptyOrInvalidString
+        TC_adb_isStringEndsWith
         'test_datetime.brs
         TC_adb_timestampInMillis
         TC_adb_ISO8601_timestamp
@@ -96,6 +97,7 @@ function _adb_test_functions() as dynamic
     edge = [
         'test_buildEdgeRequestURL.brs
         TC_adb_buildEdgeRequestURL_validDomain
+        TC_adb_buildEdgeRequestURL_validPathOverwriting
         'test_implementationDetails.brs
         TC_adb_ImplementationDetails
         ' test_edgeRequestWorker.brs
