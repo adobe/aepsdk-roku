@@ -19,7 +19,10 @@ function AdobeAEPSDKConstants() as object
     return {
         CONFIGURATION: {
             EDGE_CONFIG_ID: "edge.configId",
-            EDGE_DOMAIN: "edge.domain"
+            EDGE_DOMAIN: "edge.domain",
+            MEDIA_CHANNEL: "edgemedia.channel",
+            MEDIA_PLAYER_NAME: "edgemedia.playerName",
+            MEDIA_APP_VERSION: "edgemedia.appVersion",
         },
         LOG_LEVEL: {
             VERBOSE: 0,
