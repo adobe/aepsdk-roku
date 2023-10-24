@@ -238,6 +238,8 @@ function AdobeAEPSDKInit() as object
         ' @param xdmData as object : the XDM data of type "media.sessionStart"
         '
         ' ****************************************************************************************************
+        ' TODO: we're discussing the possibility of adding another parameter to this API for passing the per-session configuration
+        ' For example: createMediaSession: function(xdmData as object, configuration = {} as object) as void
         createMediaSession: function(xdmData as object) as void
             _adb_logDebug("API: _createMediaSession()")
 
@@ -245,6 +247,9 @@ function AdobeAEPSDKInit() as object
                 _adb_logError("createMediaSession() - Cannot create media session, invalid XDM data")
                 return
             end if
+
+
+            ' TODO: print error message if the previsou session is not ended.
 
             m._private._currentPlayHead = 0
             m._private.mediaSession.startNewSession()

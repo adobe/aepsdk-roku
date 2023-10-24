@@ -30,11 +30,15 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
     module = _adb_AdobeObject("com.adobe.module.media")
 
     module.Append({
+        ' costants
         _MEDIA_EVENT_TYPES: ["play", "ping", "bitrateChange", "bufferStart", "pauseStart", "adBreakStart", "adStart", "adComplete", "adSkip", "adBreakComplete", "chapterStart", "chapterComplete", "chapterSkip", "error", "sessionEnd", "sessionComplete", "statesUpdate"],
+        _SESSION_START_EVENT_TYPE: "media.sessionStart",
+        _SESSION_START_EDGE_REQUEST_PATH: "/ee/va/v1/sessionStart",
+        _CONSTANTS: _adb_InternalConstants(),
+        ' external dependencies
         _configurationModule: configurationModule,
         _identityModule: identityModule,
         _edgeRequestWorker: _adb_EdgeRequestWorker(),
-        _CONSTANTS: _adb_InternalConstants(),
         _sessionManager: _adb_MediaSessionManager(),
 
         ' {
@@ -47,7 +51,7 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
             clientSessionId = eventData.clientSessionId
             timestampInISO8601 = eventData.timestampInISO8601
 
-            if mediaEventType = "media.sessionStart"
+            if mediaEventType = m._SESSION_START_EVENT_TYPE then
                 m._sessionStart(requestId, clientSessionId, eventData, timestampInISO8601, timestampInMillis)
             else
                 m._actionInSession(requestId, clientSessionId, eventData, timestampInISO8601, timestampInMillis)
@@ -56,21 +60,22 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
 
         _sessionStart: sub(requestId as string, clientSessionId as string, eventData as object, timestampInISO8601 as string, timestampInMillis as longinteger)
             xdmData = eventData.param
+
             m._sessionManager.createNewSession(clientSessionId)
             meta = {}
             'https://edge.adobedc.net/ee/va/v1/sessionStart?configId=xx&requestId=xx
-            path = "/ee/va/v1/sessionStart"
             mediaConfig = m._configurationModule.getMediaConfiguration()
             channel = mediaConfig["edgemedia.channel"]
             playerName = mediaConfig["edgemedia.playerName"]
             appVersion = mediaConfig["edgemedia.appVersion"]
+
             xdmData.xdm["_id"] = _adb_generate_UUID()
             xdmData.xdm["timestamp"] = timestampInISO8601
             xdmData.xdm["mediaCollection"]["sessionDetails"]["playerName"] = playerName
             xdmData.xdm["mediaCollection"]["sessionDetails"]["channel"] = channel
             xdmData.xdm["mediaCollection"]["sessionDetails"]["appVersion"] = appVersion
             'session start => (clientSessionId = requestId)
-            m._edgeRequestWorker.queue(clientSessionId, xdmData, timestampInMillis, meta, path)
+            m._edgeRequestWorker.queue(clientSessionId, xdmData, timestampInMillis, meta, m._SESSION_START_EDGE_REQUEST_PATH)
             m._kickRequestQueue()
         end sub,
 
@@ -184,68 +189,4 @@ function _adb_EdgePathForEventType(mediaEventType as string, location as string,
         return invalid
     end if
 
-end function
-
-function _adb_MediaSessionManager() as object
-    return {
-        _map: {},
-
-        createNewSession: sub(clientSessionId as string)
-            if _adb_isEmptyOrInvalidString(clientSessionId)
-                _adb_logError("createNewSession() - clientSessionId is invalid.")
-                return
-            end if
-            if m._map.DoesExist(clientSessionId)
-                _adb_logError("createNewSession() - clientSessionId already exists.")
-                return
-            end if
-            m._map[clientSessionId] = {
-                sessionId: invalid,
-                location: invalid,
-                queue: []
-            }
-        end sub,
-
-        updateSessionIdAndGetQueuedData: function(clientSessionId as string, sessionId as string, location as string) as object
-            if m._map.DoesExist(clientSessionId)
-                m._map[clientSessionId].sessionId = sessionId
-                m._map[clientSessionId].location = location
-                return m._map[clientSessionId].queue
-            end if
-            _adb_logError("updateSessionId() - clientSessionId is invalid.")
-            return []
-        end function,
-
-        getLocation: function(clientSessionId as string) as string
-            session = m._map.Lookup(clientSessionId)
-            if session = invalid
-                return ""
-            end if
-            return session.location
-        end function,
-
-        getSessionId: function(clientSessionId as string) as string
-            session = m._map.Lookup(clientSessionId)
-            if session = invalid
-                return ""
-            end if
-            return session.sessionId
-        end function,
-
-        queueMediaData: sub(clientSessionId as string, requestId as string, data as object, timestampInMillis as longinteger)
-            if m._map.DoesExist(clientSessionId)
-                m._map[clientSessionId].queue.Push({
-                    requestId: requestId,
-                    data: data,
-                    timestampInMillis: timestampInMillis
-                })
-                return
-            end if
-            _adb_logError("queueMediaData() - clientSessionId is invalid.")
-        end sub,
-
-        deleteSession: sub(clientSessionId as string)
-            m._map.Delete(clientSessionId)
-        end sub,
-    }
 end function
