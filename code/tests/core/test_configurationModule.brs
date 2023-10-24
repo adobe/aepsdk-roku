@@ -146,10 +146,48 @@ sub TC_adb_ConfigurationModule_validMediaConfig()
     configurationModule.updateConfiguration(config)
     UTF_assertEqual(configurationModule.getConfigId(), "testConfigId")
     UTF_assertEqual(configurationModule.getEdgeDomain(), "abc.net")
-    UTF_assertEqual(configurationModule.getMediaConfiguration().count(), 3)
-    UTF_assertEqual(configurationModule.getMediaConfiguration()["edgemedia.channel"], "testChannel")
-    UTF_assertEqual(configurationModule.getMediaConfiguration()["edgemedia.playerName"], "testPlayerName")
-    UTF_assertEqual(configurationModule.getMediaConfiguration()["edgemedia.appVersion"], "1.1.0")
+    UTF_assertEqual(configurationModule.getMediaChannel(), "testChannel")
+    UTF_assertEqual(configurationModule.getMediaPlayerName(), "testPlayerName")
+    UTF_assertEqual(configurationModule.getMediaAppVersion(), "1.1.0")
+end sub
+
+' target: adb_ConfigurationModule()
+' @Test
+sub TC_adb_ConfigurationModule_overwrittingMediaConfig()
+    configurationModule = _adb_ConfigurationModule()
+    config = {
+        "edge.configId": "testConfigId"
+        "edge.domain": "abc.net",
+        "edgemedia.channel": "testChannel",
+        "edgemedia.playerName": "testPlayerName",
+        "edgemedia.appVersion": "1.1.0",
+
+    }
+    configurationModule.updateConfiguration(config)
+    UTF_assertEqual(configurationModule.getConfigId(), "testConfigId")
+    UTF_assertEqual(configurationModule.getEdgeDomain(), "abc.net")
+    UTF_assertEqual(configurationModule.getMediaChannel(), "testChannel")
+    UTF_assertEqual(configurationModule.getMediaPlayerName(), "testPlayerName")
+    UTF_assertEqual(configurationModule.getMediaAppVersion(), "1.1.0")
+    configurationModule.updateConfiguration({
+        "edgemedia.channel": "testChannel_001",
+        "edgemedia.appVersion": "1.1.1",
+    })
+    UTF_assertEqual(configurationModule.getConfigId(), "testConfigId")
+    UTF_assertEqual(configurationModule.getEdgeDomain(), "abc.net")
+    UTF_assertEqual(configurationModule.getMediaChannel(), "testChannel_001")
+    UTF_assertEqual(configurationModule.getMediaPlayerName(), "testPlayerName")
+    UTF_assertEqual(configurationModule.getMediaAppVersion(), "1.1.1")
+    configurationModule.updateConfiguration({
+        "edgemedia.playerName": "",
+        "edgemedia.appVersion": "",
+    })
+    ' updateConfiguration API doesn't support the deletion of the configuraiton values for now, so the values will not be updated
+    UTF_assertEqual(configurationModule.getConfigId(), "testConfigId")
+    UTF_assertEqual(configurationModule.getEdgeDomain(), "abc.net")
+    UTF_assertEqual(configurationModule.getMediaChannel(), "testChannel_001")
+    UTF_assertEqual(configurationModule.getMediaPlayerName(), "testPlayerName")
+    UTF_assertEqual(configurationModule.getMediaAppVersion(), "1.1.1")
 end sub
 
 ' target: adb_ConfigurationModule()
@@ -163,7 +201,9 @@ sub TC_adb_ConfigurationModule_emptyMediaConfig()
     configurationModule.updateConfiguration(config)
     UTF_assertEqual(configurationModule.getConfigId(), "testConfigId")
     UTF_assertEqual(configurationModule.getEdgeDomain(), "abc.net")
-    UTF_assertEqual(configurationModule.getMediaConfiguration().count(), 0)
+    UTF_assertInvalid(configurationModule.getMediaChannel())
+    UTF_assertInvalid(configurationModule.getMediaPlayerName())
+    UTF_assertInvalid(configurationModule.getMediaAppVersion())
 end sub
 
 ' target: adb_ConfigurationModule()
@@ -183,9 +223,7 @@ sub TC_adb_ConfigurationModule_invalidMediaConfig()
     configurationModule.updateConfiguration(config)
     UTF_assertEqual(configurationModule.getConfigId(), "testConfigId")
     UTF_assertEqual(configurationModule.getEdgeDomain(), "abc.net")
-    UTF_assertEqual(configurationModule.getMediaConfiguration().count(), 4)
-    UTF_assertEqual(configurationModule.getMediaConfiguration()["edgemedia.channel"], "testChannel")
-    UTF_assertEqual(configurationModule.getMediaConfiguration()["edgemedia.unsupportedKey"], "unsupported")
-    UTF_assertEqual(configurationModule.getMediaConfiguration()["edgemedia.playerName"], "testPlayerName")
-    UTF_assertEqual(configurationModule.getMediaConfiguration()["edgemedia.appVersion"], "1.1.0")
+    UTF_assertEqual(configurationModule.getMediaChannel(), "testChannel")
+    UTF_assertEqual(configurationModule.getMediaPlayerName(), "testPlayerName")
+    UTF_assertEqual(configurationModule.getMediaAppVersion(), "1.1.0")
 end sub
