@@ -13,6 +13,7 @@
 
 ' ***************************** MODULE: MediaSessionManager *******************************
 
+' TODO: add logic to handle session timeout use cases
 function _adb_MediaSessionManager() as object
     return {
         _map: {},
@@ -33,11 +34,14 @@ function _adb_MediaSessionManager() as object
             }
         end sub,
 
-        updateSessionIdAndGetQueuedData: function(clientSessionId as string, sessionId as string, location as string) as object
+        updateSessionIdAndGetQueuedRequests: function(clientSessionId as string, sessionId as string, location as string) as object
             if m._map.DoesExist(clientSessionId)
                 m._map[clientSessionId].sessionId = sessionId
                 m._map[clientSessionId].location = location
-                return m._map[clientSessionId].queue
+                queuedRequests = m._map[clientSessionId].queue
+                ' clean the queued requests
+                m._map[clientSessionId].queue = []
+                return queuedRequests
             end if
             _adb_logError("updateSessionId() - clientSessionId is invalid.")
             return []
@@ -51,6 +55,10 @@ function _adb_MediaSessionManager() as object
             return session.location
         end function,
 
+        isSessionStarted: function(clientSessionId as string) as boolean
+            return m._map.Lookup(clientSessionId) <> invalid
+        end function,
+
         getSessionId: function(clientSessionId as string) as string
             session = m._map.Lookup(clientSessionId)
             if session = invalid
@@ -59,11 +67,12 @@ function _adb_MediaSessionManager() as object
             return session.sessionId
         end function,
 
-        queueMediaData: sub(clientSessionId as string, requestId as string, data as object, timestampInMillis as longinteger)
+        queueMediaRequest: sub(requestId as string, clientSessionId as string, eventData as object, timestampInISO8601 as string, timestampInMillis as longinteger)
             if m._map.DoesExist(clientSessionId)
                 m._map[clientSessionId].queue.Push({
                     requestId: requestId,
-                    data: data,
+                    eventData: eventData,
+                    timestampInISO8601: timestampInISO8601,
                     timestampInMillis: timestampInMillis
                 })
                 return

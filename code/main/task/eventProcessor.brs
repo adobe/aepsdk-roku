@@ -93,18 +93,63 @@ function _adb_EventProcessor(task as object) as object
                 m._resetSDK(event)
             else if event.apiName = m._CONSTANTS.PUBLIC_API.SEND_MEDIA_EVENT
                 m._handleMediaEvents(event)
+            else if event.apiName = m._CONSTANTS.PUBLIC_API.CREATE_MEDIA_SESSION
+                m._handleCreateMediaSession(event)
             else
                 _adb_logWarning("handleEvent() - event is invalid: " + FormatJson(event))
             end if
         end function,
 
-        _handleMediaEvents: function(event as object) as void
-            ' validate event object
+        _handleCreateMediaSession: function(event as object) as void
             requestId = event.uuid
             data = event.data
             timestampInMillis = event.timestampInMillis
 
+            ' validate the event data
+            if not m._isValidEventDataForSessionStartRequest()
+                _adb_logError("_handleCreateMediaSession() - Drop the event due to the invalid event data for sessionStart request: " + FormatJson(event))
+                return
+            end if
+
             m._mediaModule.processEvent(requestId, data, timestampInMillis)
+        end function,
+
+        _isValidEventDataForSessionStartRequest: function(data as object) as boolean
+            if data = invalid or _adb_isEmptyOrInvalidString(data.clientSessionId) or _adb_isEmptyOrInvalidString(data.timestampInISO8601)
+                return false
+            end if
+
+            if data.xdmData = invalid or data.xdmData.xdm = invalid or data.xdmData.xdm.Count() = 0 or data.configuration = invalid
+                return false
+            end if
+
+            return true
+        end function,
+
+        _handleMediaEvents: function(event as object) as void
+            requestId = event.uuid
+            data = event.data
+            timestampInMillis = event.timestampInMillis
+
+            ' validate the event data
+            if not m._isValidEventDataForMediaEventRequest()
+                _adb_logError("_handleMediaEvents() - Drop the event due to the invalid event data for media request: " + FormatJson(event))
+                return
+            end if
+
+            m._mediaModule.processEvent(requestId, data, timestampInMillis)
+        end function,
+
+        _isValidEventDataForMediaEventRequest: function(data as object) as boolean
+            if data = invalid or _adb_isEmptyOrInvalidString(data.clientSessionId) or _adb_isEmptyOrInvalidString(data.timestampInISO8601)
+                return false
+            end if
+
+            if data.xdmData = invalid or data.xdmData.xdm = invalid or data.xdmData.xdm.Count() = 0
+                return false
+            end if
+
+            return true
         end function,
 
         _setLogLevel: function(event as object) as void

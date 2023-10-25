@@ -24,6 +24,12 @@ function AdobeAEPSDKConstants() as object
             MEDIA_PLAYER_NAME: "edgemedia.playerName",
             MEDIA_APP_VERSION: "edgemedia.appVersion",
         },
+        ' The constants define keys that can be used to create the session-level configuration for Media module.
+        MEDIA_SESSION_CONFIG: {
+            CHANNEL: "config.channel",
+            AD_PING_INTERVAL: "config.adpinginterval",
+            MAIN_PING_INTERVAL: "config.mainpinginterval",
+        },
         LOG_LEVEL: {
             VERBOSE: 0,
             DEBUG: 1,
@@ -235,25 +241,35 @@ function AdobeAEPSDKInit() as object
         ' If the "playerName", "channel", and "appVersion" are not provided in the XDM data, the SDK will use
         ' the global values passed via "updateConfiguration" API.
         '
-        ' @param xdmData as object : the XDM data of type "media.sessionStart"
+        ' @param xdmData as object                  : the XDM data of type "media.sessionStart"
+        ' @param [optional] configuration as object : the session-level configuration
         '
         ' ****************************************************************************************************
-        ' TODO: we're discussing the possibility of adding another parameter to this API for passing the per-session configuration
-        ' For example: createMediaSession: function(xdmData as object, configuration = {} as object) as void
-        createMediaSession: function(xdmData as object) as void
+        createMediaSession: function(xdmData as object, configuration = {} as object) as void
             _adb_logDebug("API: _createMediaSession()")
+
+            if m._private.mediaSession.isActive()
+                _adb_logError("createMediaSession() - The previous media session is not ended correctly.")
+            end if
 
             if not _adb_isValidMediaXDMData(xdmData)
                 _adb_logError("createMediaSession() - Cannot create media session, invalid XDM data")
                 return
             end if
 
-
-            ' TODO: print error message if the previsou session is not ended.
-
-            m._private._currentPlayHead = 0
             m._private.mediaSession.startNewSession()
-            m.sendMediaEvent(xdmData)
+
+            timestamp = _adb_ISO8601_timestamp()
+            sessionId = m._private.mediaSession.getClientSessionIdAndRecordAction(xdmData.xdm.eventType, timestamp, xdmData)
+
+            data = {
+                clientSessionId: sessionId,
+                timestampInISO8601: timestamp,
+                xdmData: xdmData,
+                configuration: configuration
+            }
+            event = _adb_RequestEvent(m._private.cons.PUBLIC_API.CREATE_MEDIA_SESSION, data)
+            m._private.dispatchEvent(event)
 
         end function,
 
@@ -268,7 +284,7 @@ function AdobeAEPSDKInit() as object
         sendMediaEvent: function(xdmData as object) as void
             _adb_logDebug("API: _sendMediaEvent()")
 
-            if not m._private.mediaSession.isInValidSession()
+            if not m._private.mediaSession.isActive()
                 _adb_logError("sendMediaEvent() - Cannot send media event, not in a valid media session. Call createMediaSession() API to start a new session.")
                 return
             end if
@@ -284,12 +300,12 @@ function AdobeAEPSDKInit() as object
             data = {
                 clientSessionId: sessionId,
                 timestampInISO8601: timestamp,
-                param: xdmData
+                xdmData: xdmData
             }
             event = _adb_RequestEvent(m._private.cons.PUBLIC_API.SEND_MEDIA_EVENT, data)
             m._private.dispatchEvent(event)
 
-            if xdmData.xdm.eventType = "media.sessionEnd"
+            if xdmData.xdm.eventType = m._private.cons.MEDIA.SESSION_END_EVENT_TYPE
                 m._private.mediaSession.endSession()
             end if
         end function,
@@ -348,18 +364,29 @@ function _adb_ClientMediaSession() as object
         _trackActionQueue: [],
         _currentPlayHead: 0,
 
-        startNewSession: function() as string
-            m._clientSessionId = _adb_generate_UUID()
-            m._trackActionQueue = []
-            return m._clientSessionId
-        end function,
+        startNewSession: sub()
 
-        isInValidSession: function() as boolean
+            if m.isActive()
+                lines = []
+                lines.Push("************************************************************************************")
+                lines.Push("*  ERROR: The media session is not ended correctly, the events are recorded below  *")
+                lines.Push("************************************************************************************")
+                for each obj in m._trackActionQueue
+                    lines.Push("action: " + obj.action + ", timestamp: " + obj.timestamp + ", param: " + FormatJson(obj.param))
+                end for
+                output = lines.Join(chr(10))
+                _adb_logVerbose(output)
+            end if
+
+            m._resetSession()
+            m._clientSessionId = _adb_generate_UUID()
+        end sub,
+
+        isActive: function() as boolean
             return m._clientSessionId <> invalid
         end function,
 
         endSession: sub()
-            m._clientSessionId = invalid
 
             lines = []
             lines.Push("***************************************************************")
@@ -370,7 +397,15 @@ function _adb_ClientMediaSession() as object
             end for
             output = lines.Join(chr(10))
             _adb_logVerbose(output)
+
+            m._resetSession()
+
+        end sub,
+
+        _resetSession: sub()
             m._trackActionQueue = []
+            m._clientSessionId = invalid
+            m._currentPlayHead = 0
         end sub,
 
         getClientSessionIdAndRecordAction: function(action as string, timestamp = "" as string, param = {} as object) as string
