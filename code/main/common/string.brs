@@ -35,7 +35,7 @@ function _adb_isStringInArray(str as string, array as object) as boolean
     end if
 
     for each item in array
-        if item = str
+        if (not _adb_isEmptyOrInvalidString(item)) and (item = str)
             return true
         end if
     end for

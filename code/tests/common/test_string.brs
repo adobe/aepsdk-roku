@@ -34,3 +34,14 @@ sub TC_adb_isStringEndsWith()
     UTF_assertFalse(_adb_isStringEndsWith("xyz", "y"))
     UTF_assertFalse(_adb_isStringEndsWith("x", "xyz"))
 end sub
+' target: _adb_isStringInArray()
+' @Test
+sub TC_adb_isStringInArray()
+    UTF_assertTrue(_adb_isStringInArray("xyz", ["xyz", "abc"]))
+    UTF_assertTrue(_adb_isStringInArray("xyz", ["xyz", 2, "abc"]))
+    UTF_assertFalse(_adb_isStringInArray("xyz", ["xy", "abc"]))
+    UTF_assertFalse(_adb_isStringInArray("xyz", []))
+    UTF_assertFalse(_adb_isStringInArray("xyz", [1, 2, "3"]))
+    UTF_assertFalse(_adb_isStringInArray("xyz", invalid))
+    UTF_assertFalse(_adb_isStringInArray("xyz", { x: "xyz", y: "abc" }))
+end sub
