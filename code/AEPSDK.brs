@@ -439,7 +439,7 @@ function _adb_ClientMediaSession() as object
             if action = "media.ping"
                 m._pings++
                 m._currentPlayHead = xdmData.xdm["mediaCollection"]["playhead"]
-                ' TODO: There are a lot of pings in the same session. We can add a session-level configuration to control the ping recording. {debug: true}
+                ' TODO: There are a lot of pings in the same session. We can add a session-level configuration to control the event recording. {debug: true}
                 if not m._debugMode
                     return m._clientSessionId
                 end if
