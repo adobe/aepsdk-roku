@@ -13,10 +13,11 @@
 
 ' ***************************** MODULE: MediaSessionManager *******************************
 
-' TODO: add logic to handle session timeout use cases
 function _adb_MediaSessionManager() as object
     return {
         _map: {},
+        _SESSION_IDLE_THRESHOLD_SEC: 10 * 60, ' 10 minutes
+        _DEFAULT_PING_INTERVAL_SEC: 10, ' 10 seconds
 
         createNewSession: sub(clientSessionId as string)
             if _adb_isEmptyOrInvalidString(clientSessionId)
@@ -30,9 +31,49 @@ function _adb_MediaSessionManager() as object
             m._map[clientSessionId] = {
                 sessionId: invalid,
                 location: invalid,
-                queue: []
+                queue: [],
+                lastActiveTS: invalid,
+                mainPingInterval: m._DEFAULT_PING_INTERVAL_SEC,
+                adPingInternal: m._DEFAULT_PING_INTERVAL_SEC,
+                lastPingTS: _adb_timestampInMillis(),
             }
         end sub,
+
+        updatePingInterval: sub(clientSessionId as string, mainPingInterval as integer, adPingInternal as integer)
+            if m._map.DoesExist(clientSessionId)
+                m._map[clientSessionId].mainPingInterval = mainPingInterval
+                m._map[clientSessionId].adPingInternal = adPingInternal
+                return
+            end if
+            _adb_logError("updatePingInterval() - clientSessionId is invalid.")
+        end sub,
+
+        shouldSendPing: function(clientSessionId as string, timestampInMillis as longinteger) as boolean
+            if m._map.DoesExist(clientSessionId)
+                session = m._map[clientSessionId]
+                return (timestampInMillis - session.lastPingTS >= session.mainPingInterval * 1000)
+            end if
+            _adb_logError("shouldSendPing() - clientSessionId is invalid.")
+            return false
+        end function,
+
+        recordSessionActivity: sub(clientSessionId as string, timestampInMillis as longinteger)
+            if m._map.DoesExist(clientSessionId)
+                m._map[clientSessionId].lastActiveTS = timestampInMillis
+                return
+            end if
+            _adb_logError("recordSessionActivity() - clientSessionId is invalid.")
+        end sub,
+
+        findIdleSessions: function(timestampInMillis as longinteger) as object
+            ' TODO: iterate stored sessions and find idle sessions (currentTS - lastActiveTS > SESSION_IDLE_THRESHOLD)
+            return []
+        end function,
+
+        findLongRunningSessions: function(timestampInMillis as longinteger) as object
+            ' TODO: iterate stored sessions and find sessions running over 24 hours
+            return []
+        end function,
 
         updateSessionIdAndGetQueuedRequests: function(clientSessionId as string, sessionId as string, location as string) as object
             if m._map.DoesExist(clientSessionId)
@@ -43,7 +84,7 @@ function _adb_MediaSessionManager() as object
                 m._map[clientSessionId].queue = []
                 return queuedRequests
             end if
-            _adb_logError("updateSessionId() - clientSessionId is invalid.")
+            _adb_logError("updateSessionIdAndGetQueuedRequests() - clientSessionId is invalid.")
             return []
         end function,
 
@@ -77,7 +118,7 @@ function _adb_MediaSessionManager() as object
                 })
                 return
             end if
-            _adb_logError("queueMediaData() - clientSessionId is invalid.")
+            _adb_logError("queueMediaRequest() - clientSessionId is invalid.")
         end sub,
 
         deleteSession: sub(clientSessionId as string)

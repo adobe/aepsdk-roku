@@ -41,7 +41,6 @@ function _adb_InternalConstants() as object
             SESSION_START_EVENT_TYPE: "media.sessionStart",
             SESSION_END_EVENT_TYPE: "media.sessionEnd",
             SESSION_START_EDGE_REQUEST_PATH: "/ee/va/v1/sessionStart",
-            PING_INTERVAL_SEC: 10, ' seconds
         },
         CALLBACK_TIMEOUT_MS: 5000,
         EVENT_OWNER: "adobe",

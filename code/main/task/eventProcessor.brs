@@ -106,8 +106,8 @@ function _adb_EventProcessor(task as object) as object
             timestampInMillis = event.timestampInMillis
 
             ' validate the event data
-            if not m._isValidEventDataForSessionStartRequest()
-                _adb_logError("_handleCreateMediaSession() - Drop the event due to the invalid event data for sessionStart request: " + FormatJson(event))
+            if not m._isValidEventDataForSessionStartRequest(data)
+                _adb_logError("_handleCreateMediaSession() - Drop the event due to the invalid event data: " + FormatJson(event))
                 return
             end if
 

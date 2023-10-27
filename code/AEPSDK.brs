@@ -246,10 +246,20 @@ function AdobeAEPSDKInit() as object
         '
         ' ****************************************************************************************************
         createMediaSession: function(xdmData as object, configuration = {} as object) as void
-            _adb_logDebug("API: _createMediaSession()")
+            _adb_logDebug("API: createMediaSession()")
 
             if m._private.mediaSession.isActive()
                 _adb_logError("createMediaSession() - The previous media session is not ended correctly.")
+                ' TODO: Let's discuss if we want to end the previous session automatically
+                ' position = m._private.mediaSession._currentPlayHead
+                ' m.sendMediaEvent({
+                '     "xdm": {
+                '         "eventType": "media.sessionEnd",
+                '         "mediaCollection": {
+                '             "playhead": position,
+                '         }
+                '     }
+                ' })
             end if
 
             if not _adb_isValidMediaXDMData(xdmData)
@@ -282,7 +292,7 @@ function AdobeAEPSDKInit() as object
         '
         ' ****************************************************************************************************
         sendMediaEvent: function(xdmData as object) as void
-            _adb_logDebug("API: _sendMediaEvent()")
+            _adb_logDebug("API: sendMediaEvent()")
 
             if not m._private.mediaSession.isActive()
                 _adb_logError("sendMediaEvent() - Cannot send media event, not in a valid media session. Call createMediaSession() API to start a new session.")
@@ -354,25 +364,24 @@ function _adb_defaultCallback(_context, _result) as void
 end function
 
 function _adb_isValidMediaXDMData(xdmData as object) as boolean
-    ' TODO: validate the XDM data against the schema or ????
+    ' TODO: validate the XDM data against the schema, or can we depend on the server side validation?
     return true
 end function
 
 function _adb_ClientMediaSession() as object
     return {
         _clientSessionId: invalid,
-        _trackActionQueue: [],
+        _trackEventQueue: [],
         _currentPlayHead: 0,
 
         startNewSession: sub()
-
             if m.isActive()
                 lines = []
                 lines.Push("************************************************************************************")
                 lines.Push("*  ERROR: The media session is not ended correctly, the events are recorded below  *")
                 lines.Push("************************************************************************************")
-                for each obj in m._trackActionQueue
-                    lines.Push("action: " + obj.action + ", timestamp: " + obj.timestamp + ", param: " + FormatJson(obj.param))
+                for each obj in m._trackEventQueue
+                    lines.Push("action: " + obj.action + ", timestamp: " + obj.timestamp + ", xdmData: " + FormatJson(obj.xdmData))
                 end for
                 output = lines.Join(chr(10))
                 _adb_logVerbose(output)
@@ -392,8 +401,8 @@ function _adb_ClientMediaSession() as object
             lines.Push("***************************************************************")
             lines.Push("*  The media session is ended, the events are recorded below  *")
             lines.Push("***************************************************************")
-            for each obj in m._trackActionQueue
-                lines.Push("action: " + obj.action + ", timestamp: " + obj.timestamp + ", param: " + FormatJson(obj.param))
+            for each obj in m._trackEventQueue
+                lines.Push("action: " + obj.action + ", timestamp: " + obj.timestamp + ", xdmData: " + FormatJson(obj.xdmData))
             end for
             output = lines.Join(chr(10))
             _adb_logVerbose(output)
@@ -403,16 +412,20 @@ function _adb_ClientMediaSession() as object
         end sub,
 
         _resetSession: sub()
-            m._trackActionQueue = []
+            m._trackEventQueue = []
             m._clientSessionId = invalid
             m._currentPlayHead = 0
         end sub,
 
-        getClientSessionIdAndRecordAction: function(action as string, timestamp = "" as string, param = {} as object) as string
-            m._trackActionQueue.Push({
+        getClientSessionIdAndRecordAction: function(action as string, timestamp as string, xdmData as object) as string
+            if action = "media.ping"
+                m._currentPlayHead = xdmData.xdm["mediaCollection"]["playhead"]
+            end if
+            ' TODO: There are a lot of pings in the same session. We may record pings only in the verbose mode.
+            m._trackEventQueue.Push({
                 action: action,
                 timestamp: timestamp,
-                param: param
+                xdmData: xdmData
             })
             return m._clientSessionId
         end function,
