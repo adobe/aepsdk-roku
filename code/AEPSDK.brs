@@ -274,7 +274,7 @@ function AdobeAEPSDKInit() as object
 
             data = {
                 clientSessionId: sessionId,
-                timestampInISO8601: timestamp,
+                tsObject: _adb_TimestampObject(),
                 xdmData: xdmData,
                 configuration: configuration
             }
@@ -309,7 +309,7 @@ function AdobeAEPSDKInit() as object
 
             data = {
                 clientSessionId: sessionId,
-                timestampInISO8601: timestamp,
+                tsObject: _adb_TimestampObject(),
                 xdmData: xdmData
             }
             event = _adb_RequestEvent(m._private.cons.PUBLIC_API.SEND_MEDIA_EVENT, data)

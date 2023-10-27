@@ -42,19 +42,19 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
         ' Event data example:
         ' {
         '     clientSessionId: "xx-xxxx-xxxx",
-        '     timestampInISO8601: "2019-01-01T00:00:00.000Z",
+        '     tsObject: { ts_inISO8601: "2019-01-01T00:00:00.000Z", ts_inMillis: 1546300800000 },
         '     xdmData: { xdm: {} }
         '     configuration: { }
         ' }
-        processEvent: sub(requestId as string, eventData as object, timestampInMillis as longinteger)
+        processEvent: sub(requestId as string, eventData as object)
             mediaEventType = eventData.xdmData.xdm.eventType
             clientSessionId = eventData.clientSessionId
-            timestampInISO8601 = eventData.timestampInISO8601
+            tsObject = eventData.tsObject
 
             if mediaEventType = m._CONSTANTS.MEDIA.SESSION_START_EVENT_TYPE then
-                m._sessionStart(clientSessionId, eventData, timestampInISO8601, timestampInMillis)
+                m._sessionStart(clientSessionId, eventData, tsObject)
             else
-                m._actionInSession(requestId, clientSessionId, eventData, timestampInISO8601, timestampInMillis)
+                m._actionInSession(requestId, clientSessionId, eventData, tsObject)
             end if
         end sub,
 
@@ -63,7 +63,7 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
             return _adb_isEmptyOrInvalidString(m._configurationModule.getMediaChannel()) or _adb_isEmptyOrInvalidString(m._identityModule.getMediaPlayerName())
         end function,
 
-        _sessionStart: sub(clientSessionId as string, eventData as object, timestampInISO8601 as string, timestampInMillis as longinteger)
+        _sessionStart: sub(clientSessionId as string, eventData as object, tsObject as object)
 
             sessionConfig = eventData.configuration
             ' TODO: the session-level config should be merged with the global config, before the validation
@@ -80,7 +80,7 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
             xdmData = eventData.xdmData
             appVersion = m._identityModule.getMediaAppVersion()
             xdmData.xdm["_id"] = _adb_generate_UUID()
-            xdmData.xdm["timestamp"] = timestampInISO8601
+            xdmData.xdm["timestamp"] = tsObject.ts_inISO8601
             xdmData.xdm["mediaCollection"]["sessionDetails"]["playerName"] = m._identityModule.getMediaPlayerName()
             xdmData.xdm["mediaCollection"]["sessionDetails"]["channel"] = m._configurationModule.getMediaChannel()
             if not _adb_isEmptyOrInvalidString(appVersion) then
@@ -91,11 +91,11 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
             ' TODO: sanitize the xdmData object before sending to the backend.
 
             ' For sessionStart request, the clientSessionId is used as the request id, then it can be used to retrieve the corresponding response data.
-            m._edgeRequestWorker.queue(clientSessionId, xdmData, timestampInMillis, meta, m._CONSTANTS.MEDIA.SESSION_START_EDGE_REQUEST_PATH)
+            m._edgeRequestWorker.queue(clientSessionId, xdmData, tsObject.ts_inMillis, meta, m._CONSTANTS.MEDIA.SESSION_START_EDGE_REQUEST_PATH)
             m._kickRequestQueue()
         end sub,
 
-        _actionInSession: sub(requestId as string, clientSessionId as string, eventData as object, timestampInISO8601 as string, timestampInMillis as longinteger)
+        _actionInSession: sub(requestId as string, clientSessionId as string, eventData as object, tsObject as object)
             if not m._sessionManager.isSessionStarted(clientSessionId)
                 ' If the client session id is not found, it means the sessionStart is not called/processed correctly.
                 _adb_logError("_actionInSession() - the corresponding session is not started properly. This media event will be dropped.")
@@ -115,7 +115,7 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
             location = m._sessionManager.getLocation(clientSessionId)
 
             if _adb_isEmptyOrInvalidString(sessionId)
-                m._sessionManager.queueMediaRequest(requestId, clientSessionId, eventData, timestampInISO8601, timestampInMillis)
+                m._sessionManager.queueMediaRequest(requestId, clientSessionId, eventData, tsObject)
                 ' The sessionStart request may get a recoverable error, retry it.
                 m._kickRequestQueue()
                 return
@@ -124,12 +124,12 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
                 if not _adb_isEmptyOrInvalidString(path)
                     xdmData = eventData.xdmData
                     xdmData.xdm["_id"] = _adb_generate_UUID()
-                    xdmData.xdm["timestamp"] = timestampInISO8601
+                    xdmData.xdm["timestamp"] = tsObject.ts_inISO8601
                     xdmData.xdm["mediaCollection"]["sessionID"] = sessionId
 
                     meta = {}
                     ' TODO: sanitize the xdmData object before sending to the backend.
-                    m._edgeRequestWorker.queue(requestId, xdmData, timestampInMillis, meta, path)
+                    m._edgeRequestWorker.queue(requestId, xdmData, tsObject.ts_inMillis, meta, path)
                     m._processQueuedRequests()
                 else
                     _adb_logError("_actionInSession() - mediaEventName is invalid: " + mediaEventType)
@@ -173,7 +173,7 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
                             if not _adb_isEmptyOrInvalidString(path)
                                 xdmData = mediaRequest.eventData.xdmData
                                 xdmData.xdm["_id"] = _adb_generate_UUID()
-                                xdmData.xdm["timestamp"] = mediaRequest.timestampInISO8601
+                                xdmData.xdm["timestamp"] = mediaRequest.tsObject.ts_inISO8601
                                 xdmData.xdm["mediaCollection"]["sessionID"] = sessionId
 
                                 ' TODO: sanitize the xdmData object before sending to the backend.

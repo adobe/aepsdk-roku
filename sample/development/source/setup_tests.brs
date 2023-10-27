@@ -46,6 +46,7 @@ function _adb_test_functions() as dynamic
         'test_datetime.brs
         TC_adb_timestampInMillis
         TC_adb_ISO8601_timestamp
+        TC_adb_TimestampObject
         ' test_log.brs
         TS_logUtils_SetUp
         TS_logUtils_BeforeEach

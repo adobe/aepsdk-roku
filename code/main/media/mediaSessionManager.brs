@@ -99,13 +99,12 @@ function _adb_MediaSessionManager() as object
             return session.sessionId
         end function,
 
-        queueMediaRequest: sub(requestId as string, clientSessionId as string, eventData as object, timestampInISO8601 as string, timestampInMillis as longinteger)
+        queueMediaRequest: sub(requestId as string, clientSessionId as string, eventData as object, tsObject as object)
             if m._map.DoesExist(clientSessionId)
                 m._map[clientSessionId].queue.Push({
                     requestId: requestId,
                     eventData: eventData,
-                    timestampInISO8601: timestampInISO8601,
-                    timestampInMillis: timestampInMillis
+                    tsObject: tsObject
                 })
                 return
             end if

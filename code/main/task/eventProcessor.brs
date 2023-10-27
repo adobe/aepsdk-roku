@@ -103,7 +103,6 @@ function _adb_EventProcessor(task as object) as object
         _handleCreateMediaSession: function(event as object) as void
             requestId = event.uuid
             data = event.data
-            timestampInMillis = event.timestampInMillis
 
             ' validate the event data
             if not m._isValidEventDataForSessionStartRequest(data)
@@ -111,11 +110,11 @@ function _adb_EventProcessor(task as object) as object
                 return
             end if
 
-            m._mediaModule.processEvent(requestId, data, timestampInMillis)
+            m._mediaModule.processEvent(requestId, data)
         end function,
 
         _isValidEventDataForSessionStartRequest: function(data as object) as boolean
-            if data = invalid or _adb_isEmptyOrInvalidString(data.clientSessionId) or _adb_isEmptyOrInvalidString(data.timestampInISO8601)
+            if data = invalid or _adb_isEmptyOrInvalidString(data.clientSessionId) or data.tsObject = invalid
                 return false
             end if
 
@@ -129,7 +128,6 @@ function _adb_EventProcessor(task as object) as object
         _handleMediaEvents: function(event as object) as void
             requestId = event.uuid
             data = event.data
-            timestampInMillis = event.timestampInMillis
 
             ' validate the event data
             if not m._isValidEventDataForMediaEventRequest()
@@ -137,11 +135,11 @@ function _adb_EventProcessor(task as object) as object
                 return
             end if
 
-            m._mediaModule.processEvent(requestId, data, timestampInMillis)
+            m._mediaModule.processEvent(requestId, data)
         end function,
 
         _isValidEventDataForMediaEventRequest: function(data as object) as boolean
-            if data = invalid or _adb_isEmptyOrInvalidString(data.clientSessionId) or _adb_isEmptyOrInvalidString(data.timestampInISO8601)
+            if data = invalid or _adb_isEmptyOrInvalidString(data.clientSessionId) or data.tsObject = invalid
                 return false
             end if
 
