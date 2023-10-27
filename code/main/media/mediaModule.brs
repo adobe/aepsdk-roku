@@ -106,6 +106,10 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
 
             mediaEventType = eventData.xdmData.xdm.eventType
 
+            if mediaEventType = m._CONSTANTS.MEDIA.SESSION_END_EVENT_TYPE
+                m._sessionManager.deleteSession(clientSessionId)
+            end if
+
             ' retrieve the session id and the location hint returned from the backend
             sessionId = m._sessionManager.getSessionId(clientSessionId)
             location = m._sessionManager.getLocation(clientSessionId)
