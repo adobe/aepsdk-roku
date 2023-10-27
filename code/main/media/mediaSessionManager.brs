@@ -19,7 +19,7 @@ function _adb_MediaSessionManager() as object
         _SESSION_IDLE_THRESHOLD_SEC: 10 * 60, ' 10 minutes
         _DEFAULT_PING_INTERVAL_SEC: 10, ' 10 seconds
 
-        createNewSession: sub(clientSessionId as string)
+        createNewSession: sub(clientSessionId as string, mainPingInterval = m._DEFAULT_PING_INTERVAL_SEC as integer, adPingInternal = m._DEFAULT_PING_INTERVAL_SEC as integer)
             if _adb_isEmptyOrInvalidString(clientSessionId)
                 _adb_logError("createNewSession() - clientSessionId is invalid.")
                 return
@@ -33,19 +33,10 @@ function _adb_MediaSessionManager() as object
                 location: invalid,
                 queue: [],
                 lastActiveTS: invalid,
-                mainPingInterval: m._DEFAULT_PING_INTERVAL_SEC,
-                adPingInternal: m._DEFAULT_PING_INTERVAL_SEC,
+                mainPingInterval: mainPingInterval,
+                adPingInternal: adPingInternal,
                 lastPingTS: _adb_timestampInMillis(),
             }
-        end sub,
-
-        updatePingInterval: sub(clientSessionId as string, mainPingInterval as integer, adPingInternal as integer)
-            if m._map.DoesExist(clientSessionId)
-                m._map[clientSessionId].mainPingInterval = mainPingInterval
-                m._map[clientSessionId].adPingInternal = adPingInternal
-                return
-            end if
-            _adb_logError("updatePingInterval() - clientSessionId is invalid.")
         end sub,
 
         shouldSendPing: function(clientSessionId as string, timestampInMillis as longinteger) as boolean

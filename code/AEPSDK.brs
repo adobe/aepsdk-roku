@@ -316,7 +316,7 @@ function AdobeAEPSDKInit() as object
             m._private.dispatchEvent(event)
 
             if xdmData.xdm.eventType = m._private.cons.MEDIA.SESSION_END_EVENT_TYPE
-                m._private.mediaSession.endSession()
+                m._private.mediaSession.endSessionAndPrint()
             end if
         end function,
 
@@ -364,7 +364,10 @@ function _adb_defaultCallback(_context, _result) as void
 end function
 
 function _adb_isValidMediaXDMData(xdmData as object) as boolean
-    ' TODO: validate the XDM data against the schema, or can we depend on the server side validation?
+    ' TODO:
+    ' option 1: validate the XDM data against the schema
+    ' option 2: depend on the server side validation
+    ' option 3: only validate the basic and required fields, for example, eventType, mediaCollection, etc.
     return true
 end function
 
@@ -373,16 +376,22 @@ function _adb_ClientMediaSession() as object
         _clientSessionId: invalid,
         _trackEventQueue: [],
         _currentPlayHead: 0,
+        _debugMode: false,
+        _pings: 0,
 
         startNewSession: sub()
+            ' TODO: remove below logic if we decide to end the previous session automatically
             if m.isActive()
                 lines = []
                 lines.Push("************************************************************************************")
                 lines.Push("*  ERROR: The media session is not ended correctly, the events are recorded below  *")
                 lines.Push("************************************************************************************")
+                lines.Push("clientSessionId: " + FormatJson(m._clientSessionId))
+                lines.Push("currentPlayHead: " + FormatJson(m._currentPlayHead))
                 for each obj in m._trackEventQueue
                     lines.Push("action: " + obj.action + ", timestamp: " + obj.timestamp + ", xdmData: " + FormatJson(obj.xdmData))
                 end for
+                lines.Push("pings: " + FormatJson(m._pings))
                 output = lines.Join(chr(10))
                 _adb_logVerbose(output)
             end if
@@ -395,15 +404,18 @@ function _adb_ClientMediaSession() as object
             return m._clientSessionId <> invalid
         end function,
 
-        endSession: sub()
+        endSessionAndPrint: sub()
 
             lines = []
             lines.Push("***************************************************************")
             lines.Push("*  The media session is ended, the events are recorded below  *")
             lines.Push("***************************************************************")
+            lines.Push("clientSessionId: " + FormatJson(m._clientSessionId))
+            lines.Push("currentPlayHead: " + FormatJson(m._currentPlayHead))
             for each obj in m._trackEventQueue
                 lines.Push("action: " + obj.action + ", timestamp: " + obj.timestamp + ", xdmData: " + FormatJson(obj.xdmData))
             end for
+            lines.Push("pings: " + FormatJson(m._pings))
             output = lines.Join(chr(10))
             _adb_logVerbose(output)
 
@@ -411,17 +423,28 @@ function _adb_ClientMediaSession() as object
 
         end sub,
 
+        enableSessionDebug: sub()
+            m._debugMode = true
+        end sub,
+
         _resetSession: sub()
             m._trackEventQueue = []
             m._clientSessionId = invalid
             m._currentPlayHead = 0
+            m._debugMode = false
+            m._pings = 0
         end sub,
 
         getClientSessionIdAndRecordAction: function(action as string, timestamp as string, xdmData as object) as string
             if action = "media.ping"
+                m._pings++
                 m._currentPlayHead = xdmData.xdm["mediaCollection"]["playhead"]
+                ' TODO: There are a lot of pings in the same session. We can add a session-level configuration to control the ping recording. {debug: true}
+                if not m._debugMode
+                    return m._clientSessionId
+                end if
             end if
-            ' TODO: There are a lot of pings in the same session. We may record pings only in the verbose mode.
+
             m._trackEventQueue.Push({
                 action: action,
                 timestamp: timestamp,

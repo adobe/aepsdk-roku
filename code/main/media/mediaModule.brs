@@ -39,6 +39,7 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
         _edgeRequestWorker: _adb_EdgeRequestWorker(),
         _sessionManager: _adb_MediaSessionManager(),
 
+        ' Event data example:
         ' {
         '     clientSessionId: "xx-xxxx-xxxx",
         '     timestampInISO8601: "2019-01-01T00:00:00.000Z",
@@ -72,14 +73,11 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
                 return
             end if
 
-            xdmData = eventData.xdmData
-
             m._sessionManager.createNewSession(clientSessionId)
             ' TODO: add session-level config to the sessionManager
-            ' m._sessionManager.updateSessionConfig(sessionConfig)
-            meta = {}
-            'https://edge.adobedc.net/ee/va/v1/sessionStart?configId=xx&requestId=xx
+            ' m._sessionManager.createNewSession(sessionConfig,sessionConfig["config.mainpinginterval"],sessionConfig["config.adpinginterval"])
 
+            xdmData = eventData.xdmData
             appVersion = m._identityModule.getMediaAppVersion()
             xdmData.xdm["_id"] = _adb_generate_UUID()
             xdmData.xdm["timestamp"] = timestampInISO8601
@@ -88,6 +86,10 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
             if not _adb_isEmptyOrInvalidString(appVersion) then
                 xdmData.xdm["mediaCollection"]["sessionDetails"]["appVersion"] = appVersion
             end if
+
+            meta = {}
+            ' TODO: sanitize the xdmData object before sending to the backend.
+
             ' For sessionStart request, the clientSessionId is used as the request id, then it can be used to retrieve the corresponding response data.
             m._edgeRequestWorker.queue(clientSessionId, xdmData, timestampInMillis, meta, m._CONSTANTS.MEDIA.SESSION_START_EDGE_REQUEST_PATH)
             m._kickRequestQueue()
@@ -114,7 +116,6 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
                 m._kickRequestQueue()
                 return
             else
-                meta = {}
                 path = _adb_EdgePathForEventType(mediaEventType, location, m._CONSTANTS.MEDIA.EVENT_TYPES)
                 if not _adb_isEmptyOrInvalidString(path)
                     xdmData = eventData.xdmData
@@ -122,6 +123,8 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
                     xdmData.xdm["timestamp"] = timestampInISO8601
                     xdmData.xdm["mediaCollection"]["sessionID"] = sessionId
 
+                    meta = {}
+                    ' TODO: sanitize the xdmData object before sending to the backend.
                     m._edgeRequestWorker.queue(requestId, xdmData, timestampInMillis, meta, path)
                     m._processQueuedRequests()
                 else
@@ -162,18 +165,19 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
 
                             meta = {}
                             path = _adb_EdgePathForEventType(mediaEventType, location, m._CONSTANTS.MEDIA.EVENT_TYPES)
+
                             if not _adb_isEmptyOrInvalidString(path)
                                 xdmData = mediaRequest.eventData.xdmData
                                 xdmData.xdm["_id"] = _adb_generate_UUID()
                                 xdmData.xdm["timestamp"] = mediaRequest.timestampInISO8601
                                 xdmData.xdm["mediaCollection"]["sessionID"] = sessionId
 
+                                ' TODO: sanitize the xdmData object before sending to the backend.
                                 m._edgeRequestWorker.queue(mediaRequest.requestId, xdmData, mediaRequest.timestampInMillis, meta, path)
                             else
                                 _adb_logError("_actionInSession() - mediaEventName is invalid: " + mediaEventType)
                             end if
                         end for
-                        ' ????  Infinite loop risk
                         m._kickRequestQueue()
                     end if
                 end if
