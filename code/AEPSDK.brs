@@ -249,17 +249,17 @@ function AdobeAEPSDKInit() as object
             _adb_logDebug("API: createMediaSession()")
 
             if m._private.mediaSession.isActive()
-                _adb_logError("createMediaSession() - The previous media session is not ended correctly.")
-                ' TODO: Let's discuss if we want to end the previous session automatically
-                ' position = m._private.mediaSession._currentPlayHead
-                ' m.sendMediaEvent({
-                '     "xdm": {
-                '         "eventType": "media.sessionEnd",
-                '         "mediaCollection": {
-                '             "playhead": position,
-                '         }
-                '     }
-                ' })
+                _adb_logError("createMediaSession() - The previous media session is not ended correctly, try to end it now.")
+
+                position = m._private.mediaSession._currentPlayHead
+                m.sendMediaEvent({
+                    "xdm": {
+                        "eventType": "media.sessionEnd",
+                        "mediaCollection": {
+                            "playhead": position,
+                        }
+                    }
+                })
             end if
 
             if not _adb_isValidMediaXDMData(xdmData)
@@ -270,7 +270,7 @@ function AdobeAEPSDKInit() as object
             m._private.mediaSession.startNewSession()
 
             timestamp = _adb_ISO8601_timestamp()
-            sessionId = m._private.mediaSession.getClientSessionIdAndRecordAction(xdmData.xdm.eventType, timestamp, xdmData)
+            sessionId = m._private.mediaSession.getClientSessionId(timestamp)
 
             data = {
                 clientSessionId: sessionId,
@@ -305,7 +305,7 @@ function AdobeAEPSDKInit() as object
             end if
 
             timestamp = _adb_ISO8601_timestamp()
-            sessionId = m._private.mediaSession.getClientSessionIdAndRecordAction(xdmData.xdm.eventType, timestamp, xdmData)
+            sessionId = m._private.mediaSession.getClientSessionId(timestamp)
 
             data = {
                 clientSessionId: sessionId,
@@ -316,7 +316,7 @@ function AdobeAEPSDKInit() as object
             m._private.dispatchEvent(event)
 
             if xdmData.xdm.eventType = m._private.cons.MEDIA.SESSION_END_EVENT_TYPE
-                m._private.mediaSession.endSessionAndPrint()
+                m._private.mediaSession.endSession()
             end if
         end function,
 
@@ -374,28 +374,9 @@ end function
 function _adb_ClientMediaSession() as object
     return {
         _clientSessionId: invalid,
-        _trackEventQueue: [],
         _currentPlayHead: 0,
-        _debugMode: false,
-        _pings: 0,
 
         startNewSession: sub()
-            ' TODO: remove below logic if we decide to end the previous session automatically
-            if m.isActive()
-                lines = []
-                lines.Push("************************************************************************************")
-                lines.Push("*  ERROR: The media session is not ended correctly, the events are recorded below  *")
-                lines.Push("************************************************************************************")
-                lines.Push("clientSessionId: " + FormatJson(m._clientSessionId))
-                lines.Push("currentPlayHead: " + FormatJson(m._currentPlayHead))
-                for each obj in m._trackEventQueue
-                    lines.Push("action: " + obj.action + ", timestamp: " + obj.timestamp + ", xdmData: " + FormatJson(obj.xdmData))
-                end for
-                lines.Push("pings: " + FormatJson(m._pings))
-                output = lines.Join(chr(10))
-                _adb_logVerbose(output)
-            end if
-
             m._resetSession()
             m._clientSessionId = _adb_generate_UUID()
         end sub,
@@ -404,38 +385,16 @@ function _adb_ClientMediaSession() as object
             return m._clientSessionId <> invalid
         end function,
 
-        endSessionAndPrint: sub()
-
-            lines = []
-            lines.Push("***************************************************************")
-            lines.Push("*  The media session is ended, the events are recorded below  *")
-            lines.Push("***************************************************************")
-            lines.Push("clientSessionId: " + FormatJson(m._clientSessionId))
-            lines.Push("currentPlayHead: " + FormatJson(m._currentPlayHead))
-            for each obj in m._trackEventQueue
-                lines.Push("action: " + obj.action + ", timestamp: " + obj.timestamp + ", xdmData: " + FormatJson(obj.xdmData))
-            end for
-            lines.Push("pings: " + FormatJson(m._pings))
-            output = lines.Join(chr(10))
-            _adb_logVerbose(output)
-
+        endSession: sub()
             m._resetSession()
-
-        end sub,
-
-        enableSessionDebug: sub()
-            m._debugMode = true
         end sub,
 
         _resetSession: sub()
-            m._trackEventQueue = []
             m._clientSessionId = invalid
             m._currentPlayHead = 0
-            m._debugMode = false
-            m._pings = 0
         end sub,
 
-        getClientSessionIdAndRecordAction: function(action as string, timestamp as string, xdmData as object) as string
+        getClientSessionId: function(timestamp as string) as string
             if action = "media.ping"
                 m._pings++
                 m._currentPlayHead = xdmData.xdm["mediaCollection"]["playhead"]
