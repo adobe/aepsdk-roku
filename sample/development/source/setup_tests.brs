@@ -124,6 +124,12 @@ function _adb_test_functions() as dynamic
         TC_adb_EdgeModule_processEvent
         TC_adb_EdgeModule_processQueuedRequests
     ]
+    media = [
+        'test_mediaUtils.brs
+        TC_adb_extractPlayheadFromMediaXDMData
+        TC_adb_extractPlayheadFromMediaXDMData_invalid
+        TC_adb_extractPlayheadFromMediaXDMData_invalidType
+    ]
     initSDK = [
         'test_AdobeAEPSDKInit.brs
         TS_AdobeAEPSDKInit_SetUp
@@ -146,6 +152,15 @@ function _adb_test_functions() as dynamic
         TC_APIs_sendEventWithCallback
         TC_APIs_sendEventWithCallback_timeout
         TC_APIs_setExperienceCloudId
+        TC_APIs_createMediaSession
+        TC_APIs_createMediaSession_withConfiguration
+        TC_APIs_createMediaSession_invalidXDMData
+        TC_APIs_createMediaSession_endPrevisouSession
+        TC_APIs_sendMediaEvent
+        TC_APIs_sendMediaEvent_invalidXDMData
+        TC_APIs_sendMediaEvent_invalidSession
+        TC_APIs_sendMediaEvent_sessionEnd
+        TC_adb_ClientMediaSession
     ]
     task = [
         'test_eventProcessor.brs
@@ -167,6 +182,7 @@ function _adb_test_functions() as dynamic
     functionList.Append(services)
     functionList.Append(core)
     functionList.Append(edge)
+    functionList.Append(media)
     functionList.Append(initSDK)
     functionList.Append(api)
     functionList.Append(task)

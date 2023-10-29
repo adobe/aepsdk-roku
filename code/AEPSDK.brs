@@ -251,7 +251,7 @@ function AdobeAEPSDKInit() as object
             if m._private.mediaSession.isActive()
                 _adb_logError("createMediaSession() - The previous media session is not ended correctly, try to end it now.")
 
-                position = m._private.mediaSession._currentPlayHead
+                position = m._private.mediaSession.getCurrentPlayHead()
                 m.sendMediaEvent({
                     "xdm": {
                         "eventType": "media.sessionEnd",
@@ -267,10 +267,7 @@ function AdobeAEPSDKInit() as object
                 return
             end if
 
-            m._private.mediaSession.startNewSession()
-
-            timestamp = _adb_ISO8601_timestamp()
-            sessionId = m._private.mediaSession.getClientSessionId(timestamp)
+            sessionId = m._private.mediaSession.startNewSession()
 
             data = {
                 clientSessionId: sessionId,
@@ -304,9 +301,9 @@ function AdobeAEPSDKInit() as object
                 return
             end if
 
-            timestamp = _adb_ISO8601_timestamp()
-            sessionId = m._private.mediaSession.getClientSessionId(timestamp)
-
+            sessionId = m._private.mediaSession.getClientSessionId()
+            playhead = _adb_extractPlayheadFromMediaXDMData(xdmData)
+            m._private.mediaSession.updateCurrentPlayhead(playhead)
             data = {
                 clientSessionId: sessionId,
                 tsObject: _adb_TimestampObject(),
@@ -363,26 +360,19 @@ end function
 function _adb_defaultCallback(_context, _result) as void
 end function
 
-function _adb_isValidMediaXDMData(xdmData as object) as boolean
-    ' TODO:
-    ' option 1: validate the XDM data against the schema
-    ' option 2: depend on the server side validation
-    ' option 3: only validate the basic and required fields, for example, eventType, mediaCollection, etc.
-    return true
-end function
-
 function _adb_ClientMediaSession() as object
     return {
-        _clientSessionId: invalid,
-        _currentPlayHead: 0,
+        _clientSessionId: "",
+        _currentPlayHead%: 0,
 
-        startNewSession: sub()
+        startNewSession: function() as string
             m._resetSession()
             m._clientSessionId = _adb_generate_UUID()
-        end sub,
+            return m._clientSessionId
+        end function,
 
         isActive: function() as boolean
-            return m._clientSessionId <> invalid
+            return m._clientSessionId <> ""
         end function,
 
         endSession: sub()
@@ -390,25 +380,21 @@ function _adb_ClientMediaSession() as object
         end sub,
 
         _resetSession: sub()
-            m._clientSessionId = invalid
-            m._currentPlayHead = 0
+            m._clientSessionId = ""
+            m._currentPlayHead% = 0
         end sub,
 
-        getClientSessionId: function(timestamp as string) as string
-            if action = "media.ping"
-                m._pings++
-                m._currentPlayHead = xdmData.xdm["mediaCollection"]["playhead"]
-                ' TODO: There are a lot of pings in the same session. We can add a session-level configuration to control the event recording. {debug: true}
-                if not m._debugMode
-                    return m._clientSessionId
-                end if
-            end if
+        getCurrentPlayHead: function() as integer
+            return m._currentPlayHead%
+        end function,
 
-            m._trackEventQueue.Push({
-                action: action,
-                timestamp: timestamp,
-                xdmData: xdmData
-            })
+        updateCurrentPlayhead: sub(playHead as integer)
+            if playHead > m._currentPlayHead%
+                m._currentPlayHead% = playHead
+            end if
+        end sub,
+
+        getClientSessionId: function() as string
             return m._clientSessionId
         end function,
 
