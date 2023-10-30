@@ -130,7 +130,7 @@ function _adb_EventProcessor(task as object) as object
             data = event.data
 
             ' validate the event data
-            if not m._isValidEventDataForMediaEventRequest()
+            if not m._isValidEventDataForMediaEventRequest(data)
                 _adb_logError("_handleMediaEvents() - Drop the event due to the invalid event data for media request: " + FormatJson(event))
                 return
             end if

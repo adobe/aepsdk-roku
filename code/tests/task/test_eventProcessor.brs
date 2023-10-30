@@ -112,6 +112,195 @@ sub TC_adb_eventProcessor_handleEvent_setECID()
     UTF_assertTrue(GetGlobalAA().updateECID_is_called)
 end sub
 
+' target: _handleMediaEvents()
+' @Test
+sub TC_adb_eventProcessor_handleEvent_handleMediaEvents()
+    GetGlobalAA().processEvent_is_called = false
+    tsObj = _adb_TimestampObject()
+    eventProcessor = _createMockedEventProcessor()
+    eventProcessor._mediaModule.processEvent = function(requestId as string, data as object) as void
+        GetGlobalAA().processEvent_is_called = true
+        UTF_assertTrue(not _adb_isEmptyOrInvalidString(requestId))
+        UTF_assertEqual(data.clientSessionId, "clientSessionId_test")
+        UTF_assertEqual(data.tsObject, tsObj)
+        UTF_assertEqual(data.xdmData, {
+            "xdm": {
+                "eventType": "media.sessionStart",
+                "mediaCollection": {
+                    "playhead": 10,
+                }
+            }
+        })
+    end function
+    event = _adb_RequestEvent("sendMediaEvent", {
+        clientSessionId: "clientSessionId_test",
+        tsObject: tsObj,
+        xdmData: {
+            "xdm": {
+                "eventType": "media.sessionEnd",
+                "mediaCollection": {
+                    "playhead": 10,
+                }
+            }
+        }
+    })
+
+    eventProcessor.handleEvent(event)
+    UTF_assertTrue(GetGlobalAA().processEvent_is_called)
+end sub
+
+' target: _handleMediaEvents()
+' @Test
+sub TC_adb_eventProcessor_handleEvent_handleMediaEvents_invalid()
+    GetGlobalAA().processEvent_is_called = false
+    tsObj = _adb_TimestampObject()
+    eventProcessor = _createMockedEventProcessor()
+    eventProcessor._mediaModule.processEvent = function(requestId as string, data as object) as void
+        GetGlobalAA().processEvent_is_called = true
+    end function
+
+    eventProcessor.handleEvent(_adb_RequestEvent("sendMediaEvent", {
+        clientSessionId: "clientSessionId_test",
+        tsObject: tsObj,
+        xdmData: {
+            "xdm": {}
+        }
+    }))
+    UTF_assertTrue(not GetGlobalAA().processEvent_is_called)
+
+    eventProcessor.handleEvent(_adb_RequestEvent("sendMediaEvent", {
+        clientSessionId: "",
+        tsObject: tsObj,
+        xdmData: {
+            "xdm": {
+                "eventType": "media.sessionEnd",
+                "mediaCollection": {
+                    "playhead": 10,
+                }
+            }
+        }
+    }))
+    UTF_assertTrue(not GetGlobalAA().processEvent_is_called)
+
+    eventProcessor.handleEvent(_adb_RequestEvent("sendMediaEvent", {
+        clientSessionId: "clientSessionId_test",
+        tsObject: invalid,
+        xdmData: {
+            "xdm": {
+                "eventType": "media.sessionEnd",
+                "mediaCollection": {
+                    "playhead": 10,
+                }
+            }
+        }
+    }))
+    UTF_assertTrue(not GetGlobalAA().processEvent_is_called)
+end sub
+
+' target: _handleCreateMediaSession()
+' @Test
+sub TC_adb_eventProcessor_handleCreateMediaSession()
+    GetGlobalAA().processEvent_is_called = false
+    tsObj = _adb_TimestampObject()
+    eventProcessor = _createMockedEventProcessor()
+    eventProcessor._mediaModule.processEvent = function(requestId as string, data as object) as void
+        GetGlobalAA().processEvent_is_called = true
+        UTF_assertTrue(not _adb_isEmptyOrInvalidString(requestId))
+        UTF_assertEqual(data.clientSessionId, "clientSessionId_test")
+        UTF_assertEqual(data.tsObject, tsObj)
+        UTF_assertEqual(data.xdmData, {
+            "xdm": {
+                "eventType": "media.sessionStart",
+                "mediaCollection": {
+                    "playhead": 10,
+                }
+            }
+        })
+        UTF_assertEqual(data.configuration, { "config.channel": "channel_test" })
+    end function
+    event = _adb_RequestEvent("createMediaSession", {
+        clientSessionId: "clientSessionId_test",
+        tsObject: tsObj,
+        xdmData: {
+            "xdm": {
+                "eventType": "media.sessionEnd",
+                "mediaCollection": {
+                    "playhead": 10,
+                }
+            }
+        },
+        configuration: { "config.channel": "channel_test" }
+    })
+
+    eventProcessor.handleEvent(event)
+    UTF_assertTrue(GetGlobalAA().processEvent_is_called)
+end sub
+
+' target: _handleCreateMediaSession()
+' @Test
+sub TC_adb_eventProcessor_handleCreateMediaSession_invalid()
+    GetGlobalAA().processEvent_is_called = false
+    tsObj = _adb_TimestampObject()
+    eventProcessor = _createMockedEventProcessor()
+    eventProcessor._mediaModule.processEvent = function(requestId as string, data as object) as void
+        GetGlobalAA().processEvent_is_called = true
+    end function
+    event = _adb_RequestEvent("createMediaSession", {
+        clientSessionId: "",
+        tsObject: tsObj,
+        xdmData: {
+            "xdm": {
+                "eventType": "media.sessionEnd",
+                "mediaCollection": {
+                    "playhead": 10,
+                }
+            }
+        },
+        configuration: { "config.channel": "channel_test" }
+    })
+
+    eventProcessor.handleEvent(event)
+    UTF_assertTrue(not GetGlobalAA().processEvent_is_called)
+
+    eventProcessor.handleEvent(_adb_RequestEvent("createMediaSession", {
+        clientSessionId: "clientSessionId_test",
+        tsObject: invalid,
+        xdmData: {
+            "xdm": {
+                "eventType": "media.sessionEnd",
+                "mediaCollection": {
+                    "playhead": 10,
+                }
+            }
+        },
+        configuration: { "config.channel": "channel_test" }
+    }))
+    UTF_assertTrue(not GetGlobalAA().processEvent_is_called)
+
+    eventProcessor.handleEvent(_adb_RequestEvent("createMediaSession", {
+        clientSessionId: "clientSessionId_test",
+        tsObject: tsObj,
+        xdmData: {},
+        configuration: { "config.channel": "channel_test" }
+    }))
+    UTF_assertTrue(not GetGlobalAA().processEvent_is_called)
+
+    eventProcessor.handleEvent(_adb_RequestEvent("createMediaSession", {
+        clientSessionId: "clientSessionId_test",
+        tsObject: tsObj,
+        xdmData: {
+            "xdm": {
+                "eventType": "media.sessionEnd",
+                "mediaCollection": {
+                    "playhead": 10,
+                }
+            }
+        },
+        configuration: invalid
+    }))
+    UTF_assertTrue(not GetGlobalAA().processEvent_is_called)
+end sub
+
 ' target: _hasXDMData()
 ' @Test
 sub TC_adb_eventProcessor_hasXDMData()

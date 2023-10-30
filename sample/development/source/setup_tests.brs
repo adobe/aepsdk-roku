@@ -171,6 +171,10 @@ function _adb_test_functions() as dynamic
         TC_adb_eventProcessor_handleEvent_resetIdentities
         TC_adb_eventProcessor_handleEvent_setConfiguration
         TC_adb_eventProcessor_handleEvent_setECID
+        TC_adb_eventProcessor_handleEvent_handleMediaEvents
+        TC_adb_eventProcessor_handleEvent_handleMediaEvents_invalid
+        TC_adb_eventProcessor_handleCreateMediaSession
+        TC_adb_eventProcessor_handleCreateMediaSession_invalid
         TC_adb_eventProcessor_hasXDMData
         TC_adb_eventProcessor_handleEvent_sendEvent
         TC_adb_eventProcessor_sendResponseEvent
