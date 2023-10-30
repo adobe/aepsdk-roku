@@ -129,6 +129,8 @@ function _adb_test_functions() as dynamic
         TC_adb_extractPlayheadFromMediaXDMData
         TC_adb_extractPlayheadFromMediaXDMData_invalid
         TC_adb_extractPlayheadFromMediaXDMData_invalidType
+        TC_adb_isValidMediaXDMData
+        TC_adb_isValidMediaXDMData_invalid
     ]
     initSDK = [
         'test_AdobeAEPSDKInit.brs

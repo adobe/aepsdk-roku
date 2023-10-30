@@ -49,3 +49,49 @@ sub TC_adb_extractPlayheadFromMediaXDMData_invalid()
     })
     UTF_assertEqual(playhead, -1)
 end sub
+
+' target: _adb_isValidMediaXDMData()
+' @Test
+sub TC_adb_isValidMediaXDMData()
+    UTF_assertTrue(_adb_isValidMediaXDMData({
+        "xdm": {
+            "eventType": "media.sessionEnd",
+            "mediaCollection": {
+                "playhead": 0,
+            }
+        }
+    }))
+end sub
+
+' target: _adb_isValidMediaXDMData()
+' @Test
+sub TC_adb_isValidMediaXDMData_invalid()
+    UTF_assertFalse(_adb_isValidMediaXDMData({
+        "xdm_invalid": {
+            "eventType": "media.sessionEnd",
+            "mediaCollection": {
+                "playhead": 0,
+            }
+        }
+    }))
+
+    UTF_assertFalse(_adb_isValidMediaXDMData({
+        "xdm": {
+            "eventType": "media.invalid",
+            "mediaCollection": {
+                "playhead": 0,
+            }
+        }
+    }))
+
+    UTF_assertFalse(_adb_isValidMediaXDMData({
+        "xdm": {
+            "invalid": "media.sessionEnd",
+            "mediaCollection": {
+                "playhead": 0,
+            }
+        }
+    }))
+
+    UTF_assertFalse(_adb_isValidMediaXDMData(invalid))
+end sub
