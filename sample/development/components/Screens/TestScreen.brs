@@ -19,7 +19,7 @@ sub _initSDK()
     '------------------------------------
     m.adobeTaskNode = m.top.getScene().findNode("adobeTaskNode")
 
-    m.aepSdk = AdobeAEPSDK(m.adobeTaskNode)
+    m.aepSdk = AdobeAEPSDKInit(m.adobeTaskNode)
 
 end sub
 

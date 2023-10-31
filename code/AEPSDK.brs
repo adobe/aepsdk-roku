@@ -46,7 +46,7 @@ end function
 '
 ' *****************************************************************************
 
-function AdobeAEPSDKInit() as object
+function AdobeAEPSDKInit(taskNode = invalid as dynamic) as object
 
     if GetGlobalAA()._adb_public_api <> invalid then
         _adb_logInfo("AdobeAEPSDKInit() - Unable to initialize a new SDK instance as there is an existing active instance. Call shutdown() API for existing instance before initializing a new one.")
@@ -55,24 +55,21 @@ function AdobeAEPSDKInit() as object
 
     _adb_logDebug("AdobeAEPSDKInit() - Initializing the SDK.")
 
-    ' create the SDK thread
-    _adb_createTaskNode()
-
-    return AdobeAEPSDK(_adb_retrieveTaskNode())
-
-end function
-
-function AdobeAEPSDK(taskNode as object) as object
-    _adb_logInfo("AdobeAEPSDK() - Start to initialize SDK instance.")
-    if taskNode = invalid then
-        _adb_logDebug("AdobeAEPSDK() - Failed to initialize the SDK, task node is invalid.")
+    if taskNode <> invalid and (not _adb_isAEPTaskNode(taskNode)) then
+        _adb_logError("AdobeAEPSDKInit() - the given input is not the AEP task node instance.")
         return invalid
     end if
 
-    _adb_setTaskNode(taskNode)
+    if taskNode = invalid then
+        ' create a new task node
+        _adb_createTaskNode()
+    else
+        ' store the task node
+        _adb_storeTaskNode(taskNode)
+    end if
 
     if _adb_retrieveTaskNode() = invalid then
-        _adb_logDebug("AdobeAEPSDK() - Failed to initialize the SDK, task node is invalid.")
+        _adb_logDebug("AdobeAEPSDKInit() - Failed to initialize the SDK, task node is invalid.")
         return invalid
     end if
 
@@ -80,7 +77,6 @@ function AdobeAEPSDK(taskNode as object) as object
     _adb_observeTaskNode("responseEvent", "_adb_handleResponseEvent")
 
     GetGlobalAA()._adb_public_api = {
-        id: _adb_generate_UUID(),
 
         ' ********************************
         '
@@ -188,7 +184,6 @@ function AdobeAEPSDK(taskNode as object) as object
 
         sendEvent: function(xdmData as object, callback = _adb_defaultCallback as function, context = invalid as dynamic) as void
             _adb_logDebug("API: sendEvent()")
-            _adb_logInfo("API: sendEvent()" + m.id)
             if _adb_isEmptyOrInvalidMap(xdmData) then
                 _adb_logError("sendEvent() - Cannot send event, invalid XDM data")
                 return
@@ -241,13 +236,14 @@ function AdobeAEPSDK(taskNode as object) as object
             data[m._private.cons.EVENT_DATA_KEY.ecid] = ecid
             event = _adb_RequestEvent(m._private.cons.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID, data)
             m._private.dispatchEvent(event)
-        end function,
+        end function
 
         getTaskNode: function() as object
             taskNode = _adb_retrieveTaskNode()
             return taskNode
         end function,
 
+        ' TODO: discuss if it's required
         destroy: function() as void
             taskNode = _adb_retrieveTaskNode()
             if taskNode <> invalid
@@ -255,7 +251,7 @@ function AdobeAEPSDK(taskNode as object) as object
             end if
             GetGlobalAA()._adb_public_api = invalid
             GetGlobalAA()._adb_main_task_node = invalid
-        end function
+        end function,
 
         ' ********************************
         ' Add private memebers below
@@ -338,4 +334,3 @@ function _adb_handleResponseEvent() as void
     end if
 end function
 ' *********************************************
-

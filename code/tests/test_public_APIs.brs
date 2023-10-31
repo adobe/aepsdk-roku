@@ -227,4 +227,3 @@ sub TC_APIs_setExperienceCloudId()
     UTF_AssertNotInvalid(event.uuid)
     UTF_AssertNotInvalid(event.timestamp)
 end sub
-
