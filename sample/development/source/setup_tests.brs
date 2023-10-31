@@ -131,6 +131,21 @@ function _adb_test_functions() as dynamic
         TC_adb_extractPlayheadFromMediaXDMData_invalidType
         TC_adb_isValidMediaXDMData
         TC_adb_isValidMediaXDMData_invalid
+        ' test_mediaModule.brs
+        TC_adb_EdgePathForEventType
+        TC_adb_MediaModule_init
+        TC_adb_MediaModule_processEvent_sessionStart
+        TC_adb_MediaModule_processEvent_actionInSession
+        TC_adb_MediaModule_processEvent_invalid
+        TC_mediaConfigIsNotReady
+        TC_adb_MediaModule_sessionStart_withoutSessionConfig
+        TC_adb_MediaModule_sessionStart_invalidConfig
+        TC_adb_MediaModule_actionInSession
+        TC_adb_MediaModule_actionInSession_sessionIdNotReady
+        TC_adb_MediaModule_actionInSession_sessionEnd
+        TC_adb_MediaModule_actionInSession_sessionNotStarted
+        TC_adb_MediaModule_kickRequestQueue
+        TC_adb_MediaModule_kickRequestQueue_withQueuedMediaEvents
     ]
     initSDK = [
         'test_AdobeAEPSDKInit.brs

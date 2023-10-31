@@ -81,7 +81,7 @@ function _adb_MediaSessionManager() as object
 
         getLocation: function(clientSessionId as string) as string
             session = m._map.Lookup(clientSessionId)
-            if session = invalid
+            if session = invalid or session.location = invalid
                 return ""
             end if
             return session.location
@@ -93,17 +93,17 @@ function _adb_MediaSessionManager() as object
 
         getSessionId: function(clientSessionId as string) as string
             session = m._map.Lookup(clientSessionId)
-            if session = invalid
+            if session = invalid or session.sessionId = invalid
                 return ""
             end if
             return session.sessionId
         end function,
 
-        queueMediaRequest: sub(requestId as string, clientSessionId as string, eventData as object, tsObject as object)
+        queueMediaRequest: sub(requestId as string, clientSessionId as string, xdmData as object, tsObject as object)
             if m._map.DoesExist(clientSessionId)
                 m._map[clientSessionId].queue.Push({
                     requestId: requestId,
-                    eventData: eventData,
+                    xdmData: xdmData,
                     tsObject: tsObject
                 })
                 return

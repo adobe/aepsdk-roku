@@ -50,22 +50,27 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
             mediaEventType = eventData.xdmData.xdm.eventType
             clientSessionId = eventData.clientSessionId
             tsObject = eventData.tsObject
+            xdmData = eventData.xdmData
 
-            if mediaEventType = m._CONSTANTS.MEDIA.SESSION_START_EVENT_TYPE then
-                m._sessionStart(clientSessionId, eventData, tsObject)
+            if mediaEventType = m._CONSTANTS.MEDIA.SESSION_START_EVENT_TYPE
+                sessionConfig = eventData.configuration
+                m._sessionStart(clientSessionId, sessionConfig, xdmData, tsObject)
+                return
+            end if
+
+            if mediaEventType <> invalid and _adb_isStringInArray(mediaEventType, m._CONSTANTS.MEDIA.EVENT_TYPES)
+                m._actionInSession(requestId, clientSessionId, xdmData, tsObject)
             else
-                m._actionInSession(requestId, clientSessionId, eventData, tsObject)
+                _adb_logError("processEvent() - media event type is invalid: " + FormatJson(mediaEventType))
             end if
         end sub,
 
         _mediaConfigIsNotReady: function() as boolean
             ' appVersion is optional for sessionStart request
-            return _adb_isEmptyOrInvalidString(m._configurationModule.getMediaChannel()) or _adb_isEmptyOrInvalidString(m._identityModule.getMediaPlayerName())
+            return _adb_isEmptyOrInvalidString(m._configurationModule.getMediaChannel()) or _adb_isEmptyOrInvalidString(m._configurationModule.getMediaPlayerName())
         end function,
 
-        _sessionStart: sub(clientSessionId as string, eventData as object, tsObject as object)
-
-            sessionConfig = eventData.configuration
+        _sessionStart: sub(clientSessionId as string, sessionConfig as object, xdmData as object, tsObject as object)
             ' TODO: the session-level config should be merged with the global config, before the validation
 
             if m._mediaConfigIsNotReady() then
@@ -77,11 +82,10 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
             ' TODO: add session-level config to the sessionManager
             ' m._sessionManager.createNewSession(sessionConfig,sessionConfig["config.mainpinginterval"],sessionConfig["config.adpinginterval"])
 
-            xdmData = eventData.xdmData
-            appVersion = m._identityModule.getMediaAppVersion()
+            appVersion = m._configurationModule.getMediaAppVersion()
             xdmData.xdm["_id"] = _adb_generate_UUID()
             xdmData.xdm["timestamp"] = tsObject.ts_inISO8601
-            xdmData.xdm["mediaCollection"]["sessionDetails"]["playerName"] = m._identityModule.getMediaPlayerName()
+            xdmData.xdm["mediaCollection"]["sessionDetails"]["playerName"] = m._configurationModule.getMediaPlayerName()
             xdmData.xdm["mediaCollection"]["sessionDetails"]["channel"] = m._configurationModule.getMediaChannel()
             if not _adb_isEmptyOrInvalidString(appVersion) then
                 xdmData.xdm["mediaCollection"]["sessionDetails"]["appVersion"] = appVersion
@@ -91,49 +95,35 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
             ' TODO: sanitize the xdmData object before sending to the backend.
 
             ' For sessionStart request, the clientSessionId is used as the request id, then it can be used to retrieve the corresponding response data.
-            m._edgeRequestWorker.queue(clientSessionId, xdmData, tsObject.ts_inMillis, meta, m._CONSTANTS.MEDIA.SESSION_START_EDGE_REQUEST_PATH)
+            m._edgeRequestWorker.queue(clientSessionId, [xdmData], tsObject.ts_inMillis, meta, m._CONSTANTS.MEDIA.SESSION_START_EDGE_REQUEST_PATH)
             m._kickRequestQueue()
         end sub,
 
-        _actionInSession: sub(requestId as string, clientSessionId as string, eventData as object, tsObject as object)
+        _actionInSession: sub(requestId as string, clientSessionId as string, xdmData as object, tsObject as object)
             if not m._sessionManager.isSessionStarted(clientSessionId)
                 ' If the client session id is not found, it means the sessionStart is not called/processed correctly.
+                ' TODO: we need to update this logic to handle the session timeout scenarios.
                 _adb_logError("_actionInSession() - the corresponding session is not started properly. This media event will be dropped.")
                 return
             end if
 
-            ' TODO: clean the previsou session info stroed in the session manager
-
-            mediaEventType = eventData.xdmData.xdm.eventType
-
-            if mediaEventType = m._CONSTANTS.MEDIA.SESSION_END_EVENT_TYPE
-                m._sessionManager.deleteSession(clientSessionId)
-            end if
+            mediaEventType = xdmData.xdm.eventType
 
             ' retrieve the session id and the location hint returned from the backend
             sessionId = m._sessionManager.getSessionId(clientSessionId)
             location = m._sessionManager.getLocation(clientSessionId)
 
+            if mediaEventType = m._CONSTANTS.MEDIA.SESSION_END_EVENT_TYPE
+                m._sessionManager.deleteSession(clientSessionId)
+            end if
+
             if _adb_isEmptyOrInvalidString(sessionId)
-                m._sessionManager.queueMediaRequest(requestId, clientSessionId, eventData, tsObject)
+                m._sessionManager.queueMediaRequest(requestId, clientSessionId, xdmData, tsObject)
                 ' The sessionStart request may get a recoverable error, retry it.
                 m._kickRequestQueue()
                 return
             else
-                path = _adb_EdgePathForEventType(mediaEventType, location, m._CONSTANTS.MEDIA.EVENT_TYPES)
-                if not _adb_isEmptyOrInvalidString(path)
-                    xdmData = eventData.xdmData
-                    xdmData.xdm["_id"] = _adb_generate_UUID()
-                    xdmData.xdm["timestamp"] = tsObject.ts_inISO8601
-                    xdmData.xdm["mediaCollection"]["sessionID"] = sessionId
-
-                    meta = {}
-                    ' TODO: sanitize the xdmData object before sending to the backend.
-                    m._edgeRequestWorker.queue(requestId, xdmData, tsObject.ts_inMillis, meta, path)
-                    m._processQueuedRequests()
-                else
-                    _adb_logError("_actionInSession() - mediaEventName is invalid: " + mediaEventType)
-                end if
+                m._handleMediaEvent(mediaEventType, requestId, sessionId, location, xdmData, tsObject)
 
             end if
         end sub,
@@ -142,50 +132,55 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
             responses = m._processQueuedRequests()
             ' the responses may include sessionStart response and media event response
             for each edgeResponse in responses
-                if _adb_isEdgeResponse(edgeResponse) then
-                    responseJson = edgeResponse.getresponsestring()
-                    responseObj = ParseJson(responseJson)
-                    requestId = responseObj.requestId
-                    sessionId = ""
-                    location = ""
-                    ' udpate session id and location hint
-                    for each handle in responseObj.handle
-                        if handle.type = "media-analytics:new-session"
-                            sessionId = handle.payload[0]["sessionId"]
-                        else if handle.type = "locationHint:result"
-                            for each payload in handle.payload
-                                if payload["scope"] = "EdgeNetwork"
-                                    location = payload["hint"]
-                                end if
-                            end for
-                        end if
-                    end for
-                    ' if the session id is not empty, update the session id and process the queued requests
-                    ' the location hint is optional, if it is empty, it will be ignored
-                    if not _adb_isEmptyOrInvalidString(sessionId)
-                        queuedMediaRequests = m._sessionManager.updateSessionIdAndGetQueuedRequests(requestId, sessionId, location)
-                        for each mediaRequest in queuedMediaRequests
-                            mediaEventType = mediaRequest.eventData.xdmData.xdm.eventType
-
-                            meta = {}
-                            path = _adb_EdgePathForEventType(mediaEventType, location, m._CONSTANTS.MEDIA.EVENT_TYPES)
-
-                            if not _adb_isEmptyOrInvalidString(path)
-                                xdmData = mediaRequest.eventData.xdmData
-                                xdmData.xdm["_id"] = _adb_generate_UUID()
-                                xdmData.xdm["timestamp"] = mediaRequest.tsObject.ts_inISO8601
-                                xdmData.xdm["mediaCollection"]["sessionID"] = sessionId
-
-                                ' TODO: sanitize the xdmData object before sending to the backend.
-                                m._edgeRequestWorker.queue(mediaRequest.requestId, xdmData, mediaRequest.timestampInMillis, meta, path)
-                            else
-                                _adb_logError("_actionInSession() - mediaEventName is invalid: " + mediaEventType)
+                if _adb_isEdgeResponse(edgeResponse) and not _adb_isEmptyOrInvalidString(edgeResponse.getresponsestring()) then
+                    try
+                        responseObj = ParseJson(edgeResponse.getresponsestring())
+                        requestId = responseObj.requestId
+                        sessionId = ""
+                        location = ""
+                        ' udpate session id and location hint
+                        for each handle in responseObj.handle
+                            if handle.type = "media-analytics:new-session"
+                                sessionId = handle.payload[0]["sessionId"]
+                            else if handle.type = "locationHint:result"
+                                for each payload in handle.payload
+                                    if payload["scope"] = "EdgeNetwork"
+                                        location = payload["hint"]
+                                    end if
+                                end for
                             end if
                         end for
-                        m._kickRequestQueue()
-                    end if
+                        ' if the session id is not empty, update the session id and process the queued requests
+                        ' the location hint is optional, if it is empty, it will be ignored
+                        if not _adb_isEmptyOrInvalidString(sessionId)
+                            queuedMediaRequests = m._sessionManager.updateSessionIdAndGetQueuedRequests(requestId, sessionId, location)
+                            for each mediaRequest in queuedMediaRequests
+                                mediaEventType = mediaRequest.xdmData.xdm.eventType
+                                m._handleMediaEvent(mediaEventType, mediaRequest.requestId, sessionId, location, mediaRequest.xdmData, mediaRequest.tsObject)
+                            end for
+                            m._kickRequestQueue()
+                        end if
+                    catch ex
+                        _adb_logError("_kickRequestQueue() - Failed to process the edge media reqsponse, the exception message: " + ex.Message)
+                    end try
                 end if
             end for
+        end sub,
+
+        _handleMediaEvent: sub(mediaEventType as string, requestId as string, sessionId as string, location as string, xdmData as object, tsObject as object)
+            path = _adb_EdgePathForEventType(mediaEventType, location, m._CONSTANTS.MEDIA.EVENT_TYPES)
+            if not _adb_isEmptyOrInvalidString(path)
+                xdmData.xdm["_id"] = _adb_generate_UUID()
+                xdmData.xdm["timestamp"] = tsObject.ts_inISO8601
+                xdmData.xdm["mediaCollection"]["sessionID"] = sessionId
+
+                meta = {}
+                ' TODO: sanitize the xdmData object before sending to the backend.
+                m._edgeRequestWorker.queue(requestId, [xdmData], tsObject.ts_inMillis, meta, path)
+                m._kickRequestQueue()
+            else
+                _adb_logError("_handleMediaEvent() - mediaEventName is invalid: " + mediaEventType)
+            end if
         end sub,
 
         _getEdgeConfig: function() as object
