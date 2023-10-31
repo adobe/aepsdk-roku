@@ -150,19 +150,20 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
                                 end for
                             end if
                         end for
-                        ' if the session id is not empty, update the session id and process the queued requests
-                        ' the location hint is optional, if it is empty, it will be ignored
-                        if not _adb_isEmptyOrInvalidString(sessionId)
-                            queuedMediaRequests = m._sessionManager.updateSessionIdAndGetQueuedRequests(requestId, sessionId, location)
-                            for each mediaRequest in queuedMediaRequests
-                                mediaEventType = mediaRequest.xdmData.xdm.eventType
-                                m._handleMediaEvent(mediaEventType, mediaRequest.requestId, sessionId, location, mediaRequest.xdmData, mediaRequest.tsObject)
-                            end for
-                            m._kickRequestQueue()
-                        end if
                     catch ex
                         _adb_logError("_kickRequestQueue() - Failed to process the edge media reqsponse, the exception message: " + ex.Message)
                     end try
+
+                    ' if the session id is not empty, update the session id and process the queued requests
+                    ' the location hint is optional, if it is empty, it will be ignored
+                    if not _adb_isEmptyOrInvalidString(sessionId)
+                        queuedMediaRequests = m._sessionManager.updateSessionIdAndGetQueuedRequests(requestId, sessionId, location)
+                        for each mediaRequest in queuedMediaRequests
+                            mediaEventType = mediaRequest.xdmData.xdm.eventType
+                            m._handleMediaEvent(mediaEventType, mediaRequest.requestId, sessionId, location, mediaRequest.xdmData, mediaRequest.tsObject)
+                        end for
+                        m._kickRequestQueue()
+                    end if
                 end if
             end for
         end sub,
@@ -219,6 +220,7 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
         end function,
 
         dump: function() as object
+            ' TODO: update the dump info when adding the integration tests
             return {
                 requestQueue: m._edgeRequestWorker._queue
             }
@@ -235,7 +237,6 @@ function _adb_EdgePathForEventType(mediaEventType as string, location as string,
         else
             return "/ee/" + location + "/va/v1/" + mediaEventType
         end if
-
     else
         _adb_logError("_adb_EdgePathForEventType(): unsupported event type - " + mediaEventType)
         return invalid
