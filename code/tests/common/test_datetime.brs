@@ -19,7 +19,6 @@ sub TC_adb_timestampInMillis()
     UTF_assertTrue(FormatJson(timestampInMillis).Len() > 12, "timestampInMillis should be longer than 12 digits")
 end sub
 
-
 ' target: _adb_ISO8601_timestamp()
 ' @Test
 sub TC_adb_ISO8601_timestamp()

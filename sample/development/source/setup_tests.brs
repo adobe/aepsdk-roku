@@ -41,6 +41,7 @@ function _adb_test_functions() as dynamic
         TC_adb_optIntFromMap
         'test_string.brs
         TC_adb_isEmptyOrInvalidString
+        TC_adb_isStringEndsWith
         'test_datetime.brs
         TC_adb_timestampInMillis
         TC_adb_ISO8601_timestamp
@@ -78,6 +79,10 @@ function _adb_test_functions() as dynamic
         TC_adb_ConfigurationModule_separateUpdates
         TC_adb_ConfigurationModule_invalidConfigurationKeys
         TC_adb_ConfigurationModule_invalidConfigurationValues
+        TC_adb_ConfigurationModule_validMediaConfig
+        TC_adb_ConfigurationModule_overwrittingMediaConfig
+        TC_adb_ConfigurationModule_emptyMediaConfig
+        TC_adb_ConfigurationModule_invalidMediaConfig
         ' test_identityModule.brs
         TS_identityModule_BeforeEach
         TC_adb_IdentityModule_bad_init
@@ -96,6 +101,7 @@ function _adb_test_functions() as dynamic
     edge = [
         'test_buildEdgeRequestURL.brs
         TC_adb_buildEdgeRequestURL_validDomain
+        TC_adb_buildEdgeRequestURL_validPathOverwriting
         'test_implementationDetails.brs
         TC_adb_ImplementationDetails
         ' test_edgeRequestWorker.brs

@@ -36,11 +36,13 @@ sub TC_adb_EdgeRequestWorker_queue()
     worker = _adb_EdgeRequestWorker()
     worker._queue = []
     timestampInMillis& = _adb_timestampInMillis()
-    worker.queue("request_id", { xdm: {} }, timestampInMillis&)
+    worker.queue("request_id", [{ xdm: {} }], timestampInMillis&, {}, "/ee/v1/interact")
     UTF_assertEqual(1, worker._queue.Count())
     expectedObj = {
         requestId: "request_id",
-        xdmData: { xdm: {} },
+        meta: {},
+        path: "/ee/v1/interact",
+        xdmEvents: [{ xdm: {} }],
         timestampInMillis: timestampInMillis&
     }
     UTF_assertEqual(expectedObj, worker._queue[0])
@@ -52,12 +54,12 @@ end sub
 sub TC_adb_EdgeRequestWorker_queue_bad_input()
     worker = _adb_EdgeRequestWorker()
     worker._queue = []
-    worker.queue("request_id", { xdm: {} }, -1)
-    worker.queue("request_id", {}, 12345534)
-    worker.queue("request_id", invalid, 12345534)
-    worker.queue("request_id", 999, 12345534)
-    worker.queue("request_id", "invalid object", 12345534)
-    worker.queue("", { xdm: {} }, 12345534)
+    worker.queue("request_id", [{ xdm: {} }], -1, {}, "")
+    worker.queue("request_id", [], 12345534, {}, "")
+    worker.queue("request_id", invalid, 12345534, {}, "")
+    worker.queue("request_id", 999, 12345534, {}, "")
+    worker.queue("request_id", "invalid object", 12345534, {}, "")
+    worker.queue("", [{ xdm: {} }], 12345534, {}, "")
     UTF_assertEqual(0, worker._queue.Count())
 end sub
 
@@ -67,9 +69,9 @@ sub TC_adb_EdgeRequestWorker_queue_limit()
     worker = _adb_EdgeRequestWorker()
     worker._queue = []
     worker._queue_size_max = 2
-    worker.queue("request_id", { xdm: {} }, 12345534)
-    worker.queue("request_id", { xdm: {} }, 12345535)
-    worker.queue("request_id", { xdm: {} }, 12345536)
+    worker.queue("request_id", [{ xdm: {} }], 12345534, {}, "")
+    worker.queue("request_id", [{ xdm: {} }], 12345535, {}, "")
+    worker.queue("request_id", [{ xdm: {} }], 12345536, {}, "")
     UTF_assertEqual(2, worker._queue.Count())
 end sub
 
@@ -78,9 +80,9 @@ end sub
 sub TC_adb_EdgeRequestWorker_clear()
     worker = _adb_EdgeRequestWorker()
     worker._queue = []
-    worker.queue("request_id", { xdm: {} }, 12345534)
-    worker.queue("request_id", { xdm: {} }, 12345535)
-    worker.queue("request_id", { xdm: {} }, 12345536)
+    worker.queue("request_id", [{ xdm: {} }], 12345534, {}, "")
+    worker.queue("request_id", [{ xdm: {} }], 12345535, {}, "")
+    worker.queue("request_id", [{ xdm: {} }], 12345536, {}, "")
     UTF_assertEqual(3, worker._queue.Count())
     worker.clear()
     UTF_assertEqual(0, worker._queue.Count())
@@ -125,7 +127,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_valid_response()
     end function
 
     worker = _adb_EdgeRequestWorker()
-    networkResponse = worker._processRequest({ xdm: { key: "value" } }, "ecid_test", "config_id", "request_id", invalid)
+    networkResponse = worker._processRequest([{ xdm: { key: "value" } }], "ecid_test", "config_id", "request_id", "/ee/v1/interact", invalid)
 
     UTF_assertEqual(200, networkResponse.getResponseCode())
     UTF_assertEqual("response body", networkResponse.getResponseString())
@@ -147,7 +149,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_invalid_response()
     end function
 
     worker = _adb_EdgeRequestWorker()
-    result = worker._processRequest({ xdm: { key: "value" } }, "ecid_test", "config_id", "request_id", invalid)
+    result = worker._processRequest([{ xdm: { key: "value" } }], "ecid_test", "config_id", "request_id", "/ee/v1/interact", invalid)
 
     UTF_assertInvalid(result)
 
@@ -171,8 +173,8 @@ sub TC_adb_EdgeRequestWorker_processRequests()
     end function
 
     worker = _adb_EdgeRequestWorker()
-    worker.queue("request_id_1", { xdm: { key: "value" } }, 12345534)
-    worker.queue("request_id_2", { xdm: { key: "value" } }, 12345534)
+    worker.queue("request_id_1", [{ xdm: { key: "value" } }], 12345534, {}, "/ee/v1/interact")
+    worker.queue("request_id_2", [{ xdm: { key: "value" } }], 12345534, {}, "/ee/v1/interact")
 
     responseArray = worker.processRequests("config_id", "ecid_test")
     ' processRequests: function(configId as string, ecid as string, edgeDomain = invalid as dynamic) as dynamic
@@ -225,9 +227,9 @@ sub TC_adb_EdgeRequestWorker_processRequests_recoverableError_retriesAfterWaitTi
 
     worker = _adb_EdgeRequestWorker()
 
-    worker.queue("request_id_1", { xdm: { key: "value" } }, 12345534)
-    worker.queue("request_id_2", { xdm: { key: "value" } }, 12345534)
-    worker.queue("request_id_3", { xdm: { key: "value" } }, 12345534)
+    worker.queue("request_id_1", [{ xdm: { key: "value" } }], 12345534, {}, "/ee/v1/interact")
+    worker.queue("request_id_2", [{ xdm: { key: "value" } }], 12345534, {}, "/ee/v1/interact")
+    worker.queue("request_id_3", [{ xdm: { key: "value" } }], 12345534, {}, "/ee/v1/interact")
     responseArray = worker.processRequests("config_id", "ecid_test")
 
     UTF_assertEqual(1, responseArray.Count())
@@ -294,9 +296,9 @@ sub TC_adb_EdgeRequestWorker_queue_newRequest_after_RecoverableError_retriesImme
 
     worker = _adb_EdgeRequestWorker()
 
-    worker.queue("request_id_1", { xdm: { key: "value" } }, 12345534)
-    worker.queue("request_id_2", { xdm: { key: "value" } }, 12345534)
-    worker.queue("request_id_3", { xdm: { key: "value" } }, 12345534)
+    worker.queue("request_id_1", [{ xdm: { key: "value" } }], 12345534, {}, "/ee/v1/interact")
+    worker.queue("request_id_2", [{ xdm: { key: "value" } }], 12345534, {}, "/ee/v1/interact")
+    worker.queue("request_id_3", [{ xdm: { key: "value" } }], 12345534, {}, "/ee/v1/interact")
     responseArray = worker.processRequests("config_id", "ecid_test")
 
     UTF_assertEqual(1, responseArray.Count())
@@ -318,7 +320,7 @@ sub TC_adb_EdgeRequestWorker_queue_newRequest_after_RecoverableError_retriesImme
     end function
 
     ' Request should be not be sent since < 30 seconds
-    worker.queue("request_id_4", { xdm: { key: "value" } }, 12345534)
+    worker.queue("request_id_4", [{ xdm: { key: "value" } }], 12345534, {}, "/ee/v1/interact")
     UTF_assertEqual(-1, worker._lastFailedRequestTS, "Failed Request TS should be reset to -1")
 
     responseArray = worker.processRequests("config_id", "ecid_test")
