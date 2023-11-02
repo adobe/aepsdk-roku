@@ -36,13 +36,36 @@ end function
 
 ' *****************************************************************************
 '
-' Initialize the Adobe SDK and return the public API instance.
-' The following variables are reserved to hold SDK instances in GetGlobalAA():
+' The AEP task node performs the core logic of the SDK.
+' If the task node instance is not provided, calling this function will create a
+' new AEP task node instance and yield an SDK API instance.
+' Then, the "getTaskNode" fucntion can be called via the API instance to retrieve
+' the task node instance.
+'
+' For example:
+' sdkInstance = AdobeAEPSDKInit()
+' adobeTaskNode = sdkInstance.getTaskNode()
+'
+' Storing the task node instance in the Scene node is recommended.
+'
+' For example:
+' adobeTaskNode.id = "adobeTaskNode"
+' m.top.appendChild(adobeTaskNode)
+'
+' The task node instance can then be retieved and utilized to initialize a new
+' API instance in other SceneGraph components.
+'
+' For example:
+' adobeTaskNode = m.top.getScene().findNode("adobeTaskNode")
+' sdkInstance = AdobeAEPSDKInit(adobeTaskNode)
+'
+' Note: the following variables are reserved to hold SDK instances in GetGlobalAA():
 '   - GetGlobalAA()._adb_public_api
 '   - GetGlobalAA()._adb_main_task_node
 '   - GetGlobalAA()._adb_serviceProvider_instance
 '
-' @return instance as object : public API instance
+' @param [optional] taskNode as object   : the AEP task node instance
+' @return instance as object             : the public API instance
 '
 ' *****************************************************************************
 
