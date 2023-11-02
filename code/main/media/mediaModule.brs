@@ -54,12 +54,12 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
 
             if mediaEventType = m._CONSTANTS.MEDIA.SESSION_START_EVENT_TYPE
                 sessionConfig = eventData.configuration
-                m._sessionStart(clientSessionId, sessionConfig, xdmData, tsObject)
+                m._startSession(clientSessionId, sessionConfig, xdmData, tsObject)
                 return
             end if
 
             if mediaEventType <> invalid and _adb_isStringInArray(mediaEventType, m._CONSTANTS.MEDIA.EVENT_TYPES)
-                m._actionInSession(requestId, clientSessionId, xdmData, tsObject)
+                m._trackEventForSession(requestId, clientSessionId, xdmData, tsObject)
             else
                 _adb_logError("processEvent() - media event type is invalid: " + FormatJson(mediaEventType))
             end if
@@ -70,11 +70,12 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
             return _adb_isEmptyOrInvalidString(m._configurationModule.getMediaChannel()) or _adb_isEmptyOrInvalidString(m._configurationModule.getMediaPlayerName())
         end function,
 
-        _sessionStart: sub(clientSessionId as string, sessionConfig as object, xdmData as object, tsObject as object)
+        _startSession: sub(clientSessionId as string, sessionConfig as object, xdmData as object, tsObject as object)
+            ' TODO: validate and sanitize the sessionConfig
             ' TODO: the session-level config should be merged with the global config, before the validation
 
             if m._mediaConfigIsNotReady() then
-                _adb_logError("_sessionStart() - the media session is not created/started properly (missing the channel name or the player name).")
+                _adb_logError("_startSession() - the media session is not created/started properly (missing the channel name or the player name).")
                 return
             end if
 
@@ -99,11 +100,11 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
             m._kickRequestQueue()
         end sub,
 
-        _actionInSession: sub(requestId as string, clientSessionId as string, xdmData as object, tsObject as object)
+        _trackEventForSession: sub(requestId as string, clientSessionId as string, xdmData as object, tsObject as object)
             if not m._sessionManager.isSessionStarted(clientSessionId)
                 ' If the client session id is not found, it means the sessionStart is not called/processed correctly.
                 ' TODO: we need to update this logic to handle the session timeout scenarios.
-                _adb_logError("_actionInSession() - the corresponding session is not started properly. This media event will be dropped.")
+                _adb_logError("_trackEventForSession() - the corresponding session is not started properly. This media event will be dropped.")
                 return
             end if
 

@@ -40,16 +40,16 @@ end sub
 
 ' target: processEvent()
 ' @Test
-sub TC_adb_MediaModule_processEvent_sessionStart()
+sub TC_adb_MediaModule_processEvent_startSession()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
     mediaModule = _adb_MediaModule(configurationModule, identityModule)
     UTF_assertTrue(_adb_isMediaModule(mediaModule))
 
-    GetGlobalAA()._adb_sessionStart_is_called = false
-    GetGlobalAA()._adb_actionInSession_is_called = false
-    mediaModule._sessionStart = sub(clientSessionId as string, sessionConfig as object, xdmData as object, tsObject as object)
-        GetGlobalAA()._adb_sessionStart_is_called = true
+    GetGlobalAA()._adb_startSession_is_called = false
+    GetGlobalAA()._adb_trackEventForSession_is_called = false
+    mediaModule._startSession = sub(clientSessionId as string, sessionConfig as object, xdmData as object, tsObject as object)
+        GetGlobalAA()._adb_startSession_is_called = true
         UTF_assertEqual("client_session_id", clientSessionId)
         UTF_assertEqual(xdmData, {
             "xdm": {
@@ -65,8 +65,8 @@ sub TC_adb_MediaModule_processEvent_sessionStart()
         })
         UTF_assertEqual(sessionConfig, { "config.channel": "channel_1" })
     end sub
-    mediaModule._actionInSession = sub(requestId as string, clientSessionId as string, xdmData as object, tsObject as object)
-        GetGlobalAA()._adb_actionInSession_is_called = true
+    mediaModule._trackEventForSession = sub(requestId as string, clientSessionId as string, xdmData as object, tsObject as object)
+        GetGlobalAA()._adb_trackEventForSession_is_called = true
     end sub
 
     mediaModule.processEvent("request_id", {
@@ -86,25 +86,25 @@ sub TC_adb_MediaModule_processEvent_sessionStart()
         },
         configuration: { "config.channel": "channel_1" }
     })
-    UTF_assertTrue(GetGlobalAA()._adb_sessionStart_is_called)
-    UTF_assertTrue(not GetGlobalAA()._adb_actionInSession_is_called)
+    UTF_assertTrue(GetGlobalAA()._adb_startSession_is_called)
+    UTF_assertTrue(not GetGlobalAA()._adb_trackEventForSession_is_called)
 end sub
 
 ' target: processEvent()
 ' @Test
-sub TC_adb_MediaModule_processEvent_actionInSession()
+sub TC_adb_MediaModule_processEvent_trackEventForSession()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
     mediaModule = _adb_MediaModule(configurationModule, identityModule)
     UTF_assertTrue(_adb_isMediaModule(mediaModule))
 
-    GetGlobalAA()._adb_sessionStart_is_called = false
-    GetGlobalAA()._adb_actionInSession_is_called = false
-    mediaModule._sessionStart = sub(clientSessionId as string, sessionConfig as object, xdmData as object, tsObject as object)
-        GetGlobalAA()._adb_sessionStart_is_called = true
+    GetGlobalAA()._adb_startSession_is_called = false
+    GetGlobalAA()._adb_trackEventForSession_is_called = false
+    mediaModule._startSession = sub(clientSessionId as string, sessionConfig as object, xdmData as object, tsObject as object)
+        GetGlobalAA()._adb_startSession_is_called = true
     end sub
-    mediaModule._actionInSession = sub(requestId as string, clientSessionId as string, xdmData as object, tsObject as object)
-        GetGlobalAA()._adb_actionInSession_is_called = true
+    mediaModule._trackEventForSession = sub(requestId as string, clientSessionId as string, xdmData as object, tsObject as object)
+        GetGlobalAA()._adb_trackEventForSession_is_called = true
         UTF_assertEqual("client_session_id", clientSessionId)
         UTF_assertEqual("request_id", requestId)
         UTF_assertEqual(xdmData, {
@@ -129,8 +129,8 @@ sub TC_adb_MediaModule_processEvent_actionInSession()
             }
         }
     })
-    UTF_assertTrue(not GetGlobalAA()._adb_sessionStart_is_called)
-    UTF_assertTrue(GetGlobalAA()._adb_actionInSession_is_called)
+    UTF_assertTrue(not GetGlobalAA()._adb_startSession_is_called)
+    UTF_assertTrue(GetGlobalAA()._adb_trackEventForSession_is_called)
 end sub
 
 ' target: processEvent()
@@ -141,13 +141,13 @@ sub TC_adb_MediaModule_processEvent_invalid()
     mediaModule = _adb_MediaModule(configurationModule, identityModule)
     UTF_assertTrue(_adb_isMediaModule(mediaModule))
 
-    GetGlobalAA()._adb_sessionStart_is_called = false
-    GetGlobalAA()._adb_actionInSession_is_called = false
-    mediaModule._sessionStart = sub(clientSessionId as string, sessionConfig as object, xdmData as object, tsObject as object)
-        GetGlobalAA()._adb_sessionStart_is_called = true
+    GetGlobalAA()._adb_startSession_is_called = false
+    GetGlobalAA()._adb_trackEventForSession_is_called = false
+    mediaModule._startSession = sub(clientSessionId as string, sessionConfig as object, xdmData as object, tsObject as object)
+        GetGlobalAA()._adb_startSession_is_called = true
     end sub
-    mediaModule._actionInSession = sub(requestId as string, clientSessionId as string, xdmData as object, tsObject as object)
-        GetGlobalAA()._adb_actionInSession_is_called = true
+    mediaModule._trackEventForSession = sub(requestId as string, clientSessionId as string, xdmData as object, tsObject as object)
+        GetGlobalAA()._adb_trackEventForSession_is_called = true
     end sub
 
     mediaModule.processEvent("request_id", {
@@ -162,8 +162,8 @@ sub TC_adb_MediaModule_processEvent_invalid()
             }
         }
     })
-    UTF_assertFalse(GetGlobalAA()._adb_sessionStart_is_called)
-    UTF_assertFalse(GetGlobalAA()._adb_actionInSession_is_called)
+    UTF_assertFalse(GetGlobalAA()._adb_startSession_is_called)
+    UTF_assertFalse(GetGlobalAA()._adb_trackEventForSession_is_called)
 
     mediaModule.processEvent("request_id", {
         clientSessionId: "client_session_id",
@@ -177,8 +177,8 @@ sub TC_adb_MediaModule_processEvent_invalid()
             }
         }
     })
-    UTF_assertFalse(GetGlobalAA()._adb_sessionStart_is_called)
-    UTF_assertFalse(GetGlobalAA()._adb_actionInSession_is_called)
+    UTF_assertFalse(GetGlobalAA()._adb_startSession_is_called)
+    UTF_assertFalse(GetGlobalAA()._adb_trackEventForSession_is_called)
 end sub
 
 
@@ -216,9 +216,9 @@ sub TC_mediaConfigIsNotReady()
     UTF_assertTrue(mediaModule._mediaConfigIsNotReady())
 end sub
 
-' target: _sessionStart()
+' target: _startSession()
 ' @Test
-sub TC_adb_MediaModule_sessionStart_withoutSessionConfig()
+sub TC_adb_MediaModule_startSession_withoutSessionConfig()
 
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
@@ -240,7 +240,7 @@ sub TC_adb_MediaModule_sessionStart_withoutSessionConfig()
 
     tsObj = _adb_TimestampObject()
     UTF_assertFalse(mediaModule._sessionManager.isSessionStarted("client_session_id"))
-    mediaModule._sessionStart("client_session_id", {}, {
+    mediaModule._startSession("client_session_id", {}, {
         "xdm": {
             "mediaCollection": {
                 "sessionDetails": {
@@ -274,9 +274,9 @@ sub TC_adb_MediaModule_sessionStart_withoutSessionConfig()
     UTF_assertTrue(GetGlobalAA()._adb_kickRequestQueue_is_called)
 end sub
 
-' target: _sessionStart()
+' target: _startSession()
 ' @Test
-sub TC_adb_MediaModule_sessionStart_invalidConfig()
+sub TC_adb_MediaModule_startSession_invalidConfig()
 
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
@@ -298,7 +298,7 @@ sub TC_adb_MediaModule_sessionStart_invalidConfig()
 
     tsObj = _adb_TimestampObject()
     UTF_assertFalse(mediaModule._sessionManager.isSessionStarted("client_session_id"))
-    mediaModule._sessionStart("client_session_id", {}, {
+    mediaModule._startSession("client_session_id", {}, {
         "xdm": {
             "mediaCollection": {
                 "sessionDetails": {
@@ -314,9 +314,9 @@ sub TC_adb_MediaModule_sessionStart_invalidConfig()
     UTF_assertFalse(GetGlobalAA()._adb_kickRequestQueue_is_called)
 end sub
 
-' target: _actionInSession()
+' target: _trackEventForSession()
 ' @Test
-sub TC_adb_MediaModule_actionInSession()
+sub TC_adb_MediaModule_trackEventForSession()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
     mediaModule = _adb_MediaModule(configurationModule, identityModule)
@@ -334,7 +334,7 @@ sub TC_adb_MediaModule_actionInSession()
 
     UTF_assertTrue(mediaModule._sessionManager.isSessionStarted("client_session_id"))
     tsObj = _adb_TimestampObject()
-    mediaModule._actionInSession("request_id", "client_session_id", {
+    mediaModule._trackEventForSession("request_id", "client_session_id", {
         "xdm": {
             "mediaCollection": {
                 "playhead": 10,
@@ -361,9 +361,9 @@ sub TC_adb_MediaModule_actionInSession()
     UTF_assertFalse(GetGlobalAA()._adb_processQueuedRequests_is_called)
 end sub
 
-' target: _actionInSession()
+' target: _trackEventForSession()
 ' @Test
-sub TC_adb_MediaModule_actionInSession_sessionIdNotReady()
+sub TC_adb_MediaModule_trackEventForSession_sessionIdNotReady()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
     mediaModule = _adb_MediaModule(configurationModule, identityModule)
@@ -382,7 +382,7 @@ sub TC_adb_MediaModule_actionInSession_sessionIdNotReady()
     UTF_assertTrue(mediaModule._sessionManager.isSessionStarted("client_session_id"))
 
     tsObj = _adb_TimestampObject()
-    mediaModule._actionInSession("request_id", "client_session_id", {
+    mediaModule._trackEventForSession("request_id", "client_session_id", {
         "xdm": {
             "mediaCollection": {
                 "playhead": 10,
@@ -408,9 +408,9 @@ sub TC_adb_MediaModule_actionInSession_sessionIdNotReady()
     UTF_assertFalse(GetGlobalAA()._adb_processQueuedRequests_is_called)
 end sub
 
-' target: _actionInSession()
+' target: _trackEventForSession()
 ' @Test
-sub TC_adb_MediaModule_actionInSession_sessionEnd()
+sub TC_adb_MediaModule_trackEventForSession_sessionEnd()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
     mediaModule = _adb_MediaModule(configurationModule, identityModule)
@@ -428,7 +428,7 @@ sub TC_adb_MediaModule_actionInSession_sessionEnd()
 
     UTF_assertTrue(mediaModule._sessionManager.isSessionStarted("client_session_id"))
     tsObj = _adb_TimestampObject()
-    mediaModule._actionInSession("request_id", "client_session_id", {
+    mediaModule._trackEventForSession("request_id", "client_session_id", {
         "xdm": {
             "mediaCollection": {
                 "playhead": 100,
@@ -443,9 +443,9 @@ sub TC_adb_MediaModule_actionInSession_sessionEnd()
     UTF_assertFalse(GetGlobalAA()._adb_processQueuedRequests_is_called)
 end sub
 
-' target: _actionInSession()
+' target: _trackEventForSession()
 ' @Test
-sub TC_adb_MediaModule_actionInSession_sessionNotStarted()
+sub TC_adb_MediaModule_trackEventForSession_sessionNotStarted()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
     mediaModule = _adb_MediaModule(configurationModule, identityModule)
@@ -463,7 +463,7 @@ sub TC_adb_MediaModule_actionInSession_sessionNotStarted()
     UTF_assertFalse(mediaModule._sessionManager.isSessionStarted("client_session_id"))
 
     tsObj = _adb_TimestampObject()
-    mediaModule._actionInSession("request_id", "client_session_id", {
+    mediaModule._trackEventForSession("request_id", "client_session_id", {
         "xdm": {
             "mediaCollection": {
                 "playhead": 10,

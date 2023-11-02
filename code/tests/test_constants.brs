@@ -31,8 +31,8 @@ sub TC_AdobeAEPSDKConstants()
     UTF_assertEqual(cons.CONFIGURATION.MEDIA_APP_VERSION, "edgemedia.appVersion")
 
     ' Media session-level configuration
-    UTF_assertEqual(cons.MEDIA_SESSION_CONFIG.CHANNEL, "config.channel")
-    UTF_assertEqual(cons.MEDIA_SESSION_CONFIG.MAIN_PING_INTERVAL, "config.mainpinginterval")
-    UTF_assertEqual(cons.MEDIA_SESSION_CONFIG.AD_PING_INTERVAL, "config.adpinginterval")
+    UTF_assertEqual(cons.MEDIA_SESSION_CONFIGURATION.CHANNEL, "config.channel")
+    UTF_assertEqual(cons.MEDIA_SESSION_CONFIGURATION.MAIN_PING_INTERVAL, "config.mainpinginterval")
+    UTF_assertEqual(cons.MEDIA_SESSION_CONFIGURATION.AD_PING_INTERVAL, "config.adpinginterval")
 
 end sub

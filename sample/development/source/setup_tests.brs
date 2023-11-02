@@ -134,16 +134,16 @@ function _adb_test_functions() as dynamic
         ' test_mediaModule.brs
         TC_adb_EdgePathForEventType
         TC_adb_MediaModule_init
-        TC_adb_MediaModule_processEvent_sessionStart
-        TC_adb_MediaModule_processEvent_actionInSession
+        TC_adb_MediaModule_processEvent_startSession
+        TC_adb_MediaModule_processEvent_trackEventForSession
         TC_adb_MediaModule_processEvent_invalid
         TC_mediaConfigIsNotReady
-        TC_adb_MediaModule_sessionStart_withoutSessionConfig
-        TC_adb_MediaModule_sessionStart_invalidConfig
-        TC_adb_MediaModule_actionInSession
-        TC_adb_MediaModule_actionInSession_sessionIdNotReady
-        TC_adb_MediaModule_actionInSession_sessionEnd
-        TC_adb_MediaModule_actionInSession_sessionNotStarted
+        TC_adb_MediaModule_startSession_withoutSessionConfig
+        TC_adb_MediaModule_startSession_invalidConfig
+        TC_adb_MediaModule_trackEventForSession
+        TC_adb_MediaModule_trackEventForSession_sessionIdNotReady
+        TC_adb_MediaModule_trackEventForSession_sessionEnd
+        TC_adb_MediaModule_trackEventForSession_sessionNotStarted
         TC_adb_MediaModule_kickRequestQueue
         TC_adb_MediaModule_kickRequestQueue_withQueuedMediaEvents
     ]

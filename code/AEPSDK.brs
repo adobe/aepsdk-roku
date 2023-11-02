@@ -25,7 +25,7 @@ function AdobeAEPSDKConstants() as object
             MEDIA_APP_VERSION: "edgemedia.appVersion",
         },
         ' The constants define keys that can be used to create the session-level configuration for Media module.
-        MEDIA_SESSION_CONFIG: {
+        MEDIA_SESSION_CONFIGURATION: {
             CHANNEL: "config.channel",
             AD_PING_INTERVAL: "config.adpinginterval",
             MAIN_PING_INTERVAL: "config.mainpinginterval",
@@ -245,6 +245,7 @@ function AdobeAEPSDKInit() as object
         ' @param [optional] configuration as object : the session-level configuration
         '
         ' ****************************************************************************************************
+        ' TODO: let's add a link to the media docs later to present the XDM data structure
         createMediaSession: function(xdmData as object, configuration = {} as object) as void
             _adb_logDebug("API: createMediaSession()")
 
