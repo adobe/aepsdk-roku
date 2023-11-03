@@ -370,6 +370,7 @@ function _adb_ClientMediaSession() as object
         _clientSessionId: "",
         _currentPlayHead%: 0,
 
+        ' TODO: the session start event may include the playhead value, we need to extract it and update the current playhead
         startNewSession: function() as string
             m._resetSession()
             m._clientSessionId = _adb_generate_UUID()
