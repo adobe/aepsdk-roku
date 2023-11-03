@@ -48,7 +48,7 @@
         _checkOldSessionsForPendingHits: sub()
         ' Check for old sessions and dispatch pending hits
         ' iterate over all the sessions in the session map and check if all the hits are dispatched
-        ' delete the sessions if the hit is dispatched
+        ' if the session is not active and hit queue is empty, delete the session
         end sub,
      }
  end function

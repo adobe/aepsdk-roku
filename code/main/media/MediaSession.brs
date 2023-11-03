@@ -33,15 +33,19 @@
         end sub,
 
         handleQueueEvent: sub(requestId as string, xdmData as object, tsObject as object)
+            ' Filter ping events which are proxy for timer
+            ' Check if session is idle or long running
         end sub,
 
         handleSessionEnd: sub()
         ' Handle session end
         ' Dispatch all the hits before closing and deleting the internal session
+            _isActive = false
         end sub,
 
         handleSessionUpdate: function(backendSessionId as string)
         ' Handle backned session ID and append to all the low level media events
+            _backendSessionId = backendSessionId
         end function,
 
         _processQueue: sub()
