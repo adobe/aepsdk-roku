@@ -24,6 +24,12 @@ function AdobeAEPSDKConstants() as object
             MEDIA_PLAYER_NAME: "edgemedia.playerName",
             MEDIA_APP_VERSION: "edgemedia.appVersion",
         },
+        ' The constants define keys that can be used to create the session-level configuration for Media module.
+        MEDIA_SESSION_CONFIGURATION: {
+            CHANNEL: "config.channel",
+            AD_PING_INTERVAL: "config.adpinginterval",
+            MAIN_PING_INTERVAL: "config.mainpinginterval",
+        },
         LOG_LEVEL: {
             VERBOSE: 0,
             DEBUG: 1,
@@ -226,12 +232,101 @@ function AdobeAEPSDKInit() as object
             data[m._private.cons.EVENT_DATA_KEY.ecid] = ecid
             event = _adb_RequestEvent(m._private.cons.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID, data)
             m._private.dispatchEvent(event)
-        end function
+        end function,
+
+        ' ****************************************************************************************************
+        '
+        ' Call this function to start a new Media session with the given XDM data. The XDM data must be the type
+        ' of "media.sessionStart".
+        ' If the "playerName", "channel", and "appVersion" are not provided in the XDM data, the SDK will use
+        ' the global values passed via "updateConfiguration" API.
+        '
+        ' @param xdmData as object                  : the XDM data of type "media.sessionStart"
+        ' @param [optional] configuration as object : the session-level configuration
+        '
+        ' ****************************************************************************************************
+        ' TODO: let's add a link to the media docs later to present the XDM data structure
+        createMediaSession: function(xdmData as object, configuration = {} as object) as void
+            _adb_logDebug("API: createMediaSession()")
+
+            if m._private.mediaSession.isActive()
+                _adb_logWarning("createMediaSession() - Ending the previous session before starting a new one.")
+
+                position = m._private.mediaSession.getCurrentPlayHead()
+                m.sendMediaEvent({
+                    "xdm": {
+                        "eventType": "media.sessionEnd",
+                        "mediaCollection": {
+                            "playhead": position,
+                        }
+                    }
+                })
+            end if
+
+            if not _adb_isValidMediaXDMData(xdmData)
+                _adb_logError("createMediaSession() - Cannot create media session, invalid XDM data")
+                return
+            end if
+
+            sessionId = m._private.mediaSession.startNewSession()
+
+            data = {
+                clientSessionId: sessionId,
+                tsObject: _adb_TimestampObject(),
+                xdmData: xdmData,
+                configuration: configuration
+            }
+            event = _adb_RequestEvent(m._private.cons.PUBLIC_API.CREATE_MEDIA_SESSION, data)
+            m._private.dispatchEvent(event)
+
+        end function,
+
+        ' ****************************************************************************************************
+        '
+        ' Before calling this function to send a Media event with the given XDM data, it's required to call the
+        ' "createMediaSession" API to start a new session.
+        '
+        ' @param xdmData as object : the XDM data of the Media event
+        '
+        ' ****************************************************************************************************
+        sendMediaEvent: function(xdmData as object) as void
+            _adb_logDebug("API: sendMediaEvent()")
+
+            if not m._private.mediaSession.isActive()
+                _adb_logError("sendMediaEvent() - Cannot send media event, not in a valid media session. Call createMediaSession() API to start a new session.")
+                return
+            end if
+
+            if not _adb_isValidMediaXDMData(xdmData)
+                _adb_logError("sendMediaEvent() - Cannot send media event, invalid XDM data")
+                return
+            end if
+
+            sessionId = m._private.mediaSession.getClientSessionId()
+
+            if _adb_containsPlayheadValue(xdmData)
+                playhead = _adb_extractPlayheadFromMediaXDMData(xdmData)
+                m._private.mediaSession.updateCurrentPlayhead(playhead)
+            end if
+
+            data = {
+                clientSessionId: sessionId,
+                tsObject: _adb_TimestampObject(),
+                xdmData: xdmData
+            }
+            event = _adb_RequestEvent(m._private.cons.PUBLIC_API.SEND_MEDIA_EVENT, data)
+            m._private.dispatchEvent(event)
+
+            if xdmData.xdm.eventType = m._private.cons.MEDIA.SESSION_END_EVENT_TYPE
+                m._private.mediaSession.endSession()
+            end if
+        end function,
 
         ' ********************************
         ' Add private memebers below
         ' ********************************
         _private: {
+            mediaSession: _adb_ClientMediaSession(),
             ' constants
             cons: _adb_InternalConstants(),
             ' for testing purpose
@@ -269,6 +364,47 @@ end function
 
 function _adb_defaultCallback(_context, _result) as void
 end function
+
+function _adb_ClientMediaSession() as object
+    return {
+        _clientSessionId: "",
+        _currentPlayHead%: 0,
+
+        ' TODO: the session start event may include the playhead value, we need to extract it and update the current playhead
+        startNewSession: function() as string
+            m._resetSession()
+            m._clientSessionId = _adb_generate_UUID()
+            return m._clientSessionId
+        end function,
+
+        isActive: function() as boolean
+            return m._clientSessionId <> ""
+        end function,
+
+        endSession: sub()
+            m._resetSession()
+        end sub,
+
+        _resetSession: sub()
+            m._clientSessionId = ""
+            m._currentPlayHead% = 0
+        end sub,
+
+        getCurrentPlayHead: function() as integer
+            return m._currentPlayHead%
+        end function,
+
+        updateCurrentPlayhead: sub(playHead as integer)
+            m._currentPlayHead% = playHead
+        end sub,
+
+        getClientSessionId: function() as string
+            return m._clientSessionId
+        end function,
+
+    }
+end function
+
 
 ' ********** response event observer **********
 function _adb_handleResponseEvent() as void
