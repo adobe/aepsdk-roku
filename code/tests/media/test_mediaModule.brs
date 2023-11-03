@@ -11,29 +11,20 @@
 
 ' *****************************************************************************************
 
-
-' target: _adb_EdgePathForEventType()
-' @Test
-sub TC_adb_EdgePathForEventType()
-    EVENT_TYPES = _adb_InternalConstants().MEDIA.EVENT_TYPES
-
-    UTF_assertEqual("/ee/va6/va/v1/media.bitrateChange", _adb_EdgePathForEventType("media.bitrateChange", "va6", EVENT_TYPES))
-    UTF_assertEqual("/ee/va/v1/media.adComplete", _adb_EdgePathForEventType("media.adComplete", "", EVENT_TYPES))
-    UTF_assertInvalid(_adb_EdgePathForEventType("media.invalid", "va6", EVENT_TYPES))
-end sub
-
 ' target: _adb_MediaModule()
 ' @Test
 sub TC_adb_MediaModule_init()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
-    mediaModule = _adb_MediaModule(configurationModule, identityModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+
+    mediaModule = _adb_MediaModule(configurationModule, edgeRequestQueue)
     UTF_assertTrue(_adb_isMediaModule(mediaModule))
 
-
-    UTF_assertInvalid(_adb_MediaModule(identityModule, configurationModule))
+    UTF_assertInvalid(_adb_MediaModule(edgeRequestQueue, configurationModule))
     UTF_assertInvalid(_adb_MediaModule(configurationModule, invalid))
-    UTF_assertInvalid(_adb_MediaModule(invalid, identityModule))
+    UTF_assertInvalid(_adb_MediaModule(invalid, edgeRequestQueue))
     UTF_assertInvalid(_adb_MediaModule(invalid, invalid))
 
 end sub
@@ -43,7 +34,9 @@ end sub
 sub TC_adb_MediaModule_processEvent_startSession()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
-    mediaModule = _adb_MediaModule(configurationModule, identityModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+    mediaModule = _adb_MediaModule(configurationModule, edgeRequestQueue)
     UTF_assertTrue(_adb_isMediaModule(mediaModule))
 
     GetGlobalAA()._adb_startSession_is_called = false
@@ -95,7 +88,9 @@ end sub
 sub TC_adb_MediaModule_processEvent_trackEventForSession()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
-    mediaModule = _adb_MediaModule(configurationModule, identityModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+    mediaModule = _adb_MediaModule(configurationModule, edgeRequestQueue)
     UTF_assertTrue(_adb_isMediaModule(mediaModule))
 
     GetGlobalAA()._adb_startSession_is_called = false
@@ -138,7 +133,9 @@ end sub
 sub TC_adb_MediaModule_processEvent_invalid()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
-    mediaModule = _adb_MediaModule(configurationModule, identityModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+    mediaModule = _adb_MediaModule(configurationModule, edgeRequestQueue)
     UTF_assertTrue(_adb_isMediaModule(mediaModule))
 
     GetGlobalAA()._adb_startSession_is_called = false
@@ -187,7 +184,9 @@ end sub
 sub TC_mediaConfigIsNotReady()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
-    mediaModule = _adb_MediaModule(configurationModule, identityModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+    mediaModule = _adb_MediaModule(configurationModule, edgeRequestQueue)
     UTF_assertTrue(_adb_isMediaModule(mediaModule))
 
     mediaModule._configurationModule.getMediaChannel = function() as string
@@ -219,11 +218,13 @@ end sub
 ' target: _startSession()
 ' @Test
 sub TC_adb_MediaModule_startSession_withoutSessionConfig()
-
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
-    mediaModule = _adb_MediaModule(configurationModule, identityModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+    mediaModule = _adb_MediaModule(configurationModule, edgeRequestQueue)
     UTF_assertTrue(_adb_isMediaModule(mediaModule))
+
     mediaModule._configurationModule.getMediaChannel = function() as string
         return "channel_name"
     end function
@@ -252,10 +253,10 @@ sub TC_adb_MediaModule_startSession_withoutSessionConfig()
         }
     }, tsObj)
     UTF_assertTrue(mediaModule._sessionManager.isSessionStarted("client_session_id"))
-    UTF_assertEqual(1, mediaModule._edgeRequestWorker._queue.count())
-    UTF_assertEqual("client_session_id", mediaModule._edgeRequestWorker._queue[0]["requestId"])
-    UTF_assertEqual(1, mediaModule._edgeRequestWorker._queue[0]["xdmEvents"].count())
-    cachedXDMEvent = mediaModule._edgeRequestWorker._queue[0]["xdmEvents"][0]
+    UTF_assertEqual(1, mediaModule._edgeRequestQueue._edgeRequestWorker._queue.count())
+    UTF_assertEqual("client_session_id", mediaModule._edgeRequestQueue._edgeRequestWorker._queue[0]["requestId"])
+    UTF_assertEqual(1, mediaModule._edgeRequestQueue._edgeRequestWorker._queue[0]["xdmEvents"].count())
+    cachedXDMEvent = mediaModule._edgeRequestQueue._edgeRequestWorker._queue[0]["xdmEvents"][0]
     UTF_assertEqual("media.sessionStart", cachedXDMEvent["xdm"]["eventType"])
     UTF_assertFalse(_adb_isEmptyOrInvalidString(cachedXDMEvent["xdm"]["_id"]))
     UTF_assertEqual(tsObj.ts_inISO8601, cachedXDMEvent["xdm"]["timestamp"])
@@ -269,19 +270,21 @@ sub TC_adb_MediaModule_startSession_withoutSessionConfig()
         "playhead": 0,
     }, cachedXDMEvent["xdm"]["mediaCollection"])
 
-    UTF_assertEqual(tsObj.ts_inMillis, mediaModule._edgeRequestWorker._queue[0]["timestampInMillis"])
-    UTF_assertEqual("/ee/va/v1/sessionStart", mediaModule._edgeRequestWorker._queue[0]["path"])
+    UTF_assertEqual(tsObj.ts_inMillis, mediaModule._edgeRequestQueue._edgeRequestWorker._queue[0]["timestampInMillis"])
+    UTF_assertEqual("/ee/va/v1/sessionStart", mediaModule._edgeRequestQueue._edgeRequestWorker._queue[0]["path"])
     UTF_assertTrue(GetGlobalAA()._adb_kickRequestQueue_is_called)
 end sub
 
 ' target: _startSession()
 ' @Test
 sub TC_adb_MediaModule_startSession_invalidConfig()
-
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
-    mediaModule = _adb_MediaModule(configurationModule, identityModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+    mediaModule = _adb_MediaModule(configurationModule, edgeRequestQueue)
     UTF_assertTrue(_adb_isMediaModule(mediaModule))
+
     mediaModule._configurationModule.getMediaChannel = function() as string
         return ""
     end function
@@ -310,7 +313,7 @@ sub TC_adb_MediaModule_startSession_invalidConfig()
         }
     }, tsObj)
     UTF_assertFalse(mediaModule._sessionManager.isSessionStarted("client_session_id"))
-    UTF_assertEqual(0, mediaModule._edgeRequestWorker._queue.count())
+    UTF_assertEqual(0, mediaModule._edgeRequestQueue._edgeRequestWorker._queue.count())
     UTF_assertFalse(GetGlobalAA()._adb_kickRequestQueue_is_called)
 end sub
 
@@ -319,10 +322,13 @@ end sub
 sub TC_adb_MediaModule_trackEventForSession()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
-    mediaModule = _adb_MediaModule(configurationModule, identityModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+    mediaModule = _adb_MediaModule(configurationModule, edgeRequestQueue)
     UTF_assertTrue(_adb_isMediaModule(mediaModule))
+
     mediaModule._sessionManager.createNewSession("client_session_id")
-    mediaModule._sessionManager.updateSessionIdAndGetQueuedRequests("client_session_id", "backedn_session_id", "va6")
+    mediaModule._sessionManager.updateSessionIdAndGetQueuedRequests("client_session_id", "backedn_session_id")
     GetGlobalAA()._adb_kickRequestQueue_is_called = false
     mediaModule._kickRequestQueue = sub()
         GetGlobalAA()._adb_kickRequestQueue_is_called = true
@@ -343,10 +349,10 @@ sub TC_adb_MediaModule_trackEventForSession()
         }
     }, tsObj)
 
-    UTF_assertEqual(1, mediaModule._edgeRequestWorker._queue.count())
-    UTF_assertEqual("request_id", mediaModule._edgeRequestWorker._queue[0]["requestId"])
-    UTF_assertEqual(1, mediaModule._edgeRequestWorker._queue[0]["xdmEvents"].count())
-    cachedXDMEvent = mediaModule._edgeRequestWorker._queue[0]["xdmEvents"][0]
+    UTF_assertEqual(1, mediaModule._edgeRequestQueue._edgeRequestWorker._queue.count())
+    UTF_assertEqual("request_id", mediaModule._edgeRequestQueue._edgeRequestWorker._queue[0]["requestId"])
+    UTF_assertEqual(1, mediaModule._edgeRequestQueue._edgeRequestWorker._queue[0]["xdmEvents"].count())
+    cachedXDMEvent = mediaModule._edgeRequestQueue._edgeRequestWorker._queue[0]["xdmEvents"][0]
     UTF_assertEqual("media.ping", cachedXDMEvent["xdm"]["eventType"])
     UTF_assertFalse(_adb_isEmptyOrInvalidString(cachedXDMEvent["xdm"]["_id"]))
     UTF_assertEqual(tsObj.ts_inISO8601, cachedXDMEvent["xdm"]["timestamp"])
@@ -355,8 +361,8 @@ sub TC_adb_MediaModule_trackEventForSession()
         "sessionID": "backedn_session_id"
     }, cachedXDMEvent["xdm"]["mediaCollection"])
 
-    UTF_assertEqual(tsObj.ts_inMillis, mediaModule._edgeRequestWorker._queue[0]["timestampInMillis"])
-    UTF_assertEqual("/ee/va6/va/v1/media.ping", mediaModule._edgeRequestWorker._queue[0]["path"])
+    UTF_assertEqual(tsObj.ts_inMillis, mediaModule._edgeRequestQueue._edgeRequestWorker._queue[0]["timestampInMillis"])
+    UTF_assertEqual("/ee/va/v1/media.ping", mediaModule._edgeRequestQueue._edgeRequestWorker._queue[0]["path"])
     UTF_assertTrue(GetGlobalAA()._adb_kickRequestQueue_is_called)
     UTF_assertFalse(GetGlobalAA()._adb_processQueuedRequests_is_called)
 end sub
@@ -366,8 +372,11 @@ end sub
 sub TC_adb_MediaModule_trackEventForSession_sessionIdNotReady()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
-    mediaModule = _adb_MediaModule(configurationModule, identityModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+    mediaModule = _adb_MediaModule(configurationModule, edgeRequestQueue)
     UTF_assertTrue(_adb_isMediaModule(mediaModule))
+
     mediaModule._sessionManager.createNewSession("client_session_id")
     GetGlobalAA()._adb_kickRequestQueue_is_called = false
     mediaModule._kickRequestQueue = sub()
@@ -403,7 +412,7 @@ sub TC_adb_MediaModule_trackEventForSession_sessionIdNotReady()
         }
     }, queuedRequest["xdmData"])
     UTF_assertEqual(tsObj, queuedRequest["tsObject"])
-    UTF_assertEqual(0, mediaModule._edgeRequestWorker._queue.count())
+    UTF_assertEqual(0, mediaModule._edgeRequestQueue._edgeRequestWorker._queue.count())
     UTF_assertTrue(GetGlobalAA()._adb_kickRequestQueue_is_called)
     UTF_assertFalse(GetGlobalAA()._adb_processQueuedRequests_is_called)
 end sub
@@ -413,10 +422,13 @@ end sub
 sub TC_adb_MediaModule_trackEventForSession_sessionEnd()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
-    mediaModule = _adb_MediaModule(configurationModule, identityModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+    mediaModule = _adb_MediaModule(configurationModule, edgeRequestQueue)
     UTF_assertTrue(_adb_isMediaModule(mediaModule))
+
     mediaModule._sessionManager.createNewSession("client_session_id")
-    mediaModule._sessionManager.updateSessionIdAndGetQueuedRequests("client_session_id", "backedn_session_id", "va6")
+    mediaModule._sessionManager.updateSessionIdAndGetQueuedRequests("client_session_id", "backedn_session_id")
     GetGlobalAA()._adb_kickRequestQueue_is_called = false
     mediaModule._kickRequestQueue = sub()
         GetGlobalAA()._adb_kickRequestQueue_is_called = true
@@ -437,7 +449,7 @@ sub TC_adb_MediaModule_trackEventForSession_sessionEnd()
         }
     }, tsObj)
 
-    UTF_assertEqual(1, mediaModule._edgeRequestWorker._queue.count())
+    UTF_assertEqual(1, mediaModule._edgeRequestQueue._edgeRequestWorker._queue.count())
     UTF_assertFalse(mediaModule._sessionManager.isSessionStarted("client_session_id"))
     UTF_assertTrue(GetGlobalAA()._adb_kickRequestQueue_is_called)
     UTF_assertFalse(GetGlobalAA()._adb_processQueuedRequests_is_called)
@@ -448,8 +460,11 @@ end sub
 sub TC_adb_MediaModule_trackEventForSession_sessionNotStarted()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
-    mediaModule = _adb_MediaModule(configurationModule, identityModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+    mediaModule = _adb_MediaModule(configurationModule, edgeRequestQueue)
     UTF_assertTrue(_adb_isMediaModule(mediaModule))
+
     ' mediaModule._sessionManager.createNewSession("client_session_id")
     GetGlobalAA()._adb_kickRequestQueue_is_called = false
     mediaModule._kickRequestQueue = sub()
@@ -483,19 +498,21 @@ end sub
 sub TC_adb_MediaModule_kickRequestQueue()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
-    mediaModule = _adb_MediaModule(configurationModule, identityModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+    mediaModule = _adb_MediaModule(configurationModule, edgeRequestQueue)
     UTF_assertTrue(_adb_isMediaModule(mediaModule))
 
     mediaModule._sessionManager.createNewSession("client_session_id")
     UTF_assertTrue(mediaModule._sessionManager.isSessionStarted("client_session_id"))
 
-    GetGlobalAA()._adb_processQueuedRequests_is_called = false
-    ' The sessionStart request returns 200 with several handle events
-    mediaModule._processQueuedRequests = function() as object
-        if GetGlobalAA()._adb_processQueuedRequests_is_called
+    GetGlobalAA()._adb_processRequests_is_called = false
+    ' The sessionStart request returns 200 with several handle event
+    edgeRequestQueue.processRequests = function() as object
+        if GetGlobalAA()._adb_processRequests_is_called
             return []
         end if
-        GetGlobalAA()._adb_processQueuedRequests_is_called = true
+        GetGlobalAA()._adb_processRequests_is_called = true
         responseArray = []
         responseArray.push(_adb_EdgeResponse("client_session_id", 200, FormatJson({
             "requestId": "client_session_id",
@@ -552,7 +569,6 @@ sub TC_adb_MediaModule_kickRequestQueue()
     mediaModule._kickRequestQueue()
 
     UTF_assertEqual("bfba9a5f2986d69a9a9424f6a99702562512eb244f2b65c4f1c1553e7fe9997f", mediaModule._sessionManager.getSessionId("client_session_id"))
-    UTF_assertEqual("va6", mediaModule._sessionManager.getLocation("client_session_id"))
 end sub
 
 ' target: _kickRequestQueue()
@@ -560,7 +576,9 @@ end sub
 sub TC_adb_MediaModule_kickRequestQueue_withQueuedMediaEvents()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
-    mediaModule = _adb_MediaModule(configurationModule, identityModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+    mediaModule = _adb_MediaModule(configurationModule, edgeRequestQueue)
     UTF_assertTrue(_adb_isMediaModule(mediaModule))
 
     mediaModule._sessionManager.createNewSession("client_session_id")
@@ -574,24 +592,23 @@ sub TC_adb_MediaModule_kickRequestQueue_withQueuedMediaEvents()
     mediaModule._sessionManager.queueMediaRequest("request_id_3", "client_session_id", { xdm: { "eventType": "media.ping" } }, tsObj3)
 
     GetGlobalAA()._adb_processedMediaEvents = []
-    mediaModule._handleMediaEvent = sub(mediaEventType as string, requestId as string, sessionId as string, location as string, xdmData as object, tsObject as object)
+    mediaModule._handleMediaEvent = sub(mediaEventType as string, requestId as string, sessionId as string, xdmData as object, tsObject as object)
         list = GetGlobalAA()._adb_processedMediaEvents
         list.push({
             "mediaEventType": mediaEventType,
             "requestId": requestId,
             "sessionId": sessionId,
-            "location": location,
             "xdmData": xdmData,
             "tsObject": tsObject
         })
     end sub
-    GetGlobalAA()._adb_processQueuedRequests_is_called = false
+    GetGlobalAA()._adb_processRequests_is_called = false
     ' The sessionStart request returns 200 with several handle events
-    mediaModule._processQueuedRequests = function() as object
-        if GetGlobalAA()._adb_processQueuedRequests_is_called
+    edgeRequestQueue.processRequests = function() as object
+        if GetGlobalAA()._adb_processRequests_is_called
             return []
         end if
-        GetGlobalAA()._adb_processQueuedRequests_is_called = true
+        GetGlobalAA()._adb_processRequests_is_called = true
         responseArray = []
         responseArray.push(_adb_EdgeResponse("client_session_id", 200, FormatJson({
             "requestId": "client_session_id",
@@ -648,7 +665,6 @@ sub TC_adb_MediaModule_kickRequestQueue_withQueuedMediaEvents()
     mediaModule._kickRequestQueue()
 
     UTF_assertEqual("bfba9a5f2986d69a9a9424f6a99702562512eb244f2b65c4f1c1553e7fe9997f", mediaModule._sessionManager.getSessionId("client_session_id"))
-    UTF_assertEqual("va6", mediaModule._sessionManager.getLocation("client_session_id"))
 
     list = GetGlobalAA()._adb_processedMediaEvents
     UTF_assertEqual(3, list.count())
@@ -664,10 +680,6 @@ sub TC_adb_MediaModule_kickRequestQueue_withQueuedMediaEvents()
     UTF_assertEqual("bfba9a5f2986d69a9a9424f6a99702562512eb244f2b65c4f1c1553e7fe9997f", list[0]["sessionId"])
     UTF_assertEqual("bfba9a5f2986d69a9a9424f6a99702562512eb244f2b65c4f1c1553e7fe9997f", list[1]["sessionId"])
     UTF_assertEqual("bfba9a5f2986d69a9a9424f6a99702562512eb244f2b65c4f1c1553e7fe9997f", list[2]["sessionId"])
-
-    UTF_assertEqual("va6", list[0]["location"])
-    UTF_assertEqual("va6", list[1]["location"])
-    UTF_assertEqual("va6", list[2]["location"])
 
     UTF_assertEqual({ xdm: { "eventType": "media.ping" } }, list[0]["xdmData"])
     UTF_assertEqual({ xdm: { "eventType": "media.play" } }, list[1]["xdmData"])

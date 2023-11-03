@@ -590,11 +590,9 @@ sub TC_adb_ClientMediaSession()
     session.updateCurrentPlayhead(100)
     UTF_assertEqual(session.getCurrentPlayHead(), 100)
     session.updateCurrentPlayhead(0)
-    UTF_assertEqual(session.getCurrentPlayHead(), 100)
+    UTF_assertEqual(session.getCurrentPlayHead(), 0)
     session.updateCurrentPlayhead(-1)
-    UTF_assertEqual(session.getCurrentPlayHead(), 100)
-    session.updateCurrentPlayhead(101)
-    UTF_assertEqual(session.getCurrentPlayHead(), 101)
+    UTF_assertEqual(session.getCurrentPlayHead(), -1)
 
     'session end
     session.endSession()

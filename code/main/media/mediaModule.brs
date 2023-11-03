@@ -16,14 +16,14 @@ function _adb_isMediaModule(module as object) as boolean
     return (module <> invalid and module.type = "com.adobe.module.media")
 end function
 
-function _adb_MediaModule(configurationModule as object, identityModule as object) as object
+function _adb_MediaModule(configurationModule as object, edgeRequestQueue as object) as object
     if _adb_isConfigurationModule(configurationModule) = false then
         _adb_logError("_adb_MediaModule() - configurationModule is not valid.")
         return invalid
     end if
 
-    if _adb_isIdentityModule(identityModule) = false then
-        _adb_logError("_adb_EdgeModule() - identityModule is not valid.")
+    if _adb_isEdgeRequestQueue(edgeRequestQueue) = false then
+        _adb_logError("_adb_MediaModule() - edgeRequestQueue is not valid.")
         return invalid
     end if
 
@@ -35,8 +35,7 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
 
         ' external dependencies
         _configurationModule: configurationModule,
-        _identityModule: identityModule,
-        _edgeRequestWorker: _adb_EdgeRequestWorker(),
+        _edgeRequestQueue: edgeRequestQueue,
         _sessionManager: _adb_MediaSessionManager(),
 
         ' Event data example:
@@ -96,7 +95,7 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
             ' TODO: sanitize the xdmData object before sending to the backend.
 
             ' For sessionStart request, the clientSessionId is used as the request id, then it can be used to retrieve the corresponding response data.
-            m._edgeRequestWorker.queue(clientSessionId, [xdmData], tsObject.ts_inMillis, meta, m._CONSTANTS.MEDIA.SESSION_START_EDGE_REQUEST_PATH)
+            m._edgeRequestQueue.queueReqeust(clientSessionId, [xdmData], tsObject.ts_inMillis, meta, m._CONSTANTS.MEDIA.SESSION_START_EDGE_REQUEST_PATH)
             m._kickRequestQueue()
         end sub,
 
@@ -110,9 +109,8 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
 
             mediaEventType = xdmData.xdm.eventType
 
-            ' retrieve the session id and the location hint returned from the backend
+            ' retrieve the session id returned from the backend
             sessionId = m._sessionManager.getSessionId(clientSessionId)
-            location = m._sessionManager.getLocation(clientSessionId)
 
             if mediaEventType = m._CONSTANTS.MEDIA.SESSION_END_EVENT_TYPE
                 m._sessionManager.deleteSession(clientSessionId)
@@ -124,13 +122,13 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
                 m._kickRequestQueue()
                 return
             else
-                m._handleMediaEvent(mediaEventType, requestId, sessionId, location, xdmData, tsObject)
+                m._handleMediaEvent(mediaEventType, requestId, sessionId, xdmData, tsObject)
 
             end if
         end sub,
 
         _kickRequestQueue: sub()
-            responses = m._processQueuedRequests()
+            responses = m._edgeRequestQueue.processRequests()
             ' the responses may include sessionStart response and media event response
             for each edgeResponse in responses
                 if _adb_isEdgeResponse(edgeResponse) and not _adb_isEmptyOrInvalidString(edgeResponse.getresponsestring()) then
@@ -138,17 +136,10 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
                         responseObj = ParseJson(edgeResponse.getresponsestring())
                         requestId = responseObj.requestId
                         sessionId = ""
-                        location = ""
-                        ' udpate session id and location hint
+                        ' udpate session id
                         for each handle in responseObj.handle
                             if handle.type = "media-analytics:new-session"
                                 sessionId = handle.payload[0]["sessionId"]
-                            else if handle.type = "locationHint:result"
-                                for each payload in handle.payload
-                                    if payload["scope"] = "EdgeNetwork"
-                                        location = payload["hint"]
-                                    end if
-                                end for
                             end if
                         end for
                     catch ex
@@ -156,12 +147,11 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
                     end try
 
                     ' if the session id is not empty, update the session id and process the queued requests
-                    ' the location hint is optional, if it is empty, it will be ignored
                     if not _adb_isEmptyOrInvalidString(sessionId)
-                        queuedMediaRequests = m._sessionManager.updateSessionIdAndGetQueuedRequests(requestId, sessionId, location)
+                        queuedMediaRequests = m._sessionManager.updateSessionIdAndGetQueuedRequests(requestId, sessionId)
                         for each mediaRequest in queuedMediaRequests
                             mediaEventType = mediaRequest.xdmData.xdm.eventType
-                            m._handleMediaEvent(mediaEventType, mediaRequest.requestId, sessionId, location, mediaRequest.xdmData, mediaRequest.tsObject)
+                            m._handleMediaEvent(mediaEventType, mediaRequest.requestId, sessionId, mediaRequest.xdmData, mediaRequest.tsObject)
                         end for
                         m._kickRequestQueue()
                     end if
@@ -169,8 +159,8 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
             end for
         end sub,
 
-        _handleMediaEvent: sub(mediaEventType as string, requestId as string, sessionId as string, location as string, xdmData as object, tsObject as object)
-            path = _adb_EdgePathForEventType(mediaEventType, location, m._CONSTANTS.MEDIA.EVENT_TYPES)
+        _handleMediaEvent: sub(mediaEventType as string, requestId as string, sessionId as string, xdmData as object, tsObject as object)
+            path = "/ee/va/v1/" + mediaEventType
             if not _adb_isEmptyOrInvalidString(path)
                 xdmData.xdm["_id"] = _adb_generate_UUID()
                 xdmData.xdm["timestamp"] = tsObject.ts_inISO8601
@@ -178,69 +168,12 @@ function _adb_MediaModule(configurationModule as object, identityModule as objec
 
                 meta = {}
                 ' TODO: sanitize the xdmData object before sending to the backend.
-                m._edgeRequestWorker.queue(requestId, [xdmData], tsObject.ts_inMillis, meta, path)
+                m._edgeRequestQueue.queueReqeust(requestId, [xdmData], tsObject.ts_inMillis, meta, path)
                 m._kickRequestQueue()
             else
                 _adb_logError("_handleMediaEvent() - mediaEventName is invalid: " + mediaEventType)
             end if
         end sub,
-
-        _getEdgeConfig: function() as object
-            configId = m._configurationModule.getConfigId()
-            if _adb_isEmptyOrInvalidString(configId)
-                return invalid
-            end if
-            ecid = m._identityModule.getECID()
-            if _adb_isEmptyOrInvalidString(ecid)
-                return invalid
-            end if
-            return {
-                configId: configId,
-                ecid: ecid,
-                edgeDomain: m._configurationModule.getEdgeDomain()
-            }
-        end function,
-
-        _processQueuedRequests: function() as dynamic
-            responseEvents = []
-
-            if not m._edgeRequestWorker.hasQueuedEvent()
-                ' no requests to process
-                return responseEvents
-            end if
-
-            edgeConfig = m._getEdgeConfig()
-            if edgeConfig = invalid
-                _adb_logVerbose("_processQueuedRequests() - Cannot send network request, invalid configuration.")
-                return responseEvents
-            end if
-
-            responses = m._edgeRequestWorker.processRequests(edgeConfig.configId, edgeConfig.ecid, edgeConfig.edgeDomain)
-
-            return responses
-        end function,
-
-        dump: function() as object
-            ' TODO: update the dump info when adding the integration tests
-            return {
-                requestQueue: m._edgeRequestWorker._queue
-            }
-        end function
     })
     return module
-end function
-
-function _adb_EdgePathForEventType(mediaEventType as string, location as string, supportedTypes as object) as dynamic
-
-    if _adb_isStringInArray(mediaEventType, supportedTypes) then
-        if _adb_isEmptyOrInvalidString(location) then
-            return "/ee/va/v1/" + mediaEventType
-        else
-            return "/ee/" + location + "/va/v1/" + mediaEventType
-        end if
-    else
-        _adb_logError("_adb_EdgePathForEventType(): unsupported event type - " + mediaEventType)
-        return invalid
-    end if
-
 end function

@@ -250,7 +250,7 @@ function AdobeAEPSDKInit() as object
             _adb_logDebug("API: createMediaSession()")
 
             if m._private.mediaSession.isActive()
-                _adb_logError("createMediaSession() - The previous media session is not ended correctly, try to end it now.")
+                _adb_logWarning("createMediaSession() - Ending the previous session before starting a new one.")
 
                 position = m._private.mediaSession.getCurrentPlayHead()
                 m.sendMediaEvent({
@@ -390,9 +390,7 @@ function _adb_ClientMediaSession() as object
         end function,
 
         updateCurrentPlayhead: sub(playHead as integer)
-            if playHead > m._currentPlayHead%
-                m._currentPlayHead% = playHead
-            end if
+            m._currentPlayHead% = playHead
         end sub,
 
         getClientSessionId: function() as string

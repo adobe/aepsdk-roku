@@ -30,7 +30,6 @@ function _adb_MediaSessionManager() as object
             end if
             m._map[clientSessionId] = {
                 sessionId: invalid,
-                location: invalid,
                 queue: [],
                 lastActiveTS: invalid,
                 mainPingInterval: mainPingInterval,
@@ -66,10 +65,9 @@ function _adb_MediaSessionManager() as object
             return []
         end function,
 
-        updateSessionIdAndGetQueuedRequests: function(clientSessionId as string, sessionId as string, location as string) as object
+        updateSessionIdAndGetQueuedRequests: function(clientSessionId as string, sessionId as string) as object
             if m._map.DoesExist(clientSessionId)
                 m._map[clientSessionId].sessionId = sessionId
-                m._map[clientSessionId].location = location
                 queuedRequests = m._map[clientSessionId].queue
                 ' clean the queued requests
                 m._map[clientSessionId].queue = []
@@ -77,14 +75,6 @@ function _adb_MediaSessionManager() as object
             end if
             _adb_logError("updateSessionIdAndGetQueuedRequests() - clientSessionId is invalid.")
             return []
-        end function,
-
-        getLocation: function(clientSessionId as string) as string
-            session = m._map.Lookup(clientSessionId)
-            if session = invalid or session.location = invalid
-                return ""
-            end if
-            return session.location
         end function,
 
         isSessionStarted: function(clientSessionId as string) as boolean

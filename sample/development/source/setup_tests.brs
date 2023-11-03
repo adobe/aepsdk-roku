@@ -132,7 +132,6 @@ function _adb_test_functions() as dynamic
         TC_adb_isValidMediaXDMData
         TC_adb_isValidMediaXDMData_invalid
         ' test_mediaModule.brs
-        TC_adb_EdgePathForEventType
         TC_adb_MediaModule_init
         TC_adb_MediaModule_processEvent_startSession
         TC_adb_MediaModule_processEvent_trackEventForSession

@@ -26,7 +26,7 @@ function _adb_EventProcessor(task as object) as object
             m._configurationModule = _adb_ConfigurationModule()
             m._identityModule = _adb_IdentityModule(m._configurationModule)
             m._edgeModule = _adb_EdgeModule(m._configurationModule, m._identityModule)
-            m._mediaModule = _adb_MediaModule(m._configurationModule, m._identityModule)
+            m._mediaModule = _adb_MediaModule(m._configurationModule, m._edgeModule.createEdgeRequestQueue("MediaRequestQueue"))
 
             ' enable debug mode if needed
             if m._isInDebugMode()
