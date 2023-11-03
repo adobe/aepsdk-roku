@@ -35,12 +35,12 @@
         handleQueueEvent: sub(requestId as string, xdmData as object, tsObject as object)
         end sub,
 
-        handleSessionEnd: sub(sessionId as string)
+        handleSessionEnd: sub()
         ' Handle session end
         ' Dispatch all the hits before closing and deleting the internal session
         end sub,
 
-        handleSessionUpdate: function(sessionId as string, backendSessionId as string)
+        handleSessionUpdate: function(backendSessionId as string)
         ' Handle backned session ID and append to all the low level media events
         end function,
 
