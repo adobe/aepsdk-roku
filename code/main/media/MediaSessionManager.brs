@@ -31,24 +31,24 @@
         end sub,
 
         endSession: sub(isAbort as boolean = false)
-        ' Handle session end
-        ' Dispatch all the hits before closing and deleting the internal session
+            ' Handle session end
+            ' Dispatch all the hits before closing and deleting the internal session
 
             _inactiveSessionMap.(_currSession.id, _currSession)
         end sub,
 
         updateBackendSessionId: sub(backendSessionId as string)
-        ' Handle backend session ID and append to all the low level media events
+            ' Handle backend session ID and append to all the low level media events
         end sub,
 
-        notifyError: sub(error as string)
-        ' Handle error
+        notifyError: sub(requestId as string, error as string)
+            ' Handle error
         end sub,
 
         _checkOldSessionsForPendingHits: sub()
-        ' Check for old sessions and dispatch pending hits
-        ' iterate over all the sessions in the session map and check if all the hits are dispatched
-        ' if the session is not active and hit queue is empty, delete the session
+            ' Check for old sessions and dispatch pending hits
+            ' iterate over all the sessions in the session map and check if all the hits are dispatched
+            ' if the session is not active and hit queue is empty, delete the session
         end sub,
      }
  end function

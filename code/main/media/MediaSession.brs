@@ -26,6 +26,7 @@
         _lastEventTS: -1,
         _lastEventType: invalid,
         _hitProcessor: hitProcessor,
+        _sessionStartRequestId: invalid,
 
         start: sub()
             ' Start the session
@@ -37,32 +38,38 @@
             ' Check if session is idle or long running
         end sub,
 
-        handleSessionEnd: sub()
-        ' Handle session end
-        ' Dispatch all the hits before closing and deleting the internal session
+        handleSessionEnd: sub(isAbort as boolean = false)
+            ' Handle session end
+            ' Dispatch all the hits before closing and deleting the internal session
             _isActive = false
+            ' if isAbort is set we drop the hits in the queue
         end sub,
 
-        handleSessionUpdate: function(backendSessionId as string)
-        ' Handle backned session ID and append to all the low level media events
+        handleSessionUpdate: sub(backendSessionId as string)
+            ' Handle backned session ID and append to all the low level media events
             _backendSessionId = backendSessionId
         end function,
 
+        handleError: sub(requestId as string, error as object)
+            ' Handle error
+            ' Drop the hits and mark session inactive if error with sessionStart
+        end sub,
+
         _processQueue: sub()
-        ' Process the queue and send the hits to edgeWorker
+            ' Process the queue and send the hits to edgeWorker
         end sub,
 
         _isIdle: sub() as boolean
-        ' Check if the session is idle for >= 30 minutes
+            ' Check if the session is idle for >= 30 minutes
         end sub,
 
         _isLongRunningSession: sub() as boolean
-        ' Check if the session is long running >= 24 hours
+            ' Check if the session is long running >= 24 hours
         end sub,
 
         _getPingInterval: sub(isAd as boolean = false) as integer
-        ' Get the ping interval for the event type
-        ' Calculate ping interval based on config and isAd flag
+            ' Get the ping interval for the event type
+            ' Calculate ping interval based on config and isAd flag
         end sub,
      }
  end function
