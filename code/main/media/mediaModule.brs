@@ -95,7 +95,7 @@ function _adb_MediaModule(configurationModule as object, edgeRequestQueue as obj
             ' TODO: sanitize the xdmData object before sending to the backend.
 
             ' For sessionStart request, the clientSessionId is used as the request id, then it can be used to retrieve the corresponding response data.
-            m._edgeRequestQueue.queueReqeust(clientSessionId, [xdmData], tsObject.ts_inMillis, meta, m._CONSTANTS.MEDIA.SESSION_START_EDGE_REQUEST_PATH)
+            m._edgeRequestQueue.add(clientSessionId, [xdmData], tsObject.ts_inMillis, meta, m._CONSTANTS.MEDIA.SESSION_START_EDGE_REQUEST_PATH)
             m._kickRequestQueue()
         end sub,
 
@@ -168,7 +168,7 @@ function _adb_MediaModule(configurationModule as object, edgeRequestQueue as obj
 
                 meta = {}
                 ' TODO: sanitize the xdmData object before sending to the backend.
-                m._edgeRequestQueue.queueReqeust(requestId, [xdmData], tsObject.ts_inMillis, meta, path)
+                m._edgeRequestQueue.add(requestId, [xdmData], tsObject.ts_inMillis, meta, path)
                 m._kickRequestQueue()
             else
                 _adb_logError("_handleMediaEvent() - mediaEventName is invalid: " + mediaEventType)

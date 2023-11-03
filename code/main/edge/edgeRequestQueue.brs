@@ -28,7 +28,7 @@ function _adb_edgeRequestQueue(name as string, edgeModule as object) as object
         _edgeRequestWorker: _adb_EdgeRequestWorker(),
         _edgeModule: edgeModule,
 
-        queueReqeust: sub(requestId as string, xdmEvents as object, timestampInMillis as longinteger, meta as object, path as string)
+        add: sub(requestId as string, xdmEvents as object, timestampInMillis as longinteger, meta as object, path as string)
             m._edgeRequestWorker.queue(requestId, xdmEvents, timestampInMillis, meta, path)
         end sub,
 
