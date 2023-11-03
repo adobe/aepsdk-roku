@@ -42,9 +42,11 @@ function _adb_test_functions() as dynamic
         'test_string.brs
         TC_adb_isEmptyOrInvalidString
         TC_adb_isStringEndsWith
+        TC_adb_isStringInArray
         'test_datetime.brs
         TC_adb_timestampInMillis
         TC_adb_ISO8601_timestamp
+        TC_adb_TimestampObject
         ' test_log.brs
         TS_logUtils_SetUp
         TS_logUtils_BeforeEach
@@ -122,6 +124,28 @@ function _adb_test_functions() as dynamic
         TC_adb_EdgeModule_processEvent
         TC_adb_EdgeModule_processQueuedRequests
     ]
+    media = [
+        'test_mediaUtils.brs
+        TC_adb_extractPlayheadFromMediaXDMData
+        TC_adb_extractPlayheadFromMediaXDMData_invalid
+        TC_adb_extractPlayheadFromMediaXDMData_invalidType
+        TC_adb_isValidMediaXDMData
+        TC_adb_isValidMediaXDMData_invalid
+        ' test_mediaModule.brs
+        TC_adb_MediaModule_init
+        TC_adb_MediaModule_processEvent_startSession
+        TC_adb_MediaModule_processEvent_trackEventForSession
+        TC_adb_MediaModule_processEvent_invalid
+        TC_mediaConfigIsNotReady
+        TC_adb_MediaModule_startSession_withoutSessionConfig
+        TC_adb_MediaModule_startSession_invalidConfig
+        TC_adb_MediaModule_trackEventForSession
+        TC_adb_MediaModule_trackEventForSession_sessionIdNotReady
+        TC_adb_MediaModule_trackEventForSession_sessionEnd
+        TC_adb_MediaModule_trackEventForSession_sessionNotStarted
+        TC_adb_MediaModule_kickRequestQueue
+        TC_adb_MediaModule_kickRequestQueue_withQueuedMediaEvents
+    ]
     initSDK = [
         'test_AdobeAEPSDKInit.brs
         TS_AdobeAEPSDKInit_SetUp
@@ -144,6 +168,15 @@ function _adb_test_functions() as dynamic
         TC_APIs_sendEventWithCallback
         TC_APIs_sendEventWithCallback_timeout
         TC_APIs_setExperienceCloudId
+        TC_APIs_createMediaSession
+        TC_APIs_createMediaSession_withConfiguration
+        TC_APIs_createMediaSession_invalidXDMData
+        TC_APIs_createMediaSession_endPrevisouSession
+        TC_APIs_sendMediaEvent
+        TC_APIs_sendMediaEvent_invalidXDMData
+        TC_APIs_sendMediaEvent_invalidSession
+        TC_APIs_sendMediaEvent_sessionEnd
+        TC_adb_ClientMediaSession
     ]
     task = [
         'test_eventProcessor.brs
@@ -152,6 +185,10 @@ function _adb_test_functions() as dynamic
         TC_adb_eventProcessor_handleEvent_resetIdentities
         TC_adb_eventProcessor_handleEvent_setConfiguration
         TC_adb_eventProcessor_handleEvent_setECID
+        TC_adb_eventProcessor_handleEvent_handleMediaEvents
+        TC_adb_eventProcessor_handleEvent_handleMediaEvents_invalid
+        TC_adb_eventProcessor_handleCreateMediaSession
+        TC_adb_eventProcessor_handleCreateMediaSession_invalid
         TC_adb_eventProcessor_hasXDMData
         TC_adb_eventProcessor_handleEvent_sendEvent
         TC_adb_eventProcessor_sendResponseEvent
@@ -165,6 +202,7 @@ function _adb_test_functions() as dynamic
     functionList.Append(services)
     functionList.Append(core)
     functionList.Append(edge)
+    functionList.Append(media)
     functionList.Append(initSDK)
     functionList.Append(api)
     functionList.Append(task)

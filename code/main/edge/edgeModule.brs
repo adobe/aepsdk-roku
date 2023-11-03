@@ -40,6 +40,10 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
             return m.processQueuedRequests()
         end function,
 
+        createEdgeRequestQueue: function(name as string) as object
+            return _adb_edgeRequestQueue(name, m)
+        end function,
+
         _getEdgeConfig: function() as object
             configId = m._configurationModule.getConfigId()
             if _adb_isEmptyOrInvalidString(configId)
@@ -56,7 +60,7 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
             }
         end function,
 
-        processQueuedRequests: function() as dynamic
+        processQueuedRequests: function() as object
             responseEvents = []
 
             if not m._edgeRequestWorker.hasQueuedEvent()
