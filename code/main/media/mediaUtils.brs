@@ -34,3 +34,10 @@ function _adb_extractPlayheadFromMediaXDMData(xdmData as object) as integer
     end if
     return xdmData.xdm["mediaCollection"]["playhead"]
 end function
+
+function _adb_containsPlayheadValue(xdmData as object) as boolean
+    if _adb_isEmptyOrInvalidMap(xdmData) or _adb_isEmptyOrInvalidMap(xdmData.xdm) or _adb_isEmptyOrInvalidMap(xdmData.xdm["mediaCollection"]) or xdmData.xdm["mediaCollection"]["playhead"] = invalid
+        return false
+    end if
+    return true
+end function

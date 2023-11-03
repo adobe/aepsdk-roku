@@ -303,8 +303,12 @@ function AdobeAEPSDKInit() as object
             end if
 
             sessionId = m._private.mediaSession.getClientSessionId()
-            playhead = _adb_extractPlayheadFromMediaXDMData(xdmData)
-            m._private.mediaSession.updateCurrentPlayhead(playhead)
+
+            if _adb_containsPlayheadValue(xdmData)
+                playhead = _adb_extractPlayheadFromMediaXDMData(xdmData)
+                m._private.mediaSession.updateCurrentPlayhead(playhead)
+            end if
+
             data = {
                 clientSessionId: sessionId,
                 tsObject: _adb_TimestampObject(),
