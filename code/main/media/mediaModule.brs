@@ -64,16 +64,19 @@ function _adb_MediaModule(configurationModule as object, edgeRequestQueue as obj
             end if
         end sub,
 
-        _mediaConfigIsNotReady: function() as boolean
+        _isMediaConfigReady: function() as boolean
             ' appVersion is optional for sessionStart request
-            return _adb_isEmptyOrInvalidString(m._configurationModule.getMediaChannel()) or _adb_isEmptyOrInvalidString(m._configurationModule.getMediaPlayerName())
+            if _adb_isEmptyOrInvalidString(m._configurationModule.getMediaChannel()) or _adb_isEmptyOrInvalidString(m._configurationModule.getMediaPlayerName())
+                return false
+            end if
+            return true
         end function,
 
         _startSession: sub(clientSessionId as string, sessionConfig as object, xdmData as object, tsObject as object)
             ' TODO: validate and sanitize the sessionConfig
             ' TODO: the session-level config should be merged with the global config, before the validation
 
-            if m._mediaConfigIsNotReady() then
+            if not m._isMediaConfigReady() then
                 _adb_logError("_startSession() - the media session is not created/started properly (missing the channel name or the player name).")
                 return
             end if
