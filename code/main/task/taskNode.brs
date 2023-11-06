@@ -16,6 +16,7 @@
 function _adb_createTaskNode() as void
     if GetGlobalAA()._adb_main_task_node = invalid
         sdkThread = CreateObject("roSGNode", "AEPSDKTask")
+        sdkThread.id = "adobeTaskNode"
         GetGlobalAA()._adb_main_task_node = sdkThread
     end if
 end function

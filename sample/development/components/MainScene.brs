@@ -35,7 +35,9 @@ sub _initSDK()
   m.aepSdk = AdobeAEPSDKInit()
   print "Adobe SDK version : " + m.aepSdk.getVersion()
   m.adobeTaskNode = m.aepSdk.getTaskNode()
-  m.adobeTaskNode.id = "adobeTaskNode"
+  ' The task node has a default id => "adobeTaskNode"
+  ' If you want to set it to anther value, you can enalbe the below code
+  ' m.adobeTaskNode.id = "customized_adobe_task_node_id"
   m.top.appendChild(m.adobeTaskNode)
 
   ADB_CONSTANTS = AdobeAEPSDKConstants()

@@ -54,10 +54,10 @@ end function
 ' To make this task node instance accessible in other components, appending it
 ' to the scene node is recommended.
 '
-' adobeTaskNode.id = "adobeTaskNode"
 ' m.top.appendChild(adobeTaskNode)
 '
-' Then retrieve and use it to create a new SDK instance in other components.
+' The task node's ID by default set to "adobeTaskNode".
+' Then, retrieve it by ID and use it to create a new SDK instance in other components.
 '
 ' adobeTaskNode = m.top.getScene().findNode("adobeTaskNode")
 ' sdkInstance = AdobeAEPSDKInit(adobeTaskNode)
