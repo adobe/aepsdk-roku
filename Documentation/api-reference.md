@@ -15,16 +15,41 @@ This document lists the APIs provided by AEP Roku SDK, along with code samples f
 
 ### AdobeAEPSDKInit
 
-Initialize the AEP Roku SDK and return the public API instance. `*` The following variables are reserved to hold the SDK instances in GetGlobalAA():
+The AEP task node performs the core logic of the SDK. If the task node instance is not provided, calling this function will create a new AEP task node instance and yield an SDK API instance.
+Then, the "getTaskNode" fucntion can be called via the API instance to retrieve the task node instance.
 
-- `GetGlobalAA()._adb_public_api`
-- `GetGlobalAA()._adb_main_task_node`
-- `GetGlobalAA()._adb_serviceProvider_instance`
+For example:
+```brightscript
+sdkInstance = AdobeAEPSDKInit()
+adobeTaskNode = sdkInstance.getTaskNode()
+```
+
+Storing the task node instance in the Scene node is recommended.
+
+For example:
+```brightscript
+adobeTaskNode.id = "adobeTaskNode"
+m.top.appendChild(adobeTaskNode)
+```
+
+The task node instance can then be retieved and utilized to initialize a new API instance in other SceneGraph components.
+
+For example:
+```brightscript
+adobeTaskNode = m.top.getScene().findNode("adobeTaskNode")
+sdkInstance = AdobeAEPSDKInit(adobeTaskNode)
+```
+
+> **Note**
+> The following variables are reserved to hold the SDK instances in GetGlobalAA():
+>- `GetGlobalAA()._adb_public_api`
+>- `GetGlobalAA()._adb_main_task_node`
+>- `GetGlobalAA()._adb_serviceProvider_instance`
 
 ##### Syntax
 
 ```brightscript
-function AdobeAEPSDKInit() as object
+function AdobeAEPSDKInit(taskNode = invalid as dynamic) as object
 ```
 
 - `@return instance as object : public API instance`
