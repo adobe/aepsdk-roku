@@ -579,12 +579,12 @@ sub TC_adb_ClientMediaSession()
     UTF_assertEqual(session.getCurrentPlayHead(), 0)
 
     'session start & get session id
-    sessionId = session.startNewSession()
+    sessionId = session.startNewSession(-1)
     UTF_assertTrue(session.isActive())
     UTF_assertEqual(session.getClientSessionId(), sessionId)
     UTF_assertTrue(not _adb_isEmptyOrInvalidString(sessionId))
     UTF_assertTrue(sessionId.len() > 0)
-    UTF_assertEqual(session.getCurrentPlayHead(), 0)
+    UTF_assertEqual(session.getCurrentPlayHead(), -1)
 
     ' update/get playhead
     session.updateCurrentPlayhead(100)

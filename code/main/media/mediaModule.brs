@@ -92,7 +92,7 @@ function _adb_MediaModule(configurationModule as object, edgeRequestQueue as obj
             end if
 
             meta = {}
-            ' TODO: sanitize the xdmData object before sending to the backend.
+            xdmData = _adb_sanitizeXDMData(xdmData)
 
             ' For sessionStart request, the clientSessionId is used as the request id, then it can be used to retrieve the corresponding response data.
             m._edgeRequestQueue.add(clientSessionId, [xdmData], tsObject.ts_inMillis, meta, m._CONSTANTS.MEDIA.SESSION_START_EDGE_REQUEST_PATH)
@@ -167,7 +167,7 @@ function _adb_MediaModule(configurationModule as object, edgeRequestQueue as obj
                 xdmData.xdm["mediaCollection"]["sessionID"] = sessionId
 
                 meta = {}
-                ' TODO: sanitize the xdmData object before sending to the backend.
+                xdmData = _adb_sanitizeXDMData(xdmData)
                 m._edgeRequestQueue.add(requestId, [xdmData], tsObject.ts_inMillis, meta, path)
                 m._kickRequestQueue()
             else
@@ -176,4 +176,15 @@ function _adb_MediaModule(configurationModule as object, edgeRequestQueue as obj
         end sub,
     })
     return module
+end function
+
+function _adb_sanitizeXDMData(xdmData as object) as object
+    if xdmData <> invalid
+        for each key in xdmData.keys()
+            if key <> "xdm"
+                xdmData.Delete(key)
+            end if
+        end for
+    end if
+    return xdmData
 end function

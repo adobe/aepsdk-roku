@@ -267,8 +267,11 @@ function AdobeAEPSDKInit() as object
                 _adb_logError("createMediaSession() - Cannot create media session, invalid XDM data")
                 return
             end if
-
-            sessionId = m._private.mediaSession.startNewSession()
+            playhead = 0
+            if _adb_containsPlayheadValue(xdmData)
+                playhead = _adb_extractPlayheadFromMediaXDMData(xdmData)
+            end if
+            sessionId = m._private.mediaSession.startNewSession(playhead)
 
             data = {
                 clientSessionId: sessionId,
@@ -370,10 +373,11 @@ function _adb_ClientMediaSession() as object
         _clientSessionId: "",
         _currentPlayHead%: 0,
 
-        ' TODO: the session start event may include the playhead value, we need to extract it and update the current playhead
-        startNewSession: function() as string
+        ' TODO: The playhead value in XDM is an integer type. if it allows int-64, we should change the type to longInteger.
+        startNewSession: function(playhead as integer) as string
             m._resetSession()
             m._clientSessionId = _adb_generate_UUID()
+            m.updateCurrentPlayhead(playhead)
             return m._clientSessionId
         end function,
 
