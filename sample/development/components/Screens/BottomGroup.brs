@@ -22,10 +22,6 @@ sub _initSDK()
 
 end sub
 
-sub destroy()
-    m.aepSdk.destroy()
-end sub
-
 sub onButtonSelected()
     m.aepSdk.sendEvent({
         "eventType": "commerce.orderPlaced",

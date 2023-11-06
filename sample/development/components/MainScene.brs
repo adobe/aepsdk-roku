@@ -132,7 +132,6 @@ sub onButtonSelected()
 
     if m.newScreen <> invalid
       m.top.removeChild(m.newScreen)
-      m.newScreen.callFunc("destroy")
       m.newScreen = invalid
     end if
     m.newScreen = createObject("roSGNode", "TestScreen")

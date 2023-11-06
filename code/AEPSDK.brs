@@ -42,26 +42,23 @@ end function
 
 ' *****************************************************************************
 '
-' The AEP task node performs the core logic of the SDK.
-' If the task node instance is not provided, calling this function will create a
-' new AEP task node instance and yield an SDK API instance.
-' Then, the "getTaskNode" fucntion can be called via the API instance to retrieve
-' the task node instance.
+' The AEP task node performs the core logic of the SDK. Typically, a Roku project
+' maintains only one instance of the AEP task node.
+' It's recommended to first call this function without passing an argument within
+' the scene script. It initializes a new AEP task node and creates an associated
+' SDK instance. Then, the task node instance can be retrieved via the getTaskNode() API.
 '
-' For example:
 ' sdkInstance = AdobeAEPSDKInit()
 ' adobeTaskNode = sdkInstance.getTaskNode()
 '
-' Storing the task node instance in the Scene node is recommended.
+' To make this task node instance accessible in other components, appending it
+' to the scene node is recommended.
 '
-' For example:
 ' adobeTaskNode.id = "adobeTaskNode"
 ' m.top.appendChild(adobeTaskNode)
 '
-' The task node instance can then be retieved and utilized to initialize a new
-' API instance in other SceneGraph components.
+' Then retrieve and use it to create a new SDK instance in other components.
 '
-' For example:
 ' adobeTaskNode = m.top.getScene().findNode("adobeTaskNode")
 ' sdkInstance = AdobeAEPSDKInit(adobeTaskNode)
 '
@@ -71,7 +68,7 @@ end function
 '   - GetGlobalAA()._adb_serviceProvider_instance
 '
 ' @param [optional] taskNode as object   : the AEP task node instance
-' @return instance as object             : the public API instance
+' @return instance as object             : the SDK instance
 '
 ' *****************************************************************************
 
@@ -358,16 +355,6 @@ function AdobeAEPSDKInit(taskNode = invalid as dynamic) as object
         getTaskNode: function() as object
             taskNode = _adb_retrieveTaskNode()
             return taskNode
-        end function,
-
-        ' TODO: discuss if it's required
-        destroy: function() as void
-            taskNode = _adb_retrieveTaskNode()
-            if taskNode <> invalid
-                taskNode.unobserveFieldScoped("responseEvent")
-            end if
-            GetGlobalAA()._adb_public_api = invalid
-            GetGlobalAA()._adb_main_task_node = invalid
         end function,
 
         ' ********************************

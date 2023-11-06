@@ -2,9 +2,6 @@
 
 
 <component name="BottomGroup" extends="Group">
-<interface>
-    <function name="destroy" />
-</interface>
 
   <children>
     <Group>
