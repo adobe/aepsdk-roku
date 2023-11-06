@@ -42,17 +42,37 @@ end function
 
 ' *****************************************************************************
 '
-' Initialize the Adobe SDK and return the public API instance.
-' The following variables are reserved to hold SDK instances in GetGlobalAA():
+' The AEP task node performs the core logic of the SDK. Typically, a Roku project
+' maintains only one instance of the AEP task node.
+' It's recommended to first call this function without passing an argument within
+' the scene script. It initializes a new AEP task node and creates an associated
+' SDK instance. Then, the task node instance can be retrieved via the getTaskNode() API.
+'
+' sdkInstance = AdobeAEPSDKInit()
+' adobeTaskNode = sdkInstance.getTaskNode()
+'
+' To make this task node instance accessible in other components, appending it
+' to the scene node is recommended.
+'
+' m.top.appendChild(adobeTaskNode)
+'
+' The task node's ID by default set to "adobeTaskNode".
+' Then, retrieve it by ID and use it to create a new SDK instance in other components.
+'
+' adobeTaskNode = m.top.getScene().findNode("adobeTaskNode")
+' sdkInstance = AdobeAEPSDKInit(adobeTaskNode)
+'
+' Note: the following variables are reserved to hold SDK instances in GetGlobalAA():
 '   - GetGlobalAA()._adb_public_api
 '   - GetGlobalAA()._adb_main_task_node
 '   - GetGlobalAA()._adb_serviceProvider_instance
 '
-' @return instance as object : public API instance
+' @param [optional] taskNode as object   : the AEP task node instance
+' @return instance as object             : the SDK instance
 '
 ' *****************************************************************************
 
-function AdobeAEPSDKInit() as object
+function AdobeAEPSDKInit(taskNode = invalid as dynamic) as object
 
     if GetGlobalAA()._adb_public_api <> invalid then
         _adb_logInfo("AdobeAEPSDKInit() - Unable to initialize a new SDK instance as there is an existing active instance. Call shutdown() API for existing instance before initializing a new one.")
@@ -61,8 +81,18 @@ function AdobeAEPSDKInit() as object
 
     _adb_logDebug("AdobeAEPSDKInit() - Initializing the SDK.")
 
-    ' create the SDK thread
-    _adb_createTaskNode()
+    if taskNode <> invalid and (not _adb_isAEPTaskNode(taskNode)) then
+        _adb_logError("AdobeAEPSDKInit() - the given input is not the AEP task node instance.")
+        return invalid
+    end if
+
+    if taskNode = invalid then
+        ' create a new task node
+        _adb_createTaskNode()
+    else
+        ' store the task node
+        _adb_storeTaskNode(taskNode)
+    end if
 
     if _adb_retrieveTaskNode() = invalid then
         _adb_logDebug("AdobeAEPSDKInit() - Failed to initialize the SDK, task node is invalid.")
@@ -322,6 +352,11 @@ function AdobeAEPSDKInit() as object
             end if
         end function,
 
+        getTaskNode: function() as object
+            taskNode = _adb_retrieveTaskNode()
+            return taskNode
+        end function,
+
         ' ********************************
         ' Add private memebers below
         ' ********************************
@@ -445,4 +480,3 @@ function _adb_handleResponseEvent() as void
     end if
 end function
 ' *********************************************
-
