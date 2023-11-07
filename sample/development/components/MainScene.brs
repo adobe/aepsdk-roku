@@ -12,15 +12,29 @@
 ' *****************************************************************************************
 
 sub init()
-  m.ButtonGroup = m.top.findNode("ButtonGroup")
   m.Warning = m.top.findNode("WarningDialog")
-  setContent()
+
+  m.ButtonGroup = m.top.findNode("ButtonGroup")
+  Buttons = ["SendEventWithCallback", "Shutdown", "NewScreen(API)", "MediaTracking"]
+  m.ButtonGroup.buttons = Buttons
   m.ButtonGroup.setFocus(true)
   m.ButtonGroup.observeField("buttonSelected", "onButtonSelected")
+
   m.timer = m.top.findNode("MainTimer")
   m.timer.control = "start"
   m.timer.ObserveField("fire", "timerExecutor")
+
+  m.videoTimer = m.top.findNode("VideoTimer")
+  m.videoTimer.control = "none"
+  m.videoTimer.ObserveField("fire", "videoTimerExecutor")
+
+  m.video = m.top.findNode("Video")
+  m.video.content = _createContentNode()
+  m.video.observeField("state", "onVideoPlayerStateChange")
+
   m.test_shutdown = false
+
+  m.video_position = 0
 
   _initSDK()
 end sub
@@ -144,16 +158,35 @@ sub onButtonSelected()
     m.newScreen.setFocus(true)
     ' m.top.findNode("NewScreen").visible = true
 
+  else if m.ButtonGroup.buttonSelected = 3
+    'MediaScreen button pressed
+    _showVideoScreen()
   else
   end if
 end sub
 
-'Set your information here
-sub setContent()
+sub _showVideoScreen()
+  m.video.visible = "true"
+  m.video.control = "play"
+  m.video.setFocus(true)
+  m.video_position = 0
 
-  'Change the buttons
-  Buttons = ["SendEventWithCallback", "Shutdown", "NewScreen"]
-  m.ButtonGroup.buttons = Buttons
+  m.aepSdk.createMediaSession({
+    "xdm": {
+      "eventType": "media.sessionStart"
+      "mediaCollection": {
+        "playhead": 0,
+        "sessionDetails": {
+          "streamType": "video",
+          "friendlyName": "test_media_name",
+          "hasResume": false,
+          "name": "test_media_id",
+          "length": 100,
+          "contentType": "vod"
+        }
+      }
+    }
+  })
 
 end sub
 
@@ -167,9 +200,14 @@ function onKeyEvent(key as string, press as boolean) as boolean
         m.Warning.visible = false
         m.ButtonGroup.setFocus(true)
         return true
-      else if m.newScreen.visible
+      else if m.newScreen <> invalid and m.newScreen.visible
         m.newScreen.visible = false
         m.ButtonGroup.visible = true
+        m.ButtonGroup.setFocus(true)
+        return true
+      else if m.video.visible
+        m.video.control = "stop"
+        m.video.visible = false
         m.ButtonGroup.setFocus(true)
         return true
       else
@@ -233,4 +271,105 @@ sub timerExecutor()
   end if
 
   m.test_shutdown = false
+end sub
+
+function _createContentNode() as object
+  contentNode = CreateObject("roSGNode", "ContentNode")
+  contentNode.streamFormat = "mp4"
+  contentNode.url = "http://video.ted.com/talks/podcast/DanGilbert_2004_480.mp4"
+  contentNode.ShortDescriptionLine1 = "Can we create new life out of our digital universe?"
+  contentNode.Description = "He walks the TED2008 audience through his latest research into fourth-generation fuels -- biologically created fuels with CO2 as their feedstock. His talk covers the details of creating brand-new chromosomes using digital technology, the reasons why we would want to do this, and the bioethics of synthetic life. A fascinating Q and A with TED's Chris Anderson follows."
+  contentNode.StarRating = 80
+  contentNode.Length = 1972
+  contentNode.Title = "Craig Venter asks, Can we create new life out of our digital universe?"
+  return contentNode
+end function
+
+sub onVideoPlayerStateChange()
+  position = m.video_position
+  if m.video.state = "error"
+    m.aepSdk.sendMediaEvent({
+      "xdm": {
+        "eventType": "media.error",
+        "mediaCollection": {
+          "playhead": position,
+          "qoeDataDetails": {
+            "bitrate": 35000,
+            "droppedFrames": 30
+          },
+          "errorDetails": {
+            "name": "test-buffer-start",
+            "source": "player"
+          }
+        }
+      }
+    })
+  else if m.video.state = "buffering"
+    m.aepSdk.sendMediaEvent({
+      "xdm": {
+        "eventType": "media.bufferStart",
+        "mediaCollection": {
+          "playhead": position,
+        }
+      }
+    })
+
+  else if m.video.state = "playing"
+    m.aepSdk.sendMediaEvent({
+      "xdm": {
+        "eventType": "media.play",
+        "mediaCollection": {
+          "playhead": position,
+        }
+      }
+    })
+    m.videoTimer.control = "start"
+  else if m.video.state = "stopped"
+    m.aepSdk.sendMediaEvent({
+      "xdm": {
+        "eventType": "media.sessionEnd",
+        "mediaCollection": {
+          "playhead": position,
+        }
+      }
+    })
+    m.videoTimer.control = "stop"
+  else if m.video.state = "finished"
+    m.aepSdk.sendMediaEvent({
+      "xdm": {
+        "eventType": "media.sessionComplete",
+        "mediaCollection": {
+          "playhead": position,
+        }
+      }
+    })
+  else if m.video.state = "paused"
+    ' m.aepSdk.mediaTrackPause()
+    m.aepSdk.sendMediaEvent({
+      "xdm": {
+        "eventType": "media.pauseStart",
+        "mediaCollection": {
+          "playhead": position,
+        }
+      }
+    })
+  else
+    print "onVideoPlayerStateChange: " + m.video.state
+  end if
+end sub
+
+sub videoTimerExecutor()
+  print "===================="
+  print "Video timer started to fire a ping event on video position : " m.video.position
+  ' m.aepSdk.mediaUpdatePlayhead(m.video.position)
+  position = m.video_position
+  m.aepSdk.sendMediaEvent({
+    "xdm": {
+      "eventType": "media.ping",
+      "mediaCollection": {
+        "playhead": position,
+      }
+    }
+  })
+  m.video_position = m.video.position
 end sub

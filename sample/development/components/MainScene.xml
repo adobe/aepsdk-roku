@@ -26,6 +26,20 @@ governing permissions and limitations under the License.-->
       duration="2"
     />
 
+    <Timer
+      id="VideoTimer"
+      repeat="true"
+      duration="1"
+    />
+
+    <Video
+      id="Video"
+      width="1920"
+      height="1080"
+      translation="[0,0]"
+      notificationInterval="1"
+      visible="false"/>
+
   </children>
 
   <script type="text/brightscript" uri="pkg:/components/MainScene.brs"/>
