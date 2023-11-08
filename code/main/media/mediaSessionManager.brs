@@ -13,96 +13,59 @@
 
 ' ***************************** MODULE: MediaSessionManager *******************************
 
-function _adb_MediaSessionManager() as object
-    return {
-        _map: {},
-        _SESSION_IDLE_THRESHOLD_SEC: 10 * 60, ' 10 minutes
-        _DEFAULT_PING_INTERVAL_SEC: 10, ' 10 seconds
+ function _adb_MediaSessionManager() as object
+     return {
+        _inactiveSessionMap: {},
+        _currSession: invalid,
 
-        createNewSession: sub(clientSessionId as string, mainPingInterval = m._DEFAULT_PING_INTERVAL_SEC as integer, adPingInternal = m._DEFAULT_PING_INTERVAL_SEC as integer)
-            if _adb_isEmptyOrInvalidString(clientSessionId)
-                _adb_logError("createNewSession() - clientSessionId is invalid.")
-                return
-            end if
-            if m._map.DoesExist(clientSessionId)
-                _adb_logError("createNewSession() - clientSessionId already exists.")
-                return
-            end if
-            m._map[clientSessionId] = {
-                sessionId: invalid,
-                queue: [],
-                lastActiveTS: invalid,
-                mainPingInterval: mainPingInterval,
-                adPingInternal: adPingInternal,
-                lastPingTS: _adb_timestampInMillis(),
-            }
+        createSession: sub(clientSessionId as string, config as object, edgeRequestQueue as object) as void
+            ' End the current session if any
+            endSession()
+
+            ' Start a new session
+            sessionId = _adb_generateUUID()
+            m._currSession = _adb_MediaSession(sessionId, config, edgeRequestQueue)
+
         end sub,
 
-        shouldSendPing: function(clientSessionId as string, timestampInMillis as longinteger) as boolean
-            if m._map.DoesExist(clientSessionId)
-                session = m._map[clientSessionId]
-                return (timestampInMillis - session.lastPingTS >= session.mainPingInterval * 1000)
-            end if
-            _adb_logError("shouldSendPing() - clientSessionId is invalid.")
-            return false
-        end function,
-
-        recordSessionActivity: sub(clientSessionId as string, timestampInMillis as longinteger)
-            if m._map.DoesExist(clientSessionId)
-                m._map[clientSessionId].lastActiveTS = timestampInMillis
+        queue: sub(requestId as string, eventType as string, xdmData as object, tsObject as object)
+            ' Check if there is any active session
+            if m._currSession is invalid then
                 return
             end if
-            _adb_logError("recordSessionActivity() - clientSessionId is invalid.")
+
+            m._currSession.queue(requestId, eventType, xdmData, tsObject)
+
+            ''' Check for inactive sessions with pending hits. Delete the session if all the hits are dispatched
+            m._checkInactiveSessionsForPendingHits()
         end sub,
 
-        findIdleSessions: function(timestampInMillis as longinteger) as object
-            ' TODO: iterate stored sessions and find idle sessions (currentTS - lastActiveTS > SESSION_IDLE_THRESHOLD)
-            return []
-        end function,
-
-        findLongRunningSessions: function(timestampInMillis as longinteger) as object
-            ' TODO: iterate stored sessions and find sessions running over 24 hours
-            return []
-        end function,
-
-        updateSessionIdAndGetQueuedRequests: function(clientSessionId as string, sessionId as string) as object
-            if m._map.DoesExist(clientSessionId)
-                m._map[clientSessionId].sessionId = sessionId
-                queuedRequests = m._map[clientSessionId].queue
-                ' clean the queued requests
-                m._map[clientSessionId].queue = []
-                return queuedRequests
-            end if
-            _adb_logError("updateSessionIdAndGetQueuedRequests() - clientSessionId is invalid.")
-            return []
-        end function,
-
-        isSessionStarted: function(clientSessionId as string) as boolean
-            return m._map.Lookup(clientSessionId) <> invalid
-        end function,
-
-        getSessionId: function(clientSessionId as string) as string
-            session = m._map.Lookup(clientSessionId)
-            if session = invalid or session.sessionId = invalid
-                return ""
-            end if
-            return session.sessionId
-        end function,
-
-        queueMediaRequest: sub(requestId as string, clientSessionId as string, xdmData as object, tsObject as object)
-            if m._map.DoesExist(clientSessionId)
-                m._map[clientSessionId].queue.Push({
-                    requestId: requestId,
-                    xdmData: xdmData,
-                    tsObject: tsObject
-                })
+        endSession: sub(isAbort as boolean = false)
+            ' Check if there is any active session
+            if m._currSession is invalid then
                 return
             end if
-            _adb_logError("queueMediaRequest() - clientSessionId is invalid.")
+
+            ' Handle session end
+            ' Dispatch all the hits before closing and deleting the internal session
+            m._inactiveSessionMap[_currSession.id] = m._currSession
+            m._currSession = invalid
         end sub,
 
-        deleteSession: sub(clientSessionId as string)
-            m._map.Delete(clientSessionId)
+        _checkInactiveSessionsForPendingHits: sub()
+            ' Check for old sessions and dispatch pending hits
+            ' iterate over all the sessions in the session map and check if all the hits are dispatched
+            ' if the session is not active and hit queue is empty, delete the session
+            for each sessionId in m._inactiveSessionMap
+                session = m._inactiveSessionMap[sessionId]
+                if not session.isActive and session.getHitQueueSize() = 0 then
+                    m._inactiveSessionMap.remove(sessionId)
+                else
+                    ' Dispatch all the hits before deleting the internal session
+                    session.processQueuedEvents()
+                end if
+            end for
+
         end sub,
-    }
-end function
+     }
+ end function
