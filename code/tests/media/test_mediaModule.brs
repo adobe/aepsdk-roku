@@ -259,7 +259,7 @@ sub TC_adb_MediaModule_startSession_withoutSessionConfig()
     cachedXDMEvent = mediaModule._edgeRequestQueue._edgeRequestWorker._queue[0]["xdmEvents"][0]
     UTF_assertEqual("media.sessionStart", cachedXDMEvent["xdm"]["eventType"])
     UTF_assertFalse(_adb_isEmptyOrInvalidString(cachedXDMEvent["xdm"]["_id"]))
-    UTF_assertEqual(tsObj.ts_inISO8601, cachedXDMEvent["xdm"]["timestamp"])
+    UTF_assertEqual(tsObj.tsInISO8601, cachedXDMEvent["xdm"]["timestamp"])
     UTF_assertEqual({
         "sessionDetails": {
             "playerName": "player_name",
@@ -270,7 +270,7 @@ sub TC_adb_MediaModule_startSession_withoutSessionConfig()
         "playhead": 0,
     }, cachedXDMEvent["xdm"]["mediaCollection"])
 
-    UTF_assertEqual(tsObj.ts_inMillis, mediaModule._edgeRequestQueue._edgeRequestWorker._queue[0]["timestampInMillis"])
+    UTF_assertEqual(tsObj.tsInMillis, mediaModule._edgeRequestQueue._edgeRequestWorker._queue[0]["timestampInMillis"])
     UTF_assertEqual("/ee/va/v1/sessionStart", mediaModule._edgeRequestQueue._edgeRequestWorker._queue[0]["path"])
     UTF_assertTrue(GetGlobalAA()._adb_kickRequestQueue_is_called)
 end sub
@@ -355,13 +355,13 @@ sub TC_adb_MediaModule_trackEventForSession()
     cachedXDMEvent = mediaModule._edgeRequestQueue._edgeRequestWorker._queue[0]["xdmEvents"][0]
     UTF_assertEqual("media.ping", cachedXDMEvent["xdm"]["eventType"])
     UTF_assertFalse(_adb_isEmptyOrInvalidString(cachedXDMEvent["xdm"]["_id"]))
-    UTF_assertEqual(tsObj.ts_inISO8601, cachedXDMEvent["xdm"]["timestamp"])
+    UTF_assertEqual(tsObj.tsInISO8601, cachedXDMEvent["xdm"]["timestamp"])
     UTF_assertEqual({
         "playhead": 10,
         "sessionID": "backedn_session_id"
     }, cachedXDMEvent["xdm"]["mediaCollection"])
 
-    UTF_assertEqual(tsObj.ts_inMillis, mediaModule._edgeRequestQueue._edgeRequestWorker._queue[0]["timestampInMillis"])
+    UTF_assertEqual(tsObj.tsInMillis, mediaModule._edgeRequestQueue._edgeRequestWorker._queue[0]["timestampInMillis"])
     UTF_assertEqual("/ee/va/v1/media.ping", mediaModule._edgeRequestQueue._edgeRequestWorker._queue[0]["path"])
     UTF_assertTrue(GetGlobalAA()._adb_kickRequestQueue_is_called)
     UTF_assertFalse(GetGlobalAA()._adb_processQueuedRequests_is_called)
