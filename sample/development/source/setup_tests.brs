@@ -136,7 +136,7 @@ function _adb_test_functions() as dynamic
         TC_adb_MediaModule_processEvent_startSession
         TC_adb_MediaModule_processEvent_trackEventForSession
         TC_adb_MediaModule_processEvent_invalid
-        TC_mediaConfigIsNotReady
+        TC_isMediaConfigReady
         TC_adb_MediaModule_startSession_withoutSessionConfig
         TC_adb_MediaModule_startSession_invalidConfig
         TC_adb_MediaModule_trackEventForSession

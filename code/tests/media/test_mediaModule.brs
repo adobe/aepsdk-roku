@@ -179,9 +179,9 @@ sub TC_adb_MediaModule_processEvent_invalid()
 end sub
 
 
-' target: _mediaConfigIsNotReady()
+' target: _isMediaConfigReady()
 ' @Test
-sub TC_mediaConfigIsNotReady()
+sub TC_isMediaConfigReady()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
     edgeModule = _adb_EdgeModule(configurationModule, identityModule)
@@ -195,7 +195,7 @@ sub TC_mediaConfigIsNotReady()
     mediaModule._configurationModule.getMediaPlayerName = function() as string
         return "player_name"
     end function
-    UTF_assertFalse(mediaModule._mediaConfigIsNotReady())
+    UTF_assertTrue(mediaModule._isMediaConfigReady())
 
 
     mediaModule._configurationModule.getMediaChannel = function() as string
@@ -204,7 +204,7 @@ sub TC_mediaConfigIsNotReady()
     mediaModule._configurationModule.getMediaPlayerName = function() as string
         return "player_name"
     end function
-    UTF_assertTrue(mediaModule._mediaConfigIsNotReady())
+    UTF_assertFalse(mediaModule._isMediaConfigReady())
 
     mediaModule._configurationModule.getMediaChannel = function() as string
         return "channel_name"
@@ -212,7 +212,7 @@ sub TC_mediaConfigIsNotReady()
     mediaModule._configurationModule.getMediaPlayerName = function() as string
         return ""
     end function
-    UTF_assertTrue(mediaModule._mediaConfigIsNotReady())
+    UTF_assertFalse(mediaModule._isMediaConfigReady())
 end sub
 
 ' target: _startSession()
