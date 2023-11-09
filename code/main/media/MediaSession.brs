@@ -26,6 +26,7 @@
 
         _idleStartTS: invalid,
         _isPlaying: false,
+        _isInAd: false,
         _lastHit: invalid, ''' to track last event, ts, playhead, etc.
         _sessionStartRequestId: invalid,
         _sessionStartTS: invalid,
@@ -44,10 +45,10 @@
             ' Update playback state.
             ' Check if session is idle or long running.
             ' Update Ad state for custom ping interval.
-            m._updateState(requestId as string, eventType as string , xdmData as object, tsObject as object)
+            m._updateState(requestId, eventType, xdmData, tsObject)
 
             ' TODO Filter ping events which are proxy for timer
-            if m._isTimerPing(eventType, tsObject)
+            if not m._shouldDispatch(eventType, tsObject)
                 return
             end if
 
@@ -110,7 +111,6 @@
         end sub,
 
         getHitQueueSize: sub() as object
-            ' Get the hit queue size
             return _hitQueue.Count()
         end sub,
 
@@ -119,8 +119,9 @@
             ' Drop the hits and mark session inactive if error with sessionStart
         end sub,
 
-        _updateState: sub(eventType as string, xdmData as object, tsObject as object)
+        _updateState: sub(requestId as string, eventType as string, xdmData as object, tsObject as object)
             ' Update the session state based on the event type
+            m._updateAdState(eventType)
             m._updatePlaybackState(eventType)
             m._extractSessionStartData(eventType, xdmData)
             m._closeIfIdle()
@@ -128,7 +129,24 @@
             ''' extract isInad for custom ping interval
         end sub,
 
-        _isTimerPing: sub(eventType as string, tsObject as object) as boolean
+        _updateAdState: function(eventType as string) as boolean
+            ' Check if the event is an Ad event
+            ' If Ad, return true
+            ' Ad event is (eventType = adStart or adComplete or adSkip or adBreakStart or adBreakComplete)
+            if eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.AD_START
+                m._isInAd = true
+            else if eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.AD_COMPLETE or eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.AD_SKIP
+                m._isInAd = false
+            end if
+        end function,
+
+        _shouldDispatch: sub(eventType as string, tsObject as object) as boolean
+            pingInterval = m._getPingInterval(m._isInAd)
+
+            ''' Dispatch if ping interval has elapsed since last event was sent
+            if(tsObject.tsInMillis - m._lastHit.tsInMillis < pingInterval * 1000) then
+                return true
+            end if
             ' Check if the event is a timer ping
             ' If timer, just ignore the event
             ' Timer ping is (eventType = ping) and (ts - lastHit.ts < pingInterval)
@@ -228,6 +246,7 @@
             if idleTime >= _SESSION_IDLE_THRESHOLD_SEC * 1000 then
                 ''' Abort the Idle session
                 m.close(true)
+                ''' TODO dispatch sessionEnd hit
             end if
         end sub,
 
@@ -236,8 +255,12 @@
         end sub,
 
         _getPingInterval: sub(isAd as boolean = false) as integer
-            ' Get the ping interval for the event type
-            ' Calculate ping interval based on config and isAd flag
+            ''' TODO use constants
+            if isAd then
+                return m._sessionConfig["adpinginterval"]
+            else
+                return m._sessionConfig["mainpinginterval"]
+            end if
         end sub,
      }
  end function
