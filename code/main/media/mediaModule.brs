@@ -48,11 +48,6 @@ function _adb_MediaModule(configurationModule as object, edgeRequestQueue as obj
         processEvent: sub(requestId as string, eventData as object)
             eventType = eventData.xdmData.xdm.eventType
 
-            if not m._hadValidConfig() then
-                _adb_logError("processEvent() - Cannot process media event (" + FormatJson(eventType) + "), missing required configuration.")
-                return
-            end if
-
             if not m._isValidMediaEvent(eventType) then
                 _adb_logError("processEvent() - Cannot process media event (" + FormatJson(eventType) + "), media event type (" + FormatJson(eventType) + ") is invalid.")
                 return
@@ -60,37 +55,19 @@ function _adb_MediaModule(configurationModule as object, edgeRequestQueue as obj
 
             sessionConfig = eventData.configuration
             clientSessionId = eventData.clientSessionId
+            tsObject = eventData.tsObject
+            xdmData = eventData.xdmData
 
             if eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.SESSION_START
-                m._sessionManager.createSession(clientSessionId, sessionConfig, m._edgeRequestQueue)
-                m._attachMediaConfig(xdmData)
-                m._sessionManager.queue(requestId, eventType, xdmData, tsObject)
+                m._sessionManager.createSession(m._configurationModule, sessionConfig, m._edgeRequestQueue)
+                m._sessionManager.queueEvent(requestId, eventType, xdmData, tsObject)
             else if eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.SESSION_END or eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.SESSION_COMPLETE
-                m._sessionManager.queue(requestId, eventType, xdmData, tsObject)
+                m._sessionManager.queueEvent(requestId, eventType, xdmData, tsObject)
                 m._sessionManager.endSession()
             else
-                m._sessionManager.queue(requestId, eventType, xdmData, tsObject)
+                m._sessionManager.queueEvent(requestId, eventType, xdmData, tsObject)
             end if
 
-        end sub,
-
-        _hadValidConfig: function() as boolean
-            ' Check for required configuration values
-            if _adb_isEmptyOrInvalidString(m._configurationModule.getMediaChannel()) or _adb_isEmptyOrInvalidString(m._configurationModule.getMediaPlayerName()) then
-                return false
-            end if
-
-            return true
-        end function,
-
-        _attachMediaConfig: sub(xdmData as object) as object
-            xdmData.xdm["mediaCollection"]["sessionDetails"]["playerName"] = m._configurationModule.getMediaPlayerName()
-            xdmData.xdm["mediaCollection"]["sessionDetails"]["channel"] = m._configurationModule.getMediaChannel()
-
-            appVersion = m._configurationModule.getMediaAppVersion()
-            if not _adb_isEmptyOrInvalidString(appVersion) then
-                xdmData.xdm["mediaCollection"]["sessionDetails"]["appVersion"] = appVersion
-            end if
         end sub,
 
         _isValidMediaEvent: sub(eventType as string) as boolean
@@ -105,6 +82,6 @@ function _adb_MediaModule(configurationModule as object, edgeRequestQueue as obj
             end for
             return false
         end sub,
-
+    })
     return module
 end function

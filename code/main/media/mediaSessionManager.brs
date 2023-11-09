@@ -18,17 +18,17 @@
         _inactiveSessionMap: {},
         _currSession: invalid,
 
-        createSession: sub(clientSessionId as string, config as object, edgeRequestQueue as object) as void
+        createSession: sub(configurationModule as object, sessionConfig as object, edgeRequestQueue as object) as void
             ' End the current session if any
             endSession()
 
             ' Start a new session
             sessionId = _adb_generateUUID()
-            m._currSession = _adb_MediaSession(sessionId, config, edgeRequestQueue)
+            m._currSession = _adb_MediaSession(sessionId, configurationModule, sessionConfig, edgeRequestQueue)
 
         end sub,
 
-        queue: sub(requestId as string, eventType as string, xdmData as object, tsObject as object)
+        queueEvent: sub(requestId as string, eventType as string, xdmData as object, tsObject as object)
             ' Check if there is any active session
             if m._currSession is invalid then
                 return
@@ -48,6 +48,7 @@
 
             ' Handle session end
             ' Dispatch all the hits before closing and deleting the internal session
+            m._currSession.close(isAbort)
             m._inactiveSessionMap[_currSession.id] = m._currSession
             m._currSession = invalid
         end sub,
@@ -62,7 +63,7 @@
                     m._inactiveSessionMap.remove(sessionId)
                 else
                     ' Dispatch all the hits before deleting the internal session
-                    session.processQueuedEvents()
+                    session.processMediaEvents()
                 end if
             end for
 
