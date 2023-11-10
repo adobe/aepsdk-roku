@@ -160,7 +160,6 @@ sub _createAndShowNewScreen()
   m.top.appendChild(m.newScreen)
 
   _hideButtonGroup()
-  _showNewScreen()
   _focusOnNewScreen()
 end sub
 
@@ -189,14 +188,9 @@ sub _showVideoScreen()
 
 end sub
 
-sub _showNewScreen()
-  if m.newScreen <> invalid
-    m.newScreen.visible = true
-  end if
-end sub
-
 sub _focusOnNewScreen()
   if m.newScreen <> invalid
+    m.newScreen.visible = true
     m.newScreen.setFocus(true)
   end if
 end sub
