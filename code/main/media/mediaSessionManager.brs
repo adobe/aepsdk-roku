@@ -17,28 +17,28 @@
      return {
         _activeSession: invalid,
 
-        createSession: sub(configurationModule as object, sessionConfig as object, edgeRequestQueue as object) as void
+        createSession: function(configurationModule as object, sessionConfig as object, edgeRequestQueue as object) as void
             ' End the current session if any
-            endSession()
+            m.endSession()
 
             ' Start a new session
-            sessionId = _adb_generateUUID()
+            sessionId = _adb_generate_UUID()
             m._activeSession = _adb_MediaSession(sessionId, configurationModule, sessionConfig, edgeRequestQueue)
 
-        end sub,
+        end function,
 
-        queue: sub(mediaHit as object)
+        queue: function(mediaHit as object) as void
             ' Check if there is any active session
-            if m._activeSession is invalid then
+            if m._activeSession = invalid then
                 return
             end if
 
             m._activeSession.process(mediaHit)
-        end sub,
+        end function,
 
-        endSession: sub(isAbort as boolean = false)
+        endSession: function(isAbort = false as boolean) as void
             ' Check if there is any active session
-            if m._activeSession is invalid then
+            if m._activeSession = invalid then
                 return
             end if
 
@@ -46,6 +46,6 @@
             ' Dispatch all the hits before closing and deleting the internal session
             m._activeSession.close(isAbort)
             m._activeSession = invalid
-        end sub,
+        end function,
      }
  end function

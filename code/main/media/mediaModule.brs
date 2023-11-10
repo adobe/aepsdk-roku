@@ -53,7 +53,7 @@ function _adb_MediaModule(configurationModule as object, edgeRequestQueue as obj
                 return
             end if
 
-            if not m._hadValidConfig() then
+            if not m._hasValidConfig() then
                 _adb_logError("processMediaEvents() - Cannot process media event (" + FormatJson(eventType) + "), missing required configuration.")
                 return
             end if
@@ -72,6 +72,15 @@ function _adb_MediaModule(configurationModule as object, edgeRequestQueue as obj
             end if
 
         end sub,
+
+        _hasValidConfig: function() as boolean
+            ' Check for required configuration values
+            if _adb_isEmptyOrInvalidString(m._configurationModule.getMediaChannel()) or _adb_isEmptyOrInvalidString(m._configurationModule.getMediaPlayerName()) then
+                return false
+            end if
+
+            return true
+        end function,
 
         _createMediaHit: sub(requestId as string, eventType as string, xdmData as object, tsObject as object) as object
             mediaHit = {}
