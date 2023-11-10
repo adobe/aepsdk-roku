@@ -15,9 +15,7 @@ sub init()
   m.Warning = m.top.findNode("WarningDialog")
 
   m.ButtonGroup = m.top.findNode("ButtonGroup")
-  Buttons = ["SendEventWithCallback", "Shutdown", "NewScreen(API)", "MediaTracking"]
-  m.ButtonGroup.buttons = Buttons
-  m.ButtonGroup.setFocus(true)
+  m.ButtonGroup.buttons = ["SendEventWithCallback", "Shutdown", "NewScreen(API)", "MediaTracking"]
   m.ButtonGroup.observeField("buttonSelected", "onButtonSelected")
 
   m.timer = m.top.findNode("MainTimer")
@@ -32,9 +30,7 @@ sub init()
   m.video.content = _createContentNode()
   m.video.observeField("state", "onVideoPlayerStateChange")
 
-  m.test_shutdown = false
-
-  m.video_position = 0
+  _focusOnButtonGroup()
 
   _initSDK()
 end sub
@@ -44,11 +40,10 @@ sub _initSDK()
   ' Initalize Adobe Edge SDK
   '------------------------------------
 
-
-
   m.aepSdk = AdobeAEPSDKInit()
   print "Adobe SDK version : " + m.aepSdk.getVersion()
   m.adobeTaskNode = m.aepSdk.getTaskNode()
+
   ' The task node has a default id => "adobeTaskNode"
   ' If you want to set it to another value, you can enable the below code
   ' m.adobeTaskNode.id = "customized_adobe_task_node_id"
@@ -59,11 +54,19 @@ sub _initSDK()
 
   configuration = {}
   test_config = ParseJson(ReadAsciiFile("pkg:/source/test_config.json"))
+
   if test_config <> invalid and test_config.count() > 0
     configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = test_config.config_id
+    configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL] = test_config.edgemedia_channel
+    configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_PLAYER_NAME] = test_config.edgemedia_playerName
+    configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_APP_VERSION] = test_config.edgemedia_appVersion
   end if
 
   m.aepSdk.updateConfiguration(configuration)
+
+  ' initialize the SDK flags/vars
+  m.test_shutdown = false
+  m.video_position = 0
 
 end sub
 
@@ -87,27 +90,27 @@ sub _sendEventWithCallback()
       ]
     }
   }, sub(context, result)
-    print "callback result: "
-    print result
-    print context
     jsonObj = ParseJson(result.message)
-    message = ""
-    for each item in jsonObj.handle
-      if item.type = "locationHint:result" then
-        for each data in item.payload
-          if data.scope = "EdgeNetwork" then
-            message = "locationHint:EdgeNetwork: " + data.hint
-          end if
-        end for
-      end if
-    end for
-
+    message = _extractLocationHint(jsonObj, "Not found locationHint")
     ' show result in dialog
     context.Warning.visible = "true"
-
     context.Warning.message = message
   end sub, m)
 end sub
+
+function _extractLocationHint(jsonObj as object, defaultMessage as string) as string
+  message = defaultMessage
+  for each item in jsonObj.handle
+    if item.type = "locationHint:result" then
+      for each data in item.payload
+        if data.scope = "EdgeNetwork" then
+          message = "locationHint:EdgeNetwork: " + data.hint
+        end if
+      end for
+    end if
+  end for
+  return message
+end function
 
 sub _testShutdownAPI()
   if m.aepSdk = invalid
@@ -130,43 +133,39 @@ sub _testShutdownAPI()
 end sub
 
 sub onButtonSelected()
-
+  ' ------------0-----------------1--------------2------------------3-------
+  ' ["SendEventWithCallback", "Shutdown", "NewScreen(API)", "MediaTracking"]
+  '--------------------------------------------------------------------------
   if m.ButtonGroup.buttonSelected = 0
-    'SendEventWithCallback button pressed
     _sendEventWithCallback()
-
   else if m.ButtonGroup.buttonSelected = 1
-    'Shutdown button pressed
     _testShutdownAPI()
-
   else if m.ButtonGroup.buttonSelected = 2
-    'NewScreen button pressed
-    ' if m.newScreen = invalid
-    '   m.newScreen = createObject("roSGNode", "TestScreen")
-    '   m.top.appendChild(m.newScreen)
-    ' end if
-
-    if m.newScreen <> invalid
-      m.top.removeChild(m.newScreen)
-      m.newScreen = invalid
-    end if
-    m.newScreen = createObject("roSGNode", "TestScreen")
-    m.top.appendChild(m.newScreen)
-
-    m.ButtonGroup.visible = false
-    m.newScreen.visible = true
-    m.newScreen.setFocus(true)
-    ' m.top.findNode("NewScreen").visible = true
-
+    _createAndShowNewScreen()
   else if m.ButtonGroup.buttonSelected = 3
-    'MediaScreen button pressed
     _showVideoScreen()
   else
   end if
 end sub
 
+sub _createAndShowNewScreen()
+  ' when creating a new screen, a new SDK instance will be created as well
+  ' add this logic for creating/deleting multiple SDK instances, then to test the SDK instances are destroied correctly.
+  if m.newScreen <> invalid
+    m.top.removeChild(m.newScreen)
+    m.newScreen = invalid
+  end if
+
+  m.newScreen = createObject("roSGNode", "NewScreen")
+  m.top.appendChild(m.newScreen)
+
+  _hideButtonGroup()
+  _showNewScreen()
+  _focusOnNewScreen()
+end sub
+
 sub _showVideoScreen()
-  m.video.visible = "true"
+  m.video.visible = true
   m.video.control = "play"
   m.video.setFocus(true)
   m.video_position = 0
@@ -190,37 +189,73 @@ sub _showVideoScreen()
 
 end sub
 
+sub _showNewScreen()
+  if m.newScreen <> invalid
+    m.newScreen.visible = true
+  end if
+end sub
+
+sub _focusOnNewScreen()
+  if m.newScreen <> invalid
+    m.newScreen.setFocus(true)
+  end if
+end sub
+
+sub _focusOnButtonGroup()
+  m.ButtonGroup.visible = true
+  m.ButtonGroup.setFocus(true)
+end sub
+
+sub _hideButtonGroup()
+  m.ButtonGroup.visible = false
+end sub
+
+sub _hideWarningDialog()
+  if m.Warning <> invalid
+    m.Warning.visible = false
+  end if
+end sub
+
+sub _hideNewScreen()
+  if m.newScreen <> invalid
+    m.newScreen.visible = false
+  end if
+end sub
+
+sub _stopAndHideVideoScreen()
+  if m.video <> invalid
+    m.video.control = "stop"
+    m.video.visible = false
+  end if
+end sub
+
 ' Called when a key on the remote is pressed
 function onKeyEvent(key as string, press as boolean) as boolean
-  ' print "in MainScene.xml onKeyEvent ";key;" "; press
   if press then
     if key = "back"
-      print "------ [back pressed] ------"
       if m.Warning.visible
-        m.Warning.visible = false
-        m.ButtonGroup.setFocus(true)
+        _hideWarningDialog()
+        _focusOnButtonGroup()
         return true
       else if m.newScreen <> invalid and m.newScreen.visible
-        m.newScreen.visible = false
-        m.ButtonGroup.visible = true
-        m.ButtonGroup.setFocus(true)
+        _hideNewScreen()
+        _focusOnButtonGroup()
         return true
       else if m.video.visible
-        m.video.control = "stop"
-        m.video.visible = false
-        m.ButtonGroup.setFocus(true)
+        _stopAndHideVideoScreen()
+        _focusOnButtonGroup()
         return true
       else
         return false
       end if
     else if key = "OK"
-      print "------- [ok pressed] -------"
       if m.Warning.visible
-        m.Warning.visible = false
-        m.ButtonGroup.setFocus(true)
+        _hideWarningDialog()
+        _focusOnButtonGroup()
         return true
       end if
     else
+      ' other keys pressed
       return false
     end if
   end if
@@ -286,6 +321,9 @@ function _createContentNode() as object
 end function
 
 sub onVideoPlayerStateChange()
+  '--------------------
+  ' Send Media events
+  '--------------------
   position = m.video_position
   if m.video.state = "error"
     m.aepSdk.sendMediaEvent({
@@ -344,7 +382,6 @@ sub onVideoPlayerStateChange()
       }
     })
   else if m.video.state = "paused"
-    ' m.aepSdk.mediaTrackPause()
     m.aepSdk.sendMediaEvent({
       "xdm": {
         "eventType": "media.pauseStart",
@@ -359,9 +396,10 @@ sub onVideoPlayerStateChange()
 end sub
 
 sub videoTimerExecutor()
-  print "===================="
+  '--------------------
+  ' Send Media pings
+  '--------------------
   print "Video timer started to fire a ping event on video position : " m.video.position
-  ' m.aepSdk.mediaUpdatePlayhead(m.video.position)
   position = m.video_position
   m.aepSdk.sendMediaEvent({
     "xdm": {

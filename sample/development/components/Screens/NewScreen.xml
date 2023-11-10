@@ -1,7 +1,16 @@
 <?xml version="1.0" encoding="utf-8" ?>
+<!--****************** Copyright 2023 Adobe.  All Rights Reserved. ******************-->
 
+<!-- This file is licensed to you under the Apache License, Version 2.0 (the "License");
+you may not use this file except in compliance with the License. You may obtain a copy
+of the License at http://www.apache.org/licenses/LICENSE-2.0
 
-<component name="TestScreen" extends="Group" initialFocus="sendEventButton" >
+Unless required by applicable law or agreed to in writing, software distributed under
+the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+OF ANY KIND, either express or implied. See the License for the specific language
+governing permissions and limitations under the License.-->
+
+<component name="NewScreen" extends="Group" initialFocus="sendEventButton" >
 
   <children >
     <Group >
@@ -15,7 +24,7 @@
             id="testLabel"
             height="88"
             font="font:MediumBoldSystemFont"
-            text = "SDK instance (1) in root node: "/>
+            text = "SDK instance (1) in the parent node: "/>
 
         <Button 
           id="sendEventButton" 
@@ -40,7 +49,7 @@
 
   </children>
 
-  <script type="text/brightscript" uri="pkg:/components/Screens/TestScreen.brs" />
+  <script type="text/brightscript" uri="pkg:/components/Screens/NewScreen.brs" />
   <script type="text/brightscript" uri="pkg:/source/adobe/AEPSDK.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/common/constants.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/common/datetime.brs"/>
