@@ -33,8 +33,20 @@
         _MEDIA_PATH_PREFIX: "/ee/va/v1/",
         _SESSION_IDLE_THRESHOLD_SEC: 10 * 60, ' 30 minutes in pause state
         _LONG_SESSION_THRESHOLD_SEC: 24 * 60 * 60, ' 24 hours
+
         _DEFAULT_PING_INTERVAL_SEC: 10, ' 10 seconds
+        _MIN_MAIN_PING_INTERVAL_SEC: 10, ' 10 seconds
+        _MAX_MAIN_PING_INTERVAL_SEC: 50, ' 50 seconds
+        _MIN_AD_PING_INTERVAL_SEC: 1, ' 1 second
+        _MAX_AD_PING_INTERVAL_SEC: 10, ' 10 seconds
+
         _MEDIA_EVENT_TYPE = _adb_InternalConstants().MEDIA.EVENT_TYPE,
+        _PUBLIC_CONSTANTS = AdobeAEPSDKConstants()
+
+        _SUCCESS_CODE = 200
+        _ERROR_CODE_400 = 400
+        _ERROR_TYPE_VA_EDGE_400 = "https://ns.adobe.com/aep/errors/va-edge-0400-400"
+        _HANDLE_TYPE_SESSION_START = "media-analytics:new-session"
 
         process: sub(mediaHit as object)
             if not m._isActive then
@@ -245,18 +257,17 @@
                         ''' only handle the response for sessionStart event
                         if m._sessionStartHit.requestId = requestId then
                             ''' Use constants
-                            if responseCode = 200
+                            if responseCode = m._SUCCESS_CODE
                                 for each handle in responseObj.handle
-                                    if handle.type = "media-analytics:new-session"
+                                    if handle.type = m._HANDLE_TYPE_SESSION_START
                                         m._backendSessionId = handle.payload[0]["sessionId"]
                                         ''' dispatch queued events.
                                         m.tryDispatchMediaEvents()
                                     end if
                                 end for
-                            else if responseCode = 400
-                                for each handle in responseObj.handle
-                                    ''' TODO verify this
-                                    if handle.type = "https://ns.adobe.com/aep/errors/va-edge-0400-400"
+                            else if responseCode = m._ERROR_CODE_400
+                                for each error in responseObj.errors
+                                    if error.type = m._ERROR_TYPE_VA_EDGE_400
                                         ''' abort the session if sessionStart fails
                                         m.close(true)
                                     end if
@@ -352,11 +363,18 @@
         end sub,
 
         _getPingInterval: sub(isAd as boolean = false) as integer
-            ''' TODO use constants
             if isAd then
-                return m._sessionConfig["adpinginterval"]
+                interval =  m._sessionConfig[m._PUBLIC_CONSTANTS.MEDIA_SESSION_CONFIGURATION.AD_PING_INTERVAL]
+                if interval >= m._MIN_AD_PING_INTERVAL_SEC and interval <= _MAX_AD_PING_INTERVAL_SEC then
+                    _adb_logVerbose("getPingInterval() - Setting ad ping interval as " + interval + " seconds.")
+                    return interval
+                end if
             else
-                return m._sessionConfig["mainpinginterval"]
+                interval = m._sessionConfig[m._PUBLIC_CONSTANTS.MEDIA_SESSION_CONFIGURATION.MAIN_PING_INTERVAL]
+                if interval >= m._MIN_MAIN_PING_INTERVAL_SEC and interval <= m._MAX_MAIN_PING_INTERVAL_SEC then
+                    _adb_logVerbose("getPingInterval() - Setting main ping interval as " + interval + " seconds.")
+                    return interval
+                end if
             end if
         end sub,
      }
