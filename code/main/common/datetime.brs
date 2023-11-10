@@ -55,10 +55,10 @@ end function
 function _adb_TimestampObject() as object
     dateTime = createObject("roDateTime")
 
-    ts_inMillis& = _adb_timestampInMillis(dateTime)
-    ts_inISO8601$ = _adb_ISO8601_timestamp(dateTime)
+    tsInMillis& = _adb_timestampInMillis(dateTime)
+    tsInISO8601$ = _adb_ISO8601_timestamp(dateTime)
     return {
-        ts_inISO8601: ts_inISO8601$,
-        ts_inMillis: ts_inMillis&
+        tsInISO8601: tsInISO8601$,
+        tsInMillis: tsInMillis&
     }
 end function

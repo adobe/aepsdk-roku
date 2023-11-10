@@ -37,7 +37,28 @@ function _adb_InternalConstants() as object
             RESPONSE_EVENT: "responseEvent",
         },
         MEDIA: {
-            EVENT_TYPES: ["media.play", "media.ping", "media.bitrateChange", "media.bufferStart", "media.pauseStart", "media.adBreakStart", "media.adStart", "media.adComplete", "media.adSkip", "media.adBreakComplete", "media.chapterStart", "media.chapterComplete", "media.chapterSkip", "media.error", "media.sessionEnd", "media.sessionComplete", "media.statesUpdate"],
+            EVENT_TYPE : {
+                SESSION_START: "media.sessionStart",
+                PLAY: "media.play",
+                PING: "media.ping",
+                BITRATE_CHANGE: "media.bitrateChange",
+                BUFFER_START: "media.bufferStart",
+                PAUSE_START: "media.pauseStart",
+                AD_BREAK_START: "media.adBreakStart",
+                AD_START: "media.adStart",
+                AD_COMPLETE: "media.adComplete",
+                AD_SKIP: "media.adSkip",
+                AD_BREAK_COMPLETE: "media.adBreakComplete",
+                CHAPTER_START: "media.chapterStart",
+                CHAPTER_COMPLETE: "media.chapterComplete",
+                CHAPTER_SKIP: "media.chapterSkip",
+                ERROR: "media.error",
+                STATES_UPDATE: "media.statesUpdate",
+                SESSION_END: "media.sessionEnd",
+                SESSION_COMPLETE: "media.sessionComplete"
+            }
+            ''' TODO remaining constants
+            EVENT_TYPES: ["media.sessionStart", "media.play", "media.ping", "media.bitrateChange", "media.bufferStart", "media.pauseStart", "media.adBreakStart", "media.adStart", "media.adComplete", "media.adSkip", "media.adBreakComplete", "media.chapterStart", "media.chapterComplete", "media.chapterSkip", "media.error", "media.sessionEnd", "media.sessionComplete", "media.statesUpdate"],
             SESSION_START_EVENT_TYPE: "media.sessionStart",
             SESSION_END_EVENT_TYPE: "media.sessionEnd",
             PING_EVENT_TYPE: "media.ping",
