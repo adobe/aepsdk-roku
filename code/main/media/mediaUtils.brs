@@ -47,8 +47,8 @@ function _adb_isValidMediaEvent(eventType as string) as boolean
         return false
     end if
 
-    for each key in m._CONSTANTS.MEDIA.EVENT_TYPE
-        constEventType = m._CONSTANTS.MEDIA.EVENT_TYPE[key]
+    for each key in m.MEDIA_CONS.EVENT_TYPE
+        constEventType = m.MEDIA_CONS.EVENT_TYPE[key]
         if eventType = constEventType then
             return true
         end if

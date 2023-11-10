@@ -17,7 +17,7 @@
      return {
         _id = id,
         _sessionConfig: sessionConfig,
-        _configurationModule: invalid,
+        _configurationModule: configurationModule,
         _edgeRequestQueue: edgeRequestQueue,
 
         _backendSessionId: invalid,
@@ -34,6 +34,7 @@
         _SESSION_IDLE_THRESHOLD_SEC: 10 * 60, ' 30 minutes in pause state
         _LONG_SESSION_THRESHOLD_SEC: 24 * 60 * 60, ' 24 hours
         _DEFAULT_PING_INTERVAL_SEC: 10, ' 10 seconds
+        _MEDIA_EVENT_TYPE = _adb_InternalConstants().MEDIA.EVENT_TYPE,
 
         process: sub(mediaHit as object)
             if not m._isActive then
@@ -74,15 +75,18 @@
                 hit = _hitQueue.Shift()
                 requestId = hit.requestId
                 tsInMillis = hit.tsObject.tsInMillis
+                xdmData = hit.xdmData
+                eventType = hit.eventType
 
                 ' attach _id and timestamp in ISO format
                 xdmData.xdm["_id"] = _adb_generate_UUID()
                 xdmData.xdm["timestamp"] = hit.tsObject.tsInISO8601
 
                 ' attach sessionId to events other than sessionStart
-                if hit.eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.SESSION_START
+                if eventType = m._MEDIA_EVENT_TYPE.SESSION_START
                     xdmData = m._attachMediaConfig(xdmData)
                     xdmData = m._updateChannelFromSessionConfig(xdmData)
+
                 else
                     ''' Cannot send hit of type other than sessionStart if backendSessionId is not set.
                     if m._backendSessionId = invalid then
@@ -95,8 +99,8 @@
                 end if
 
 
-                xdm = [hit.xdmData]
-                path = m._MEDIA_PATH_PREFIX + hit.eventType
+                xdm = [xdmData]
+                path = m._MEDIA_PATH_PREFIX + eventType
                 meta = {}
 
                 m._edgeRequestQueue.add(requestId, xdm, tsInMillis, meta, path)
@@ -126,22 +130,22 @@
         end sub,
 
         handleError: sub(requestId as string, error as object)
-            ' Handle error
+            ' TODO Handle error
             ' Drop the hits and mark session inactive if error with sessionStart
         end sub,
 
         _resetForRestart: sub()
-            m.idleStartTS = invalid
-            m._backendSessionId: invalid
+            m._idleStartTS = invalid
+            m._backendSessionId = invalid
             m._isIdle = false
             m._isActive = true
         end sub,
 
         _updateAdState: function(mediaHit as object) as boolean
             eventType = mediaHit.eventType
-            if eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.AD_START
+            if eventType = m._MEDIA_EVENT_TYPE.AD_START
                 m._isInAd = true
-            else if eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.AD_COMPLETE or eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.AD_SKIP
+            else if eventType = m._MEDIA_EVENT_TYPE.AD_COMPLETE or eventType = m._MEDIA_EVENT_TYPE.AD_SKIP
                 m._isInAd = false
             end if
         end function,
@@ -152,7 +156,7 @@
             eventType = mediaHit.eventType
 
             ''' Should queue any event other than ping.
-            if eventType <> m._CONSTANTS.MEDIA.EVENT_TYPE.PING
+            if eventType <> m._MEDIA_EVENT_TYPE.PING
                 return true
             end if
 
@@ -172,10 +176,10 @@
         _updatePlaybackState: sub(mediaHit as object)
             eventType = mediaHit.eventType
 
-            if eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.PLAY
+            if eventType = m._MEDIA_EVENT_TYPE.PLAY
                 m._isPlaying = true
                 m._idleStartTS = invalid
-            else if eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.PAUSE or eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.SEEK or eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.BUFFER
+            else if eventType = m._MEDIA_EVENT_TYPE.PAUSE or eventType = m._MEDIA_EVENT_TYPE.SEEK or eventType = m._MEDIA_EVENT_TYPE.BUFFER
                 m._isPlaying = false
 
                 ''' Set the idle start timestamp if not set already
@@ -186,7 +190,7 @@
         end sub,
 
         _extractSessionStartData: sub(mediaHit as object)
-            if mediaHit.eventType <> m._CONSTANTS.MEDIA.EVENT_TYPE.SESSION_START
+            if mediaHit.eventType <> m._MEDIA_EVENT_TYPE.SESSION_START
                 return
             end if
 
@@ -223,30 +227,48 @@
             return true
         end function,
 
+        ''' TODO verify this
         _processEdgeRequestQueue: sub()
             ' Process the queue and send the hits to edgeWorker
             ' EdgeRequestQueue.process and handle the responses
             responses = m._edgeRequestQueue.processRequests()
             ' the responses may include sessionStart response and media event response
             for each edgeResponse in responses
-                if _adb_isEdgeResponse(edgeResponse) and not _adb_isEmptyOrInvalidString(edgeResponse.getresponsestring()) then
+                if _adb_isEdgeResponse(edgeResponse) then
                     try
-                        responseObj = ParseJson(edgeResponse.getresponsestring())
-                        requestId = responseObj.requestId
-                        ' update session id
-                        for each handle in responseObj.handle
-                            if handle.type = "media-analytics:new-session"
-                                m._backendSessionId = handle.payload[0]["sessionId"]
-                                ''' dispatch queued events.
-                                m.tryDispatchMediaEvents()
+
+                        requestId = edgeResponse.requestId
+                        responseCode = edgeResponse.getResponseCode()
+                        responseString = edgeResponse.getResponseString()
+                        responseObj = _adb_parseJson(responseString)
+
+                        ''' only handle the response for sessionStart event
+                        if m._sessionStartHit.requestId = requestId then
+                            ''' Use constants
+                            if responseCode = 200
+                                for each handle in responseObj.handle
+                                    if handle.type = "media-analytics:new-session"
+                                        m._backendSessionId = handle.payload[0]["sessionId"]
+                                        ''' dispatch queued events.
+                                        m.tryDispatchMediaEvents()
+                                    end if
+                                end for
+                            else if responseCode = 400
+                                for each handle in responseObj.handle
+                                    ''' TODO verify this
+                                    if handle.type = "https://ns.adobe.com/aep/errors/va-edge-0400-400"
+                                        ''' abort the session if sessionStart fails
+                                        m.close(true)
+                                    end if
+                                end for
                             end if
-                        end for
+                        else
+                            ''' TODO handle 404 error response for media event
+                        end if
                     catch ex
                         _adb_logError("_kickRequestQueue() - Failed to process the edge media reqsponse, the exception message: " + ex.Message)
                     end try
                 end if
-                ''' TODO handle 404 error response for sessionStart
-                ''' End the session and mark inactive
             end for
         end sub,
 
@@ -259,23 +281,25 @@
             idleTime = _adb_TimestampObject().tsInMillis - _idleStartTS
             if idleTime >= m._SESSION_IDLE_THRESHOLD_SEC * 1000 then
                 ''' Abort the Idle session
+                m.process(m._createSessionEndHit(mediaHit))
+
+                ''' set the session inactive and idle
                 m._isIdle = true
                 m.close(true)
-                ''' TODO dispatch sessionEnd hit
             end if
         end sub,
 
         _restartIdleSession: sub(mediaHit as object)
             eventType = mediaHit.eventType
 
-            if _isIdle and not _isActive and eventType == m._CONSTANTS.MEDIA.EVENT_TYPE.PLAY
+            if _isIdle and not _isActive and eventType == m._MEDIA_EVENT_TYPE.PLAY
                 m._resetForRestart()
 
                 ''' TODO set resumed flag to true in sessionStart XDM
                 ''' Update ts and playhead in sessionStart XDM using mediahit
                 ''' Update ts and playhead in sessionStart XDM using mediahit
                 ''' update requestID with new UUID string
-                m.process(m._sessionStartHit)
+                m.process(m._createSessionResumeHit(mediaHit))
                 m.process(mediaHit)
             end if
         end sub,
@@ -287,14 +311,44 @@
             if currentTS - sessionStartTS >= m._LONG_SESSION_THRESHOLD_SEC * 1000 then
                 ''' Abort the long running session
                 '''m.process(sessionEnd)
+                m.process(m._createSessionEndHit(mediaHit))
+
                 m._resetForRestart()
 
-                ''' TODO set resumed flag to true in sessionStart XDM
-                ''' Update ts and playhead in sessionStart XDM using mediahit
-                ''' update requestID with new UUID string
-                m.process(m._sessionStartHit)
+                m.process(m._createSessionResumeHit(mediaHit))
             end if
             ' Check if the session is long running >= 24 hours
+        end sub,
+
+        _createSessionResumeHit: sub(mediaHit as object) as object
+            sessionResumeHit = m._sessionStartHit
+
+            sessionResumeHit.xdmData.xdm["mediaCollection"]["sessionDetails"]["hasResume"] = true
+            sessionResumeHit.xdmData.xdm["mediaCollection"]["playhead"] = mediaHit.xdmData.xdm["mediaCollection"]["playhead"]
+            sessionResumeHit.tsObject = mediaHit.tsObject
+            sessionResumeHit.requestId = _adb_generate_UUID()
+
+            return sessionResumeHit
+        end sub,
+
+        _createSessionEndHit: sub(mediaHit as object) as object
+            xdmData = {
+                "xdm": {
+                    "eventType": m._MEDIA_EVENT_TYPE.SESSION_END,
+                    "mediaCollection": {
+                        "playhead": mediaHit.xdmData.xdm["mediaCollection"]["playhead"],
+                    }
+                }
+            }
+
+            sessionEndHit = {
+                "xdmData": xdmData,
+                "tsObject": mediaHit.tsObject,
+                "requestId": _adb_generate_UUID(),
+                "eventType": "media.sessionEnd"
+            }
+
+            return sessionEndHit
         end sub,
 
         _getPingInterval: sub(isAd as boolean = false) as integer
