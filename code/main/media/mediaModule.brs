@@ -48,39 +48,38 @@ function _adb_MediaModule(configurationModule as object, edgeRequestQueue as obj
         processEvent: sub(requestId as string, eventData as object)
             eventType = eventData.xdmData.xdm.eventType
 
-            if not m._isValidMediaEvent(eventType) then
+            if not _adb_isValidMediaEvent(eventType) then
                 _adb_logError("processEvent() - Cannot process media event (" + FormatJson(eventType) + "), media event type (" + FormatJson(eventType) + ") is invalid.")
                 return
             end if
 
+            if not m._hadValidConfig() then
+                _adb_logError("processMediaEvents() - Cannot process media event (" + FormatJson(eventType) + "), missing required configuration.")
+                return
+            end if
+
             sessionConfig = eventData.configuration
-            clientSessionId = eventData.clientSessionId
-            tsObject = eventData.tsObject
-            xdmData = eventData.xdmData
+            mediaHit = m._createMediaHit(requestId, eventType, eventData.xdmData, eventData.tsObject)
 
             if eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.SESSION_START
                 m._sessionManager.createSession(m._configurationModule, sessionConfig, m._edgeRequestQueue)
-                m._sessionManager.queueEvent(requestId, eventType, xdmData, tsObject)
+                m._sessionManager.queue(mediaHit)
             else if eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.SESSION_END or eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.SESSION_COMPLETE
-                m._sessionManager.queueEvent(requestId, eventType, xdmData, tsObject)
+                m._sessionManager.queue(mediaHit)
                 m._sessionManager.endSession()
             else
-                m._sessionManager.queueEvent(requestId, eventType, xdmData, tsObject)
+                m._sessionManager.queue(mediaHit)
             end if
 
         end sub,
 
-        _isValidMediaEvent: sub(eventType as string) as boolean
-            if _adb_isEmptyOrInvalidString(eventType)
-                return false
-            end if
-
-            for each mediaEventType in m._CONSTANTS.MEDIA.EVENT_TYPE
-                if eventType = mediaEventType then
-                    return true
-                end if
-            end for
-            return false
+        _createMediaHit: sub(requestId as string, eventType as string, xdmData as object, tsObject as object) as object
+            mediaHit = {}
+            mediaHit.requestId = requestId
+            medioHit.eventType = eventType
+            mediaHit.xdmData = xdmData
+            mediaHit.tsObject = tsObject
+            return mediaHit
         end sub,
     })
     return module

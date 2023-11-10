@@ -15,8 +15,7 @@
 
  function _adb_MediaSessionManager() as object
      return {
-        _inactiveSessionMap: {},
-        _currSession: invalid,
+        _activeSession: invalid,
 
         createSession: sub(configurationModule as object, sessionConfig as object, edgeRequestQueue as object) as void
             ' End the current session if any
@@ -24,49 +23,29 @@
 
             ' Start a new session
             sessionId = _adb_generateUUID()
-            m._currSession = _adb_MediaSession(sessionId, configurationModule, sessionConfig, edgeRequestQueue)
+            m._activeSession = _adb_MediaSession(sessionId, configurationModule, sessionConfig, edgeRequestQueue)
 
         end sub,
 
-        queueEvent: sub(requestId as string, eventType as string, xdmData as object, tsObject as object)
+        queue: sub(mediaHit as object)
             ' Check if there is any active session
-            if m._currSession is invalid then
+            if m._activeSession is invalid then
                 return
             end if
 
-            m._currSession.queue(requestId, eventType, xdmData, tsObject)
-
-            ''' Check for inactive sessions with pending hits. Delete the session if all the hits are dispatched
-            m._checkInactiveSessionsForPendingHits()
+            m._activeSession.process(mediaHit)
         end sub,
 
         endSession: sub(isAbort as boolean = false)
             ' Check if there is any active session
-            if m._currSession is invalid then
+            if m._activeSession is invalid then
                 return
             end if
 
             ' Handle session end
             ' Dispatch all the hits before closing and deleting the internal session
-            m._currSession.close(isAbort)
-            m._inactiveSessionMap[_currSession.id] = m._currSession
-            m._currSession = invalid
-        end sub,
-
-        _checkInactiveSessionsForPendingHits: sub()
-            ' Check for old sessions and dispatch pending hits
-            ' iterate over all the sessions in the session map and check if all the hits are dispatched
-            ' if the session is not active and hit queue is empty, delete the session
-            for each sessionId in m._inactiveSessionMap
-                session = m._inactiveSessionMap[sessionId]
-                if not session.isActive and session.getHitQueueSize() = 0 then
-                    m._inactiveSessionMap.remove(sessionId)
-                else
-                    ' Dispatch all the hits before deleting the internal session
-                    session.processMediaEvents()
-                end if
-            end for
-
+            m._activeSession.close(isAbort)
+            m._activeSession = invalid
         end sub,
      }
  end function

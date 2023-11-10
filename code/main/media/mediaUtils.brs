@@ -41,3 +41,17 @@ function _adb_containsPlayheadValue(xdmData as object) as boolean
     end if
     return true
 end function
+
+function _adb_isValidMediaEvent(eventType as string) as boolean
+    if _adb_isEmptyOrInvalidString(eventType)
+        return false
+    end if
+
+    for each key in m._CONSTANTS.MEDIA.EVENT_TYPE
+        constEventType = m._CONSTANTS.MEDIA.EVENT_TYPE[key]
+        if eventType = constEventType then
+            return true
+        end if
+    end for
+    return false
+end function

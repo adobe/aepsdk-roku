@@ -28,43 +28,48 @@
         _isPlaying: false,
         _isInAd: false,
         _lastHit: invalid, ''' to track last event, ts, playhead, etc.
-        _sessionStartRequestId: invalid,
-        _sessionStartTS: invalid,
+        _sessionStartHit: invalid, ''' used for idle restart and long session restart
 
         _MEDIA_PATH_PREFIX: "/ee/va/v1/",
         _SESSION_IDLE_THRESHOLD_SEC: 10 * 60, ' 30 minutes in pause state
         _LONG_SESSION_THRESHOLD_SEC: 24 * 60 * 60, ' 24 hours
         _DEFAULT_PING_INTERVAL_SEC: 10, ' 10 seconds
 
-        handleQueueEvent: sub(requestId as string, eventType as string, xdmData as object, tsObject as object)
-            if not _isActive then
-                _adb_logError("handleQueueEvent() - Cannot queue media event, media session (" + FormatJson(_id) + " is not active.")
+        process: sub(mediaHit as object)
+            if not m._isActive then
+                ''' Restart if session was closed by idle timeout
+                m._restartIdleSession(mediaHit)
                 return
             end if
 
-            ' Update playback state.
-            ' Check if session is idle or long running.
-            ' Update Ad state for custom ping interval.
-            m._updateState(requestId, eventType, xdmData, tsObject)
+            m._updateAdState(mediaHit)
+            m._updatePlaybackState(mediaHit)
+            m._extractSessionStartData(mediaHit)
+
+            m._closeIfIdle(mediaHit)
+            m._restartIfLongRunningSession(mediaHit)
 
             ' TODO Filter ping events which are proxy for timer
-            if not m._shouldDispatch(eventType, tsObject)
+            if not m._shouldQueue(mediaHit)
+                return
+            end if
+
+        end sub,
+
+        _queue: sub(mediaHit as object)
+            if not _isActive then
+                _adb_logWarning("handleQueueEvent() - Cannot queue media event, media session (" + FormatJson(_id) + " is not active.")
                 return
             end if
 
             ' Create and add hit to queue for actual events or heartbeat pings
-            mediaHit = m._createMediaHit(requestId, eventType, xdmData, tsObject)
             m._hitQueue.append(mediaHit)
             m._lastHit = mediaHit
-            m.processMediaEvents()
+            m.dispatchMediaEvents()
         end sub,
 
-        processMediaEvents: sub()
-            if not m._hadValidConfig() then
-                _adb_logError("processMediaEvents() - Cannot process media event (" + FormatJson(eventType) + "), missing required configuration.")
-                return
-            end if
-
+        tryDispatchMediaEvents: sub()
+            ' Process the queue and send the hits to edgeWorker
             while _hitQueue.Count() <> 0
                 hit = _hitQueue.Shift()
                 requestId = hit.requestId
@@ -79,12 +84,13 @@
                     xdmData = m._attachMediaConfig(xdmData)
                     xdmData = m._updateChannelFromSessionConfig(xdmData)
                 else
-                    ' attach sessionId to events other than sessionStart
+                    ''' Cannot send hit of type other than sessionStart if backendSessionId is not set.
                     if m._backendSessionId = invalid then
                         _adb_logError("processQueuedEvents() - Cannot queue media event, backend session ID is not set.")
                         return
                     end if
 
+                    ' attach sessionId to events other than sessionStart
                     xdmData.xdm["mediaCollection"]["sessionID"] = m._backendSessionId
                 end if
 
@@ -99,6 +105,11 @@
         end sub,
 
         close: sub(isAbort as boolean = false)
+            if not _isActive then
+                _adb_logWarning("close() - Cannot close media session, there is no active session.")
+                return
+            end if
+
             _isActive = false
 
             if isAbort then
@@ -106,7 +117,7 @@
                 _hitQueue = []
             else
                 ' Dispatch all the hits in the queue
-                m.processQueuedEvents()
+                m.tryDispatchMediaEvents()
             end if
         end sub,
 
@@ -119,20 +130,15 @@
             ' Drop the hits and mark session inactive if error with sessionStart
         end sub,
 
-        _updateState: sub(requestId as string, eventType as string, xdmData as object, tsObject as object)
-            ' Update the session state based on the event type
-            m._updateAdState(eventType)
-            m._updatePlaybackState(eventType)
-            m._extractSessionStartData(eventType, xdmData)
-            m._closeIfIdle()
-            m._restartIfLongRunningSession()
-            ''' extract isInad for custom ping interval
+        _resetForRestart: sub()
+            m.idleStartTS = invalid
+            m._backendSessionId: invalid
+            m._isIdle = false
+            m._isActive = true
         end sub,
 
-        _updateAdState: function(eventType as string) as boolean
-            ' Check if the event is an Ad event
-            ' If Ad, return true
-            ' Ad event is (eventType = adStart or adComplete or adSkip or adBreakStart or adBreakComplete)
+        _updateAdState: function(mediaHit as object) as boolean
+            eventType = mediaHit.eventType
             if eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.AD_START
                 m._isInAd = true
             else if eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.AD_COMPLETE or eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.AD_SKIP
@@ -140,45 +146,51 @@
             end if
         end function,
 
-        _shouldDispatch: sub(eventType as string, tsObject as object) as boolean
+        _shouldQueue: sub(mediaHit as object) as boolean
             pingInterval = m._getPingInterval(m._isInAd)
 
-            ''' Dispatch if ping interval has elapsed since last event was sent
-            if(tsObject.tsInMillis - m._lastHit.tsInMillis < pingInterval * 1000) then
+            eventType = mediaHit.eventType
+
+            ''' Should queue any event other than ping.
+            if eventType <> m._CONSTANTS.MEDIA.EVENT_TYPE.PING
                 return true
             end if
-            ' Check if the event is a timer ping
-            ' If timer, just ignore the event
-            ' Timer ping is (eventType = ping) and (ts - lastHit.ts < pingInterval)
+
+            ''' Should queue ping event if the duration between the last event and this ping event is greater than ping interval
+            ''' If the duration is less than ping interval, then ignore the ping event
+            currentHitTS = mediaHit.tsObject.tsInMillis
+            lastHitTS = m._lastHit.tsObject.tsInMillis
+
+            ''' Dispatch if ping interval has elapsed since last event was sent
+            if (tsInMillis - lastHitTS) < (pingInterval * 1000) then
+                return true
+            end if
+
+            return false
         end sub,
 
-        _updatePlaybackState: sub(eventType as string)
+        _updatePlaybackState: sub(mediaHit as object)
+            eventType = mediaHit.eventType
+
             if eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.PLAY
                 m._isPlaying = true
                 m._idleStartTS = invalid
             else if eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.PAUSE or eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.SEEK or eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.BUFFER
                 m._isPlaying = false
-                m._idleStartTS = _adb_TimestampObject().tsInMillis
+
+                ''' Set the idle start timestamp if not set already
+                if m._idleStartTS = invalid then
+                    m._idleStartTS = _adb_TimestampObject().tsInMillis
+                end if
             end if
         end sub,
 
-        _extractSessionStartData: sub(requestId as string, eventType as string, tsObject as object)
-            if eventType <> m._CONSTANTS.MEDIA.EVENT_TYPE.SESSION_START
+        _extractSessionStartData: sub(mediaHit as object)
+            if mediaHit.eventType <> m._CONSTANTS.MEDIA.EVENT_TYPE.SESSION_START
                 return
             end if
 
-            m._sessionStartTS = tsObject.tsInMillis
-            m._sessionStartRequestId = requestId
-        end sub,
-
-
-        _createMediaHit: sub(requestId as string, eventType as string, xdmData as object, tsObject as object) as object
-            mediaHit = {}
-            mediaHit.requestId = requestId
-            medioHit.eventType = eventType
-            mediaHit.xdmData = xdmData
-            mediaHit.tsObject = tsObject
-            return mediaHit
+            m._sessionStartHit = mediaHit
         end sub,
 
         _attachMediaConfig: sub(xdmData as object) as object
@@ -221,10 +233,12 @@
                     try
                         responseObj = ParseJson(edgeResponse.getresponsestring())
                         requestId = responseObj.requestId
-                        ' udpate session id
+                        ' update session id
                         for each handle in responseObj.handle
                             if handle.type = "media-analytics:new-session"
                                 m._backendSessionId = handle.payload[0]["sessionId"]
+                                ''' dispatch queued events.
+                                m.tryDispatchMediaEvents()
                             end if
                         end for
                     catch ex
@@ -243,14 +257,43 @@
             else
 
             idleTime = _adb_TimestampObject().tsInMillis - _idleStartTS
-            if idleTime >= _SESSION_IDLE_THRESHOLD_SEC * 1000 then
+            if idleTime >= m._SESSION_IDLE_THRESHOLD_SEC * 1000 then
                 ''' Abort the Idle session
+                m._isIdle = true
                 m.close(true)
                 ''' TODO dispatch sessionEnd hit
             end if
         end sub,
 
-        _restartIfLongRunningSession: sub() as boolean
+        _restartIdleSession: sub(mediaHit as object)
+            eventType = mediaHit.eventType
+
+            if _isIdle and not _isActive and eventType == m._CONSTANTS.MEDIA.EVENT_TYPE.PLAY
+                m._resetForRestart()
+
+                ''' TODO set resumed flag to true in sessionStart XDM
+                ''' Update ts and playhead in sessionStart XDM using mediahit
+                ''' Update ts and playhead in sessionStart XDM using mediahit
+                ''' update requestID with new UUID string
+                m.process(m._sessionStartHit)
+                m.process(mediaHit)
+            end if
+        end sub,
+
+        _restartIfLongRunningSession: sub(mediaHit as object)
+            sessionStartTS = m._sessionStartHit.tsObject.tsInMillis
+            currentTS = mediaHit.tsObject.tsInMillis
+
+            if currentTS - sessionStartTS >= m._LONG_SESSION_THRESHOLD_SEC * 1000 then
+                ''' Abort the long running session
+                '''m.process(sessionEnd)
+                m._resetForRestart()
+
+                ''' TODO set resumed flag to true in sessionStart XDM
+                ''' Update ts and playhead in sessionStart XDM using mediahit
+                ''' update requestID with new UUID string
+                m.process(m._sessionStartHit)
+            end if
             ' Check if the session is long running >= 24 hours
         end sub,
 
