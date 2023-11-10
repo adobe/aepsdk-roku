@@ -133,9 +133,7 @@ sub _testShutdownAPI()
 end sub
 
 sub onButtonSelected()
-  ' ------------0-----------------1--------------2------------------3-------
-  ' ["SendEventWithCallback", "Shutdown", "NewScreen(API)", "MediaTracking"]
-  '--------------------------------------------------------------------------
+  ' 0: "SendEventWithCallback",  1: "Shutdown", 2: "NewScreen(API)", 3: "MediaTracking"
   if m.ButtonGroup.buttonSelected = 0
     _sendEventWithCallback()
   else if m.ButtonGroup.buttonSelected = 1
