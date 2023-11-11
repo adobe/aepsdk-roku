@@ -307,6 +307,10 @@
         end function,
 
         _restartIfLongRunningSession: function(mediaHit as object) as void
+            if m._sessionStartHit = invalid then
+                return
+            end if
+
             sessionStartTS = m._sessionStartHit.tsObject.tsInMillis
             currentTS = mediaHit.tsObject.tsInMillis
 
@@ -356,13 +360,17 @@
         _getPingInterval: function(isAd = false as boolean) as integer
             if isAd then
                 interval =  m._sessionConfig[m._PUBLIC_CONSTANTS.MEDIA_SESSION_CONFIGURATION.AD_PING_INTERVAL]
-                if interval >= m._MIN_AD_PING_INTERVAL_SEC and interval <= m._MAX_AD_PING_INTERVAL_SEC then
+                if interval = invalid then
+                    interval = m._DEFAULT_PING_INTERVAL_SEC
+                else if interval >= m._MIN_AD_PING_INTERVAL_SEC and interval <= m._MAX_AD_PING_INTERVAL_SEC then
                     _adb_logVerbose("getPingInterval() - Setting ad ping interval as " + interval + " seconds.")
                     return interval
                 end if
             else
                 interval = m._sessionConfig[m._PUBLIC_CONSTANTS.MEDIA_SESSION_CONFIGURATION.MAIN_PING_INTERVAL]
-                if interval >= m._MIN_MAIN_PING_INTERVAL_SEC and interval <= m._MAX_MAIN_PING_INTERVAL_SEC then
+                if interval = invalid then
+                    interval = m._DEFAULT_PING_INTERVAL_SEC
+                else if interval >= m._MIN_MAIN_PING_INTERVAL_SEC and interval <= m._MAX_MAIN_PING_INTERVAL_SEC then
                     _adb_logVerbose("getPingInterval() - Setting main ping interval as " + interval + " seconds.")
                     return interval
                 end if
