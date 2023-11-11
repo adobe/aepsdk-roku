@@ -142,8 +142,11 @@ function _adb_test_functions() as dynamic
         ' test_mediaSessionManager.brs
         TC_adb_MediaSessionManager_init
         TC_adb_MediaSessionManager_createSession
+        TC_adb_MediaSessionManager_createSession_endsOldSession
         TC_adb_MediaSessionManager_queue_validActiveSession_queuesWithSession
         TC_adb_MediaSessionManager_queue_invalidActiveSession_ignoresMediaHit
+        TC_adb_MediaSessionManager_endSession_validActiveSession_closesSession
+        TC_adb_MediaSessionManager_endSession_invalidActiveSession_getsIgnored
         ' test_mediaSession.brs
     ]
     initSDK = [
