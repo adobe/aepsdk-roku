@@ -48,6 +48,11 @@
         _ERROR_TYPE_VA_EDGE_400: "https://ns.adobe.com/aep/errors/va-edge-0400-400"
         _HANDLE_TYPE_SESSION_START: "media-analytics:new-session"
 
+        ''' Processes the mediaHit. Updates the playback state, ad state, idle state, etc.
+        ''' Extracts the sessionStart data.
+        ''' Detects and closes idle session, restarts idle session, restarts long running session.
+        ''' Checks for ping interval.
+        ''' Queues the mediaHit.
         process: function(mediaHit as object) as void
             if not m._isActive then
                 ''' Restart if session was closed by idle timeout
@@ -55,8 +60,8 @@
                 return
             end if
 
-            m._updateAdState(mediaHit)
             m._updatePlaybackState(mediaHit)
+            m._updateAdState(mediaHit)
             m._extractSessionStartData(mediaHit)
 
             m._closeIfIdle(mediaHit)
@@ -69,18 +74,7 @@
 
         end function,
 
-        _queue: function(mediaHit as object) as void
-            if not _isActive then
-                _adb_logWarning("handleQueueEvent() - Cannot queue media event, media session (" + FormatJson(_id) + " is not active.")
-                return
-            end if
-
-            ' Create and add hit to queue for actual events or heartbeat pings
-            m._hitQueue.append(mediaHit)
-            m._lastHit = mediaHit
-            m.dispatchMediaEvents()
-        end function,
-
+        ''' Dispatched the queued mediaHits to edgeRequestQueue
         tryDispatchMediaEvents: function() as void
             ' Process the queue and send the hits to edgeWorker
             while m._hitQueue.Count() <> 0
@@ -102,7 +96,7 @@
                 else
                     ''' Cannot send hit of type other than sessionStart if backendSessionId is not set.
                     if m._backendSessionId = invalid then
-                        _adb_logError("processQueuedEvents() - Cannot queue media event, backend session ID is not set.")
+                        _adb_logError("tryDispatchMediaEvents() - Cannot dispatch media event, backend session ID is not set.")
                         return
                     end if
 
@@ -144,6 +138,19 @@
         handleError: function(requestId as string, error as object) as void
             ' TODO Handle error
             ' Drop the hits and mark session inactive if error with sessionStart
+        end function,
+
+        ''' Queues media events which will then be dispatched to edgeRequestQueue
+        _queue: function(mediaHit as object) as void
+            if not _isActive then
+                _adb_logWarning("handleQueueEvent() - Cannot queue media event, media session (" + FormatJson(_id) + " is not active.")
+                return
+            end if
+
+            ' Create and add hit to queue for actual events or heartbeat pings
+            m._hitQueue.append(mediaHit)
+            m._lastHit = mediaHit
+            m.dispatchMediaEvents()
         end function,
 
         _resetForRestart: function() as void
@@ -224,7 +231,7 @@
                 return xdmData
             end if
 
-            channel = m._sessionConfig["channel"] ''' TODO update with constant
+            channel = m._sessionConfig[m._PUBLIC_CONSTANTS.MEDIA_SESSION_CONFIGURATION.CHANNEL]
             if not _adb_isEmptyOrInvalidString(channel) then
                 xdmData.xdm["mediaCollection"]["sessionDetails"]["channel"] = channel
             end if
@@ -296,11 +303,6 @@
 
             if m._isIdle and not m._isActive and eventType = m._MEDIA_EVENT_TYPE.PLAY
                 m._resetForRestart()
-
-                ''' TODO set resumed flag to true in sessionStart XDM
-                ''' Update ts and playhead in sessionStart XDM using mediahit
-                ''' Update ts and playhead in sessionStart XDM using mediahit
-                ''' update requestID with new UUID string
                 m.process(m._createSessionResumeHit(mediaHit))
                 m.process(mediaHit)
             end if
@@ -359,20 +361,20 @@
 
         _getPingInterval: function(isAd = false as boolean) as integer
             if isAd then
-                interval =  m._sessionConfig[m._PUBLIC_CONSTANTS.MEDIA_SESSION_CONFIGURATION.AD_PING_INTERVAL]
-                if interval = invalid then
-                    interval = m._DEFAULT_PING_INTERVAL_SEC
-                else if interval >= m._MIN_AD_PING_INTERVAL_SEC and interval <= m._MAX_AD_PING_INTERVAL_SEC then
-                    _adb_logVerbose("getPingInterval() - Setting ad ping interval as " + interval + " seconds.")
-                    return interval
+                adPingInterval = m._sessionConfig[m._PUBLIC_CONSTANTS.MEDIA_SESSION_CONFIGURATION.AD_PING_INTERVAL]
+                if adPingInterval = invalid or adPingInterval < m._MIN_AD_PING_INTERVAL_SEC or adPingInterval > m._MAX_AD_PING_INTERVAL_SEC then
+                    return m._DEFAULT_PING_INTERVAL_SEC
+                else
+                    _adb_logVerbose("getPingInterval() - Setting ad ping interval as " + StrI(adPingInterval) + " seconds.")
+                    return adPingInterval
                 end if
             else
-                interval = m._sessionConfig[m._PUBLIC_CONSTANTS.MEDIA_SESSION_CONFIGURATION.MAIN_PING_INTERVAL]
-                if interval = invalid then
-                    interval = m._DEFAULT_PING_INTERVAL_SEC
-                else if interval >= m._MIN_MAIN_PING_INTERVAL_SEC and interval <= m._MAX_MAIN_PING_INTERVAL_SEC then
-                    _adb_logVerbose("getPingInterval() - Setting main ping interval as " + interval + " seconds.")
-                    return interval
+                mainPingInterval = m._sessionConfig[m._PUBLIC_CONSTANTS.MEDIA_SESSION_CONFIGURATION.MAIN_PING_INTERVAL]
+                if mainPingInterval = invalid or mainPingInterval < m._MIN_MAIN_PING_INTERVAL_SEC or mainPingInterval > m._MAX_MAIN_PING_INTERVAL_SEC then
+                    return m._DEFAULT_PING_INTERVAL_SEC
+                else
+                    _adb_logVerbose("getPingInterval() - Setting main ping interval as " + StrI(mainPingInterval) + " seconds.")
+                    return mainPingInterval
                 end if
             end if
         end function,

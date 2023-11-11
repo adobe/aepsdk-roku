@@ -35,3 +35,121 @@ sub TC_adb_MediaSession_init()
 end sub
 
 
+
+
+' *****************************************************************************************
+' Private Functions
+
+' target: _getPingInterval()
+' @Test
+sub TC_adb_MediaSession_getPingInterval_validInterval()
+    ''' setup
+    configurationModule = _adb_ConfigurationModule()
+    identityModule = _adb_IdentityModule(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+
+
+    sessionConfig = {"config.adpinginterval" : 1, "config.mainpinginterval" : 30 }
+
+    ''' test
+    mediaSession = _adb_MediaSession("testId", configurationModule, sessionConfig, edgeRequestQueue)
+
+    ''' verify
+    interval = mediaSession._getPingInterval()
+    UTF_assertEqual(30, interval)
+
+    adinterval = mediaSession._getPingInterval(true)
+    UTF_assertEqual(1, adinterval)
+end sub
+
+' target: _getPingInterval()
+' @Test
+sub TC_adb_MediaSession_getPingInterval_invalidInterval()
+    ''' setup
+    configurationModule = _adb_ConfigurationModule()
+    identityModule = _adb_IdentityModule(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+
+
+    sessionConfig = {"config.adpinginterval" : 0, "config.mainpinginterval" : 0 }
+
+    ''' test
+    mediaSession = _adb_MediaSession("testId", configurationModule, sessionConfig, edgeRequestQueue)
+
+    ''' verify
+    interval = mediaSession._getPingInterval()
+    UTF_assertEqual(10, interval)
+
+    adinterval = mediaSession._getPingInterval(true)
+    UTF_assertEqual(10, adinterval)
+
+
+    sessionConfig = {"config.adpinginterval" : 11, "config.mainpinginterval" : 51 }
+    mediaSession = _adb_MediaSession("testId", configurationModule, sessionConfig, edgeRequestQueue)
+
+    ''' verify
+    interval = mediaSession._getPingInterval()
+    UTF_assertEqual(10, interval)
+
+    adinterval = mediaSession._getPingInterval(true)
+    UTF_assertEqual(10, adinterval)
+end sub
+
+' target: _extractSessionStartData()
+' @Test
+sub TC_adb_MediaSession_extractSessionStartData_sessionStartHit_cachesHit()
+    ''' setup
+    configurationModule = _adb_ConfigurationModule()
+    identityModule = _adb_IdentityModule(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+
+    ''' test
+    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeRequestQueue)
+    mediaHit = {}
+    mediaHit.xdmData = {
+        "xdm": {
+            "eventType": "media.sessionStart"
+            "mediaCollection": {
+                "playhead": 0,
+            }
+        }
+    }
+    mediaHit.eventType = "media.sessionStart"
+
+    mediaSession._extractSessionStartData(mediaHit)
+
+    ''' verify
+    UTF_assertNotInvalid(mediaSession._sessionStartHit)
+    UTF_assertEqual(0, mediaSession._sessionStartHit.xdmData.xdm.mediaCollection.playhead)
+end sub
+
+' target: _extractSessionStartData()
+' @Test
+sub TC_adb_MediaSession_extractSessionStartData_notSessionStartHit_doesNotCacheHit()
+    ''' setup
+    configurationModule = _adb_ConfigurationModule()
+    identityModule = _adb_IdentityModule(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+
+    ''' test
+    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeRequestQueue)
+    mediaHit = {}
+    mediaHit.xdmData = {
+        "xdm": {
+            "eventType": "media.play",
+            "mediaCollection": {
+                "playhead": 0,
+            }
+        }
+    }
+    mediaHit.eventType = "media.play"
+
+    mediaSession._extractSessionStartData(mediaHit)
+
+    ''' verify
+    UTF_assertInvalid(mediaSession._sessionStartHit)
+end sub

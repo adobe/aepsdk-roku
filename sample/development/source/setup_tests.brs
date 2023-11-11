@@ -149,6 +149,10 @@ function _adb_test_functions() as dynamic
         TC_adb_MediaSessionManager_endSession_invalidActiveSession_getsIgnored
         ' test_mediaSession.brs
         TC_adb_MediaSession_init
+        TC_adb_MediaSession_getPingInterval_validInterval
+        TC_adb_MediaSession_getPingInterval_invalidInterval
+        TC_adb_MediaSession_extractSessionStartData_sessionStartHit_cachesHit
+        TC_adb_MediaSession_extractSessionStartData_notSessionStartHit_doesNotCacheHit
     ]
     initSDK = [
         'test_AdobeAEPSDKInit.brs
