@@ -139,6 +139,12 @@ function _adb_test_functions() as dynamic
         TC_adb_MediaModule_processEvent_SessionComplete_validConfig_queuesEventAndEndsSession
         TC_adb_MediaModule_processEvent_invalidMediaEvent_ignoresEvent
         TC_hasValidConfig
+        ' test_mediaSessionManager.brs
+        TC_adb_MediaSessionManager_init
+        TC_adb_MediaSessionManager_createSession
+        TC_adb_MediaSessionManager_queue_validActiveSession_queuesWithSession
+        TC_adb_MediaSessionManager_queue_invalidActiveSession_ignoresMediaHit
+        ' test_mediaSession.brs
     ]
     initSDK = [
         'test_AdobeAEPSDKInit.brs
