@@ -148,6 +148,7 @@ function _adb_test_functions() as dynamic
         TC_adb_MediaSessionManager_endSession_validActiveSession_closesSession
         TC_adb_MediaSessionManager_endSession_invalidActiveSession_getsIgnored
         ' test_mediaSession.brs
+        TC_adb_MediaSession_init
     ]
     initSDK = [
         'test_AdobeAEPSDKInit.brs

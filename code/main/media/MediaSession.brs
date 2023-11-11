@@ -19,10 +19,10 @@
         _sessionConfig: sessionConfig,
         _configurationModule: configurationModule,
         _edgeRequestQueue: edgeRequestQueue,
+        _isActive: true,
 
         _backendSessionId: invalid,
         _hitQueue: [],
-        _isActive: true,
 
         _idleStartTS: invalid,
         _isPlaying: false,
