@@ -85,7 +85,7 @@ function _adb_MediaModule(configurationModule as object, edgeRequestQueue as obj
         _createMediaHit: sub(requestId as string, eventType as string, xdmData as object, tsObject as object) as object
             mediaHit = {}
             mediaHit.requestId = requestId
-            medioHit.eventType = eventType
+            mediaHit.eventType = eventType
             mediaHit.xdmData = xdmData
             mediaHit.tsObject = tsObject
             return mediaHit
