@@ -216,6 +216,7 @@
             m._sessionStartHit = mediaHit
         end function,
 
+        ''' Called for sessionStart hit only
         _attachMediaConfig: function(xdmData as object) as object
             xdmData.xdm["mediaCollection"]["sessionDetails"]["playerName"] = m._configurationModule.getMediaPlayerName()
             xdmData.xdm["mediaCollection"]["sessionDetails"]["channel"] = m._configurationModule.getMediaChannel()
@@ -224,10 +225,12 @@
             if not _adb_isEmptyOrInvalidString(appVersion) then
                 xdmData.xdm["mediaCollection"]["sessionDetails"]["appVersion"] = appVersion
             end if
+
+            return xdmData
         end function,
 
         _updateChannelFromSessionConfig: function(xdmData as object) as object
-            if sessionConfig =  invalid then
+            if m._sessionConfig =  invalid then
                 return xdmData
             end if
 
@@ -235,6 +238,8 @@
             if not _adb_isEmptyOrInvalidString(channel) then
                 xdmData.xdm["mediaCollection"]["sessionDetails"]["channel"] = channel
             end if
+
+            return xdmData
         end function,
 
         ''' TODO verify this

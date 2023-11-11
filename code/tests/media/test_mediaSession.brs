@@ -153,3 +153,68 @@ sub TC_adb_MediaSession_extractSessionStartData_notSessionStartHit_doesNotCacheH
     ''' verify
     UTF_assertInvalid(mediaSession._sessionStartHit)
 end sub
+
+
+' target: _attachMediaConfig()
+' @Test
+sub TC_adb_MediaSession_attachMediaConfig()
+    ''' setup
+    configurationModule = _adb_ConfigurationModule()
+    ADB_CONSTANTS = AdobeAEPSDKConstants()
+    configuration = {}
+    configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL] = "testChannel"
+    configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_PLAYER_NAME] = "testPlayerName"
+    configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_APP_VERSION] = "testAppVersion"
+
+    configurationModule.updateConfiguration(configuration)
+
+    identityModule = _adb_IdentityModule(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+
+    ''' test
+    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeRequestQueue)
+    updatedXDMData = mediaSession._attachMediaConfig({
+        "xdm": {
+            "eventType": "media.sessionStart",
+            "mediaCollection": {
+                "sessionDetails": {
+                }
+                "playhead": 0,
+            }
+        }
+    })
+
+    ''' verify
+    UTF_assertEqual("testChannel", updatedXDMData.xdm.mediaCollection.sessionDetails.channel)
+    UTF_assertEqual("testPlayerName", updatedXDMData.xdm.mediaCollection.sessionDetails.playerName)
+    UTF_assertEqual("testAppVersion", updatedXDMData.xdm.mediaCollection.sessionDetails.appVersion)
+end sub
+
+' target: _updateChannelFromSessionConfig()
+' @Test
+sub TC_adb_MediaSession_updateChannelFromSessionConfig()
+    ''' setup
+    configurationModule = _adb_ConfigurationModule()
+    identityModule = _adb_IdentityModule(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+
+    sessionConfig = {"config.channel" : "channelFromSessionConfig"}
+    ''' test
+    mediaSession = _adb_MediaSession("testId", configurationModule, sessionConfig, edgeRequestQueue)
+    updatedXDMData = mediaSession._updateChannelFromSessionConfig({
+        "xdm": {
+            "eventType": "media.sessionStart",
+            "mediaCollection": {
+                "sessionDetails": {
+                    "channel" : "channelFromSDKConfig"
+                }
+                "playhead": 0,
+            }
+        }
+    })
+
+    ''' verify
+    UTF_assertEqual("channelFromSessionConfig", updatedXDMData.xdm.mediaCollection.sessionDetails.channel)
+end sub
