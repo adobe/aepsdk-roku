@@ -15,8 +15,9 @@ This document lists the APIs provided by AEP Roku SDK, along with code samples f
 
 ### AdobeAEPSDKInit
 
-The AEP task node performs the core logic of the SDK. If the task node instance is not provided, calling this function will create a new AEP task node instance and yield an SDK API instance.
-Then, the "getTaskNode" fucntion can be called via the API instance to retrieve the task node instance.
+> The AEP task node performs the core logic of the SDK. Typically, a Roku project maintains only one instance of the AEP task node.
+
+It's recommended to first call this function without passing an argument within the scene script. It initializes a new AEP task node and creates an associated SDK instance. Then, the task node instance can be retrieved via the getTaskNode() API.
 
 For example:
 ```brightscript
@@ -24,15 +25,14 @@ sdkInstance = AdobeAEPSDKInit()
 adobeTaskNode = sdkInstance.getTaskNode()
 ```
 
-Storing the task node instance in the Scene node is recommended.
+To make this task node instance accessible in other components, appending it to the scene node is recommended.
 
 For example:
 ```brightscript
-adobeTaskNode.id = "adobeTaskNode"
 m.top.appendChild(adobeTaskNode)
 ```
 
-The task node instance can then be retieved and utilized to initialize a new API instance in other SceneGraph components.
+The task node's ID is by default set to "adobeTaskNode". Then, retrieve it by ID and use it to create a new SDK instance in other components.
 
 For example:
 ```brightscript
@@ -316,6 +316,73 @@ function onAdbmobileApiResponse() as void
         endif
       endif
     end function
+```
+
+---
+
+### createMediaSession
+
+Call this function to shut down the AEP Roku SDK and drop further API calls.The XDM data must be the type of "media.sessionStart". If the "playerName", "channel", and "appVersion" are not provided in the XDM data, the SDK will use the global values passed via "updateConfiguration" API.
+
+About the XDM data structure, please refer to the [starting the session
+](https://experienceleague.adobe.com/docs/experience-platform/edge-network-server-api/media-edge-apis/getting-started.html?lang=en#start-session) document.
+
+##### Syntax
+
+```brightscript
+createMediaSession: function(xdmData as object, configuration = {} as object) as void
+```
+
+##### Example
+
+```brightscript
+m.aepSdk.createMediaSession({
+  "xdm": {
+    "eventType": "media.sessionStart"
+     "mediaCollection": {
+      "playhead": 0,
+      "sessionDetails": {
+        "streamType": "video",
+        "friendlyName": "test_media_name",
+        "hasResume": false,
+        "name": "test_media_id",
+        "length": 100,
+        "contentType": "vod"
+      }
+    }
+  }
+})
+```
+
+---
+
+### sendMediaEvent
+
+Before calling this function to send a Media event with the given XDM data, it's required to call the `createMediaSession` API to start a new session.
+
+About the XDM data structure, please refer to the [Media Edge API Documentation](https://experienceleague.adobe.com/docs/experience-platform/edge-network-server-api/media-edge-apis/getting-started.html?lang=en).
+
+> **Important**
+> Ensure that you send `media.ping` evevents every 1 second when playing a video to ensure that the SDK sends out the pings properly.
+> The sample app uses a timer to send ping events per second. See the [MainScene.brs](../sample/simple-videoplayer-channel/components/MainScene.brs) for more details.
+
+##### Syntax
+
+```brightscript
+sendMediaEvent: function(xdmData as object) as void
+```
+
+##### Example
+
+```brightscript
+m.aepSdk.sendMediaEvent({
+  "xdm": {
+    "eventType": "media.play",
+    "mediaCollection": {
+      "playhead": 0,
+    }
+  }
+})
 ```
 
 ---
