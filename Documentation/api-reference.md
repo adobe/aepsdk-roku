@@ -9,6 +9,8 @@ This document lists the APIs provided by AEP Roku SDK, along with code samples f
 - [sendEvent](#sendEvent)
 - [resetIdentities](#resetIdentities)
 - [(optional) setExperienceCloudId](#setExperienceCloudId)
+- [createMediaSession](#createMediaSession)
+- [sendMediaEvent](#sendMediaEvent)
 - [shutdown](#shutdown)
 
 ---
