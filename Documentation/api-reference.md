@@ -325,7 +325,7 @@ function onAdbmobileApiResponse() as void
 
 ### createMediaSession
 
-Call this function to shut down the AEP Roku SDK and drop further API calls.The XDM data must be the type of "media.sessionStart". If the "playerName", "channel", and "appVersion" are not provided in the XDM data, the SDK will use the global values passed via "updateConfiguration" API.
+Call this function to start a new Media session with the given XDM data. The XDM data must be the type of "media.sessionStart". If the "playerName", "channel", and "appVersion" are not provided in the XDM data, the SDK will use the global values passed via "updateConfiguration" API.
 
 About the XDM data structure, please refer to the [starting the session
 ](https://experienceleague.adobe.com/docs/experience-platform/edge-network-server-api/media-edge-apis/getting-started.html?lang=en#start-session) document.
