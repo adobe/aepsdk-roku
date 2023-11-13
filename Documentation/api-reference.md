@@ -366,8 +366,8 @@ Before calling this function to send a Media event with the given XDM data, it's
 About the XDM data structure, please refer to the [Media Edge API Documentation](https://experienceleague.adobe.com/docs/experience-platform/edge-network-server-api/media-edge-apis/getting-started.html?lang=en).
 
 > **Important**
-> Ensure that you send `media.ping` evevents every 1 second when playing a video to ensure that the SDK sends out the pings properly.
-> The sample app uses a timer to send ping events per second. See the [MainScene.brs](../sample/simple-videoplayer-channel/components/MainScene.brs) for more details.
+> Ensure that the `media.ping` event is sent every second during video playback so that the SDK sends out the pings properly.
+> Refer to [MainScene.brs](../sample/simple-videoplayer-channel/components/MainScene.brs) for information on how the sample app uses a timer to send ping events every second.
 
 ##### Syntax
 
@@ -382,7 +382,7 @@ m.aepSdk.sendMediaEvent({
   "xdm": {
     "eventType": "media.play",
     "mediaCollection": {
-      "playhead": 0,
+      "playhead": <current_playhead>,
     }
   }
 })
