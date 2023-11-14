@@ -25,6 +25,7 @@
         _hitQueue: [],
 
         _idleStartTS: invalid,
+        _isIdle: false,
         _isPlaying: false,
         _isInAd: false,
         _lastHit: invalid, ''' to track last event, ts, playhead, etc.
@@ -153,95 +154,6 @@
             m.dispatchMediaEvents()
         end function,
 
-        _resetForRestart: function() as void
-            m._idleStartTS = invalid
-            m._backendSessionId = invalid
-            m._isIdle = false
-            m._isActive = true
-        end function,
-
-        _updateAdState: function(mediaHit as object) as boolean
-            eventType = mediaHit.eventType
-            if eventType = m._MEDIA_EVENT_TYPE.AD_START
-                m._isInAd = true
-            else if eventType = m._MEDIA_EVENT_TYPE.AD_COMPLETE or eventType = m._MEDIA_EVENT_TYPE.AD_SKIP
-                m._isInAd = false
-            end if
-        end function,
-
-        _shouldQueue: function(mediaHit as object) as boolean
-            pingInterval = m._getPingInterval(m._isInAd)
-
-            eventType = mediaHit.eventType
-
-            ''' Should queue any event other than ping.
-            if eventType <> m._MEDIA_EVENT_TYPE.PING
-                return true
-            end if
-
-            ''' Should queue ping event if the duration between the last event and this ping event is greater than ping interval
-            ''' If the duration is less than ping interval, then ignore the ping event
-            currentHitTS = mediaHit.tsObject.tsInMillis
-            lastHitTS = m._lastHit.tsObject.tsInMillis
-
-            ''' Dispatch if ping interval has elapsed since last event was sent
-            if (currentHitTS - lastHitTS) < (pingInterval * 1000) then
-                return true
-            end if
-
-            return false
-        end function,
-
-        _updatePlaybackState: function(mediaHit as object) as void
-            eventType = mediaHit.eventType
-
-            if eventType = m._MEDIA_EVENT_TYPE.PLAY
-                m._isPlaying = true
-                m._idleStartTS = invalid
-            else if eventType = m._MEDIA_EVENT_TYPE.PAUSE or eventType = m._MEDIA_EVENT_TYPE.SEEK or eventType = m._MEDIA_EVENT_TYPE.BUFFER
-                m._isPlaying = false
-
-                ''' Set the idle start timestamp if not set already
-                if m._idleStartTS = invalid then
-                    m._idleStartTS = _adb_TimestampObject().tsInMillis
-                end if
-            end if
-        end function,
-
-        _extractSessionStartData: function(mediaHit as object) as void
-            if mediaHit.eventType <> m._MEDIA_EVENT_TYPE.SESSION_START
-                return
-            end if
-
-            m._sessionStartHit = mediaHit
-        end function,
-
-        ''' Called for sessionStart hit only
-        _attachMediaConfig: function(xdmData as object) as object
-            xdmData.xdm["mediaCollection"]["sessionDetails"]["playerName"] = m._configurationModule.getMediaPlayerName()
-            xdmData.xdm["mediaCollection"]["sessionDetails"]["channel"] = m._configurationModule.getMediaChannel()
-
-            appVersion = m._configurationModule.getMediaAppVersion()
-            if not _adb_isEmptyOrInvalidString(appVersion) then
-                xdmData.xdm["mediaCollection"]["sessionDetails"]["appVersion"] = appVersion
-            end if
-
-            return xdmData
-        end function,
-
-        _updateChannelFromSessionConfig: function(xdmData as object) as object
-            if m._sessionConfig =  invalid then
-                return xdmData
-            end if
-
-            channel = m._sessionConfig[m._PUBLIC_CONSTANTS.MEDIA_SESSION_CONFIGURATION.CHANNEL]
-            if not _adb_isEmptyOrInvalidString(channel) then
-                xdmData.xdm["mediaCollection"]["sessionDetails"]["channel"] = channel
-            end if
-
-            return xdmData
-        end function,
-
         ''' TODO verify this
         _processEdgeRequestQueue: function() as void
             ' Process the queue and send the hits to edgeWorker
@@ -286,13 +198,95 @@
             end for
         end function,
 
+        _shouldQueue: function(mediaHit as object) as boolean
+            pingInterval = m._getPingInterval(m._isInAd)
+
+            eventType = mediaHit.eventType
+
+            ''' Should queue any event other than ping.
+            if eventType <> m._MEDIA_EVENT_TYPE.PING
+                return true
+            end if
+
+            ''' Should queue ping event if the duration between the last event and this ping event is greater than ping interval
+            ''' If the duration is less than ping interval, then ignore the ping event
+            currentHitTS = mediaHit.tsObject.tsInMillis
+            lastHitTS = m._lastHit.tsObject.tsInMillis
+
+            ''' Dispatch if ping interval has elapsed since last event was sent
+            if (currentHitTS - lastHitTS) < (pingInterval * 1000) then
+                return true
+            end if
+
+            return false
+        end function,
+
+        _extractSessionStartData: function(mediaHit as object) as void
+            if mediaHit.eventType <> m._MEDIA_EVENT_TYPE.SESSION_START
+                return
+            end if
+
+            m._sessionStartHit = mediaHit
+        end function,
+
+        ''' Called for sessionStart hit only
+        _attachMediaConfig: function(xdmData as object) as object
+            xdmData.xdm["mediaCollection"]["sessionDetails"]["playerName"] = m._configurationModule.getMediaPlayerName()
+            xdmData.xdm["mediaCollection"]["sessionDetails"]["channel"] = m._configurationModule.getMediaChannel()
+
+            appVersion = m._configurationModule.getMediaAppVersion()
+            if not _adb_isEmptyOrInvalidString(appVersion) then
+                xdmData.xdm["mediaCollection"]["sessionDetails"]["appVersion"] = appVersion
+            end if
+
+            return xdmData
+        end function,
+
+        _updateChannelFromSessionConfig: function(xdmData as object) as object
+            if m._sessionConfig =  invalid then
+                return xdmData
+            end if
+
+            channel = m._sessionConfig[m._PUBLIC_CONSTANTS.MEDIA_SESSION_CONFIGURATION.CHANNEL]
+            if not _adb_isEmptyOrInvalidString(channel) then
+                xdmData.xdm["mediaCollection"]["sessionDetails"]["channel"] = channel
+            end if
+
+            return xdmData
+        end function,
+
+        _updateAdState: function(mediaHit as object) as boolean
+            eventType = mediaHit.eventType
+            if eventType = m._MEDIA_EVENT_TYPE.AD_START
+                m._isInAd = true
+            else if eventType = m._MEDIA_EVENT_TYPE.AD_COMPLETE or eventType = m._MEDIA_EVENT_TYPE.AD_SKIP
+                m._isInAd = false
+            end if
+        end function,
+
+        _updatePlaybackState: function(mediaHit as object) as void
+            eventType = mediaHit.eventType
+
+            if eventType = m._MEDIA_EVENT_TYPE.PLAY
+                m._isPlaying = true
+                m._idleStartTS = invalid
+            else if eventType = m._MEDIA_EVENT_TYPE.PAUSE_START or eventType = m._MEDIA_EVENT_TYPE.BUFFER_START
+                m._isPlaying = false
+
+                ''' Set the idle start timestamp if not set already
+                if m._idleStartTS = invalid then
+                    m._idleStartTS = mediaHit.tsObject.tsInMillis
+                end if
+            end if
+        end function,
+
         _closeIfIdle: function(mediaHit as object) as boolean
             ' Check if the session is idle for >= 30 minutes
             if m._isPlaying or m._idleStartTS <> invalid then
                 return false
             end if
 
-            idleTime = _adb_TimestampObject().tsInMillis - m._idleStartTS
+            idleTime = mediaHit.tsObject.tsInMillis - m._idleStartTS
             if idleTime >= m._SESSION_IDLE_THRESHOLD_SEC * 1000 then
                 ''' Abort the Idle session
                 m.process(m._createSessionEndHit(mediaHit))
@@ -331,6 +325,13 @@
                 m.process(m._createSessionResumeHit(mediaHit))
             end if
             ' Check if the session is long running >= 24 hours
+        end function,
+
+        _resetForRestart: function() as void
+            m._idleStartTS = invalid
+            m._backendSessionId = invalid
+            m._isIdle = false
+            m._isActive = true
         end function,
 
         _createSessionResumeHit: function(mediaHit as object) as object

@@ -155,6 +155,13 @@ function _adb_test_functions() as dynamic
         TC_adb_MediaSession_extractSessionStartData_notSessionStartHit_doesNotCacheHit
         TC_adb_MediaSession_attachMediaConfig
         TC_adb_MediaSession_updateChannelFromSessionConfig
+        TC_adb_MediaSession_updatePlaybackState_playEvent
+        TC_adb_MediaSession_updatePlaybackState_pauseStartEvent
+        TC_adb_MediaSession_updatePlaybackState_pauseStart_bufferStartEvent
+        TC_adb_MediaSession_updatePlaybackState_nonPlaybackEvents_ignored
+        TC_adb_MediaSession_updateAdState_adStartEvent_setsIsInAd
+        TC_adb_MediaSession_updateAdState_adCompleteEvent_adSkipEvent_resetsIsInAd
+        TC_adb_MediaSession_updateAdState_nonAdEvent_ignored
     ]
     initSDK = [
         'test_AdobeAEPSDKInit.brs
