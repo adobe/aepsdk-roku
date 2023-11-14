@@ -44,19 +44,13 @@ end sub
 ' @Test
 sub TC_adb_MediaSession_getPingInterval_validInterval()
     ''' setup
-    configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
-
-
     sessionConfig = {"config.adpinginterval" : 1, "config.mainpinginterval" : 30 }
+    mediaSession = _adb_MediaSession("testId", {}, sessionConfig, {})
 
     ''' test
-    mediaSession = _adb_MediaSession("testId", configurationModule, sessionConfig, edgeRequestQueue)
+    interval = mediaSession._getPingInterval()
 
     ''' verify
-    interval = mediaSession._getPingInterval()
     UTF_assertEqual(30, interval)
 
     adinterval = mediaSession._getPingInterval(true)
@@ -67,19 +61,13 @@ end sub
 ' @Test
 sub TC_adb_MediaSession_getPingInterval_invalidInterval()
     ''' setup
-    configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
-
-
     sessionConfig = {"config.adpinginterval" : 0, "config.mainpinginterval" : 0 }
+    mediaSession = _adb_MediaSession("testId", {}, sessionConfig, {})
 
     ''' test
-    mediaSession = _adb_MediaSession("testId", configurationModule, sessionConfig, edgeRequestQueue)
+    interval = mediaSession._getPingInterval()
 
     ''' verify
-    interval = mediaSession._getPingInterval()
     UTF_assertEqual(10, interval)
 
     adinterval = mediaSession._getPingInterval(true)
@@ -87,7 +75,7 @@ sub TC_adb_MediaSession_getPingInterval_invalidInterval()
 
 
     sessionConfig = {"config.adpinginterval" : 11, "config.mainpinginterval" : 51 }
-    mediaSession = _adb_MediaSession("testId", configurationModule, sessionConfig, edgeRequestQueue)
+    mediaSession = _adb_MediaSession("testId", {}, sessionConfig, {})
 
     ''' verify
     interval = mediaSession._getPingInterval()
@@ -101,13 +89,6 @@ end sub
 ' @Test
 sub TC_adb_MediaSession_extractSessionStartData_sessionStartHit_cachesHit()
     ''' setup
-    configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
-
-    ''' test
-    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeRequestQueue)
     mediaHit = {}
     mediaHit.xdmData = {
         "xdm": {
@@ -119,6 +100,9 @@ sub TC_adb_MediaSession_extractSessionStartData_sessionStartHit_cachesHit()
     }
     mediaHit.eventType = "media.sessionStart"
 
+    mediaSession = _adb_MediaSession("testId", {}, {}, {})
+
+    ''' test
     mediaSession._extractSessionStartData(mediaHit)
 
     ''' verify
@@ -130,13 +114,7 @@ end sub
 ' @Test
 sub TC_adb_MediaSession_extractSessionStartData_notSessionStartHit_doesNotCacheHit()
     ''' setup
-    configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
-
-    ''' test
-    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeRequestQueue)
+    mediaSession = _adb_MediaSession("testId", {}, {}, {})
     mediaHit = {}
     mediaHit.xdmData = {
         "xdm": {
@@ -148,6 +126,7 @@ sub TC_adb_MediaSession_extractSessionStartData_notSessionStartHit_doesNotCacheH
     }
     mediaHit.eventType = "media.play"
 
+    ''' test
     mediaSession._extractSessionStartData(mediaHit)
 
     ''' verify
@@ -167,7 +146,6 @@ sub TC_adb_MediaSession_attachMediaConfig()
     configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_APP_VERSION] = "testAppVersion"
 
     configurationModule.updateConfiguration(configuration)
-
     identityModule = _adb_IdentityModule(configurationModule)
     edgeModule = _adb_EdgeModule(configurationModule, identityModule)
     edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
@@ -199,8 +177,8 @@ sub TC_adb_MediaSession_updateChannelFromSessionConfig()
     identityModule = _adb_IdentityModule(configurationModule)
     edgeModule = _adb_EdgeModule(configurationModule, identityModule)
     edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
-
     sessionConfig = {"config.channel" : "channelFromSessionConfig"}
+
     ''' test
     mediaSession = _adb_MediaSession("testId", configurationModule, sessionConfig, edgeRequestQueue)
     updatedXDMData = mediaSession._updateChannelFromSessionConfig({
