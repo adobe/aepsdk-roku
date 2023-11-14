@@ -40,8 +40,11 @@ m.aepSdk.createMediaSession({
           "friendlyName": "test_media_name",
           "hasResume": false,
           "name": "test_media_id",
-          "length": 100,
+          "length": 10,
           "contentType": "vod"
+        },
+        "customMetadata":{
+          "videotype":"episode" 
         }
       }
     }
@@ -65,7 +68,7 @@ m.aepSdk.sendMediaEvent({
       "xdm": {
         "eventType": "media.play",
         "mediaCollection": {
-          "playhead": position,
+          "playhead": <CURRENT_PLAYHEAD_VALUE>,
         }
       }
     })
@@ -86,7 +89,7 @@ m.aepSdk.sendMediaEvent({
       "xdm": {
         "eventType": "media.pauseStart",
         "mediaCollection": {
-          "playhead": position,
+          "playhead": <CURRENT_PLAYHEAD_VALUE>,
         }
       }
     })
@@ -103,6 +106,14 @@ m.adbmobile.mediaTrackComplete()
 - AEP SDK
 
 ``` brightscript
+m.aepSdk.sendMediaEvent({
+      "xdm": {
+        "eventType": "media.sessionComplete",
+        "mediaCollection": {
+          "playhead": <CURRENT_PLAYHEAD_VALUE>,
+        }
+      }
+    })
 ```
 
 ### trackSessionEnd
@@ -116,6 +127,14 @@ m.adbmobile.mediaTrackSessionEnd()
 - AEP SDK
 
 ``` brightscript
+m.aepSdk.sendMediaEvent({
+      "xdm": {
+        "eventType": "media.sessionEnd",
+        "mediaCollection": {
+          "playhead": <CURRENT_PLAYHEAD_VALUE>,
+        }
+      }
+    })
 ```
 
 ### trackError
@@ -123,12 +142,24 @@ m.adbmobile.mediaTrackSessionEnd()
 - Meida SDK
 
 ``` brightscript
-m.adbmobile.mediaTrackError(errorMsg, "video-player-error-code")
+m.adbmobile.mediaTrackError("errorId", "video-player-error-code")
 ```
 
 - AEP SDK
 
 ``` brightscript
+m.aepSdk.sendMediaEvent({
+      "xdm": {
+        "eventType": "media.error",
+        "mediaCollection": {
+          "playhead": <CURRENT_PLAYHEAD_VALUE>,
+          "errorDetails": {
+            "name": "errorId",
+            "source": "video-player-error-code"
+          }
+        }
+      }
+    })
 ```
 
 ### trackEvent
@@ -136,27 +167,9 @@ m.adbmobile.mediaTrackError(errorMsg, "video-player-error-code")
 - Meida SDK
 
 ``` brightscript
-‘ Create an adbreak info object
-adBreakInfo = adb_media_init_adbreakinfo()
-adBreakInfo.name = <ADBREAK_NAME>
-adBreakInfo.startTime = <START_TIME>
-adBreakInfo.position = <POSITION>
-
-contextData = {}
-m.adbmobile.mediaTrackEvent(MEDIA_AD_BREAK_START, adBreakInfo, contextData)
-```
-
-- AEP SDK
-
-``` brightscript
-```
-
-### updateCurrentPlayhead
-
-- Meida SDK
-
-``` brightscript
-m.adbmobile.updateCurrentPlayhead(123)
+seekContextData = {}
+seekContextData = {}
+m.adbmobile.mediaTrackEvent(MEDIA_SEEK_START, seekInfo, seekContextData)
 ```
 
 - AEP SDK
@@ -172,11 +185,33 @@ m.aepSdk.sendMediaEvent({
   })
 ```
 
+### updateCurrentPlayhead
+
+- Meida SDK
+
+``` brightscript
+m.adbmobile.updateCurrentPlayhead(<CURRENT_PLAYHEAD_VALUE>)
+```
+
+- AEP SDK
+
+``` brightscript
+m.aepSdk.sendMediaEvent({
+    "xdm": {
+      "eventType": "media.ping",
+      "mediaCollection": {
+        "playhead": <CURRENT_PLAYHEAD_VALUE>,
+      }
+    }
+  })
+```
+
 ### updateQoEObject
 
 - Meida SDK
 
 ``` brightscript
+m.adbmobile.mediaUpdateQoS
 ```
 
 - AEP SDK
