@@ -20,7 +20,7 @@ This document lists the APIs provided by AEP Roku SDK, along with code samples f
 > [!IMPORTANT]
 > The AEP task node performs the core logic of the SDK. Typically, a Roku project maintains only one instance of the AEP task node.
 
-It's recommended to first call AdobeAEPSDKInit() without passing an argument within the scene script. It initializes a new AEP task node and creates an associated SDK instance. Then, the task node instance can be retrieved via the getTaskNode() API.
+It's rquired to first call AdobeAEPSDKInit() without passing an argument within the scene script. It initializes a new AEP task node and creates an associated SDK instance. Then, the task node instance can be retrieved via the getTaskNode() API.
 
 For example:
 ```brightscript
