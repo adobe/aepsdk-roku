@@ -20,7 +20,7 @@ This document lists the APIs provided by AEP Roku SDK, along with code samples f
 > [!IMPORTANT]
 > The AEP task node performs the core logic of the SDK. Typically, a Roku project maintains only one instance of the AEP task node.
 
-It's recommended to first call this function without passing an argument within the scene script. It initializes a new AEP task node and creates an associated SDK instance. Then, the task node instance can be retrieved via the getTaskNode() API.
+It's recommended to first call AdobeAEPSDKInit() without passing an argument within the scene script. It initializes a new AEP task node and creates an associated SDK instance. Then, the task node instance can be retrieved via the getTaskNode() API.
 
 For example:
 ```brightscript
@@ -325,7 +325,7 @@ function onAdbmobileApiResponse() as void
 
 ### createMediaSession
 
-Call this function to start a new Media session with the given XDM data. The XDM data must be the type of "media.sessionStart". If the "playerName", "channel", and "appVersion" are not provided in the XDM data, the SDK will use the global values passed via "updateConfiguration" API.
+Creates a new Media session with the provided XDM data. The XDM data event type should be `media.sessionStart`. If the `playerName`, `channel`, and `appVersion` are not provided in the XDM data, the SDK will use the global values passed via `updateConfiguration` API.
 
 About the XDM data structure, please refer to the [starting the session
 ](https://experienceleague.adobe.com/docs/experience-platform/edge-network-server-api/media-edge-apis/getting-started.html?lang=en#start-session) document.
@@ -361,12 +361,13 @@ m.aepSdk.createMediaSession({
 
 ### sendMediaEvent
 
-Before calling this function to send a Media event with the given XDM data, it's required to call the `createMediaSession` API to start a new session.
+> **Important**
+> Media session needs to be active before using `sendMediaEvent` API. Use `createMediaSession` API to create the session.
 
 About the XDM data structure, please refer to the [Media Edge API Documentation](https://experienceleague.adobe.com/docs/experience-platform/edge-network-server-api/media-edge-apis/getting-started.html?lang=en).
 
 > **Important**
-> Ensure that the `media.ping` event is sent every second during video playback so that the SDK sends out the pings properly.
+> Ensure that the `media.ping` event is sent at least once every second with the latest playhead value during the video playback. SDK relies on these pings to function properly.
 > Refer to [MainScene.brs](../sample/simple-videoplayer-channel/components/MainScene.brs) for information on how the sample app uses a timer to send ping events every second.
 
 ##### Syntax
@@ -386,6 +387,17 @@ m.aepSdk.sendMediaEvent({
     }
   }
 })
+```
+
+```brightscript
+m.aepSdk.sendMediaEvent({
+   "xdm": {
+        "eventType": "media.ping"
+        "mediaCollection": {
+             "playhead": <current_playhead>,
+          }
+      }
+ })
 ```
 
 ---
