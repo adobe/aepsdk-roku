@@ -32,7 +32,7 @@
         _sessionStartHit: invalid, ''' used for idle restart and long session restart
 
         _MEDIA_PATH_PREFIX: "/ee/va/v1/",
-        _SESSION_IDLE_THRESHOLD_SEC: 10 * 60, ' 30 minutes in pause state
+        _SESSION_IDLE_THRESHOLD_SEC: 30 * 60, ' 30 minutes in pause state
         _LONG_SESSION_THRESHOLD_SEC: 24 * 60 * 60, ' 24 hours
 
         _DEFAULT_PING_INTERVAL_SEC: 10, ' 10 seconds
