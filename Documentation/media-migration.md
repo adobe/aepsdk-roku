@@ -11,14 +11,14 @@ In the AEP Roku SDK, calling the above APIs is the recommended implementation pa
 
 ## Initliaze SDK instances
 
-| Meida SDK      | AEP SDK |
+| Media SDK      | AEP SDK |
 | ----------- | ----------- |
 | ' Create adbmobileTask node <br>  m.adbmobileTask = createObject("roSGNode","adbmobileTask")  <br> <br> ' Get AdobeMobile SG connector instance <br> m.adbmobile = ADBMobile().getADBMobileConnectorInstance(m.adbmobileTask) <br> | ' Retrieve the Adobe task node <br> m.adobeTaskNode = m.top.getScene().findNode("adobeTaskNode") <br> <br> ' Create a SDK instance <br> m.aepSdk = AdobeAEPSDKInit(m.adobeTaskNode) <br> |
 |    |         |
 
 ## Start the Media session
 
-- Meida SDK
+- Media SDK
 
 ``` brightscript
 mInfo = adb_media_init_mediainfo("test_media_name", "test_media_id", 10, "vod", ADBMobile().MEDIA_TYPE_VIDEO)
@@ -55,7 +55,7 @@ m.aepSdk.createMediaSession({
 
 ### trackPlay
 
-- Meida SDK
+- Media SDK
 
 ``` brightscript
 m.adbmobile.mediaTrackPlay()
@@ -76,7 +76,7 @@ m.aepSdk.sendMediaEvent({
 
 ### trackPause
 
-- Meida SDK
+- Media SDK
 
 ``` brightscript
 m.adbmobile.mediaTrackPause()
@@ -97,7 +97,7 @@ m.aepSdk.sendMediaEvent({
 
 ### trackComplete
 
-- Meida SDK
+- Media SDK
 
 ``` brightscript
 m.adbmobile.mediaTrackComplete()
@@ -118,7 +118,7 @@ m.aepSdk.sendMediaEvent({
 
 ### trackSessionEnd
 
-- Meida SDK
+- Media SDK
 
 ``` brightscript
 m.adbmobile.mediaTrackSessionEnd()
@@ -139,7 +139,7 @@ m.aepSdk.sendMediaEvent({
 
 ### trackError
 
-- Meida SDK
+- Media SDK
 
 ``` brightscript
 m.adbmobile.mediaTrackError("errorId", "video-player-error-code")
@@ -164,7 +164,7 @@ m.aepSdk.sendMediaEvent({
 
 ### trackEvent
 
-- Meida SDK
+- Media SDK
 
 ``` brightscript
 seekContextData = {}
@@ -187,7 +187,7 @@ m.aepSdk.sendMediaEvent({
 
 ### updateCurrentPlayhead
 
-- Meida SDK
+- Media SDK
 
 ``` brightscript
 m.adbmobile.updateCurrentPlayhead(<CURRENT_PLAYHEAD_VALUE>)
@@ -208,7 +208,7 @@ m.aepSdk.sendMediaEvent({
 
 ### updateQoEObject
 
-- Meida SDK
+- Media SDK
 
 ``` brightscript
 m.adbmobile.mediaUpdateQoS
