@@ -1,22 +1,27 @@
 ' ********************** Copyright 2023 Adobe. All rights reserved. **********************
- ' *
- ' * This file is licensed to you under the Apache License, Version 2.0 (the "License");
- ' * you may not use this file except in compliance with the License. You may obtain a copy
- ' * of the License at http://www.apache.org/licenses/LICENSE-2.0
- ' *
- ' * Unless required by applicable law or agreed to in writing, software distributed under
- ' * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
- ' * OF ANY KIND, either express or implied. See the License for the specific language
- ' * governing permissions and limitations under the License.
- ' *
- ' *****************************************************************************************
+' *
+' * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+' * you may not use this file except in compliance with the License. You may obtain a copy
+' * of the License at http://www.apache.org/licenses/LICENSE-2.0
+' *
+' * Unless required by applicable law or agreed to in writing, software distributed under
+' * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+' * OF ANY KIND, either express or implied. See the License for the specific language
+' * governing permissions and limitations under the License.
+' *
+' *****************************************************************************************
 
- ' ***************************** MODULE: MediaSession *******************************
+' ***************************** MODULE: MediaSession *******************************
 
- function _adb_MediaSession(id as string, configurationModule as object, sessionConfig as object, edgeRequestQueue as object) as object
-     return {
+function _adb_MediaSession(id as string, configurationModule as object, sessionConfig as object, edgeRequestQueue as object) as object
+    sessionObj = {
         _id: id,
-        _sessionConfig: sessionConfig,
+
+        ' session level configuration
+        _sessionChannelName: invalid,
+        _sessionAdPingInternal: invalid,
+        _sessionMainPingInternal: invalid,
+
         _configurationModule: configurationModule,
         _edgeRequestQueue: edgeRequestQueue,
 
@@ -41,12 +46,19 @@
         _MAX_AD_PING_INTERVAL_SEC: 10, ' 10 seconds
 
         _MEDIA_EVENT_TYPE: _adb_InternalConstants().MEDIA.EVENT_TYPE,
-        _PUBLIC_CONSTANTS: AdobeAEPSDKConstants()
 
         _SUCCESS_CODE: 200
         _ERROR_CODE_400: 400
         _ERROR_TYPE_VA_EDGE_400: "https://ns.adobe.com/aep/errors/va-edge-0400-400"
         _HANDLE_TYPE_SESSION_START: "media-analytics:new-session"
+
+
+        _init: sub(sessionConfig as object)
+            SESSION_CONFIGURATION: AdobeAEPSDKConstants().MEDIA_SESSION_CONFIGURATION
+            m._sessionAdPingInternal = _adb_optIntFromMap(m._sessionConfig, SESSION_CONFIGURATION.AD_PING_INTERVAL)
+            m._sessionMainPingInternal = _adb_optIntFromMap(m._sessionConfig, SESSION_CONFIGURATION.MAIN_PING_INTERVAL)
+            m._sessionChannelName = _adb_optStringFromMap(m._sessionConfig, SESSION_CONFIGURATION.CHANNEL)
+        end sub,
 
         process: function(mediaHit as object) as void
             if not m._isActive then
@@ -97,7 +109,6 @@
                 ' attach sessionId to events other than sessionStart
                 if eventType = m._MEDIA_EVENT_TYPE.SESSION_START
                     xdmData = m._attachMediaConfig(xdmData)
-                    xdmData = m._updateChannelFromSessionConfig(xdmData)
 
                 else
                     ''' Cannot send hit of type other than sessionStart if backendSessionId is not set.
@@ -210,23 +221,12 @@
         end function,
 
         _attachMediaConfig: function(xdmData as object) as object
-            xdmData.xdm["mediaCollection"]["sessionDetails"]["playerName"] = m._configurationModule.getMediaPlayerName()
-            xdmData.xdm["mediaCollection"]["sessionDetails"]["channel"] = m._configurationModule.getMediaChannel()
+            xdmData.xdm["mediaCollection"]["sessionDetails"]["playerName"] = m._getPlayerName()
+            xdmData.xdm["mediaCollection"]["sessionDetails"]["channel"] = m._getChannelName()
 
-            appVersion = m._configurationModule.getMediaAppVersion()
+            appVersion = m._getAppVersion()
             if not _adb_isEmptyOrInvalidString(appVersion) then
                 xdmData.xdm["mediaCollection"]["sessionDetails"]["appVersion"] = appVersion
-            end if
-        end function,
-
-        _updateChannelFromSessionConfig: function(xdmData as object) as object
-            if sessionConfig =  invalid then
-                return xdmData
-            end if
-
-            channel = m._sessionConfig["channel"] ''' TODO update with constant
-            if not _adb_isEmptyOrInvalidString(channel) then
-                xdmData.xdm["mediaCollection"]["sessionDetails"]["channel"] = channel
             end if
         end function,
 
@@ -355,18 +355,37 @@
 
         _getPingInterval: function(isAd = false as boolean) as integer
             if isAd then
-                interval =  m._sessionConfig[m._PUBLIC_CONSTANTS.MEDIA_SESSION_CONFIGURATION.AD_PING_INTERVAL]
-                if interval >= m._MIN_AD_PING_INTERVAL_SEC and interval <= m._MAX_AD_PING_INTERVAL_SEC then
-                    _adb_logVerbose("getPingInterval() - Setting ad ping interval as " + interval + " seconds.")
+                if m._sessionAdPingInternal <> invalid and m._sessionAdPingInternal >= m._MIN_AD_PING_INTERVAL_SEC and m._sessionAdPingInternal <= m._MAX_AD_PING_INTERVAL_SEC then
+                    _adb_logVerbose("_getPingInterval() - Setting ad ping interval as " + interval + " seconds.")
                     return interval
                 end if
             else
-                interval = m._sessionConfig[m._PUBLIC_CONSTANTS.MEDIA_SESSION_CONFIGURATION.MAIN_PING_INTERVAL]
-                if interval >= m._MIN_MAIN_PING_INTERVAL_SEC and interval <= m._MAX_MAIN_PING_INTERVAL_SEC then
-                    _adb_logVerbose("getPingInterval() - Setting main ping interval as " + interval + " seconds.")
+                if m._sessionMainPingInternal <> invalid and m._sessionMainPingInternal >= m._MIN_MAIN_PING_INTERVAL_SEC and m._sessionMainPingInternal <= m._MAX_MAIN_PING_INTERVAL_SEC then
+                    _adb_logVerbose("_getPingInterval() - Setting main ping interval as " + interval + " seconds.")
                     return interval
                 end if
             end if
+            _adb_logVerbose("_getPingInterval() - Setting ping interval with the default 10 seconds.")
+            return m._DEFAULT_PING_INTERVAL_SEC
         end function,
-     }
- end function
+
+        _getAppVersion: function() as string
+            return m._configurationModule.getMediaAppVersion()
+        end function,
+
+        _getPlayerName: function() as string
+            return m._configurationModule.getMediaPlayerName()
+        end function,
+
+        _getChannelName: function() as string
+            if m._sessionChannelName <> invalid
+                return m._sessionChannelName
+            else
+                return m._configurationModule.getMediaChannel()
+            end if
+        end function,
+
+    }
+    sessionObj._init(sessionConfig)
+    return sessionObj
+end function
