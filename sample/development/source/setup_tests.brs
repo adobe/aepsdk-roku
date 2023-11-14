@@ -164,6 +164,13 @@ function _adb_test_functions() as dynamic
         TC_adb_MediaSession_updateAdState_nonAdEvent_ignored
         TC_adb_MediaSession_createSessionResumeHit
         TC_adb_MediaSession_closeIfIdle_idleDurationOverIdleTimeout_endSession
+        TC_adb_MediaSession_closeIfIdle_idleDurationUnderIdleTimeout_ignored
+        TC_adb_MediaSession_closeIfIdle_alreadyIdleTimedout_ignored
+        TC_adb_MediaSession_closeIfIdle_inPlayingState_ignored
+        TC_adb_MediaSession_restartIdleSession_playAfterIdleTimeout_resumes
+        TC_adb_MediaSession_restartIdleSession_notPlayEventAfterIdleTimeout_ignored
+        TC_adb_MediaSession_restartIdleSession_playifNotIdleTimeout_ignored
+        TC_adb_MediaSession_restartIdleSession_ifActiveSession_ignored
     ]
     initSDK = [
         'test_AdobeAEPSDKInit.brs

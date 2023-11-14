@@ -248,7 +248,6 @@ sub TC_adb_MediaSession_updatePlaybackState_pauseStart_bufferStartEvent()
     mediaSession._updatePlaybackState(mediaHit)
 
     ''' verify
-    firstIdleStartTS = mediaSession._idleStartTS
     UTF_assertNotInvalid(mediaSession._idleStartTS)
     UTF_assertFalse(mediaSession._isPlaying)
     UTF_assertFalse(mediaSession._isIdle)
@@ -383,7 +382,7 @@ sub TC_adb_MediaSession_closeIfIdle_idleDurationOverIdleTimeout_endSession()
     mediaHit.xdmData = {
         "xdm": {
             "timestamp": "2000",
-            "eventType": "media.play",
+            "eventType": "media.ping",
             "mediaCollection": {
                 "playhead": 10
             }
@@ -424,10 +423,406 @@ sub TC_adb_MediaSession_closeIfIdle_idleDurationOverIdleTimeout_endSession()
     UTF_assertNotEqual(mediaHit.requestId, actualHit.requestId, "Request ID must not match with the play hit")
 end sub
 
+' target: _closeIfIdle()
+' @Test
+sub TC_adb_MediaSession_closeIfIdle_idleDurationUnderIdleTimeout_ignored()
+    ''' setup
+    mediaSession = _adb_MediaSession("testId", {}, {}, {})
+    mediaSession._isIdle = false
+    mediaSession._isPlaying = false
+    mediaSession._idleStartTS = 0
+    GetGlobalAA()._test_media_session_hits = []
+    mediaSession._queue = function(mediaHit) as void
+        hits = GetGlobalAA()._test_media_session_hits
+        hits.push(mediaHit)
+    end function
+
+
+    ''' triggering hit
+    mediaHit = {}
+    mediaHit.tsObject = {}
+    mediaHit.requestId = "testRequestId"
+    mediaHit.tsObject.tsInISO8601 = "1740000"
+    mediaHit.tsObject.tsInMillis = (29 * 60 * 1000) ''' 29 mins
+    mediaHit.xdmData = {
+        "xdm": {
+            "timestamp": "2000",
+            "eventType": "media.ping",
+            "mediaCollection": {
+                "playhead": 10
+            }
+        }
+    }
+
+    ''' test
+    mediaSession._closeIfIdle(mediaHit)
+
+    ''' verify
+    UTF_assertTrue(mediaSession._isActive, "Session should be active")
+    UTF_assertFalse(mediaSession._isIdle)
+    UTF_assertFalse(mediaSession._isPlaying)
+    hits = GetGlobalAA()._test_media_session_hits
+    UTF_assertEqual(0, hits.count(), "hit Queue should be empty.")
+end sub
+
+' target: _closeIfIdle()
+' @Test
+sub TC_adb_MediaSession_closeIfIdle_alreadyIdleTimedout_ignored()
+    ''' setup
+    mediaSession = _adb_MediaSession("testId", {}, {}, {})
+    ''' mock that session idleTimedout and is closed and marked idle
+    mediaSession._isActive = false
+    mediaSession._isIdle = true
+
+    mediaSession._isPlaying = false
+    mediaSession._idleStartTS = 0
+    GetGlobalAA()._test_media_session_hits = []
+    mediaSession._queue = function(mediaHit) as void
+        hits = GetGlobalAA()._test_media_session_hits
+        hits.push(mediaHit)
+    end function
+
+
+    ''' triggering hit
+    mediaHit = {}
+    mediaHit.tsObject = {}
+    mediaHit.tsObject.tsInISO8601 = "1800001"
+    mediaHit.tsObject.tsInMillis = (30 * 60 * 1000) + 1 ''' 30 mins + 1 ms
+    mediaHit.requestId = "testRequestId"
+    mediaHit.xdmData = {
+        "xdm": {
+            "timestamp": "2000",
+            "eventType": "media.ping",
+            "mediaCollection": {
+                "playhead": 10
+            }
+        }
+    }
+
+    ''' test
+    mediaSession._closeIfIdle(mediaHit)
+
+    ''' verify
+    UTF_assertFalse(mediaSession._isActive, "Session should not be active")
+    UTF_assertTrue(mediaSession._isIdle, "Session should stay in idle state")
+    UTF_assertFalse(mediaSession._isPlaying)
+    hits = GetGlobalAA()._test_media_session_hits
+    UTF_assertEqual(0, hits.count(), "Hit Queue should be empty")
+end sub
+
+' target: _closeIfIdle()
+' @Test
+sub TC_adb_MediaSession_closeIfIdle_inPlayingState_ignored()
+    ''' setup
+    mediaSession = _adb_MediaSession("testId", {}, {}, {})
+    mediaSession._isIdle = false
+    ''' mock that session is in playing state
+    mediaSession._isPlaying = true
+    mediaSession._idleStartTS = 0
+    GetGlobalAA()._test_media_session_hits = []
+    mediaSession._queue = function(mediaHit) as void
+        hits = GetGlobalAA()._test_media_session_hits
+        hits.push(mediaHit)
+    end function
+
+
+    ''' triggering hit
+    mediaHit = {}
+    mediaHit.tsObject = {}
+    mediaHit.tsObject.tsInISO8601 = "1800001"
+    mediaHit.tsObject.tsInMillis = (30 * 60 * 1000) + 1 ''' 30 mins + 1 ms
+    mediaHit.requestId = "testRequestId"
+    mediaHit.xdmData = {
+        "xdm": {
+            "timestamp": "2000",
+            "eventType": "media.play",
+            "mediaCollection": {
+                "playhead": 10
+            }
+        }
+    }
+
+    ''' test
+    mediaSession._closeIfIdle(mediaHit)
+
+    ''' verify
+    UTF_assertTrue(mediaSession._isActive, "Session should be active")
+    UTF_assertFalse(mediaSession._isIdle, "Session should not be in idle state")
+    UTF_assertTrue(mediaSession._isPlaying, "Session should be in playing state")
+    hits = GetGlobalAA()._test_media_session_hits
+    UTF_assertEqual(0, hits.count(), "Hit Queue should be empty")
+end sub
+
 ' target: _restartIdleSession()
 ' @Test
-'''sub TC_adb_MediaSession_restartIdleSession()
-'''end sub
+sub TC_adb_MediaSession_restartIdleSession_playAfterIdleTimeout_resumes()
+    ''' setup
+    mediaSession = _adb_MediaSession("testId", {}, {}, {})
+
+    ''' mock idle timeout state
+    mediaSession._isIdle = true
+    mediaSession._isActive = false
+    mediaSession._isPlaying = false
+    mediaSession._idleStartTS = 0
+
+    ''' mock previous sessionStart hit
+    sessionStartHit = {}
+    sessionStartHit.eventType = "media.sessionStart"
+    sessionStartHit.requestId = "sessionStartRequestId"
+    sessionStartHit.tsObject = {
+        "tsObject": {
+            "tsInMillis": 1000,
+            "tsInISO8601": "1000"
+        }
+    }
+    sessionStartHit.xdmData = {
+        "xdm": {
+            "timestamp": "1000",
+            "eventType": "media.sessionStart",
+            "mediaCollection": {
+                "playhead": 0,
+                "sessionDetails" : {
+                    "streamType" : "vod",
+                    "contentType" : "video",
+                    "channel" : "testChannel"
+                }
+            }
+        }
+    }
+    mediaSession._sessionStartHit = sessionStartHit
+
+    ''' mock _queue()
+    GetGlobalAA()._test_media_session_hits = []
+    mediaSession._queue = function(mediaHit) as void
+        hits = GetGlobalAA()._test_media_session_hits
+        hits.push(mediaHit)
+    end function
+
+
+    ''' triggering hit
+    mediaHit = {}
+    mediaHit.eventType = "media.play"
+    mediaHit.tsObject = {}
+    mediaHit.tsObject.tsInISO8601 = "2000"
+    mediaHit.tsObject.tsInMillis = 2000
+    mediaHit.requestId = "testRequestId"
+    mediaHit.xdmData = {
+        "xdm": {
+            "timestamp": "2000",
+            "eventType": "media.play",
+            "mediaCollection": {
+                "playhead": 11
+            }
+        }
+    }
+
+    expectedSessionResumeHit = {}
+    expectedSessionResumeHit.eventType = "media.sessionStart"
+    expectedSessionResumeHit.tsObject = {
+        "tsObject": {
+            "tsInMillis": 2000,
+            "tsInISO8601": "2000"
+        }
+    }
+    expectedSessionResumeHit.xdmData = {
+        "xdm": {
+            "timestamp": "2000",
+            "eventType": "media.sessionStart",
+            "mediaCollection": {
+                "playhead": 11,
+                "sessionDetails" : {
+                    "hasResume" : true,
+                    "streamType" : "vod",
+                    "contentType" : "video",
+                    "channel" : "testChannel"
+                }
+            }
+        }
+    }
+
+    ''' test
+    mediaSession._restartIdleSession(mediaHit)
+
+    ''' verify
+    UTF_assertTrue(mediaSession._isActive, "Session should be active")
+    UTF_assertFalse(mediaSession._isIdle, "Session should not be in idle state")
+    UTF_assertTrue(mediaSession._isPlaying, "Session should be in playing state")
+    hits = GetGlobalAA()._test_media_session_hits
+    UTF_assertEqual(2, hits.count(), "Hit Queue should have 2 hits")
+    ''' Verify the order of hits (first would be sessionStart and then play)
+    actualSessionResumeHit = hits[0]
+    playHit = hits[1]
+
+    UTF_assertNotEqual(sessionStartHit.requestId, actualSessionResumeHit.requestId, "Request ID must not match with the cached sessionStart hit")
+    UTF_assertNotEqual(playHit.requestId, actualSessionResumeHit.requestId, "Request ID must not match with the play hit")
+    UTF_assertEqual(expectedSessionResumeHit.eventType, actualSessionResumeHit.eventType, "Event types must match")
+    UTF_assertEqual(expectedSessionResumeHit.xdmData, actualSessionResumeHit.xdmData, "XDM data must match")
+    UTF_assertEqual(mediaHit, playHit)
+end sub
+
+' target: _restartIdleSession()
+' @Test
+sub TC_adb_MediaSession_restartIdleSession_notPlayEventAfterIdleTimeout_ignored()
+    ''' setup
+    mediaSession = _adb_MediaSession("testId", {}, {}, {})
+
+    ''' mock idle timeout state
+    mediaSession._isIdle = true
+    mediaSession._isActive = false
+    mediaSession._isPlaying = false
+    mediaSession._idleStartTS = 0
+
+    ''' mock previous sessionStart hit
+    sessionStartHit = {}
+    sessionStartHit.eventType = "media.sessionStart"
+    sessionStartHit.requestId = "sessionStartRequestId"
+    sessionStartHit.tsObject = {
+        "tsObject": {
+            "tsInMillis": 1000,
+            "tsInISO8601": "1000"
+        }
+    }
+    sessionStartHit.xdmData = {
+        "xdm": {
+            "timestamp": "1000",
+            "eventType": "media.sessionStart",
+            "mediaCollection": {
+                "playhead": 0,
+                "sessionDetails" : {
+                    "streamType" : "vod",
+                    "contentType" : "video",
+                    "channel" : "testChannel"
+                }
+            }
+        }
+    }
+    mediaSession._sessionStartHit = sessionStartHit
+
+    ''' mock _queue()
+    GetGlobalAA()._test_media_session_hits = []
+    mediaSession._queue = function(mediaHit) as void
+        hits = GetGlobalAA()._test_media_session_hits
+        hits.push(mediaHit)
+    end function
+
+
+    ''' triggering hit
+    mediaHit = {}
+    mediaHit.eventType = "media.sessionStart"
+    mediaHit.tsObject = {}
+    mediaHit.tsObject.tsInISO8601 = "2000"
+    mediaHit.tsObject.tsInMillis = 2000
+    mediaHit.requestId = "testRequestId"
+    mediaHit.xdmData = {
+        "xdm": {
+            "timestamp": "2000",
+            "eventType": "media.sessionStart",
+            "mediaCollection": {
+                "playhead": 11
+            }
+        }
+    }
+
+    ''' test
+    mediaSession._restartIdleSession(mediaHit)
+
+    ''' verify
+    UTF_assertFalse(mediaSession._isActive, "Session should not be active")
+    UTF_assertTrue(mediaSession._isIdle, "Session should be in idle state")
+    UTF_assertFalse(mediaSession._isPlaying, "Session should not be in playing state")
+    hits = GetGlobalAA()._test_media_session_hits
+    UTF_assertEqual(0, hits.count(), "Hit Queue should be empty")
+end sub
+
+' target: _restartIdleSession()
+' @Test
+sub TC_adb_MediaSession_restartIdleSession_playifNotIdleTimeout_ignored()
+    ''' setup
+    mediaSession = _adb_MediaSession("testId", {}, {}, {})
+
+    mediaSession._isIdle = false
+    mediaSession._isActive = true
+
+    ''' mock _queue()
+    GetGlobalAA()._test_media_session_hits = []
+    mediaSession._queue = function(mediaHit) as void
+        hits = GetGlobalAA()._test_media_session_hits
+        hits.push(mediaHit)
+    end function
+
+
+    ''' triggering hit
+    mediaHit = {}
+    mediaHit.eventType = "media.play"
+    mediaHit.tsObject = {}
+    mediaHit.tsObject.tsInISO8601 = "2000"
+    mediaHit.tsObject.tsInMillis = 2000
+    mediaHit.requestId = "testRequestId"
+    mediaHit.xdmData = {
+        "xdm": {
+            "timestamp": "2000",
+            "eventType": "media.play",
+            "mediaCollection": {
+                "playhead": 11
+            }
+        }
+    }
+
+    ''' test
+    mediaSession._restartIdleSession(mediaHit)
+
+    ''' verify
+    UTF_assertTrue(mediaSession._isActive, "Session should be active")
+    UTF_assertFalse(mediaSession._isIdle, "Session should not be in idle state")
+    hits = GetGlobalAA()._test_media_session_hits
+    UTF_assertEqual(0, hits.count(), "Hit Queue should be empty")
+end sub
+
+' target: _restartIdleSession()
+' @Test
+sub TC_adb_MediaSession_restartIdleSession_ifActiveSession_ignored()
+    ''' setup
+    mediaSession = _adb_MediaSession("testId", {}, {}, {})
+
+    ''' Should not happen. Hypothetical case where isIdle is true and isActive is true
+    mediaSession._isIdle = true
+    ''' mock idle timeout state
+    mediaSession._isActive = true
+
+    ''' mock _queue()
+    GetGlobalAA()._test_media_session_hits = []
+    mediaSession._queue = function(mediaHit) as void
+        hits = GetGlobalAA()._test_media_session_hits
+        hits.push(mediaHit)
+    end function
+
+
+    ''' triggering hit
+    mediaHit = {}
+    mediaHit.eventType = "media.play"
+    mediaHit.tsObject = {}
+    mediaHit.tsObject.tsInISO8601 = "2000"
+    mediaHit.tsObject.tsInMillis = 2000
+    mediaHit.requestId = "testRequestId"
+    mediaHit.xdmData = {
+        "xdm": {
+            "timestamp": "2000",
+            "eventType": "media.play",
+            "mediaCollection": {
+                "playhead": 11
+            }
+        }
+    }
+
+    ''' test
+    mediaSession._restartIdleSession(mediaHit)
+
+    ''' verify
+    UTF_assertTrue(mediaSession._isActive, "Session should be active")
+    UTF_assertTrue(mediaSession._isIdle, "Session should be in idle state")
+    hits = GetGlobalAA()._test_media_session_hits
+    UTF_assertEqual(0, hits.count(), "Hit Queue should be empty")
+end sub
 
 ' target: _restartIfLongRunningSession()
 ' @Test
