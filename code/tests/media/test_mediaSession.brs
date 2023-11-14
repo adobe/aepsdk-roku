@@ -358,3 +358,183 @@ sub TC_adb_MediaSession_updateAdState_nonAdEvent_ignored()
     mediaSession._updateAdState(mediaHit)
     UTF_assertFalse(mediaSession._isInAd, "Should not be in ad state")
 end sub
+
+' target: _closeIfIdle()
+' @Test
+sub TC_adb_MediaSession_closeIfIdle_idleDurationOverIdleTimeout_endSession()
+    ''' setup
+    mediaSession = _adb_MediaSession("testId", {}, {}, {})
+    mediaSession._isIdle = false
+    mediaSession._isPlaying = false
+    mediaSession._idleStartTS = 0
+    GetGlobalAA()._test_media_session_hits = []
+    mediaSession._queue = function(mediaHit) as void
+        hits = GetGlobalAA()._test_media_session_hits
+        hits.push(mediaHit)
+    end function
+
+
+    ''' hit triggering idle time
+    mediaHit = {}
+    mediaHit.tsObject = {}
+    mediaHit.requestId = "testRequestId"
+    mediaHit.tsObject.tsInISO8601 = "1800001"
+    mediaHit.tsObject.tsInMillis = (30 * 60 * 1000) + 1 ''' 30 mins + 1 ms
+    mediaHit.xdmData = {
+        "xdm": {
+            "timestamp": "2000",
+            "eventType": "media.play",
+            "mediaCollection": {
+                "playhead": 10
+            }
+        }
+    }
+
+    expectedSessionEndHit = {
+        "xdmData": {
+            "xdm": {
+                "eventType": "media.sessionEnd",
+                "mediaCollection": {
+                    "playhead": 10,
+                }
+            }
+        },
+        "tsObject": {
+            "tsInMillis": 1800001,
+            "tsInISO8601": "1800001"
+
+        },
+        "eventType": "media.sessionEnd"
+    }
+
+    ''' test
+    mediaSession._closeIfIdle(mediaHit)
+
+    ''' verify
+    UTF_assertFalse(mediaSession._isActive, "Session should not be active")
+    UTF_assertTrue(mediaSession._isIdle)
+    UTF_assertFalse(mediaSession._isPlaying)
+    hits = GetGlobalAA()._test_media_session_hits
+    UTF_assertEqual(1, hits.count(), "hit Queue is empty.")
+    actualHit = hits[0]
+    UTF_assertEqual(expectedSessionEndHit.eventType, actualHit.eventType, "expected eventType != actual eventType")
+    UTF_assertEqual(expectedSessionEndHit.xdmData, actualHit.xdmData, "expected sessionEnd xdmData != actual sessionEnd xdmData")
+    UTF_assertEqual(expectedSessionEndHit.tsObject, actualHit.tsObject, "expected sessionEnd tsObject != actual sessionEnd tsObject")
+    UTF_assertNotInvalid(actualHit.requestId)
+    UTF_assertNotEqual(mediaHit.requestId, actualHit.requestId, "Request ID must not match with the play hit")
+end sub
+
+' target: _restartIdleSession()
+' @Test
+'''sub TC_adb_MediaSession_restartIdleSession()
+'''end sub
+
+' target: _restartIfLongRunningSession()
+' @Test
+'''sub TC_adb_MediaSession__restartIfLongRunningSession()
+'''end sub
+
+' target: _resetForRestart()
+' @Test
+'''sub TC_adb_MediaSession_resetForRestart()
+'''end sub
+
+' target: _createSessionResumeHit()
+' @Test
+sub TC_adb_MediaSession_createSessionResumeHit()
+    ''' setup
+    mediaSession = _adb_MediaSession("testId", {}, {}, {})
+    sessionStartHit = {}
+    sessionStartHit.eventType = "media.sessionStart"
+    sessionStartHit.requestId = "sessionStartRequestId"
+    sessionStartHit.tsObject = {
+        "tsObject": {
+            "tsInMillis": 1000,
+            "tsInISO8601": "1000"
+        }
+    }
+    sessionStartHit.xdmData = {
+        "xdm": {
+            "timestamp": "1000",
+            "eventType": "media.sessionStart",
+            "mediaCollection": {
+                "playhead": 0,
+                "sessionDetails" : {
+                    "streamType" : "vod",
+                    "contentType" : "video",
+                    "channel" : "testChannel"
+                }
+            }
+        }
+    }
+
+    playHit = {}
+    playHit.eventType = "media.play"
+    playHit.requestId = "playRequestId"
+    playHit.tsObject = {
+        "tsObject": {
+            "tsInMillis": 2000,
+            "tsInISO8601": "2000"
+        }
+    }
+    playHit.xdmData = {
+        "xdm": {
+            "timestamp": "2000",
+            "eventType": "media.play",
+            "mediaCollection": {
+                "playhead": 10
+            }
+        }
+    }
+
+    mediaSession._sessionStartHit = sessionStartHit
+
+    ''' test
+    actualSessionResumeHit = mediaSession._createSessionResumeHit(playHit)
+
+    expectedSessionResumeHit = {}
+    expectedSessionResumeHit.eventType = "media.sessionStart"
+    expectedSessionResumeHit.tsObject = {
+        "tsObject": {
+            "tsInMillis": 2000,
+            "tsInISO8601": "2000"
+        }
+    }
+    expectedSessionResumeHit.xdmData = {
+        "xdm": {
+            "timestamp": "2000",
+            "eventType": "media.sessionStart",
+            "mediaCollection": {
+                "playhead": 10,
+                "sessionDetails" : {
+                    "hasResume" : true,
+                    "streamType" : "vod",
+                    "contentType" : "video",
+                    "channel" : "testChannel"
+                }
+            }
+        }
+    }
+    ''' verify
+    UTF_assertNotEqual(sessionStartHit.requestId, actualSessionResumeHit.requestId, "Request ID must not match with the cached sessionStart hit")
+    UTF_assertNotEqual(playHit.requestId, actualSessionResumeHit.requestId, "Request ID must not match with the play hit")
+    UTF_assertEqual(expectedSessionResumeHit.eventType, actualSessionResumeHit.eventType, "Event types must match")
+    UTF_assertEqual(expectedSessionResumeHit.xdmData, actualSessionResumeHit.xdmData, "XDM data must match")
+end sub
+
+' target: _createSessionEndHit()
+' @Test
+
+' target: _shouldQueue()
+' @Test
+
+' target: _queue()
+' @Test
+
+' target: _processEdgeRequestQueue()
+' @Test
+
+' target: handleError()
+' @Test
+
+

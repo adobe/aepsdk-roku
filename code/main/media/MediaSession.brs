@@ -73,6 +73,8 @@
                 return
             end if
 
+            m._queue(mediaHit)
+
         end function,
 
         ''' Dispatched the queued mediaHits to edgeRequestQueue
@@ -121,11 +123,11 @@
                 return
             end if
 
-            _isActive = false
+            m._isActive = false
 
             if isAbort then
                 ' Drop the hits in the queue
-                _hitQueue = []
+                m._hitQueue = []
             else
                 ' Dispatch all the hits in the queue
                 m.tryDispatchMediaEvents()
@@ -280,19 +282,19 @@
             end if
         end function,
 
-        _closeIfIdle: function(mediaHit as object) as boolean
+        _closeIfIdle: function(mediaHit as object) as void
             ' Check if the session is idle for >= 30 minutes
-            if m._isPlaying or m._idleStartTS <> invalid then
-                return false
+            if m._isPlaying or m._idleStartTS = invalid or m._isIdle then
+                return
             end if
 
             idleTime = mediaHit.tsObject.tsInMillis - m._idleStartTS
             if idleTime >= m._SESSION_IDLE_THRESHOLD_SEC * 1000 then
                 ''' Abort the Idle session
+                m._isIdle = true
                 m.process(m._createSessionEndHit(mediaHit))
 
-                ''' set the session inactive and idle
-                m._isIdle = true
+                ''' set the session inactive
                 m.close(true)
             end if
         end function,
@@ -335,10 +337,12 @@
         end function,
 
         _createSessionResumeHit: function(mediaHit as object) as object
-            sessionResumeHit = m._sessionStartHit
+            ''' Create deepcopy of sessionStartHit
+            sessionResumeHit = parseJSON(formatJSON(m._sessionStartHit))
 
             sessionResumeHit.xdmData.xdm["mediaCollection"]["sessionDetails"]["hasResume"] = true
             sessionResumeHit.xdmData.xdm["mediaCollection"]["playhead"] = mediaHit.xdmData.xdm["mediaCollection"]["playhead"]
+            sessionResumeHit.xdmData.xdm["timestamp"] = mediaHit.xdmData.xdm["timestamp"]
             sessionResumeHit.tsObject = mediaHit.tsObject
             sessionResumeHit.requestId = _adb_generate_UUID()
 

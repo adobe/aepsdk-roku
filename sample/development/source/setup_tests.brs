@@ -162,6 +162,8 @@ function _adb_test_functions() as dynamic
         TC_adb_MediaSession_updateAdState_adStartEvent_setsIsInAd
         TC_adb_MediaSession_updateAdState_adCompleteEvent_adSkipEvent_resetsIsInAd
         TC_adb_MediaSession_updateAdState_nonAdEvent_ignored
+        TC_adb_MediaSession_createSessionResumeHit
+        TC_adb_MediaSession_closeIfIdle_idleDurationOverIdleTimeout_endSession
     ]
     initSDK = [
         'test_AdobeAEPSDKInit.brs
