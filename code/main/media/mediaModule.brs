@@ -90,6 +90,14 @@ function _adb_MediaModule(configurationModule as object, edgeRequestQueue as obj
             mediaHit.tsObject = tsObject
             return mediaHit
         end sub,
+
+        dump: function() as object
+
+            return {
+                ' TODO:
+                clientSessionId: invalid,
+            }
+        end function
     })
     return module
 end function

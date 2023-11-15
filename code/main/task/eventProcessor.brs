@@ -73,6 +73,7 @@ function _adb_EventProcessor(task as object) as object
             debugInfo["configuration"] = m._configurationModule.dump()
             debugInfo["identity"] = m._identityModule.dump()
             debugInfo["edge"] = m._edgeModule.dump()
+            debugInfo["media"] = m._mediaModule.dump()
             debugInfo["networkRequests"] = networkService.dump()
 
             m._task.setField("debugInfo", debugInfo)

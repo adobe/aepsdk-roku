@@ -85,7 +85,10 @@ function _adb_ConfigurationModule() as object
         dump: function() as object
             return {
                 edge_configId: m._edge_configId,
-                edge_domain: m._edge_domain
+                edge_domain: m._edge_domain,
+                media_channel: m._media_channel,
+                media_playerName: m._media_playerName,
+                media_appVersion: m._media_appVersion
             }
         end function
     })
