@@ -199,8 +199,6 @@
         end function,
 
         _shouldQueue: function(mediaHit as object) as boolean
-            pingInterval = m._getPingInterval(m._isInAd)
-
             eventType = mediaHit.eventType
 
             ''' Should queue any event other than ping.
@@ -208,13 +206,15 @@
                 return true
             end if
 
+            pingInterval = m._getPingInterval(m._isInAd)
+
             ''' Should queue ping event if the duration between the last event and this ping event is greater than ping interval
             ''' If the duration is less than ping interval, then ignore the ping event
             currentHitTS = mediaHit.tsObject.tsInMillis
             lastHitTS = m._lastHit.tsObject.tsInMillis
 
             ''' Dispatch if ping interval has elapsed since last event was sent
-            if (currentHitTS - lastHitTS) < (pingInterval * 1000) then
+            if (currentHitTS - lastHitTS) >= (pingInterval * 1000) then
                 return true
             end if
 

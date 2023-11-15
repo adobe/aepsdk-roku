@@ -175,6 +175,9 @@ function _adb_test_functions() as dynamic
         TC_adb_MediaSession_restartIfLongRunningSession_notLongRunningSession_ignored
         TC_adb_MediaSession_restartIfLongRunningSession_triggeredBySessionEndOrComplete_ignored
         TC_adb_MediaSession_resetForRestart
+        TC_adb_MediaSession_shouldQueue_pingEvent_overPingInterval_returnsTrue
+        TC_adb_MediaSession_shouldQueue_pingEvent_underPingInterval_returnsFalse
+        TC_adb_MediaSession_shouldQueue_notPingEvent_returnsTrue
     ]
     initSDK = [
         'test_AdobeAEPSDKInit.brs

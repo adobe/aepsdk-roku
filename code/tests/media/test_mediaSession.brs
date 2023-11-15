@@ -1211,8 +1211,116 @@ end sub
 
 ' target: _shouldQueue()
 ' @Test
+sub TC_adb_MediaSession_shouldQueue_pingEvent_overPingInterval_returnsTrue()
+    mediaSession = _adb_MediaSession("testId", {}, {}, {})
+    mediaSession._lastHit = {}
+    mediaSession._lastHit.tsObject = {}
+    mediaSession._lastHit.tsObject.tsInMillis = 0
+    mediaSession._lastHit.tsObject.tsInISO8601 = "0"
+
+    mediaHit = {}
+    mediaHit.eventType = "media.ping"
+    mediaHit.tsObject = {}
+    mediaHit.tsObject.tsInISO8601 = "10000"
+    mediaHit.tsObject.tsInMillis = 10000 ''' default ping interval 10 seconds
+    mediaHit.requestId = "testRequestId"
+    mediaHit.xdmData = {
+        "xdm": {
+            "timestamp": "1000",
+            "eventType": "media.ping",
+            "mediaCollection": {
+                "playhead": 1
+            }
+        }
+    }
+
+    ''' test
+    shouldQueue = mediaSession._shouldQueue(mediaHit)
+
+    ''' verify
+    UTF_assertTrue(shouldQueue)
+end sub
+
+' target: _shouldQueue()
+' @Test
+sub TC_adb_MediaSession_shouldQueue_pingEvent_underPingInterval_returnsFalse()
+    mediaSession = _adb_MediaSession("testId", {}, {}, {})
+    mediaSession._lastHit = {}
+    mediaSession._lastHit.tsObject = {}
+    mediaSession._lastHit.tsObject.tsInMillis = 0
+    mediaSession._lastHit.tsObject.tsInISO8601 = "0"
+
+    mediaHit = {}
+    mediaHit.eventType = "media.ping"
+    mediaHit.tsObject = {}
+    mediaHit.tsObject.tsInISO8601 = "9999"
+    mediaHit.tsObject.tsInMillis = 9999 ''' default ping interval 10 seconds
+    mediaHit.requestId = "testRequestId"
+    mediaHit.xdmData = {
+        "xdm": {
+            "timestamp": "1000",
+            "eventType": "media.ping",
+            "mediaCollection": {
+                "playhead": 1
+            }
+        }
+    }
+
+    ''' test
+    shouldQueue = mediaSession._shouldQueue(mediaHit)
+
+    ''' verify
+    UTF_assertFalse(shouldQueue)
+end sub
+
+' target: _shouldQueue()
+' @Test
+sub TC_adb_MediaSession_shouldQueue_notPingEvent_returnsTrue()
+    mediaSession = _adb_MediaSession("testId", {}, {}, {})
+    mediaSession._lastHit = {}
+    mediaSession._lastHit.tsObject = {}
+    mediaSession._lastHit.tsObject.tsInMillis = 0
+    mediaSession._lastHit.tsObject.tsInISO8601 = "0"
+
+    mediaHit = {}
+    mediaHit.eventType = "media.chapterStart"
+    mediaHit.tsObject = {}
+    mediaHit.tsObject.tsInISO8601 = "1"
+    mediaHit.tsObject.tsInMillis = 1 ''' default ping interval 10 seconds
+    mediaHit.requestId = "testRequestId"
+    mediaHit.xdmData = {
+        "xdm": {
+            "timestamp": "1000",
+            "eventType": "media.chapterStart",
+            "mediaCollection": {
+                "playhead": 1
+            }
+        }
+    }
+
+    ''' test and verify
+    shouldQueue = mediaSession._shouldQueue(mediaHit)
+    UTF_assertTrue(shouldQueue)
+
+    mediaHit.eventType = "media.adStart"
+    shouldQueue = mediaSession._shouldQueue(mediaHit)
+    UTF_assertTrue(shouldQueue)
+
+    mediaHit.eventType = "media.play"
+    shouldQueue = mediaSession._shouldQueue(mediaHit)
+    UTF_assertTrue(shouldQueue)
+
+    mediaHit.eventType = "media.pauseStart"
+    shouldQueue = mediaSession._shouldQueue(mediaHit)
+    UTF_assertTrue(shouldQueue)
+
+    mediaHit.eventType = "media.statesUpdate"
+    shouldQueue = mediaSession._shouldQueue(mediaHit)
+    UTF_assertTrue(shouldQueue)
+end sub
 
 ' target: _queue()
+
 ' @Test
 
 ' target: _processEdgeRequestQueue()
@@ -1222,6 +1330,8 @@ end sub
 ' @Test
 
 ' target: _createSessionEndHit()
-''' Covered by TC_adb_MediaSession_closeIfIdle_idleDurationOverIdleTimeout_endSession()
+''' Covered by
+'''TC_adb_MediaSession_closeIfIdle_idleDurationOverIdleTimeout_endSession()
+'''TC_adb_MediaSession_restartIfLongRunningSession_longRunningSession_restartsSession()
 
 
