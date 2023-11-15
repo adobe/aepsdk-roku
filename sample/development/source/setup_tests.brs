@@ -152,6 +152,8 @@ function _adb_test_functions() as dynamic
         TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigAndSessionConfig
         TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigNoSessionConfig
         TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_NoValidConfigNoSessionConfig
+        TC_adb_MediaSession_tryDispatchMediaEvents_notSessionStart_validBackendId
+        TC_adb_MediaSession_tryDispatchMediaEvents_notSessionStart_invalidBackendId
         TC_adb_MediaSession_close_noAbort_dispatchesHitQueue
         TC_adb_MediaSession_close_abort_deletesHitQueue
         TC_adb_MediaSession_getPingInterval_validInterval

@@ -316,6 +316,131 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_NoValidConfigNoSessi
     UTF_assertEqual(expectedSessionStartXdm.xdm.eventType, actualXdmData.xdm.eventType)
 end sub
 
+' target: tryDispatchMediaEvents()
+' @Test
+sub TC_adb_MediaSession_tryDispatchMediaEvents_notSessionStart_validBackendId()
+    ''' setup
+    playHit = {}
+    playHit.tsObject = {
+        "tsInMillis" : 1000,
+        "tsInISO8601" : "1000"
+    }
+    playHit.eventType = "media.play"
+    playHit.xdmData = {
+        "xdm" : {
+            "eventType" : "media.play",
+            "mediaCollection": {
+                "playhead": 0
+            }
+        }
+    }
+    playHit.requestId = "playRequestId"
+
+    configurationModule = _adb_ConfigurationModule()
+    identityModule = _adb_IdentityModule(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+
+    ''' mock edgeRequestQueue.add()
+    GetGlobalAA()._test_edgeRequestQueue_add_called = false
+    GetGlobalAA()._test_edgeRequestQueue_add_requestId = ""
+    GetGlobalAA()._test_edgeRequestQueue_add_xdmEvents = []
+    GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis = -1
+    GetGlobalAA()._test_edgeRequestQueue_add_meta = invalid
+    GetGlobalAA()._test_edgeRequestQueue_add_path = ""
+
+    edgeRequestQueue.add = function(requestId as string, xdmEvents as object, timestampInMillis as longinteger, meta as object, path as string) as void
+        GetGlobalAA()._test_edgeRequestQueue_add_called = true
+        GetGlobalAA()._test_edgeRequestQueue_add_requestId = requestId
+        GetGlobalAA()._test_edgeRequestQueue_add_xdmEvents = xdmEvents
+        GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis = timestampInMillis
+        GetGlobalAA()._test_edgeRequestQueue_add_meta = meta
+        GetGlobalAA()._test_edgeRequestQueue_add_path = path
+    end function
+
+    ''' create media session
+    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeRequestQueue)
+    mediaSession._hitQueue.push(playHit)
+
+    ''' mock backendSessionId
+    mediaSession._backendSessionId = "testBackendSessionId"
+
+    expectedPlayXdm = {
+        "xdm" : {
+            "eventType" : "media.play",
+            "timestamp": "1000", ''' added by tryDispatchMediaEvents()
+            "mediaCollection": {
+                "sessionID": "testBackendSessionId", ''' added by tryDispatchMediaEvents()
+                "playhead": 0
+            }
+        }
+    }
+
+    ''' test
+    mediaSession.tryDispatchMediaEvents()
+
+    ''' verify
+    actualXdmEvents = GetGlobalAA()._test_edgeRequestQueue_add_xdmEvents
+    UTF_assertEqual(1, actualXdmEvents.count())
+    actualXdmData = actualXdmEvents[0]
+
+    UTF_assertTrue(GetGlobalAA()._test_edgeRequestQueue_add_called)
+    UTF_assertEqual("playRequestId", GetGlobalAA()._test_edgeRequestQueue_add_requestId)
+    ''' & prefix since timestamp is LongInteger
+    UTF_assertEqual(1000&, GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis)
+    UTF_assertEqual({}, GetGlobalAA()._test_edgeRequestQueue_add_meta)
+    UTF_assertEqual("/ee/va/v1/play", GetGlobalAA()._test_edgeRequestQueue_add_path)
+    UTF_assertFalse(_adb_isEmptyOrInvalidString(actualXdmData.xdm._id))
+    UTF_assertEqual(expectedPlayXdm.xdm.mediaCollection, actualXdmData.xdm.mediaCollection)
+    UTF_assertEqual(expectedPlayXdm.xdm.timestamp, actualXdmData.xdm.timestamp)
+    UTF_assertEqual(expectedPlayXdm.xdm.eventType, actualXdmData.xdm.eventType)
+end sub
+
+' target: tryDispatchMediaEvents()
+' @Test
+sub TC_adb_MediaSession_tryDispatchMediaEvents_notSessionStart_invalidBackendId()
+    ''' setup
+    playHit = {}
+    playHit.tsObject = {
+        "tsInMillis" : 1000,
+        "tsInISO8601" : "1000"
+    }
+    playHit.eventType = "media.play"
+    playHit.xdmData = {
+        "xdm" : {
+            "eventType" : "media.play",
+            "mediaCollection": {
+                "playhead": 0
+            }
+        }
+    }
+    playHit.requestId = "playRequestId"
+
+    configurationModule = _adb_ConfigurationModule()
+    identityModule = _adb_IdentityModule(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+
+    ''' mock edgeRequestQueue.add()
+    GetGlobalAA()._test_edgeRequestQueue_add_called = false
+
+    edgeRequestQueue.add = function(_requestId as string, _xdmEvents as object, _timestampInMillis as longinteger, _meta as object, _path as string) as void
+        GetGlobalAA()._test_edgeRequestQueue_add_called = true
+    end function
+
+    ''' create media session
+    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeRequestQueue)
+    mediaSession._hitQueue.push(playHit)
+
+    ''' test
+    mediaSession.tryDispatchMediaEvents()
+
+    ''' verify
+    actualXdmEvents = GetGlobalAA()._test_edgeRequestQueue_add_xdmEvents
+    UTF_assertEqual(1, actualXdmEvents.count())
+    UTF_assertFalse(GetGlobalAA()._test_edgeRequestQueue_add_called)
+end sub
+
 ' target: close()
 ' @Test
 sub TC_adb_MediaSession_close_noAbort_dispatchesHitQueue()
