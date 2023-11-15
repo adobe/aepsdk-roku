@@ -392,6 +392,7 @@ sub TC_adb_MediaSession_closeIfIdle_idleDurationOverIdleTimeout_endSession()
     expectedSessionEndHit = {
         "xdmData": {
             "xdm": {
+                "timestamp": "2000",
                 "eventType": "media.sessionEnd",
                 "mediaCollection": {
                     "playhead": 10,
@@ -826,13 +827,304 @@ end sub
 
 ' target: _restartIfLongRunningSession()
 ' @Test
-'''sub TC_adb_MediaSession__restartIfLongRunningSession()
-'''end sub
+sub TC_adb_MediaSession_restartIfLongRunningSession_longRunningSession_restartsSession()
+ ''' setup
+    mediaSession = _adb_MediaSession("testId", {}, {}, {})
+
+    ''' mock previous sessionStart hit
+    ''' sessionStart tsInMillis is used to calculate the session duration
+    sessionStartHit = {}
+    sessionStartHit.eventType = "media.sessionStart"
+    sessionStartHit.requestId = "sessionStartRequestId"
+    sessionStartHit.tsObject = {
+            "tsInMillis": 0,
+            "tsInISO8601": "0"
+    }
+    sessionStartHit.xdmData = {
+        "xdm": {
+            "timestamp": "0",
+            "eventType": "media.sessionStart",
+            "mediaCollection": {
+                "playhead": 0,
+                "sessionDetails" : {
+                    "streamType" : "vod",
+                    "contentType" : "video",
+                    "channel" : "testChannel"
+                }
+            }
+        }
+    }
+    mediaSession._sessionStartHit = sessionStartHit
+
+    ''' mock _queue()
+    GetGlobalAA()._test_media_session_hits = []
+    mediaSession._queue = function(mediaHit) as void
+        hits = GetGlobalAA()._test_media_session_hits
+        hits.push(mediaHit)
+    end function
+
+
+    ''' triggering hit
+    mediaHit = {}
+    mediaHit.eventType = "media.ping"
+    mediaHit.tsObject = {}
+    mediaHit.tsObject.tsInISO8601 = "1000"
+    mediaHit.tsObject.tsInMillis = (24 * 60 * 60 * 1000) + 1 ''' 24 hours + 1 ms
+    mediaHit.requestId = "testRequestId"
+    mediaHit.xdmData = {
+        "xdm": {
+            "timestamp": "86400001",
+            "eventType": "media.ping",
+            "mediaCollection": {
+                "playhead": 86400
+            }
+        }
+    }
+
+    expectedSessionResumeHit = {}
+    expectedSessionResumeHit.eventType = "media.sessionStart"
+    expectedSessionResumeHit.tsObject = {
+        "tsObject": {
+            "tsInMillis": 86400,
+            "tsInISO8601": "86400001"
+        }
+    }
+    expectedSessionResumeHit.xdmData = {
+        "xdm": {
+            "timestamp": "86400001",
+            "eventType": "media.sessionStart",
+            "mediaCollection": {
+                "playhead": 86400,
+                "sessionDetails" : {
+                    "hasResume" : true,
+                    "streamType" : "vod",
+                    "contentType" : "video",
+                    "channel" : "testChannel"
+                }
+            }
+        }
+    }
+
+    expectedSessionEndHit = {}
+    expectedSessionEndHit.eventType = "media.sessionEnd"
+    expectedSessionEndHit.tsObject = {
+        "tsObject": {
+            "tsInMillis": 86400,
+            "tsInISO8601": "86400001"
+        }
+    }
+    expectedSessionEndHit.xdmData = {
+        "xdm": {
+            "timestamp": "86400001",
+            "eventType": "media.sessionEnd",
+            "mediaCollection": {
+                "playhead": 86400
+            }
+        }
+    }
+
+    ''' test
+    mediaSession._restartIfLongRunningSession(mediaHit)
+
+    ''' verify
+    UTF_assertTrue(mediaSession._isActive, "Session should be active")
+    UTF_assertFalse(mediaSession._isIdle, "Session should not be in idle state")
+    hits = GetGlobalAA()._test_media_session_hits
+    UTF_assertEqual(3, hits.count(), "Hit Queue should have 3 hits")
+    ''' Verify the order of hits (first would be sessionStart and then play)
+    actualSessionEndHit = hits[0]
+    actualSessionResumeHit = hits[1]
+    pingHit = hits[2]
+
+    UTF_assertNotEqual(pingHit.requestId, actualSessionEndHit.requestId, "SessionEnd Request ID must not match with the ping hit")
+    UTF_assertNotEqual(sessionStartHit.requestId, actualSessionResumeHit.requestId, "SessionStart Request ID must not match with the cached sessionStart hit")
+    UTF_assertNotEqual(pingHit.requestId, actualSessionResumeHit.requestId, "SessionStart Request ID must not match with the ping hit")
+    UTF_assertEqual(expectedSessionEndHit.eventType, actualSessionEndHit.eventType, "SessionEnd Event types must match")
+    UTF_assertEqual(expectedSessionEndHit.xdmData, actualSessionEndHit.xdmData, "SessionEnd XDM data must match")
+    UTF_assertEqual(expectedSessionResumeHit.eventType, actualSessionResumeHit.eventType, "SessionStart Event types must match")
+    UTF_assertEqual(expectedSessionResumeHit.xdmData, actualSessionResumeHit.xdmData, "SessionStart XDM data must match")
+    UTF_assertEqual(mediaHit, pingHit)
+end sub
+
+' target: _restartIfLongRunningSession()
+' @Test
+sub TC_adb_MediaSession_restartIfLongRunningSession_notLongRunningSession_ignored()
+    ''' setup
+       mediaSession = _adb_MediaSession("testId", {}, {}, {})
+
+       ''' mock previous sessionStart hit
+       ''' sessionStart tsInMillis is used to calculate the session duration
+       sessionStartHit = {}
+       sessionStartHit.eventType = "media.sessionStart"
+       sessionStartHit.requestId = "sessionStartRequestId"
+       sessionStartHit.tsObject = {
+               "tsInMillis": 0,
+               "tsInISO8601": "0"
+       }
+       sessionStartHit.xdmData = {
+           "xdm": {
+               "timestamp": "0",
+               "eventType": "media.sessionStart",
+               "mediaCollection": {
+                   "playhead": 0
+               }
+           }
+       }
+       mediaSession._sessionStartHit = sessionStartHit
+
+       ''' mock _queue()
+       GetGlobalAA()._test_media_session_hits = []
+       mediaSession._queue = function(mediaHit) as void
+           hits = GetGlobalAA()._test_media_session_hits
+           hits.push(mediaHit)
+       end function
+
+
+       ''' triggering hit
+       mediaHit = {}
+       mediaHit.eventType = "media.ping"
+       mediaHit.tsObject = {}
+       mediaHit.tsObject.tsInISO8601 = "1000"
+       mediaHit.tsObject.tsInMillis = (23 * 60 * 60 * 1000) + (59 * 60 * 1000) ''' 23 hours + 59 mins
+       mediaHit.requestId = "testRequestId"
+       mediaHit.xdmData = {
+           "xdm": {
+               "timestamp": "86400001",
+               "eventType": "media.ping",
+               "mediaCollection": {
+                   "playhead": 86400
+               }
+           }
+       }
+
+       ''' test
+       mediaSession._restartIfLongRunningSession(mediaHit)
+
+       ''' verify
+       UTF_assertTrue(mediaSession._isActive, "Session should be active")
+       UTF_assertFalse(mediaSession._isIdle, "Session should not be in idle state")
+       hits = GetGlobalAA()._test_media_session_hits
+       UTF_assertEqual(0, hits.count(), "Hit Queue should be empty")
+   end sub
+
+   ' target: _restartIfLongRunningSession()
+' @Test
+sub TC_adb_MediaSession_restartIfLongRunningSession_triggeredBySessionEndOrComplete_ignored()
+    ''' setup
+       mediaSession = _adb_MediaSession("testId", {}, {}, {})
+
+       ''' mock previous sessionStart hit
+       ''' sessionStart tsInMillis is used to calculate the session duration
+       sessionStartHit = {}
+       sessionStartHit.eventType = "media.sessionStart"
+       sessionStartHit.requestId = "sessionStartRequestId"
+       sessionStartHit.tsObject = {
+               "tsInMillis": 0,
+               "tsInISO8601": "0"
+       }
+       sessionStartHit.xdmData = {
+           "xdm": {
+               "timestamp": "0",
+               "eventType": "media.sessionStart",
+               "mediaCollection": {
+                   "playhead": 0
+               }
+           }
+       }
+       mediaSession._sessionStartHit = sessionStartHit
+
+       ''' mock _queue()
+       GetGlobalAA()._test_media_session_hits = []
+       mediaSession._queue = function(mediaHit) as void
+           hits = GetGlobalAA()._test_media_session_hits
+           hits.push(mediaHit)
+       end function
+
+
+       ''' triggering hit (sessionEnd)
+       sessionEndHit = {}
+       sessionEndHit.eventType = "media.sessionEnd"
+       sessionEndHit.tsObject = {}
+       sessionEndHit.tsObject.tsInISO8601 = "1000"
+       sessionEndHit.tsObject.tsInMillis = (24 * 60 * 60 * 1000) + 1 ''' 24 hours + 1 ms
+       sessionEndHit.requestId = "testRequestId"
+       sessionEndHit.xdmData = {
+           "xdm": {
+               "timestamp": "86400001",
+               "eventType": "media.sessionEnd",
+               "mediaCollection": {
+                   "playhead": 86400
+               }
+           }
+       }
+
+        ''' triggering hit (sessionComplete)
+        sessionCompleteHit = {}
+        sessionCompleteHit.eventType = "media.sessionComplete"
+        sessionCompleteHit.tsObject = {}
+        sessionCompleteHit.tsObject.tsInISO8601 = "1000"
+        sessionCompleteHit.tsObject.tsInMillis = (24 * 60 * 60 * 1000) + 1 ''' 24 hours + 1 ms
+        sessionCompleteHit.requestId = "testRequestId"
+        sessionCompleteHit.xdmData = {
+            "xdm": {
+                "timestamp": "86400001",
+                "eventType": "media.sessionComplete",
+                "mediaCollection": {
+                    "playhead": 86400
+                }
+            }
+        }
+
+       ''' test
+       mediaSession._restartIfLongRunningSession(sessionEndHit)
+       mediaSession._restartIfLongRunningSession(sessionCompleteHit)
+
+       ''' verify
+       UTF_assertTrue(mediaSession._isActive, "Session should be active")
+       UTF_assertFalse(mediaSession._isIdle, "Session should not be in idle state")
+       hits = GetGlobalAA()._test_media_session_hits
+       UTF_assertEqual(0, hits.count(), "Hit Queue should be empty")
+   end sub
 
 ' target: _resetForRestart()
 ' @Test
-'''sub TC_adb_MediaSession_resetForRestart()
-'''end sub
+sub TC_adb_MediaSession_resetForRestart()
+    ''' setup
+    mediaSession = _adb_MediaSession("testId", {}, {}, {})
+    mediaSession._isIdle = true
+    mediaSession._isActive = false
+    mediaSession._backendSessionId = "testBackendSessionId"
+    mediaSession._idleStartTS = 0
+    mediaSession._lastHit = {}
+
+    ''' should not be reset
+    mediaSession._sessionStartHit = {}
+    mediaSession._sessionConfig = {}
+    mediaSession._configurationModule = {}
+    mediaSession._edgeRequestQueue = {}
+    mediaSession._isPlaying = false
+    mediaSession._isInAd = true
+
+
+    ''' test
+    mediaSession._resetForRestart()
+
+    ''' verify
+    UTF_assertInvalid(mediaSession._lastHit)
+    UTF_assertFalse(mediaSession._isIdle)
+    UTF_assertTrue(mediaSession._isActive)
+    UTF_assertInvalid(mediaSession._idleStartTS)
+    UTF_assertInvalid(mediaSession._backendSessionId)
+
+    ''' not updated by resetForRestart
+    UTF_assertNotInvalid(mediaSession._sessionStartHit)
+    UTF_assertFalse(mediaSession._isPlaying)
+    UTF_assertTrue(mediaSession._isInAd)
+    UTF_assertNotInvalid(mediaSession._sessionConfig)
+    UTF_assertNotInvalid(mediaSession._configurationModule)
+    UTF_assertNotInvalid(mediaSession._edgeRequestQueue)
+    UTF_assertNotInvalid(mediaSession._sessionConfig)
+end sub
 
 ' target: _createSessionResumeHit()
 ' @Test
@@ -917,9 +1209,6 @@ sub TC_adb_MediaSession_createSessionResumeHit()
     UTF_assertEqual(expectedSessionResumeHit.xdmData, actualSessionResumeHit.xdmData, "XDM data must match")
 end sub
 
-' target: _createSessionEndHit()
-' @Test
-
 ' target: _shouldQueue()
 ' @Test
 
@@ -931,5 +1220,8 @@ end sub
 
 ' target: handleError()
 ' @Test
+
+' target: _createSessionEndHit()
+''' Covered by TC_adb_MediaSession_closeIfIdle_idleDurationOverIdleTimeout_endSession()
 
 

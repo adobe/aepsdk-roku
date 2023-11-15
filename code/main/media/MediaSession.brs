@@ -204,7 +204,7 @@
             eventType = mediaHit.eventType
 
             ''' Should queue any event other than ping.
-            if eventType <> m._MEDIA_EVENT_TYPE.PING
+            if eventType <> m._MEDIA_EVENT_TYPE.PING or m._lastHit = invalid then
                 return true
             end if
 
@@ -308,7 +308,9 @@
         end function,
 
         _restartIfLongRunningSession: function(mediaHit as object) as void
-            if m._sessionStartHit = invalid then
+            ''' Don't check for long running session if sessionStartHit is not set
+            ''' Or if the event is sessionEnd, sessionComplete
+            if m._sessionStartHit = invalid or mediaHit.eventType = m._MEDIA_EVENT_TYPE.SESSION_END or mediaHit.eventType = m._MEDIA_EVENT_TYPE.SESSION_COMPLETE then
                 return
             end if
 
@@ -318,16 +320,21 @@
             if currentTS - sessionStartTS >= m._LONG_SESSION_THRESHOLD_SEC * 1000 then
                 ''' Abort the long running session
                 '''m.process(sessionEnd)
-                m.process(m._createSessionEndHit(mediaHit))
+                sessionEndHit = m._createSessionEndHit(mediaHit)
+                m.process(sessionEndHit)
 
                 m._resetForRestart()
 
-                m.process(m._createSessionResumeHit(mediaHit))
+                sessionStart = m._createSessionResumeHit(mediaHit)
+                m.process(sessionStart)
+                ''' process the triggering hit
+                m.process(mediaHit)
             end if
             ' Check if the session is long running >= 24 hours
         end function,
 
         _resetForRestart: function() as void
+            m._lastHit = invalid
             m._idleStartTS = invalid
             m._backendSessionId = invalid
             m._isIdle = false
@@ -353,7 +360,8 @@
                     "eventType": m._MEDIA_EVENT_TYPE.SESSION_END,
                     "mediaCollection": {
                         "playhead": mediaHit.xdmData.xdm["mediaCollection"]["playhead"],
-                    }
+                    },
+                    "timestamp": mediaHit.xdmData.xdm["timestamp"]
                 }
             }
 
