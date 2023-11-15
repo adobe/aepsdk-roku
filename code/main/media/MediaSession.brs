@@ -44,7 +44,8 @@
         _MEDIA_EVENT_TYPE: _adb_InternalConstants().MEDIA.EVENT_TYPE,
         _PUBLIC_CONSTANTS: AdobeAEPSDKConstants()
 
-        _SUCCESS_CODE: 200
+        _RESPONSE_CODE_200: 200
+        _RESPONSE_CODE_300: 300
         _ERROR_CODE_400: 400
         _ERROR_TYPE_VA_EDGE_400: "https://ns.adobe.com/aep/errors/va-edge-0400-400"
         _HANDLE_TYPE_SESSION_START: "media-analytics:new-session"
@@ -136,11 +137,6 @@
             return m._hitQueue.Count()
         end function,
 
-        handleError: function(requestId as string, error as object) as void
-            ' TODO Handle error
-            ' Drop the hits and mark session inactive if error with sessionStart
-        end function,
-
         ''' Queues media events which will then be dispatched to edgeRequestQueue
         _queue: function(mediaHit as object) as boolean
             if not m._isActive then
@@ -164,8 +160,7 @@
             for each edgeResponse in responses
                 if _adb_isEdgeResponse(edgeResponse) then
                     try
-
-                        requestId = edgeResponse.requestId
+                        requestId = edgeResponse.getRequestId()
                         responseCode = edgeResponse.getResponseCode()
                         responseString = edgeResponse.getResponseString()
                         responseObj = ParseJson(responseString)
@@ -173,24 +168,29 @@
                         ''' only handle the response for sessionStart event
                         if m._sessionStartHit.requestId = requestId then
                             ''' Use constants
-                            if responseCode = m._SUCCESS_CODE
+                            if responseCode >= m._RESPONSE_CODE_200 and responseCode < m._RESPONSE_CODE_300
+                                ''' handle the success responses
                                 for each handle in responseObj.handle
                                     if handle.type = m._HANDLE_TYPE_SESSION_START
                                         m._backendSessionId = handle.payload[0]["sessionId"]
                                         ''' dispatch queued events.
                                         m.tryDispatchMediaEvents()
+                                        ''' Exit since dont need to handle any other handle types
+                                        exit for
                                     end if
                                 end for
-                            else if responseCode = m._ERROR_CODE_400
+
+                                ''' handle the error responses
                                 for each error in responseObj.errors
                                     if error.type = m._ERROR_TYPE_VA_EDGE_400
                                         ''' abort the session if sessionStart fails
                                         m.close(true)
+                                        ''' Exit since dont need to handle any other error types
+                                        exit for
                                     end if
                                 end for
+
                             end if
-                        else
-                            ''' TODO handle 404 error response for media event
                         end if
                     catch ex
                         _adb_logError("_kickRequestQueue() - Failed to process the edge media reqsponse, the exception message: " + ex.Message)

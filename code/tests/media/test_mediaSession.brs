@@ -1375,9 +1375,129 @@ end sub
 
 ' target: _processEdgeRequestQueue()
 ' @Test
+sub TC_adb_MediaSession_processEdgeRequestQueue_sessionStart_200_storesBackendSessionId()
+    ''' setup
+    configurationModule = _adb_ConfigurationModule()
+    identityModule = _adb_IdentityModule(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
 
-' target: handleError()
+    mediaSession = _adb_MediaSession("testId", {}, {}, edgeRequestQueue)
+
+    ''' mock sessionStart requestID
+    mediaSession._sessionStartHit = {}
+    mediaSession._sessionStartHit.requestId = "sessionStartRequestId"
+
+    ''' mock _processEdgeRequestQueue()
+    edgeRequestQueue = mediaSession._edgeRequestQueue
+    edgeRequestQueue.processRequests = function() as object
+        responses = []
+        responses.push(_adb_EdgeResponse("sessionStartRequestId", 200, FormatJson({
+            "requestId": "sessionStartRequestId",
+            "handle": [
+                {
+                    "payload": [
+                        {
+                            "sessionId": "bfba9a5f2986d69a9a9424f6a99702562512eb244f2b65c4f1c1553e7fe9997f"
+                        }
+                    ],
+                    "type": "media-analytics:new-session",
+                    "eventIndex": 0
+                }, {
+                    "payload": [
+                        {
+                            "scope": "Target",
+                            "hint": "34",
+                            "ttlSeconds": 1800
+                        },
+                        {
+                            "scope": "AAM",
+                            "hint": "7",
+                            "ttlSeconds": 1800
+                        },
+                        {
+                            "scope": "EdgeNetwork",
+                            "hint": "va6",
+                            "ttlSeconds": 1800
+                        }
+                    ],
+                    "type": "locationHint:result"
+                }, {
+                    "payload": [
+                        {
+                            "key": "kndctr_EA0C49475E8AE1870A494023_AdobeOrg_cluster",
+                            "value": "va6",
+                            "maxAge": 1800
+                        },
+                        {
+                            "key": "kndctr_EA0C49475E8AE1870A494023_AdobeOrg_identity",
+                            "value": "CiY0Mzg5NTEyNzMzNTUxMDc5MzgzMzU2MjU5NDY5MTY3Mzc3MTc2OFIOCJ-YppX6MBgBKgNWQTbwAZ-YppX6MA==",
+                            "maxAge": 34128000
+                        }
+                    ],
+                    "type": "state:store"
+                }
+            ]
+        })))
+        return responses
+    end function
+
+    ''' test
+    mediaSession._processEdgeRequestQueue()
+
+    ''' verify
+    UTF_assertEqual("bfba9a5f2986d69a9a9424f6a99702562512eb244f2b65c4f1c1553e7fe9997f", mediaSession._backendSessionId, "Backend sessionn IDs must match")
+end sub
+
+' target: _processEdgeRequestQueue()
 ' @Test
+sub TC_adb_MediaSession_processEdgeRequestQueue_sessionStart_207_vaError400_closesSession()
+    ''' setup
+    configurationModule = _adb_ConfigurationModule()
+    identityModule = _adb_IdentityModule(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+
+    mediaSession = _adb_MediaSession("testId", {}, {}, edgeRequestQueue)
+
+    ''' mock sessionStart requestID
+    mediaSession._sessionStartHit = {}
+    mediaSession._sessionStartHit.requestId = "sessionStartRequestId"
+
+    ''' mock _processEdgeRequestQueue()
+    edgeRequestQueue = mediaSession._edgeRequestQueue
+    edgeRequestQueue.processRequests = function() as object
+        responses = []
+        responses.push(_adb_EdgeResponse("sessionStartRequestId",207, FormatJson({
+            "requestId": "sessionStartRequestId",
+            "errors": [
+                {
+                    "type": "https://ns.adobe.com/aep/errors/va-edge-0400-400",
+                    "status": 400,
+                    "title": "Bad Request",
+                    "detail": "Invalid request. Please check your input and try again.",
+                    "report": {
+                        "details": [
+                            {
+                                "name": "$.events[0].xdm.mediaCollection.sessionDetails",
+                                "reason": "Missing required field"
+                            }
+                        ]
+                    }
+                }
+
+            ]
+        })))
+        return responses
+    end function
+
+    ''' test
+    mediaSession._processEdgeRequestQueue()
+
+    ''' verify
+    UTF_assertInvalid(mediaSession._backendSessionId, "Backend sessionn IDs must match")
+    UTF_assertFalse(mediaSession._isActive, "Session should not be active")
+end sub
 
 ' target: _createSessionEndHit()
 ''' Covered by

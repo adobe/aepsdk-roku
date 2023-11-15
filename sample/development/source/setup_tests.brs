@@ -180,6 +180,8 @@ function _adb_test_functions() as dynamic
         TC_adb_MediaSession_shouldQueue_notPingEvent_returnsTrue
         TC_adb_MediaSession_queue_sessionActive_queues
         TC_adb_MediaSession_queue_sessionInActive_doesNotqueue
+        TC_adb_MediaSession_processEdgeRequestQueue_sessionStart_200_storesBackendSessionId
+        TC_adb_MediaSession_processEdgeRequestQueue_sessionStart_207_vaError400_closesSession
     ]
     initSDK = [
         'test_AdobeAEPSDKInit.brs
