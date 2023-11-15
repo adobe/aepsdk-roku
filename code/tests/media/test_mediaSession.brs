@@ -38,15 +38,333 @@ end sub
 ' target: process()
 ' @Test
 
-
-''' TODO
 ' target: tryDispatchMediaEvents()
 ' @Test
+sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigAndSessionConfig()
+    ''' setup
+    sessionStartHit = {}
+    sessionStartHit.tsObject = {
+        "tsInMillis" : 1000,
+        "tsInISO8601" : "1000"
+    }
+    sessionStartHit.eventType = "media.sessionStart"
+    sessionStartHit.xdmData = {
+        "xdm" : {
+            "eventType" : "media.sessionStart",
+            "mediaCollection": {
+                "playhead": 0,
+                "sessionDetails" : {
+                    "streamType" : "vod",
+                    "contentType" : "video"
+                }
+            }
+        }
+    }
+    sessionStartHit.requestId = "sessionStartRequestId"
+
+    configurationModule = _adb_ConfigurationModule()
+    identityModule = _adb_IdentityModule(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+
+    ''' mock configuration
+    MEDIA_CONFIG_CONSTANTS = AdobeAEPSDKConstants().CONFIGURATION
+    configuration = {}
+    configuration[MEDIA_CONFIG_CONSTANTS.MEDIA_CHANNEL] = "testChannel"
+    configuration[MEDIA_CONFIG_CONSTANTS.MEDIA_PLAYER_NAME] = "testPlayerName"
+    configuration[MEDIA_CONFIG_CONSTANTS.MEDIA_APP_VERSION] = "testAppVersion"
+
+    configurationModule.updateConfiguration(configuration)
+
+    ''' mock edgeRequestQueue.add()
+    GetGlobalAA()._test_edgeRequestQueue_add_called = false
+    GetGlobalAA()._test_edgeRequestQueue_add_requestId = ""
+    GetGlobalAA()._test_edgeRequestQueue_add_xdmEvents = []
+    GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis = -1
+    GetGlobalAA()._test_edgeRequestQueue_add_meta = invalid
+    GetGlobalAA()._test_edgeRequestQueue_add_path = ""
+
+    edgeRequestQueue.add = function(requestId as string, xdmEvents as object, timestampInMillis as longinteger, meta as object, path as string) as void
+        GetGlobalAA()._test_edgeRequestQueue_add_called = true
+        GetGlobalAA()._test_edgeRequestQueue_add_requestId = requestId
+        GetGlobalAA()._test_edgeRequestQueue_add_xdmEvents = xdmEvents
+        GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis = timestampInMillis
+        GetGlobalAA()._test_edgeRequestQueue_add_meta = meta
+        GetGlobalAA()._test_edgeRequestQueue_add_path = path
+    end function
+
+    ''' create media session
+    sessionConfig = {"config.channel" : "channelFromSessionConfig", "config.adpinginterval" : 1, "config.mainpinginterval" : 30 }
+    mediaSession = _adb_MediaSession("testId", configurationModule, sessionConfig, edgeRequestQueue)
+    mediaSession._hitQueue.push(sessionStartHit)
+
+    expectedSessionStartXdm = {
+        "xdm" : {
+            "eventType" : "media.sessionStart",
+            "timestamp": "1000", ''' added by tryDispatchMediaEvents()
+            "mediaCollection": {
+                "playhead": 0,
+                "sessionDetails" : {
+                    "streamType" : "vod",
+                    "contentType" : "video"
+                    "channel" : "channelFromSessionConfig", ''' updated by sessionConfig
+                    "playerName": "testPlayerName",
+                    "appVersion": "testAppVersion"
+                }
+            }
+        }
+    }
+
+    ''' test
+    mediaSession.tryDispatchMediaEvents()
+
+    ''' verify
+    actualXdmEvents = GetGlobalAA()._test_edgeRequestQueue_add_xdmEvents
+    UTF_assertEqual(1, actualXdmEvents.count())
+    actualXdmData = actualXdmEvents[0]
+
+    UTF_assertTrue(GetGlobalAA()._test_edgeRequestQueue_add_called)
+    UTF_assertEqual("sessionStartRequestId", GetGlobalAA()._test_edgeRequestQueue_add_requestId)
+    ''' & prefix since timestamp is LongInteger
+    UTF_assertEqual(1000&, GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis)
+    UTF_assertEqual({}, GetGlobalAA()._test_edgeRequestQueue_add_meta)
+    UTF_assertEqual("/ee/va/v1/sessionStart", GetGlobalAA()._test_edgeRequestQueue_add_path)
+    UTF_assertFalse(_adb_isEmptyOrInvalidString(actualXdmData.xdm._id))
+    UTF_assertEqual(expectedSessionStartXdm.xdm.mediaCollection, actualXdmData.xdm.mediaCollection)
+    UTF_assertEqual(expectedSessionStartXdm.xdm.timestamp, actualXdmData.xdm.timestamp)
+    UTF_assertEqual(expectedSessionStartXdm.xdm.eventType, actualXdmData.xdm.eventType)
+end sub
+
+' target: tryDispatchMediaEvents()
+' @Test
+sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigNoSessionConfig()
+    ''' setup
+    sessionStartHit = {}
+    sessionStartHit.tsObject = {
+        "tsInMillis" : 1000,
+        "tsInISO8601" : "1000"
+    }
+    sessionStartHit.eventType = "media.sessionStart"
+    sessionStartHit.xdmData = {
+        "xdm" : {
+            "eventType" : "media.sessionStart",
+            "mediaCollection": {
+                "playhead": 0,
+                "sessionDetails" : {
+                    "streamType" : "vod",
+                    "contentType" : "video"
+                }
+            }
+        }
+    }
+    sessionStartHit.requestId = "sessionStartRequestId"
 
 
-''' TODO
+    configurationModule = _adb_ConfigurationModule()
+    identityModule = _adb_IdentityModule(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+
+    ''' mock configuration
+    MEDIA_CONFIG_CONSTANTS = AdobeAEPSDKConstants().CONFIGURATION
+    configuration = {}
+    configuration[MEDIA_CONFIG_CONSTANTS.MEDIA_CHANNEL] = "testChannel"
+    configuration[MEDIA_CONFIG_CONSTANTS.MEDIA_PLAYER_NAME] = "testPlayerName"
+    configuration[MEDIA_CONFIG_CONSTANTS.MEDIA_APP_VERSION] = "testAppVersion"
+
+    configurationModule.updateConfiguration(configuration)
+
+    ''' mock edgeRequestQueue.add()
+    GetGlobalAA()._test_edgeRequestQueue_add_called = false
+    GetGlobalAA()._test_edgeRequestQueue_add_requestId = ""
+    GetGlobalAA()._test_edgeRequestQueue_add_xdmEvents = []
+    GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis = -1
+    GetGlobalAA()._test_edgeRequestQueue_add_meta = invalid
+    GetGlobalAA()._test_edgeRequestQueue_add_path = ""
+
+    edgeRequestQueue.add = function(requestId as string, xdmEvents as object, timestampInMillis as longinteger, meta as object, path as string) as void
+        GetGlobalAA()._test_edgeRequestQueue_add_called = true
+        GetGlobalAA()._test_edgeRequestQueue_add_requestId = requestId
+        GetGlobalAA()._test_edgeRequestQueue_add_xdmEvents = xdmEvents
+        GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis = timestampInMillis
+        GetGlobalAA()._test_edgeRequestQueue_add_meta = meta
+        GetGlobalAA()._test_edgeRequestQueue_add_path = path
+    end function
+
+    ''' create media session
+    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeRequestQueue)
+    mediaSession._hitQueue.push(sessionStartHit)
+
+    expectedSessionStartXdm = {
+        "xdm" : {
+            "eventType" : "media.sessionStart",
+            "timestamp": "1000", ''' added by tryDispatchMediaEvents()
+            "mediaCollection": {
+                "playhead": 0,
+                "sessionDetails" : {
+                    "streamType" : "vod",
+                    "contentType" : "video"
+                    "channel" : "testChannel",
+                    "playerName": "testPlayerName",
+                    "appVersion": "testAppVersion"
+                }
+            }
+        }
+    }
+
+    ''' test
+    mediaSession.tryDispatchMediaEvents()
+
+    ''' verify
+    actualXdmEvents = GetGlobalAA()._test_edgeRequestQueue_add_xdmEvents
+    UTF_assertEqual(1, actualXdmEvents.count())
+    actualXdmData = actualXdmEvents[0]
+
+    UTF_assertTrue(GetGlobalAA()._test_edgeRequestQueue_add_called)
+    UTF_assertEqual("sessionStartRequestId", GetGlobalAA()._test_edgeRequestQueue_add_requestId)
+    ''' & prefix since timestamp is LongInteger
+    UTF_assertEqual(1000&, GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis)
+    UTF_assertEqual({}, GetGlobalAA()._test_edgeRequestQueue_add_meta)
+    UTF_assertEqual("/ee/va/v1/sessionStart", GetGlobalAA()._test_edgeRequestQueue_add_path)
+    UTF_assertFalse(_adb_isEmptyOrInvalidString(actualXdmData.xdm._id))
+    UTF_assertEqual(expectedSessionStartXdm.xdm.mediaCollection, actualXdmData.xdm.mediaCollection)
+    UTF_assertEqual(expectedSessionStartXdm.xdm.timestamp, actualXdmData.xdm.timestamp)
+    UTF_assertEqual(expectedSessionStartXdm.xdm.eventType, actualXdmData.xdm.eventType)
+end sub
+
+' target: tryDispatchMediaEvents()
+' @Test
+sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_NoValidConfigNoSessionConfig()
+    ''' setup
+    sessionStartHit = {}
+    sessionStartHit.tsObject = {
+        "tsInMillis" : 1000,
+        "tsInISO8601" : "1000"
+    }
+    sessionStartHit.eventType = "media.sessionStart"
+    sessionStartHit.xdmData = {
+        "xdm" : {
+            "eventType" : "media.sessionStart",
+            "mediaCollection": {
+                "playhead": 0,
+                "sessionDetails" : {
+                    "streamType" : "vod",
+                    "contentType" : "video"
+                }
+            }
+        }
+    }
+    sessionStartHit.requestId = "sessionStartRequestId"
+
+    configurationModule = _adb_ConfigurationModule()
+    identityModule = _adb_IdentityModule(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+
+    ''' mock edgeRequestQueue.add()
+    GetGlobalAA()._test_edgeRequestQueue_add_called = false
+    GetGlobalAA()._test_edgeRequestQueue_add_requestId = ""
+    GetGlobalAA()._test_edgeRequestQueue_add_xdmEvents = []
+    GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis = -1
+    GetGlobalAA()._test_edgeRequestQueue_add_meta = invalid
+    GetGlobalAA()._test_edgeRequestQueue_add_path = ""
+
+    edgeRequestQueue.add = function(requestId as string, xdmEvents as object, timestampInMillis as longinteger, meta as object, path as string) as void
+        GetGlobalAA()._test_edgeRequestQueue_add_called = true
+        GetGlobalAA()._test_edgeRequestQueue_add_requestId = requestId
+        GetGlobalAA()._test_edgeRequestQueue_add_xdmEvents = xdmEvents
+        GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis = timestampInMillis
+        GetGlobalAA()._test_edgeRequestQueue_add_meta = meta
+        GetGlobalAA()._test_edgeRequestQueue_add_path = path
+    end function
+
+    ''' create media session
+    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeRequestQueue)
+    mediaSession._hitQueue.push(sessionStartHit)
+
+    expectedSessionStartXdm = {
+        "xdm" : {
+            "eventType" : "media.sessionStart",
+            "timestamp": "1000", ''' added by tryDispatchMediaEvents()
+            "mediaCollection": {
+                "playhead": 0,
+                "sessionDetails" : {
+                    "streamType" : "vod",
+                    "contentType" : "video"
+                }
+            }
+        }
+    }
+
+    ''' test
+    mediaSession.tryDispatchMediaEvents()
+
+    ''' verify
+    actualXdmEvents = GetGlobalAA()._test_edgeRequestQueue_add_xdmEvents
+    UTF_assertEqual(1, actualXdmEvents.count())
+    actualXdmData = actualXdmEvents[0]
+
+    UTF_assertTrue(GetGlobalAA()._test_edgeRequestQueue_add_called)
+    UTF_assertEqual("sessionStartRequestId", GetGlobalAA()._test_edgeRequestQueue_add_requestId)
+    ''' & prefix since timestamp is LongInteger
+    UTF_assertEqual(1000&, GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis)
+    UTF_assertEqual({}, GetGlobalAA()._test_edgeRequestQueue_add_meta)
+    UTF_assertEqual("/ee/va/v1/sessionStart", GetGlobalAA()._test_edgeRequestQueue_add_path)
+    UTF_assertFalse(_adb_isEmptyOrInvalidString(actualXdmData.xdm._id))
+    UTF_assertEqual(expectedSessionStartXdm.xdm.mediaCollection, actualXdmData.xdm.mediaCollection, "xdm mediaCollection does not match")
+    UTF_assertEqual(expectedSessionStartXdm.xdm.timestamp, actualXdmData.xdm.timestamp)
+    UTF_assertEqual(expectedSessionStartXdm.xdm.eventType, actualXdmData.xdm.eventType)
+end sub
+
 ' target: close()
 ' @Test
+sub TC_adb_MediaSession_close_noAbort_dispatchesHitQueue()
+    ''' setup
+    sessionConfig = {"config.adpinginterval" : 1, "config.mainpinginterval" : 30 }
+    mediaSession = _adb_MediaSession("testId", {}, sessionConfig, {})
+    mediaSession._hitQueue = [{}, {}, {}]
+
+    ''' mock tryDispatchMediaEvents()
+    GetGlobalAA()._test_media_session_tryDispatchMediaEvents_called = false
+    mediaSession.tryDispatchMediaEvents = function() as void
+        GetGlobalAA()._test_media_session_tryDispatchMediaEvents_called = true
+    end function
+
+    ''' test
+    UTF_assertEqual(3, mediaSession.getHitQueueSize(), "Hit queue should not be empty")
+    UTF_assertTrue(mediaSession._isActive)
+    mediaSession.close()
+
+    ''' verify
+    UTF_assertEqual(3, mediaSession.getHitQueueSize(), "Hit queue should not be empty")
+    UTF_assertTrue(GetGlobalAA()._test_media_session_tryDispatchMediaEvents_called)
+    UTF_assertFalse(mediaSession._isActive)
+end sub
+
+' target: close()
+' @Test
+sub TC_adb_MediaSession_close_abort_deletesHitQueue()
+    ''' setup
+    sessionConfig = {"config.adpinginterval" : 1, "config.mainpinginterval" : 30 }
+    mediaSession = _adb_MediaSession("testId", {}, sessionConfig, {})
+    mediaSession._hitQueue = [{}, {}, {}]
+
+    ''' mock tryDispatchMediaEvents()
+    GetGlobalAA()._test_media_session_tryDispatchMediaEvents_called = false
+    mediaSession.tryDispatchMediaEvents = function() as void
+        GetGlobalAA()._test_media_session_tryDispatchMediaEvents_called = true
+    end function
+
+    ''' test
+    UTF_assertEqual(3, mediaSession.getHitQueueSize(), "Hit queue should not be empty")
+    UTF_assertTrue(mediaSession._isActive)
+    mediaSession.close(true)
+
+    ''' verify
+    UTF_assertEqual(0, mediaSession.getHitQueueSize(), "Hit queue should be empty")
+    UTF_assertFalse(GetGlobalAA()._test_media_session_tryDispatchMediaEvents_called)
+    UTF_assertFalse(mediaSession._isActive)
+end sub
 
 ' *****************************************************************************************
 ' Private Functions

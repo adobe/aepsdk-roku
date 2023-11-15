@@ -108,7 +108,8 @@
 
 
                 xdm = [xdmData]
-                path = m._MEDIA_PATH_PREFIX + eventType
+                eventNameTokens = eventType.tokenize(".") ''' ex: eventType =  media.sessionStart
+                path = m._MEDIA_PATH_PREFIX + eventNameTokens[1] ''' ex: eventNameTokens[1] = sessionStart
                 meta = {}
 
                 m._edgeRequestQueue.add(requestId, xdm, tsInMillis, meta, path)
@@ -232,8 +233,19 @@
 
         ''' Called for sessionStart hit only
         _attachMediaConfig: function(xdmData as object) as object
-            xdmData.xdm["mediaCollection"]["sessionDetails"]["playerName"] = m._configurationModule.getMediaPlayerName()
-            xdmData.xdm["mediaCollection"]["sessionDetails"]["channel"] = m._configurationModule.getMediaChannel()
+            playerName = m._configurationModule.getMediaPlayerName()
+            if not _adb_isEmptyOrInvalidString(playerName) then
+                xdmData.xdm["mediaCollection"]["sessionDetails"]["playerName"] = playerName
+            end if
+
+            ''' TODO check if channel is present in sessionConfig and use it or else use it from configurationModule
+            ''' Remove _updateChannelFromSessionConfig after the change
+            ''' Update tests
+            ''' channelFromSessionConfig =
+            channel = m._configurationModule.getMediaChannel()
+            if not _adb_isEmptyOrInvalidString(channel) then
+                xdmData.xdm["mediaCollection"]["sessionDetails"]["channel"] = channel
+            end if
 
             appVersion = m._configurationModule.getMediaAppVersion()
             if not _adb_isEmptyOrInvalidString(appVersion) then
@@ -243,6 +255,7 @@
             return xdmData
         end function,
 
+        ''' TODO remove after updating _attachMediaConfig()
         _updateChannelFromSessionConfig: function(xdmData as object) as object
             if m._sessionConfig =  invalid then
                 return xdmData
