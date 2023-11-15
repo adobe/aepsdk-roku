@@ -1320,8 +1320,58 @@ sub TC_adb_MediaSession_shouldQueue_notPingEvent_returnsTrue()
 end sub
 
 ' target: _queue()
-
 ' @Test
+sub TC_adb_MediaSession_queue_sessionActive_queues()
+    mediaSession = _adb_MediaSession("testId", {}, {}, {})
+
+    mediaHit = {}
+    mediaHit.eventType = "media.chapterStart"
+    mediaHit.tsObject = {}
+    mediaHit.tsObject.tsInISO8601 = "1"
+    mediaHit.tsObject.tsInMillis = 1 ''' default ping interval 10 seconds
+    mediaHit.requestId = "testRequestId"
+    mediaHit.xdmData = {
+        "xdm": {
+            "timestamp": "1000",
+            "eventType": "media.chapterStart",
+            "mediaCollection": {
+                "playhead": 1
+            }
+        }
+    }
+
+    ''' test
+    UTF_assertTrue(mediaSession._queue(mediaHit))
+
+    ''' verify
+end sub
+
+' target: _queue()
+' @Test
+sub TC_adb_MediaSession_queue_sessionInActive_doesNotqueue()
+    mediaSession = _adb_MediaSession("testId", {}, {}, {})
+    ''' mock session inactive
+    mediaSession._isActive = false
+
+    mediaHit = {}
+    mediaHit.eventType = "media.chapterStart"
+    mediaHit.tsObject = {}
+    mediaHit.tsObject.tsInISO8601 = "1"
+    mediaHit.tsObject.tsInMillis = 1 ''' default ping interval 10 seconds
+    mediaHit.requestId = "testRequestId"
+    mediaHit.xdmData = {
+        "xdm": {
+            "timestamp": "1000",
+            "eventType": "media.chapterStart",
+            "mediaCollection": {
+                "playhead": 1
+            }
+        }
+    }
+
+    ''' test and verify
+    UTF_assertFalse(mediaSession._queue(mediaHit))
+end sub
 
 ' target: _processEdgeRequestQueue()
 ' @Test

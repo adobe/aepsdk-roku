@@ -142,16 +142,17 @@
         end function,
 
         ''' Queues media events which will then be dispatched to edgeRequestQueue
-        _queue: function(mediaHit as object) as void
-            if not _isActive then
-                _adb_logWarning("handleQueueEvent() - Cannot queue media event, media session (" + FormatJson(_id) + " is not active.")
-                return
+        _queue: function(mediaHit as object) as boolean
+            if not m._isActive then
+                _adb_logWarning("handleQueueEvent() - Cannot queue media event, media session (" + FormatJson(m._id) + " is not active.")
+                return false
             end if
 
             ' Create and add hit to queue for actual events or heartbeat pings
             m._hitQueue.append(mediaHit)
             m._lastHit = mediaHit
-            m.dispatchMediaEvents()
+            m.tryDispatchMediaEvents()
+            return true
         end function,
 
         ''' TODO verify this

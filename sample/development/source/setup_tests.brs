@@ -178,6 +178,8 @@ function _adb_test_functions() as dynamic
         TC_adb_MediaSession_shouldQueue_pingEvent_overPingInterval_returnsTrue
         TC_adb_MediaSession_shouldQueue_pingEvent_underPingInterval_returnsFalse
         TC_adb_MediaSession_shouldQueue_notPingEvent_returnsTrue
+        TC_adb_MediaSession_queue_sessionActive_queues
+        TC_adb_MediaSession_queue_sessionInActive_doesNotqueue
     ]
     initSDK = [
         'test_AdobeAEPSDKInit.brs
