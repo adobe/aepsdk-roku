@@ -68,12 +68,10 @@
             m._closeIfIdle(mediaHit)
             m._restartIfLongRunningSession(mediaHit)
 
-            ' TODO Filter ping events which are proxy for timer
-            if not m._shouldQueue(mediaHit)
-                return
+            ' Filter ping events which are proxy for timer
+            if m._shouldQueue(mediaHit)
+                m._queue(mediaHit)
             end if
-
-            m._queue(mediaHit)
 
         end function,
 
