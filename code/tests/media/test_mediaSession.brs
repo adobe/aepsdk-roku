@@ -34,8 +34,19 @@ sub TC_adb_MediaSession_init()
     UTF_assertNotInvalid(mediaSession._sessionConfig)
 end sub
 
+''' TODO
+' target: process()
+' @Test
 
 
+''' TODO
+' target: tryDispatchMediaEvents()
+' @Test
+
+
+''' TODO
+' target: close()
+' @Test
 
 ' *****************************************************************************************
 ' Private Functions
