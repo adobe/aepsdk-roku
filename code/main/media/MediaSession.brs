@@ -1,24 +1,31 @@
 ' ********************** Copyright 2023 Adobe. All rights reserved. **********************
- ' *
- ' * This file is licensed to you under the Apache License, Version 2.0 (the "License");
- ' * you may not use this file except in compliance with the License. You may obtain a copy
- ' * of the License at http://www.apache.org/licenses/LICENSE-2.0
- ' *
- ' * Unless required by applicable law or agreed to in writing, software distributed under
- ' * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
- ' * OF ANY KIND, either express or implied. See the License for the specific language
- ' * governing permissions and limitations under the License.
- ' *
- ' *****************************************************************************************
+' *
+' * This file is licensed to you under the Apache License, Version 2.0 (the "License");
+' * you may not use this file except in compliance with the License. You may obtain a copy
+' * of the License at http://www.apache.org/licenses/LICENSE-2.0
+' *
+' * Unless required by applicable law or agreed to in writing, software distributed under
+' * the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+' * OF ANY KIND, either express or implied. See the License for the specific language
+' * governing permissions and limitations under the License.
+' *
+' *****************************************************************************************
 
- ' ***************************** MODULE: MediaSession *******************************
+' ***************************** MODULE: MediaSession *******************************
 
- function _adb_MediaSession(id as string, configurationModule as object, sessionConfig as object, edgeRequestQueue as object) as object
-     return {
+function _adb_MediaSession(id as string, configurationModule as object, sessionConfig as object, edgeRequestQueue as object) as object
+    sessionObj = {
         _id: id,
-        _sessionConfig: sessionConfig,
-        _configurationModule: configurationModule,
-        _edgeRequestQueue: edgeRequestQueue,
+
+        ' session level configuration
+        _sessionChannelName: invalid,
+        _sessionAdPingInternal: invalid,
+        _sessionMainPingInternal: invalid,
+
+        ' external dependencies
+        _configurationModule: invalid,
+        _edgeRequestQueue: invalid,
+
         _isActive: true,
 
         _backendSessionId: invalid,
@@ -49,6 +56,16 @@
         _ERROR_CODE_400: 400
         _ERROR_TYPE_VA_EDGE_400: "https://ns.adobe.com/aep/errors/va-edge-0400-400"
         _HANDLE_TYPE_SESSION_START: "media-analytics:new-session"
+
+        _init: sub(id as string, configurationModule as object, sessionConfig as object, edgeRequestQueue as object)
+            m._configurationModule = configurationModule
+            m._edgeRequestQueue = edgeRequestQueue
+
+            SESSION_CONFIGURATION = AdobeAEPSDKConstants().MEDIA_SESSION_CONFIGURATION
+            m._sessionAdPingInternal = _adb_optIntFromMap(sessionConfig, SESSION_CONFIGURATION.AD_PING_INTERVAL)
+            m._sessionMainPingInternal = _adb_optIntFromMap(sessionConfig, SESSION_CONFIGURATION.MAIN_PING_INTERVAL)
+            m._sessionChannelName = _adb_optStringFromMap(sessionConfig, SESSION_CONFIGURATION.CHANNEL)
+        end sub,
 
         ''' Processes the mediaHit. Updates the playback state, ad state, idle state, etc.
         ''' Extracts the sessionStart data.
@@ -93,8 +110,6 @@
                 ' attach sessionId to events other than sessionStart
                 if eventType = m._MEDIA_EVENT_TYPE.SESSION_START
                     xdmData = m._attachMediaConfig(xdmData)
-                    xdmData = m._updateChannelFromSessionConfig(xdmData)
-
                 else
                     ''' Cannot send hit of type other than sessionStart if backendSessionId is not set.
                     if m._backendSessionId = invalid then
@@ -244,37 +259,12 @@
 
         ''' Called for sessionStart hit only
         _attachMediaConfig: function(xdmData as object) as object
-            playerName = m._configurationModule.getMediaPlayerName()
-            if not _adb_isEmptyOrInvalidString(playerName) then
-                xdmData.xdm["mediaCollection"]["sessionDetails"]["playerName"] = playerName
-            end if
+            xdmData.xdm["mediaCollection"]["sessionDetails"]["playerName"] = m._getPlayerName()
+            xdmData.xdm["mediaCollection"]["sessionDetails"]["channel"] = m._getChannelName()
 
-            ''' TODO check if channel is present in sessionConfig and use it or else use it from configurationModule
-            ''' Remove _updateChannelFromSessionConfig after the change
-            ''' Update tests
-            ''' channelFromSessionConfig =
-            channel = m._configurationModule.getMediaChannel()
-            if not _adb_isEmptyOrInvalidString(channel) then
-                xdmData.xdm["mediaCollection"]["sessionDetails"]["channel"] = channel
-            end if
-
-            appVersion = m._configurationModule.getMediaAppVersion()
+            appVersion = m._getAppVersion()
             if not _adb_isEmptyOrInvalidString(appVersion) then
                 xdmData.xdm["mediaCollection"]["sessionDetails"]["appVersion"] = appVersion
-            end if
-
-            return xdmData
-        end function,
-
-        ''' TODO remove after updating _attachMediaConfig()
-        _updateChannelFromSessionConfig: function(xdmData as object) as object
-            if m._sessionConfig =  invalid then
-                return xdmData
-            end if
-
-            channel = m._sessionConfig[m._PUBLIC_CONSTANTS.MEDIA_SESSION_CONFIGURATION.CHANNEL]
-            if not _adb_isEmptyOrInvalidString(channel) then
-                xdmData.xdm["mediaCollection"]["sessionDetails"]["channel"] = channel
             end if
 
             return xdmData
@@ -403,22 +393,36 @@
 
         _getPingInterval: function(isAd = false as boolean) as integer
             if isAd then
-                adPingInterval = m._sessionConfig[m._PUBLIC_CONSTANTS.MEDIA_SESSION_CONFIGURATION.AD_PING_INTERVAL]
-                if adPingInterval = invalid or adPingInterval < m._MIN_AD_PING_INTERVAL_SEC or adPingInterval > m._MAX_AD_PING_INTERVAL_SEC then
-                    return m._DEFAULT_PING_INTERVAL_SEC
-                else
-                    _adb_logVerbose("getPingInterval() - Setting ad ping interval as " + StrI(adPingInterval) + " seconds.")
-                    return adPingInterval
+                if m._sessionAdPingInternal <> invalid and m._sessionAdPingInternal >= m._MIN_AD_PING_INTERVAL_SEC and m._sessionAdPingInternal <= m._MAX_AD_PING_INTERVAL_SEC then
+                    _adb_logVerbose("_getPingInterval() - Setting ad ping interval as " + FormatJson(m._sessionAdPingInternal) + " seconds.")
+                    return m._sessionAdPingInternal
                 end if
             else
-                mainPingInterval = m._sessionConfig[m._PUBLIC_CONSTANTS.MEDIA_SESSION_CONFIGURATION.MAIN_PING_INTERVAL]
-                if mainPingInterval = invalid or mainPingInterval < m._MIN_MAIN_PING_INTERVAL_SEC or mainPingInterval > m._MAX_MAIN_PING_INTERVAL_SEC then
-                    return m._DEFAULT_PING_INTERVAL_SEC
-                else
-                    _adb_logVerbose("getPingInterval() - Setting main ping interval as " + StrI(mainPingInterval) + " seconds.")
-                    return mainPingInterval
+                if m._sessionMainPingInternal <> invalid and m._sessionMainPingInternal >= m._MIN_MAIN_PING_INTERVAL_SEC and m._sessionMainPingInternal <= m._MAX_MAIN_PING_INTERVAL_SEC then
+                    _adb_logVerbose("_getPingInterval() - Setting main ping interval as " + FormatJson(m._sessionMainPingInternal) + " seconds.")
+                    return m._sessionMainPingInternal
                 end if
             end if
+            _adb_logVerbose("_getPingInterval() - Setting ping interval with the default 10 seconds.")
+            return m._DEFAULT_PING_INTERVAL_SEC
         end function,
-     }
- end function
+
+        _getAppVersion: function() as string
+            return m._configurationModule.getMediaAppVersion()
+        end function,
+
+        _getPlayerName: function() as string
+            return m._configurationModule.getMediaPlayerName()
+        end function,
+
+        _getChannelName: function() as string
+            if m._sessionChannelName <> invalid
+                return m._sessionChannelName
+            else
+                return m._configurationModule.getMediaChannel()
+            end if
+        end function,
+    }
+    sessionObj._init(id, configurationModule, sessionConfig, edgeRequestQueue)
+    return sessionObj
+end function

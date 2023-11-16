@@ -20,7 +20,94 @@ sub TC_adb_MediaSession_init()
     edgeModule = _adb_EdgeModule(configurationModule, identityModule)
     edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
 
-    sessionConfig = { "config.channel": "testChannel" }
+    configuration = {}
+    ADB_CONSTANTS = AdobeAEPSDKConstants()
+    configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL] = "test_channel"
+    configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_PLAYER_NAME] = "test_playerName"
+    configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_APP_VERSION] = "test_appVersion"
+
+    configurationModule.updateConfiguration(configuration)
+
+    ''' test
+    sessionConfig = { "config.channel": "test_channel_session" }
+    mediaSession = _adb_MediaSession("testId", configurationModule, sessionConfig, edgeRequestQueue)
+
+    ''' verify
+    UTF_assertNotInvalid(mediaSession)
+    UTF_assertTrue(mediaSession._isActive)
+    UTF_assertEqual("testId", mediaSession._id)
+    UTF_assertNotInvalid(mediaSession._configurationModule)
+    UTF_assertNotInvalid(mediaSession._edgeRequestQueue)
+    UTF_assertEqual("test_channel_session", mediaSession._sessionChannelName)
+    UTF_assertEqual("test_appVersion", mediaSession._getAppVersion())
+    UTF_assertEqual("test_playerName", mediaSession._getPlayerName())
+    UTF_assertEqual("test_channel_session", mediaSession._getChannelName())
+    isAd = true
+    DEFAULT_PING_INTERVAL_SEC = 10
+    UTF_assertEqual(DEFAULT_PING_INTERVAL_SEC, mediaSession._getPingInterval(isAd))
+    UTF_assertEqual(DEFAULT_PING_INTERVAL_SEC, mediaSession._getPingInterval(not isAd))
+end sub
+
+' target: _adb_MediaSession()
+' @Test
+sub TC_adb_MediaSession_init_withoutSessionConfig()
+    ''' setup
+    configurationModule = _adb_ConfigurationModule()
+
+    identityModule = _adb_IdentityModule(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+
+    configuration = {}
+    ADB_CONSTANTS = AdobeAEPSDKConstants()
+    configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL] = "test_channel"
+    configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_PLAYER_NAME] = "test_playerName"
+    configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_APP_VERSION] = "test_appVersion"
+
+    configurationModule.updateConfiguration(configuration)
+
+    ''' test
+    sessionConfig = {}
+    mediaSession = _adb_MediaSession("testId", configurationModule, sessionConfig, edgeRequestQueue)
+
+    ''' verify
+    UTF_assertNotInvalid(mediaSession)
+    UTF_assertTrue(mediaSession._isActive)
+    UTF_assertEqual("testId", mediaSession._id)
+    UTF_assertNotInvalid(mediaSession._configurationModule)
+    UTF_assertNotInvalid(mediaSession._edgeRequestQueue)
+    UTF_assertInvalid(mediaSession._sessionChannelName)
+    UTF_assertEqual("test_appVersion", mediaSession._getAppVersion())
+    UTF_assertEqual("test_playerName", mediaSession._getPlayerName())
+    UTF_assertEqual("test_channel", mediaSession._getChannelName())
+    isAd = true
+    DEFAULT_PING_INTERVAL_SEC = 10
+    UTF_assertEqual(DEFAULT_PING_INTERVAL_SEC, mediaSession._getPingInterval(isAd))
+    UTF_assertEqual(DEFAULT_PING_INTERVAL_SEC, mediaSession._getPingInterval(not isAd))
+end sub
+
+' target: _adb_MediaSession()
+' @Test
+sub TC_adb_MediaSession_init_withFullSessionConfig()
+    ''' setup
+    configurationModule = _adb_ConfigurationModule()
+    identityModule = _adb_IdentityModule(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+
+    configuration = {}
+    ADB_CONSTANTS = AdobeAEPSDKConstants()
+    configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL] = "test_channel"
+    configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_PLAYER_NAME] = "test_playerName"
+    configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_APP_VERSION] = "test_appVersion"
+
+    configurationModule.updateConfiguration(configuration)
+
+    sessionConfig = {
+        "config.channel": "test_channel_session",
+        "config.adpinginterval": 5,
+        "config.mainpinginterval": 35,
+    }
 
     ''' test
     mediaSession = _adb_MediaSession("testId", configurationModule, sessionConfig, edgeRequestQueue)
@@ -31,7 +118,13 @@ sub TC_adb_MediaSession_init()
     UTF_assertEqual("testId", mediaSession._id)
     UTF_assertNotInvalid(mediaSession._configurationModule)
     UTF_assertNotInvalid(mediaSession._edgeRequestQueue)
-    UTF_assertNotInvalid(mediaSession._sessionConfig)
+    UTF_assertEqual("test_channel_session", mediaSession._sessionChannelName)
+    UTF_assertEqual("test_appVersion", mediaSession._getAppVersion())
+    UTF_assertEqual("test_playerName", mediaSession._getPlayerName())
+    UTF_assertEqual("test_channel_session", mediaSession._getChannelName())
+    isAd = true
+    UTF_assertEqual(5, mediaSession._getPingInterval(isAd))
+    UTF_assertEqual(35, mediaSession._getPingInterval(not isAd))
 end sub
 
 ' target: process()
@@ -40,18 +133,18 @@ sub TC_adb_MediaSession_process_notActiveSession()
     ''' setup
     sessionStartHit = {}
     sessionStartHit.tsObject = {
-        "tsInMillis" : 0,
-        "tsInISO8601" : "0"
+        "tsInMillis": 0,
+        "tsInISO8601": "0"
     }
     sessionStartHit.eventType = "media.sessionStart"
     sessionStartHit.xdmData = {
-        "xdm" : {
-            "eventType" : "media.sessionStart",
+        "xdm": {
+            "eventType": "media.sessionStart",
             "mediaCollection": {
                 "playhead": 0,
-                "sessionDetails" : {
-                    "streamType" : "vod",
-                    "contentType" : "video"
+                "sessionDetails": {
+                    "streamType": "vod",
+                    "contentType": "video"
                 }
             }
         }
@@ -134,18 +227,18 @@ sub TC_adb_MediaSession_process_activeSession_sessionStartHit_queued()
     ''' setup
     sessionStartHit = {}
     sessionStartHit.tsObject = {
-        "tsInMillis" : 0,
-        "tsInISO8601" : "0"
+        "tsInMillis": 0,
+        "tsInISO8601": "0"
     }
     sessionStartHit.eventType = "media.sessionStart"
     sessionStartHit.xdmData = {
-        "xdm" : {
-            "eventType" : "media.sessionStart",
+        "xdm": {
+            "eventType": "media.sessionStart",
             "mediaCollection": {
                 "playhead": 0,
-                "sessionDetails" : {
-                    "streamType" : "vod",
-                    "contentType" : "video"
+                "sessionDetails": {
+                    "streamType": "vod",
+                    "contentType": "video"
                 }
             }
         }
@@ -186,13 +279,13 @@ sub TC_adb_MediaSession_process_activeSession_playbackHits_queued()
     ''' setup
     playHit = {}
     playHit.tsObject = {
-        "tsInMillis" : 0,
-        "tsInISO8601" : "0"
+        "tsInMillis": 0,
+        "tsInISO8601": "0"
     }
     playHit.eventType = "media.play"
     playHit.xdmData = {
-        "xdm" : {
-            "eventType" : "media.play",
+        "xdm": {
+            "eventType": "media.play",
             "mediaCollection": {
                 "playhead": 0
             }
@@ -202,13 +295,13 @@ sub TC_adb_MediaSession_process_activeSession_playbackHits_queued()
 
     pauseHit = {}
     pauseHit.tsObject = {
-        "tsInMillis" : 0,
-        "tsInISO8601" : "0"
+        "tsInMillis": 0,
+        "tsInISO8601": "0"
     }
     pauseHit.eventType = "media.pauseStart"
     pauseHit.xdmData = {
-        "xdm" : {
-            "eventType" : "media.pauseStart",
+        "xdm": {
+            "eventType": "media.pauseStart",
             "mediaCollection": {
                 "playhead": 0
             }
@@ -219,13 +312,13 @@ sub TC_adb_MediaSession_process_activeSession_playbackHits_queued()
 
     bufferHit = {}
     bufferHit.tsObject = {
-        "tsInMillis" : 0,
-        "tsInISO8601" : "0"
+        "tsInMillis": 0,
+        "tsInISO8601": "0"
     }
     bufferHit.eventType = "media.bufferStart"
     bufferHit.xdmData = {
-        "xdm" : {
-            "eventType" : "media.bufferStart",
+        "xdm": {
+            "eventType": "media.bufferStart",
             "mediaCollection": {
                 "playhead": 1
             }
@@ -235,13 +328,13 @@ sub TC_adb_MediaSession_process_activeSession_playbackHits_queued()
 
     pingHit1 = {}
     pingHit1.tsObject = {
-        "tsInMillis" : 0,
-        "tsInISO8601" : "0"
+        "tsInMillis": 0,
+        "tsInISO8601": "0"
     }
     pingHit1.eventType = "media.ping"
     pingHit1.xdmData = {
-        "xdm" : {
-            "eventType" : "media.ping",
+        "xdm": {
+            "eventType": "media.ping",
             "mediaCollection": {
                 "playhead": 1
             }
@@ -251,13 +344,13 @@ sub TC_adb_MediaSession_process_activeSession_playbackHits_queued()
 
     pingHit2 = {}
     pingHit2.tsObject = {
-        "tsInMillis" : 10001,
-        "tsInISO8601" : "10001"
+        "tsInMillis": 10001,
+        "tsInISO8601": "10001"
     }
     pingHit2.eventType = "media.ping"
     pingHit2.xdmData = {
-        "xdm" : {
-            "eventType" : "media.ping",
+        "xdm": {
+            "eventType": "media.ping",
             "mediaCollection": {
                 "playhead": 11
             }
@@ -341,13 +434,13 @@ sub TC_adb_MediaSession_process_activeSession_adHits_queued()
     ''' setup
     playHit = {}
     playHit.tsObject = {
-        "tsInMillis" : 0,
-        "tsInISO8601" : "0"
+        "tsInMillis": 0,
+        "tsInISO8601": "0"
     }
     playHit.eventType = "media.play"
     playHit.xdmData = {
-        "xdm" : {
-            "eventType" : "media.play",
+        "xdm": {
+            "eventType": "media.play",
             "mediaCollection": {
                 "playhead": 0
             }
@@ -357,13 +450,13 @@ sub TC_adb_MediaSession_process_activeSession_adHits_queued()
 
     adStartHit = {}
     adStartHit.tsObject = {
-        "tsInMillis" : 0,
-        "tsInISO8601" : "0"
+        "tsInMillis": 0,
+        "tsInISO8601": "0"
     }
     adStartHit.eventType = "media.adStart"
     adStartHit.xdmData = {
-        "xdm" : {
-            "eventType" : "media.adStart",
+        "xdm": {
+            "eventType": "media.adStart",
             "mediaCollection": {
                 "playhead": 1
             }
@@ -374,13 +467,13 @@ sub TC_adb_MediaSession_process_activeSession_adHits_queued()
 
     adCompleteHit = {}
     adCompleteHit.tsObject = {
-        "tsInMillis" : 0,
-        "tsInISO8601" : "0"
+        "tsInMillis": 0,
+        "tsInISO8601": "0"
     }
     adCompleteHit.eventType = "media.adComplete"
     adCompleteHit.xdmData = {
-        "xdm" : {
-            "eventType" : "media.adComplete",
+        "xdm": {
+            "eventType": "media.adComplete",
             "mediaCollection": {
                 "playhead": 1
             }
@@ -390,13 +483,13 @@ sub TC_adb_MediaSession_process_activeSession_adHits_queued()
 
     adSkipHit = {}
     adSkipHit.tsObject = {
-        "tsInMillis" : 0,
-        "tsInISO8601" : "0"
+        "tsInMillis": 0,
+        "tsInISO8601": "0"
     }
     adSkipHit.eventType = "media.adSkip"
     adSkipHit.xdmData = {
-        "xdm" : {
-            "eventType" : "media.adSkip",
+        "xdm": {
+            "eventType": "media.adSkip",
             "mediaCollection": {
                 "playhead": 1
             }
@@ -472,18 +565,18 @@ sub TC_adb_MediaSession_process_activeSession_idleTimeout_queued()
     ''' setup
     sessionStartHit = {}
     sessionStartHit.tsObject = {
-        "tsInMillis" : 0,
-        "tsInISO8601" : "0"
+        "tsInMillis": 0,
+        "tsInISO8601": "0"
     }
     sessionStartHit.eventType = "media.sessionStart"
     sessionStartHit.xdmData = {
-        "xdm" : {
-            "eventType" : "media.sessionStart",
+        "xdm": {
+            "eventType": "media.sessionStart",
             "mediaCollection": {
                 "playhead": 0,
-                "sessionDetails" : {
-                    "streamType" : "vod",
-                    "contentType" : "video"
+                "sessionDetails": {
+                    "streamType": "vod",
+                    "contentType": "video"
                 }
             }
         }
@@ -492,13 +585,13 @@ sub TC_adb_MediaSession_process_activeSession_idleTimeout_queued()
 
     playHit = {}
     playHit.tsObject = {
-        "tsInMillis" : 0,
-        "tsInISO8601" : "0"
+        "tsInMillis": 0,
+        "tsInISO8601": "0"
     }
     playHit.eventType = "media.play"
     playHit.xdmData = {
-        "xdm" : {
-            "eventType" : "media.play",
+        "xdm": {
+            "eventType": "media.play",
             "mediaCollection": {
                 "playhead": 0
             }
@@ -508,13 +601,13 @@ sub TC_adb_MediaSession_process_activeSession_idleTimeout_queued()
 
     pauseHit = {}
     pauseHit.tsObject = {
-        "tsInMillis" : 0,
-        "tsInISO8601" : "0"
+        "tsInMillis": 0,
+        "tsInISO8601": "0"
     }
     pauseHit.eventType = "media.pauseStart"
     pauseHit.xdmData = {
-        "xdm" : {
-            "eventType" : "media.pauseStart",
+        "xdm": {
+            "eventType": "media.pauseStart",
             "mediaCollection": {
                 "playhead": 0
             }
@@ -523,13 +616,13 @@ sub TC_adb_MediaSession_process_activeSession_idleTimeout_queued()
 
     pingHit1 = {}
     pingHit1.tsObject = {
-        "tsInMillis" : (30*60*1000 +1),
-        "tsInISO8601" : "1800001"
+        "tsInMillis": (30 * 60 * 1000 + 1),
+        "tsInISO8601": "1800001"
     }
     pingHit1.eventType = "media.ping"
     pingHit1.xdmData = {
-        "xdm" : {
-            "eventType" : "media.ping",
+        "xdm": {
+            "eventType": "media.ping",
             "mediaCollection": {
                 "playhead": 1800
             }
@@ -539,13 +632,13 @@ sub TC_adb_MediaSession_process_activeSession_idleTimeout_queued()
 
     autoGeneratedSessionEndHit = {}
     autoGeneratedSessionEndHit.tsObject = {
-        "tsInMillis" : (30*60*1000 +1),
-        "tsInISO8601" : "1800001"
+        "tsInMillis": (30 * 60 * 1000 + 1),
+        "tsInISO8601": "1800001"
     }
     autoGeneratedSessionEndHit.eventType = "media.sessionEnd"
     autoGeneratedSessionEndHit.xdmData = {
-        "xdm" : {
-            "eventType" : "media.sessionEnd",
+        "xdm": {
+            "eventType": "media.sessionEnd",
             "timestamp": "1800001",
             "mediaCollection": {
                 "playhead": 1800
@@ -555,13 +648,13 @@ sub TC_adb_MediaSession_process_activeSession_idleTimeout_queued()
 
     restartIdlePlayHit = {}
     restartIdlePlayHit.tsObject = {
-        "tsInMillis" : (30*60*1000 +2),
-        "tsInISO8601" : "1800002"
+        "tsInMillis": (30 * 60 * 1000 + 2),
+        "tsInISO8601": "1800002"
     }
     restartIdlePlayHit.eventType = "media.play"
     restartIdlePlayHit.xdmData = {
-        "xdm" : {
-            "eventType" : "media.play",
+        "xdm": {
+            "eventType": "media.play",
             "mediaCollection": {
                 "playhead": 1800
             }
@@ -570,20 +663,20 @@ sub TC_adb_MediaSession_process_activeSession_idleTimeout_queued()
 
     autoGeneratedSessionStartHit = {}
     autoGeneratedSessionStartHit.tsObject = {
-        "tsInMillis" : (30*60*1000 +2),
-        "tsInISO8601" : "1800002"
+        "tsInMillis": (30 * 60 * 1000 + 2),
+        "tsInISO8601": "1800002"
     }
     autoGeneratedSessionStartHit.eventType = "media.sessionStart"
     autoGeneratedSessionStartHit.xdmData = {
-        "xdm" : {
-            "eventType" : "media.sessionStart",
+        "xdm": {
+            "eventType": "media.sessionStart",
             "timestamp": "1800002",
             "mediaCollection": {
                 "playhead": 1800,
-                "sessionDetails" : {
-                    "streamType" : "vod",
-                    "hasResume" : true,
-                    "contentType" : "video"
+                "sessionDetails": {
+                    "streamType": "vod",
+                    "hasResume": true,
+                    "contentType": "video"
                 }
             }
         }
@@ -607,7 +700,7 @@ sub TC_adb_MediaSession_process_activeSession_idleTimeout_queued()
         if GetGlobalAA()._test_media_session_tryDispatchMediaEvents_called_count <> 4 then
             return
         end if
-            GetGlobalAA()._test_media_session_tryDispatchMediaEvents_idleSession_hits = m._hitQueue
+        GetGlobalAA()._test_media_session_tryDispatchMediaEvents_idleSession_hits = m._hitQueue
     end function
 
     ''' default playback state
@@ -685,18 +778,18 @@ sub TC_adb_MediaSession_process_activeSession_longRunningSession_queued()
     ''' setup
     sessionStartHit = {}
     sessionStartHit.tsObject = {
-        "tsInMillis" : 0,
-        "tsInISO8601" : "0"
+        "tsInMillis": 0,
+        "tsInISO8601": "0"
     }
     sessionStartHit.eventType = "media.sessionStart"
     sessionStartHit.xdmData = {
-        "xdm" : {
-            "eventType" : "media.sessionStart",
+        "xdm": {
+            "eventType": "media.sessionStart",
             "mediaCollection": {
                 "playhead": 0,
-                "sessionDetails" : {
-                    "streamType" : "vod",
-                    "contentType" : "video"
+                "sessionDetails": {
+                    "streamType": "vod",
+                    "contentType": "video"
                 }
             }
         }
@@ -705,13 +798,13 @@ sub TC_adb_MediaSession_process_activeSession_longRunningSession_queued()
 
     playHit = {}
     playHit.tsObject = {
-        "tsInMillis" : 0,
-        "tsInISO8601" : "0"
+        "tsInMillis": 0,
+        "tsInISO8601": "0"
     }
     playHit.eventType = "media.play"
     playHit.xdmData = {
-        "xdm" : {
-            "eventType" : "media.play",
+        "xdm": {
+            "eventType": "media.play",
             "mediaCollection": {
                 "playhead": 0
             }
@@ -722,13 +815,13 @@ sub TC_adb_MediaSession_process_activeSession_longRunningSession_queued()
     ''' trigger the long running session timeout
     pingHit = {}
     pingHit.tsObject = {
-        "tsInMillis" : (24*60*60*1000 + 1),
-        "tsInISO8601" : "86400001"
+        "tsInMillis": (24 * 60 * 60 * 1000 + 1),
+        "tsInISO8601": "86400001"
     }
     pingHit.eventType = "media.ping"
     pingHit.xdmData = {
-        "xdm" : {
-            "eventType" : "media.ping",
+        "xdm": {
+            "eventType": "media.ping",
             "mediaCollection": {
                 "playhead": 86400
             }
@@ -738,13 +831,13 @@ sub TC_adb_MediaSession_process_activeSession_longRunningSession_queued()
 
     autoGeneratedSessionEndHit = {}
     autoGeneratedSessionEndHit.tsObject = {
-        "tsInMillis" : (24*60*60*1000 +1),
-        "tsInISO8601" : "86400001"
+        "tsInMillis": (24 * 60 * 60 * 1000 + 1),
+        "tsInISO8601": "86400001"
     }
     autoGeneratedSessionEndHit.eventType = "media.sessionEnd"
     autoGeneratedSessionEndHit.xdmData = {
-        "xdm" : {
-            "eventType" : "media.sessionEnd",
+        "xdm": {
+            "eventType": "media.sessionEnd",
             "timestamp": "86400001",
             "mediaCollection": {
                 "playhead": 86400
@@ -754,20 +847,20 @@ sub TC_adb_MediaSession_process_activeSession_longRunningSession_queued()
 
     autoGeneratedSessionStartHit = {}
     autoGeneratedSessionStartHit.tsObject = {
-        "tsInMillis" : (24*60*60*1000 +1),
-        "tsInISO8601" : "86400001"
+        "tsInMillis": (24 * 60 * 60 * 1000 + 1),
+        "tsInISO8601": "86400001"
     }
     autoGeneratedSessionStartHit.eventType = "media.sessionStart"
     autoGeneratedSessionStartHit.xdmData = {
-        "xdm" : {
-            "eventType" : "media.sessionStart",
+        "xdm": {
+            "eventType": "media.sessionStart",
             "timestamp": "86400001",
             "mediaCollection": {
                 "playhead": 86400,
-                "sessionDetails" : {
-                    "streamType" : "vod",
-                    "hasResume" : true,
-                    "contentType" : "video"
+                "sessionDetails": {
+                    "streamType": "vod",
+                    "hasResume": true,
+                    "contentType": "video"
                 }
             }
         }
@@ -843,18 +936,18 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigAndSessio
     ''' setup
     sessionStartHit = {}
     sessionStartHit.tsObject = {
-        "tsInMillis" : 1000,
-        "tsInISO8601" : "1000"
+        "tsInMillis": 1000,
+        "tsInISO8601": "1000"
     }
     sessionStartHit.eventType = "media.sessionStart"
     sessionStartHit.xdmData = {
-        "xdm" : {
-            "eventType" : "media.sessionStart",
+        "xdm": {
+            "eventType": "media.sessionStart",
             "mediaCollection": {
                 "playhead": 0,
-                "sessionDetails" : {
-                    "streamType" : "vod",
-                    "contentType" : "video"
+                "sessionDetails": {
+                    "streamType": "vod",
+                    "contentType": "video"
                 }
             }
         }
@@ -893,20 +986,20 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigAndSessio
     end function
 
     ''' create media session
-    sessionConfig = {"config.channel" : "channelFromSessionConfig", "config.adpinginterval" : 1, "config.mainpinginterval" : 30 }
+    sessionConfig = { "config.channel": "channelFromSessionConfig", "config.adpinginterval": 1, "config.mainpinginterval": 30 }
     mediaSession = _adb_MediaSession("testId", configurationModule, sessionConfig, edgeRequestQueue)
     mediaSession._hitQueue.push(sessionStartHit)
 
     expectedSessionStartXdm = {
-        "xdm" : {
-            "eventType" : "media.sessionStart",
+        "xdm": {
+            "eventType": "media.sessionStart",
             "timestamp": "1000", ''' added by tryDispatchMediaEvents()
             "mediaCollection": {
                 "playhead": 0,
-                "sessionDetails" : {
-                    "streamType" : "vod",
-                    "contentType" : "video"
-                    "channel" : "channelFromSessionConfig", ''' updated by sessionConfig
+                "sessionDetails": {
+                    "streamType": "vod",
+                    "contentType": "video"
+                    "channel": "channelFromSessionConfig", ''' updated by sessionConfig
                     "playerName": "testPlayerName",
                     "appVersion": "testAppVersion"
                 }
@@ -940,18 +1033,18 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigNoSession
     ''' setup
     sessionStartHit = {}
     sessionStartHit.tsObject = {
-        "tsInMillis" : 1000,
-        "tsInISO8601" : "1000"
+        "tsInMillis": 1000,
+        "tsInISO8601": "1000"
     }
     sessionStartHit.eventType = "media.sessionStart"
     sessionStartHit.xdmData = {
-        "xdm" : {
-            "eventType" : "media.sessionStart",
+        "xdm": {
+            "eventType": "media.sessionStart",
             "mediaCollection": {
                 "playhead": 0,
-                "sessionDetails" : {
-                    "streamType" : "vod",
-                    "contentType" : "video"
+                "sessionDetails": {
+                    "streamType": "vod",
+                    "contentType": "video"
                 }
             }
         }
@@ -995,15 +1088,15 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigNoSession
     mediaSession._hitQueue.push(sessionStartHit)
 
     expectedSessionStartXdm = {
-        "xdm" : {
-            "eventType" : "media.sessionStart",
+        "xdm": {
+            "eventType": "media.sessionStart",
             "timestamp": "1000", ''' added by tryDispatchMediaEvents()
             "mediaCollection": {
                 "playhead": 0,
-                "sessionDetails" : {
-                    "streamType" : "vod",
-                    "contentType" : "video"
-                    "channel" : "testChannel",
+                "sessionDetails": {
+                    "streamType": "vod",
+                    "contentType": "video"
+                    "channel": "testChannel",
                     "playerName": "testPlayerName",
                     "appVersion": "testAppVersion"
                 }
@@ -1032,23 +1125,25 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigNoSession
 end sub
 
 ' target: tryDispatchMediaEvents()
-' @Test
+' SDK doesn't support remove configuration item at runtime and the required configuration items are not available when running into the MediaSession code.
+' TODO: skip this test for now, let's remove it when refactoring the Media module before alpha release.
+' @Ignore
 sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_NoValidConfigNoSessionConfig()
     ''' setup
     sessionStartHit = {}
     sessionStartHit.tsObject = {
-        "tsInMillis" : 1000,
-        "tsInISO8601" : "1000"
+        "tsInMillis": 1000,
+        "tsInISO8601": "1000"
     }
     sessionStartHit.eventType = "media.sessionStart"
     sessionStartHit.xdmData = {
-        "xdm" : {
-            "eventType" : "media.sessionStart",
+        "xdm": {
+            "eventType": "media.sessionStart",
             "mediaCollection": {
                 "playhead": 0,
-                "sessionDetails" : {
-                    "streamType" : "vod",
-                    "contentType" : "video"
+                "sessionDetails": {
+                    "streamType": "vod",
+                    "contentType": "video"
                 }
             }
         }
@@ -1082,14 +1177,14 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_NoValidConfigNoSessi
     mediaSession._hitQueue.push(sessionStartHit)
 
     expectedSessionStartXdm = {
-        "xdm" : {
-            "eventType" : "media.sessionStart",
+        "xdm": {
+            "eventType": "media.sessionStart",
             "timestamp": "1000", ''' added by tryDispatchMediaEvents()
             "mediaCollection": {
                 "playhead": 0,
-                "sessionDetails" : {
-                    "streamType" : "vod",
-                    "contentType" : "video"
+                "sessionDetails": {
+                    "streamType": "vod",
+                    "contentType": "video"
                 }
             }
         }
@@ -1121,13 +1216,13 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_notSessionStart_validBackendId()
     ''' setup
     playHit = {}
     playHit.tsObject = {
-        "tsInMillis" : 1000,
-        "tsInISO8601" : "1000"
+        "tsInMillis": 1000,
+        "tsInISO8601": "1000"
     }
     playHit.eventType = "media.play"
     playHit.xdmData = {
-        "xdm" : {
-            "eventType" : "media.play",
+        "xdm": {
+            "eventType": "media.play",
             "mediaCollection": {
                 "playhead": 0
             }
@@ -1165,8 +1260,8 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_notSessionStart_validBackendId()
     mediaSession._backendSessionId = "testBackendSessionId"
 
     expectedPlayXdm = {
-        "xdm" : {
-            "eventType" : "media.play",
+        "xdm": {
+            "eventType": "media.play",
             "timestamp": "1000", ''' added by tryDispatchMediaEvents()
             "mediaCollection": {
                 "sessionID": "testBackendSessionId", ''' added by tryDispatchMediaEvents()
@@ -1201,13 +1296,13 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_notSessionStart_invalidBackendId(
     ''' setup
     playHit = {}
     playHit.tsObject = {
-        "tsInMillis" : 1000,
-        "tsInISO8601" : "1000"
+        "tsInMillis": 1000,
+        "tsInISO8601": "1000"
     }
     playHit.eventType = "media.play"
     playHit.xdmData = {
-        "xdm" : {
-            "eventType" : "media.play",
+        "xdm": {
+            "eventType": "media.play",
             "mediaCollection": {
                 "playhead": 0
             }
@@ -1244,7 +1339,7 @@ end sub
 ' @Test
 sub TC_adb_MediaSession_close_noAbort_dispatchesHitQueue()
     ''' setup
-    sessionConfig = {"config.adpinginterval" : 1, "config.mainpinginterval" : 30 }
+    sessionConfig = { "config.adpinginterval": 1, "config.mainpinginterval": 30 }
     mediaSession = _adb_MediaSession("testId", {}, sessionConfig, {})
     mediaSession._hitQueue = [{}, {}, {}]
 
@@ -1269,7 +1364,7 @@ end sub
 ' @Test
 sub TC_adb_MediaSession_close_abort_deletesHitQueue()
     ''' setup
-    sessionConfig = {"config.adpinginterval" : 1, "config.mainpinginterval" : 30 }
+    sessionConfig = { "config.adpinginterval": 1, "config.mainpinginterval": 30 }
     mediaSession = _adb_MediaSession("testId", {}, sessionConfig, {})
     mediaSession._hitQueue = [{}, {}, {}]
 
@@ -1297,7 +1392,7 @@ end sub
 ' @Test
 sub TC_adb_MediaSession_getPingInterval_validInterval()
     ''' setup
-    sessionConfig = {"config.adpinginterval" : 1, "config.mainpinginterval" : 30 }
+    sessionConfig = { "config.adpinginterval": 1, "config.mainpinginterval": 30 }
     mediaSession = _adb_MediaSession("testId", {}, sessionConfig, {})
 
     ''' test
@@ -1314,7 +1409,7 @@ end sub
 ' @Test
 sub TC_adb_MediaSession_getPingInterval_invalidInterval()
     ''' setup
-    sessionConfig = {"config.adpinginterval" : 0, "config.mainpinginterval" : 0 }
+    sessionConfig = { "config.adpinginterval": 0, "config.mainpinginterval": 0 }
     mediaSession = _adb_MediaSession("testId", {}, sessionConfig, {})
 
     ''' test
@@ -1327,7 +1422,7 @@ sub TC_adb_MediaSession_getPingInterval_invalidInterval()
     UTF_assertEqual(10, adinterval)
 
 
-    sessionConfig = {"config.adpinginterval" : 11, "config.mainpinginterval" : 51 }
+    sessionConfig = { "config.adpinginterval": 11, "config.mainpinginterval": 51 }
     mediaSession = _adb_MediaSession("testId", {}, sessionConfig, {})
 
     ''' verify
@@ -1420,34 +1515,6 @@ sub TC_adb_MediaSession_attachMediaConfig()
     UTF_assertEqual("testChannel", updatedXDMData.xdm.mediaCollection.sessionDetails.channel)
     UTF_assertEqual("testPlayerName", updatedXDMData.xdm.mediaCollection.sessionDetails.playerName)
     UTF_assertEqual("testAppVersion", updatedXDMData.xdm.mediaCollection.sessionDetails.appVersion)
-end sub
-
-' target: _updateChannelFromSessionConfig()
-' @Test
-sub TC_adb_MediaSession_updateChannelFromSessionConfig()
-    ''' setup
-    configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
-    sessionConfig = {"config.channel" : "channelFromSessionConfig"}
-
-    ''' test
-    mediaSession = _adb_MediaSession("testId", configurationModule, sessionConfig, edgeRequestQueue)
-    updatedXDMData = mediaSession._updateChannelFromSessionConfig({
-        "xdm": {
-            "eventType": "media.sessionStart",
-            "mediaCollection": {
-                "sessionDetails": {
-                    "channel" : "channelFromSDKConfig"
-                }
-                "playhead": 0,
-            }
-        }
-    })
-
-    ''' verify
-    UTF_assertEqual("channelFromSessionConfig", updatedXDMData.xdm.mediaCollection.sessionDetails.channel)
 end sub
 
 ' target: _updatePlaybackState()
@@ -1833,10 +1900,10 @@ sub TC_adb_MediaSession_restartIdleSession_playAfterIdleTimeout_resumes()
             "eventType": "media.sessionStart",
             "mediaCollection": {
                 "playhead": 0,
-                "sessionDetails" : {
-                    "streamType" : "vod",
-                    "contentType" : "video",
-                    "channel" : "testChannel"
+                "sessionDetails": {
+                    "streamType": "vod",
+                    "contentType": "video",
+                    "channel": "testChannel"
                 }
             }
         }
@@ -1880,11 +1947,11 @@ sub TC_adb_MediaSession_restartIdleSession_playAfterIdleTimeout_resumes()
             "eventType": "media.sessionStart",
             "mediaCollection": {
                 "playhead": 11,
-                "sessionDetails" : {
-                    "hasResume" : true,
-                    "streamType" : "vod",
-                    "contentType" : "video",
-                    "channel" : "testChannel"
+                "sessionDetails": {
+                    "hasResume": true,
+                    "streamType": "vod",
+                    "contentType": "video",
+                    "channel": "testChannel"
                 }
             }
         }
@@ -1936,10 +2003,10 @@ sub TC_adb_MediaSession_restartIdleSession_notPlayEventAfterIdleTimeout_ignored(
             "eventType": "media.sessionStart",
             "mediaCollection": {
                 "playhead": 0,
-                "sessionDetails" : {
-                    "streamType" : "vod",
-                    "contentType" : "video",
-                    "channel" : "testChannel"
+                "sessionDetails": {
+                    "streamType": "vod",
+                    "contentType": "video",
+                    "channel": "testChannel"
                 }
             }
         }
@@ -2075,7 +2142,7 @@ end sub
 ' target: _restartIfLongRunningSession()
 ' @Test
 sub TC_adb_MediaSession_restartIfLongRunningSession_longRunningSession_restartsSession()
- ''' setup
+    ''' setup
     mediaSession = _adb_MediaSession("testId", {}, {}, {})
 
     ''' mock previous sessionStart hit
@@ -2084,8 +2151,8 @@ sub TC_adb_MediaSession_restartIfLongRunningSession_longRunningSession_restartsS
     sessionStartHit.eventType = "media.sessionStart"
     sessionStartHit.requestId = "sessionStartRequestId"
     sessionStartHit.tsObject = {
-            "tsInMillis": 0,
-            "tsInISO8601": "0"
+        "tsInMillis": 0,
+        "tsInISO8601": "0"
     }
     sessionStartHit.xdmData = {
         "xdm": {
@@ -2093,10 +2160,10 @@ sub TC_adb_MediaSession_restartIfLongRunningSession_longRunningSession_restartsS
             "eventType": "media.sessionStart",
             "mediaCollection": {
                 "playhead": 0,
-                "sessionDetails" : {
-                    "streamType" : "vod",
-                    "contentType" : "video",
-                    "channel" : "testChannel"
+                "sessionDetails": {
+                    "streamType": "vod",
+                    "contentType": "video",
+                    "channel": "testChannel"
                 }
             }
         }
@@ -2140,11 +2207,11 @@ sub TC_adb_MediaSession_restartIfLongRunningSession_longRunningSession_restartsS
             "eventType": "media.sessionStart",
             "mediaCollection": {
                 "playhead": 86400,
-                "sessionDetails" : {
-                    "hasResume" : true,
-                    "streamType" : "vod",
-                    "contentType" : "video",
-                    "channel" : "testChannel"
+                "sessionDetails": {
+                    "hasResume": true,
+                    "streamType": "vod",
+                    "contentType": "video",
+                    "channel": "testChannel"
                 }
             }
         }
@@ -2190,141 +2257,141 @@ end sub
 ' @Test
 sub TC_adb_MediaSession_restartIfLongRunningSession_notLongRunningSession_ignored()
     ''' setup
-       mediaSession = _adb_MediaSession("testId", {}, {}, {})
+    mediaSession = _adb_MediaSession("testId", {}, {}, {})
 
-       ''' mock previous sessionStart hit
-       ''' sessionStart tsInMillis is used to calculate the session duration
-       sessionStartHit = {}
-       sessionStartHit.eventType = "media.sessionStart"
-       sessionStartHit.requestId = "sessionStartRequestId"
-       sessionStartHit.tsObject = {
-               "tsInMillis": 0,
-               "tsInISO8601": "0"
-       }
-       sessionStartHit.xdmData = {
-           "xdm": {
-               "timestamp": "0",
-               "eventType": "media.sessionStart",
-               "mediaCollection": {
-                   "playhead": 0
-               }
-           }
-       }
-       mediaSession._sessionStartHit = sessionStartHit
+    ''' mock previous sessionStart hit
+    ''' sessionStart tsInMillis is used to calculate the session duration
+    sessionStartHit = {}
+    sessionStartHit.eventType = "media.sessionStart"
+    sessionStartHit.requestId = "sessionStartRequestId"
+    sessionStartHit.tsObject = {
+        "tsInMillis": 0,
+        "tsInISO8601": "0"
+    }
+    sessionStartHit.xdmData = {
+        "xdm": {
+            "timestamp": "0",
+            "eventType": "media.sessionStart",
+            "mediaCollection": {
+                "playhead": 0
+            }
+        }
+    }
+    mediaSession._sessionStartHit = sessionStartHit
 
-       ''' mock _queue()
-       GetGlobalAA()._test_media_session_hits = []
-       mediaSession._queue = function(mediaHit) as void
-           hits = GetGlobalAA()._test_media_session_hits
-           hits.push(mediaHit)
-       end function
+    ''' mock _queue()
+    GetGlobalAA()._test_media_session_hits = []
+    mediaSession._queue = function(mediaHit) as void
+        hits = GetGlobalAA()._test_media_session_hits
+        hits.push(mediaHit)
+    end function
 
 
-       ''' triggering hit
-       mediaHit = {}
-       mediaHit.eventType = "media.ping"
-       mediaHit.tsObject = {}
-       mediaHit.tsObject.tsInISO8601 = "1000"
-       mediaHit.tsObject.tsInMillis = (23 * 60 * 60 * 1000) + (59 * 60 * 1000) ''' 23 hours + 59 mins
-       mediaHit.requestId = "testRequestId"
-       mediaHit.xdmData = {
-           "xdm": {
-               "timestamp": "86400001",
-               "eventType": "media.ping",
-               "mediaCollection": {
-                   "playhead": 86400
-               }
-           }
-       }
+    ''' triggering hit
+    mediaHit = {}
+    mediaHit.eventType = "media.ping"
+    mediaHit.tsObject = {}
+    mediaHit.tsObject.tsInISO8601 = "1000"
+    mediaHit.tsObject.tsInMillis = (23 * 60 * 60 * 1000) + (59 * 60 * 1000) ''' 23 hours + 59 mins
+    mediaHit.requestId = "testRequestId"
+    mediaHit.xdmData = {
+        "xdm": {
+            "timestamp": "86400001",
+            "eventType": "media.ping",
+            "mediaCollection": {
+                "playhead": 86400
+            }
+        }
+    }
 
-       ''' test
-       mediaSession._restartIfLongRunningSession(mediaHit)
+    ''' test
+    mediaSession._restartIfLongRunningSession(mediaHit)
 
-       ''' verify
-       UTF_assertTrue(mediaSession._isActive, "Session should be active")
-       UTF_assertFalse(mediaSession._isIdle, "Session should not be in idle state")
-       hits = GetGlobalAA()._test_media_session_hits
-       UTF_assertEqual(0, hits.count(), "Hit Queue should be empty")
-   end sub
+    ''' verify
+    UTF_assertTrue(mediaSession._isActive, "Session should be active")
+    UTF_assertFalse(mediaSession._isIdle, "Session should not be in idle state")
+    hits = GetGlobalAA()._test_media_session_hits
+    UTF_assertEqual(0, hits.count(), "Hit Queue should be empty")
+end sub
 
-   ' target: _restartIfLongRunningSession()
+' target: _restartIfLongRunningSession()
 ' @Test
 sub TC_adb_MediaSession_restartIfLongRunningSession_triggeredBySessionEndOrComplete_ignored()
     ''' setup
-       mediaSession = _adb_MediaSession("testId", {}, {}, {})
+    mediaSession = _adb_MediaSession("testId", {}, {}, {})
 
-       ''' mock previous sessionStart hit
-       ''' sessionStart tsInMillis is used to calculate the session duration
-       sessionStartHit = {}
-       sessionStartHit.eventType = "media.sessionStart"
-       sessionStartHit.requestId = "sessionStartRequestId"
-       sessionStartHit.tsObject = {
-               "tsInMillis": 0,
-               "tsInISO8601": "0"
-       }
-       sessionStartHit.xdmData = {
-           "xdm": {
-               "timestamp": "0",
-               "eventType": "media.sessionStart",
-               "mediaCollection": {
-                   "playhead": 0
-               }
-           }
-       }
-       mediaSession._sessionStartHit = sessionStartHit
-
-       ''' mock _queue()
-       GetGlobalAA()._test_media_session_hits = []
-       mediaSession._queue = function(mediaHit) as void
-           hits = GetGlobalAA()._test_media_session_hits
-           hits.push(mediaHit)
-       end function
-
-
-       ''' triggering hit (sessionEnd)
-       sessionEndHit = {}
-       sessionEndHit.eventType = "media.sessionEnd"
-       sessionEndHit.tsObject = {}
-       sessionEndHit.tsObject.tsInISO8601 = "1000"
-       sessionEndHit.tsObject.tsInMillis = (24 * 60 * 60 * 1000) + 1 ''' 24 hours + 1 ms
-       sessionEndHit.requestId = "testRequestId"
-       sessionEndHit.xdmData = {
-           "xdm": {
-               "timestamp": "86400001",
-               "eventType": "media.sessionEnd",
-               "mediaCollection": {
-                   "playhead": 86400
-               }
-           }
-       }
-
-        ''' triggering hit (sessionComplete)
-        sessionCompleteHit = {}
-        sessionCompleteHit.eventType = "media.sessionComplete"
-        sessionCompleteHit.tsObject = {}
-        sessionCompleteHit.tsObject.tsInISO8601 = "1000"
-        sessionCompleteHit.tsObject.tsInMillis = (24 * 60 * 60 * 1000) + 1 ''' 24 hours + 1 ms
-        sessionCompleteHit.requestId = "testRequestId"
-        sessionCompleteHit.xdmData = {
-            "xdm": {
-                "timestamp": "86400001",
-                "eventType": "media.sessionComplete",
-                "mediaCollection": {
-                    "playhead": 86400
-                }
+    ''' mock previous sessionStart hit
+    ''' sessionStart tsInMillis is used to calculate the session duration
+    sessionStartHit = {}
+    sessionStartHit.eventType = "media.sessionStart"
+    sessionStartHit.requestId = "sessionStartRequestId"
+    sessionStartHit.tsObject = {
+        "tsInMillis": 0,
+        "tsInISO8601": "0"
+    }
+    sessionStartHit.xdmData = {
+        "xdm": {
+            "timestamp": "0",
+            "eventType": "media.sessionStart",
+            "mediaCollection": {
+                "playhead": 0
             }
         }
+    }
+    mediaSession._sessionStartHit = sessionStartHit
 
-       ''' test
-       mediaSession._restartIfLongRunningSession(sessionEndHit)
-       mediaSession._restartIfLongRunningSession(sessionCompleteHit)
+    ''' mock _queue()
+    GetGlobalAA()._test_media_session_hits = []
+    mediaSession._queue = function(mediaHit) as void
+        hits = GetGlobalAA()._test_media_session_hits
+        hits.push(mediaHit)
+    end function
 
-       ''' verify
-       UTF_assertTrue(mediaSession._isActive, "Session should be active")
-       UTF_assertFalse(mediaSession._isIdle, "Session should not be in idle state")
-       hits = GetGlobalAA()._test_media_session_hits
-       UTF_assertEqual(0, hits.count(), "Hit Queue should be empty")
-   end sub
+
+    ''' triggering hit (sessionEnd)
+    sessionEndHit = {}
+    sessionEndHit.eventType = "media.sessionEnd"
+    sessionEndHit.tsObject = {}
+    sessionEndHit.tsObject.tsInISO8601 = "1000"
+    sessionEndHit.tsObject.tsInMillis = (24 * 60 * 60 * 1000) + 1 ''' 24 hours + 1 ms
+    sessionEndHit.requestId = "testRequestId"
+    sessionEndHit.xdmData = {
+        "xdm": {
+            "timestamp": "86400001",
+            "eventType": "media.sessionEnd",
+            "mediaCollection": {
+                "playhead": 86400
+            }
+        }
+    }
+
+    ''' triggering hit (sessionComplete)
+    sessionCompleteHit = {}
+    sessionCompleteHit.eventType = "media.sessionComplete"
+    sessionCompleteHit.tsObject = {}
+    sessionCompleteHit.tsObject.tsInISO8601 = "1000"
+    sessionCompleteHit.tsObject.tsInMillis = (24 * 60 * 60 * 1000) + 1 ''' 24 hours + 1 ms
+    sessionCompleteHit.requestId = "testRequestId"
+    sessionCompleteHit.xdmData = {
+        "xdm": {
+            "timestamp": "86400001",
+            "eventType": "media.sessionComplete",
+            "mediaCollection": {
+                "playhead": 86400
+            }
+        }
+    }
+
+    ''' test
+    mediaSession._restartIfLongRunningSession(sessionEndHit)
+    mediaSession._restartIfLongRunningSession(sessionCompleteHit)
+
+    ''' verify
+    UTF_assertTrue(mediaSession._isActive, "Session should be active")
+    UTF_assertFalse(mediaSession._isIdle, "Session should not be in idle state")
+    hits = GetGlobalAA()._test_media_session_hits
+    UTF_assertEqual(0, hits.count(), "Hit Queue should be empty")
+end sub
 
 ' target: _resetForRestart()
 ' @Test
@@ -2339,7 +2406,6 @@ sub TC_adb_MediaSession_resetForRestart()
 
     ''' should not be reset
     mediaSession._sessionStartHit = {}
-    mediaSession._sessionConfig = {}
     mediaSession._configurationModule = {}
     mediaSession._edgeRequestQueue = {}
     mediaSession._isPlaying = false
@@ -2360,10 +2426,8 @@ sub TC_adb_MediaSession_resetForRestart()
     UTF_assertNotInvalid(mediaSession._sessionStartHit)
     UTF_assertFalse(mediaSession._isPlaying)
     UTF_assertTrue(mediaSession._isInAd)
-    UTF_assertNotInvalid(mediaSession._sessionConfig)
     UTF_assertNotInvalid(mediaSession._configurationModule)
     UTF_assertNotInvalid(mediaSession._edgeRequestQueue)
-    UTF_assertNotInvalid(mediaSession._sessionConfig)
 end sub
 
 ' target: _createSessionResumeHit()
@@ -2384,10 +2448,10 @@ sub TC_adb_MediaSession_createSessionResumeHit()
             "eventType": "media.sessionStart",
             "mediaCollection": {
                 "playhead": 0,
-                "sessionDetails" : {
-                    "streamType" : "vod",
-                    "contentType" : "video",
-                    "channel" : "testChannel"
+                "sessionDetails": {
+                    "streamType": "vod",
+                    "contentType": "video",
+                    "channel": "testChannel"
                 }
             }
         }
@@ -2427,11 +2491,11 @@ sub TC_adb_MediaSession_createSessionResumeHit()
             "eventType": "media.sessionStart",
             "mediaCollection": {
                 "playhead": 10,
-                "sessionDetails" : {
-                    "hasResume" : true,
-                    "streamType" : "vod",
-                    "contentType" : "video",
-                    "channel" : "testChannel"
+                "sessionDetails": {
+                    "hasResume": true,
+                    "streamType": "vod",
+                    "contentType": "video",
+                    "channel": "testChannel"
                 }
             }
         }
@@ -2702,7 +2766,7 @@ sub TC_adb_MediaSession_processEdgeRequestQueue_sessionStart_207_vaError400_clos
     edgeRequestQueue = mediaSession._edgeRequestQueue
     edgeRequestQueue.processRequests = function() as object
         responses = []
-        responses.push(_adb_EdgeResponse("sessionStartRequestId",207, FormatJson({
+        responses.push(_adb_EdgeResponse("sessionStartRequestId", 207, FormatJson({
             "requestId": "sessionStartRequestId",
             "errors": [
                 {

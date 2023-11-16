@@ -149,6 +149,8 @@ function _adb_test_functions() as dynamic
         TC_adb_MediaSessionManager_endSession_invalidActiveSession_getsIgnored
         ' test_mediaSession.brs
         TC_adb_MediaSession_init
+        TC_adb_MediaSession_init_withoutSessionConfig
+        TC_adb_MediaSession_init_withFullSessionConfig
         TC_adb_MediaSession_process_notActiveSession
         TC_adb_MediaSession_process_activeSession_sessionStartHit_queued
         TC_adb_MediaSession_process_activeSession_playbackHits_queued
@@ -167,7 +169,6 @@ function _adb_test_functions() as dynamic
         TC_adb_MediaSession_extractSessionStartData_sessionStartHit_cachesHit
         TC_adb_MediaSession_extractSessionStartData_notSessionStartHit_doesNotCacheHit
         TC_adb_MediaSession_attachMediaConfig
-        TC_adb_MediaSession_updateChannelFromSessionConfig
         TC_adb_MediaSession_updatePlaybackState_playEvent
         TC_adb_MediaSession_updatePlaybackState_pauseStartEvent
         TC_adb_MediaSession_updatePlaybackState_pauseStart_bufferStartEvent
