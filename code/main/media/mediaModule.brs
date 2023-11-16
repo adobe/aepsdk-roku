@@ -47,6 +47,12 @@ function _adb_MediaModule(configurationModule as object, edgeRequestQueue as obj
         ' }
         processEvent: sub(requestId as string, eventData as object)
             eventType = eventData.xdmData.xdm.eventType
+            clientSessionId = eventData.clientSessionId
+
+            if eventType <> m._CONSTANTS.MEDIA.EVENT_TYPE.SESSION_START and clientSessionId <> m._sessionManager.getActiveClientSessionId() then
+                _adb_logError("processEvent() - Cannot process the media event. It's clientSessionId (" + FormatJson(clientSessionId) + ") does not match the active clientSessionId (" + FormatJson(m._sessionManager.getActiveClientSessionId()) + ").")
+                return
+            end if
 
             if not _adb_isValidMediaEvent(eventType) then
                 _adb_logError("processEvent() - Cannot process media event (" + FormatJson(eventType) + "), media event type (" + FormatJson(eventType) + ") is invalid.")
@@ -62,7 +68,7 @@ function _adb_MediaModule(configurationModule as object, edgeRequestQueue as obj
             mediaHit = m._createMediaHit(requestId, eventType, eventData.xdmData, eventData.tsObject)
 
             if eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.SESSION_START
-                m._sessionManager.createSession(m._configurationModule, sessionConfig, m._edgeRequestQueue)
+                m._sessionManager.createSession(clientSessionId, m._configurationModule, sessionConfig, m._edgeRequestQueue)
                 m._sessionManager.queue(mediaHit)
             else if eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.SESSION_END or eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.SESSION_COMPLETE
                 m._sessionManager.queue(mediaHit)
