@@ -34,9 +34,652 @@ sub TC_adb_MediaSession_init()
     UTF_assertNotInvalid(mediaSession._sessionConfig)
 end sub
 
-''' TODO
 ' target: process()
 ' @Test
+sub TC_adb_MediaSession_process_notActiveSession()
+    ''' setup
+    sessionStartHit = {}
+    sessionStartHit.tsObject = {
+        "tsInMillis" : 0,
+        "tsInISO8601" : "0"
+    }
+    sessionStartHit.eventType = "media.sessionStart"
+    sessionStartHit.xdmData = {
+        "xdm" : {
+            "eventType" : "media.sessionStart",
+            "mediaCollection": {
+                "playhead": 0,
+                "sessionDetails" : {
+                    "streamType" : "vod",
+                    "contentType" : "video"
+                }
+            }
+        }
+    }
+    sessionStartHit.requestId = "sessionStartRequestId"
+
+    configurationModule = _adb_ConfigurationModule()
+    identityModule = _adb_IdentityModule(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+
+    ''' create media session
+    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeRequestQueue)
+    mediaSession._isActive = false
+
+    ''' mock session functions
+    GetGlobalAA()._test_media_session_restartIdleSession_called = false
+    mediaSession._restartIdleSession = function(_mediaHit as object) as void
+        GetGlobalAA()._test_media_session_restartIdleSession_called = true
+    end function
+
+    GetGlobalAA()._test_media_session_restartIfLongRunningSession_called = false
+    mediaSession._restartIfLongRunningSession = function(_mediaHit as object) as void
+        GetGlobalAA()._test_media_session_restartIfLongRunningSession_called = true
+    end function
+
+    GetGlobalAA()._test_media_session_updatePlaybackState_called = false
+    mediaSession._updatePlaybackState = function(_mediaHit as object) as void
+        GetGlobalAA()._test_media_session_updatePlaybackState_called = true
+    end function
+
+    GetGlobalAA()._test_media_session_updateAdState_called = false
+    mediaSession._updateAdState = function(_mediaHit as object) as void
+        GetGlobalAA()._test_media_session_updateAdState_called = true
+    end function
+
+    GetGlobalAA()._test_media_session_extractSessionStartData_called = false
+    mediaSession._extractSessionStartData = function(_mediaHit as object) as void
+        GetGlobalAA()._test_media_session_extractSessionStartData_called = true
+    end function
+
+    GetGlobalAA()._test_media_session_closeIfIdle_called = false
+    mediaSession._closeIfIdle = function(_mediaHit as object) as void
+        GetGlobalAA()._test_media_session_closeIfIdle_called = true
+    end function
+
+    GetGlobalAA()._test_media_session_restartIfLongRunningSession_called = false
+    mediaSession._restartIfLongRunningSession = function(_mediaHit as object) as void
+        GetGlobalAA()._test_media_session_restartIfLongRunningSession_called = true
+    end function
+
+    GetGlobalAA()._test_media_session_shouldQueue_called = false
+    mediaSession._shouldQueue = function(_mediaHit as object) as void
+        GetGlobalAA()._test_media_session_shouldQueue_called = true
+    end function
+
+    GetGlobalAA()._test_media_session_queue_called = false
+    mediaSession._queue = function(_mediaHit as object) as void
+        GetGlobalAA()._test_media_session_queue_called = true
+    end function
+
+    ''' test
+    mediaSession.process(sessionStartHit)
+
+    ''' verify
+    UTF_assertTrue(GetGlobalAA()._test_media_session_restartIdleSession_called)
+
+    UTF_assertFalse(GetGlobalAA()._test_media_session_updatePlaybackState_called)
+    UTF_assertFalse(GetGlobalAA()._test_media_session_updateAdState_called)
+    UTF_assertFalse(GetGlobalAA()._test_media_session_extractSessionStartData_called)
+    UTF_assertFalse(GetGlobalAA()._test_media_session_closeIfIdle_called)
+    UTF_assertFalse(GetGlobalAA()._test_media_session_restartIfLongRunningSession_called)
+    UTF_assertFalse(GetGlobalAA()._test_media_session_shouldQueue_called)
+    UTF_assertFalse(GetGlobalAA()._test_media_session_queue_called)
+end sub
+
+' target: process()
+' @Test
+sub TC_adb_MediaSession_process_activeSession_sessionStartHit_queued()
+    ''' setup
+    sessionStartHit = {}
+    sessionStartHit.tsObject = {
+        "tsInMillis" : 0,
+        "tsInISO8601" : "0"
+    }
+    sessionStartHit.eventType = "media.sessionStart"
+    sessionStartHit.xdmData = {
+        "xdm" : {
+            "eventType" : "media.sessionStart",
+            "mediaCollection": {
+                "playhead": 0,
+                "sessionDetails" : {
+                    "streamType" : "vod",
+                    "contentType" : "video"
+                }
+            }
+        }
+    }
+    sessionStartHit.requestId = "sessionStartRequestId"
+
+    configurationModule = _adb_ConfigurationModule()
+    identityModule = _adb_IdentityModule(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+
+    ''' create media session
+    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeRequestQueue)
+
+    ''' mock _queue()
+    GetGlobalAA()._test_media_session_hits = []
+    mediaSession._queue = function(mediaHit) as void
+        hits = GetGlobalAA()._test_media_session_hits
+        hits.push(mediaHit)
+    end function
+
+    ''' test
+    UTF_assertInvalid(mediaSession._sessionStartHit)
+    mediaSession.process(sessionStartHit)
+
+    ''' verify
+    UTF_assertEqual(1, GetGlobalAA()._test_media_session_hits.count())
+    hit = GetGlobalAA()._test_media_session_hits[0]
+    UTF_assertEqual(sessionStartHit, hit)
+    UTF_assertNotInvalid(mediaSession._sessionStartHit)
+    UTF_assertEqual(sessionStartHit, mediaSession._sessionStartHit)
+    UTF_assertFalse(mediaSession._isPlaying)
+end sub
+
+' target: process()
+' @Test
+sub TC_adb_MediaSession_process_activeSession_playbackHits_queued()
+    ''' setup
+    playHit = {}
+    playHit.tsObject = {
+        "tsInMillis" : 0,
+        "tsInISO8601" : "0"
+    }
+    playHit.eventType = "media.play"
+    playHit.xdmData = {
+        "xdm" : {
+            "eventType" : "media.play",
+            "mediaCollection": {
+                "playhead": 0
+            }
+        }
+    }
+    playHit.requestId = "playRequestId"
+
+    pauseHit = {}
+    pauseHit.tsObject = {
+        "tsInMillis" : 0,
+        "tsInISO8601" : "0"
+    }
+    pauseHit.eventType = "media.pauseStart"
+    pauseHit.xdmData = {
+        "xdm" : {
+            "eventType" : "media.pauseStart",
+            "mediaCollection": {
+                "playhead": 0
+            }
+        }
+    }
+    pauseHit.requestId = "pauseRequestId"
+
+
+    bufferHit = {}
+    bufferHit.tsObject = {
+        "tsInMillis" : 0,
+        "tsInISO8601" : "0"
+    }
+    bufferHit.eventType = "media.bufferStart"
+    bufferHit.xdmData = {
+        "xdm" : {
+            "eventType" : "media.bufferStart",
+            "mediaCollection": {
+                "playhead": 1
+            }
+        }
+    }
+    bufferHit.requestId = "bufferRequestId"
+
+    pingHit1 = {}
+    pingHit1.tsObject = {
+        "tsInMillis" : 0,
+        "tsInISO8601" : "0"
+    }
+    pingHit1.eventType = "media.ping"
+    pingHit1.xdmData = {
+        "xdm" : {
+            "eventType" : "media.ping",
+            "mediaCollection": {
+                "playhead": 1
+            }
+        }
+    }
+    pingHit1.requestId = "pingRequestId1"
+
+    pingHit2 = {}
+    pingHit2.tsObject = {
+        "tsInMillis" : 10001,
+        "tsInISO8601" : "10001"
+    }
+    pingHit2.eventType = "media.ping"
+    pingHit2.xdmData = {
+        "xdm" : {
+            "eventType" : "media.ping",
+            "mediaCollection": {
+                "playhead": 11
+            }
+        }
+    }
+    pingHit2.requestId = "pingRequestId2"
+
+    configurationModule = _adb_ConfigurationModule()
+    identityModule = _adb_IdentityModule(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+
+    ''' create media session
+    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeRequestQueue)
+
+    ''' mock _tryDispatchMediaEvents()
+    GetGlobalAA()._test_media_session_tryDispatchMediaEvents_called_count = 0
+    mediaSession.tryDispatchMediaEvents = function() as void
+        GetGlobalAA()._test_media_session_tryDispatchMediaEvents_called_count = GetGlobalAA()._test_media_session_tryDispatchMediaEvents_called_count + 1
+    end function
+
+    ''' default playback state
+    UTF_assertFalse(mediaSession._isPlaying)
+
+    ''' test and verify
+    ''' play
+    mediaSession.process(playHit)
+    UTF_assertTrue(mediaSession._isPlaying, "Play should set _isPlaying")
+    UTF_assertInvalid(mediaSession._idleStartTS, "Play should not set _idleStartTS")
+    UTF_assertFalse(mediaSession._isIdle, "Play should not set _isIdle")
+    UTF_assertFalse(mediaSession._isInAd, "Play should not set _isInAd")
+
+    ''' pause
+    mediaSession.process(pauseHit)
+    UTF_assertFalse(mediaSession._isPlaying, "pauseStart should reset _isPlaying")
+    UTF_assertEqual(0, mediaSession._idleStartTS, "pauseStart should set _idleStartTS")
+    UTF_assertFalse(mediaSession._isIdle, "pauseStart should not set _isIdle")
+    UTF_assertFalse(mediaSession._isInAd, "pauseStart should not set _isInAd")
+
+    ''' play
+    mediaSession.process(playHit)
+    UTF_assertTrue(mediaSession._isPlaying, "Play should set _isPlaying")
+    UTF_assertInvalid(mediaSession._idleStartTS, "Play should not set _idleStartTS")
+    UTF_assertFalse(mediaSession._isIdle, "Play should not set _isIdle")
+    UTF_assertFalse(mediaSession._isInAd, "Play should not set _isInAd")
+
+    ''' buffer
+    mediaSession.process(bufferHit)
+    UTF_assertFalse(mediaSession._isPlaying, "Buffer should reset _isPlaying")
+    UTF_assertEqual(0, mediaSession._idleStartTS, "Buffer should set _idleStartTS")
+    UTF_assertFalse(mediaSession._isIdle, "Buffer should not set _isIdle")
+    UTF_assertFalse(mediaSession._isInAd, "Buffer should not set _isInAd")
+
+    ''' ping 1 (should not be queued)
+    mediaSession.process(pingHit1)
+    UTF_assertFalse(mediaSession._isPlaying, "Ping should not set _isPlaying")
+    UTF_assertEqual(0, mediaSession._idleStartTS, "Ping should not set _idleStartTS")
+    UTF_assertFalse(mediaSession._isIdle, "Ping should not set _isIdle")
+    UTF_assertFalse(mediaSession._isInAd, "Ping should not set _isInAd")
+
+    ''' ping 2 (should be queued since > default ping interval 10sec)
+    mediaSession.process(pingHit2)
+    UTF_assertFalse(mediaSession._isPlaying, "Ping should not set _isPlaying")
+    UTF_assertEqual(0, mediaSession._idleStartTS, "Ping should not set _idleStartTS")
+    UTF_assertFalse(mediaSession._isIdle, "Ping should not set _isIdle")
+    UTF_assertFalse(mediaSession._isInAd, "Ping should not set _isInAd")
+
+    UTF_assertEqual(5, GetGlobalAA()._test_media_session_tryDispatchMediaEvents_called_count, "tryDispatchMediaEvents() should be called 5 times")
+    UTF_assertEqual(5, mediaSession.getHitQueueSize(), "hitQueue should have 5 hits")
+    hits = mediaSession._hitQueue
+    UTF_assertEqual(playHit, hits[0])
+    UTF_assertEqual(pauseHit, hits[1])
+    UTF_assertEqual(playHit, hits[2])
+    UTF_assertEqual(bufferHit, hits[3])
+    UTF_assertEqual(pingHit2, hits[4])
+end sub
+
+' target: process()
+' @Test
+sub TC_adb_MediaSession_process_activeSession_adHits_queued()
+    ''' setup
+    playHit = {}
+    playHit.tsObject = {
+        "tsInMillis" : 0,
+        "tsInISO8601" : "0"
+    }
+    playHit.eventType = "media.play"
+    playHit.xdmData = {
+        "xdm" : {
+            "eventType" : "media.play",
+            "mediaCollection": {
+                "playhead": 0
+            }
+        }
+    }
+    playHit.requestId = "playRequestId"
+
+    adStartHit = {}
+    adStartHit.tsObject = {
+        "tsInMillis" : 0,
+        "tsInISO8601" : "0"
+    }
+    adStartHit.eventType = "media.adStart"
+    adStartHit.xdmData = {
+        "xdm" : {
+            "eventType" : "media.adStart",
+            "mediaCollection": {
+                "playhead": 1
+            }
+        }
+    }
+    adStartHit.requestId = "adRequestId"
+
+
+    adCompleteHit = {}
+    adCompleteHit.tsObject = {
+        "tsInMillis" : 0,
+        "tsInISO8601" : "0"
+    }
+    adCompleteHit.eventType = "media.adComplete"
+    adCompleteHit.xdmData = {
+        "xdm" : {
+            "eventType" : "media.adComplete",
+            "mediaCollection": {
+                "playhead": 1
+            }
+        }
+    }
+    adCompleteHit.requestId = "adCompleteRequestId"
+
+    adSkipHit = {}
+    adSkipHit.tsObject = {
+        "tsInMillis" : 0,
+        "tsInISO8601" : "0"
+    }
+    adSkipHit.eventType = "media.adSkip"
+    adSkipHit.xdmData = {
+        "xdm" : {
+            "eventType" : "media.adSkip",
+            "mediaCollection": {
+                "playhead": 1
+            }
+        }
+    }
+    adSkipHit.requestId = "adSkipRequestId"
+
+
+    configurationModule = _adb_ConfigurationModule()
+    identityModule = _adb_IdentityModule(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+
+    ''' create media session
+    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeRequestQueue)
+
+    ''' mock _tryDispatchMediaEvents()
+    GetGlobalAA()._test_media_session_tryDispatchMediaEvents_called_count = 0
+    mediaSession.tryDispatchMediaEvents = function() as void
+        GetGlobalAA()._test_media_session_tryDispatchMediaEvents_called_count = GetGlobalAA()._test_media_session_tryDispatchMediaEvents_called_count + 1
+    end function
+
+    ''' default playback state
+    UTF_assertFalse(mediaSession._isPlaying)
+
+    ''' test and verify
+    ''' play
+    mediaSession.process(playHit)
+    UTF_assertTrue(mediaSession._isPlaying, "Play should set _isPlaying")
+    UTF_assertFalse(mediaSession._isInAd, "Play should not set _isInAd")
+    UTF_assertInvalid(mediaSession._idleStartTS, "Play should not set _idleStartTS")
+    UTF_assertFalse(mediaSession._isIdle, "Play should not set _isIdle")
+
+    ''' adStart
+    mediaSession.process(adStartHit)
+    UTF_assertTrue(mediaSession._isPlaying, "adStart should not reset _isPlaying")
+    UTF_assertTrue(mediaSession._isInAd, "adStart should set _isInAd")
+    UTF_assertInvalid(mediaSession._idleStartTS, "adStart should not set _idleStartTS")
+    UTF_assertFalse(mediaSession._isIdle, "adStart should not set _isIdle")
+
+    ''' adComplete
+    mediaSession.process(adCompleteHit)
+    UTF_assertTrue(mediaSession._isPlaying, "adComplete should not reset _isPlaying")
+    UTF_assertFalse(mediaSession._isInAd, "adComplete should reset _isInAd")
+    UTF_assertInvalid(mediaSession._idleStartTS, "adComplete should not set _idleStartTS")
+    UTF_assertFalse(mediaSession._isIdle, "adComplete should not set _isIdle")
+
+    ''' adStart
+    mediaSession.process(adStartHit)
+    UTF_assertTrue(mediaSession._isPlaying, "adStart should not reset _isPlaying")
+    UTF_assertTrue(mediaSession._isInAd, "adStart should set _isInAd")
+
+    ''' adComplete
+    mediaSession.process(adSkipHit)
+    UTF_assertTrue(mediaSession._isPlaying, "adSkip should not reset _isPlaying")
+    UTF_assertFalse(mediaSession._isInAd, "adSkip should reset _isInAd")
+    UTF_assertInvalid(mediaSession._idleStartTS, "adSkip should not set _idleStartTS")
+    UTF_assertFalse(mediaSession._isIdle, "adSkip should not set _isIdle")
+
+    UTF_assertEqual(5, GetGlobalAA()._test_media_session_tryDispatchMediaEvents_called_count)
+    UTF_assertEqual(5, mediaSession.getHitQueueSize(), "hitQueue should have 5 hits")
+    hits = mediaSession._hitQueue
+    UTF_assertEqual(playHit, hits[0])
+    UTF_assertEqual(adStartHit, hits[1])
+    UTF_assertEqual(adCompleteHit, hits[2])
+    UTF_assertEqual(adStartHit, hits[3])
+    UTF_assertEqual(adSkipHit, hits[4])
+end sub
+
+' target: process()
+' @Test
+sub TC_adb_MediaSession_process_activeSession_idleTimeout_queued()
+    ''' setup
+    sessionStartHit = {}
+    sessionStartHit.tsObject = {
+        "tsInMillis" : 0,
+        "tsInISO8601" : "0"
+    }
+    sessionStartHit.eventType = "media.sessionStart"
+    sessionStartHit.xdmData = {
+        "xdm" : {
+            "eventType" : "media.sessionStart",
+            "mediaCollection": {
+                "playhead": 0,
+                "sessionDetails" : {
+                    "streamType" : "vod",
+                    "contentType" : "video"
+                }
+            }
+        }
+    }
+    sessionStartHit.requestId = "sessionStartRequestId"
+
+    playHit = {}
+    playHit.tsObject = {
+        "tsInMillis" : 0,
+        "tsInISO8601" : "0"
+    }
+    playHit.eventType = "media.play"
+    playHit.xdmData = {
+        "xdm" : {
+            "eventType" : "media.play",
+            "mediaCollection": {
+                "playhead": 0
+            }
+        }
+    }
+    playHit.requestId = "playRequestId"
+
+    pauseHit = {}
+    pauseHit.tsObject = {
+        "tsInMillis" : 0,
+        "tsInISO8601" : "0"
+    }
+    pauseHit.eventType = "media.pauseStart"
+    pauseHit.xdmData = {
+        "xdm" : {
+            "eventType" : "media.pauseStart",
+            "mediaCollection": {
+                "playhead": 0
+            }
+        }
+    }
+
+    pingHit1 = {}
+    pingHit1.tsObject = {
+        "tsInMillis" : (30*60*1000 +1),
+        "tsInISO8601" : "1800001"
+    }
+    pingHit1.eventType = "media.ping"
+    pingHit1.xdmData = {
+        "xdm" : {
+            "eventType" : "media.ping",
+            "mediaCollection": {
+                "playhead": 1800
+            }
+        }
+    }
+    pingHit1.requestId = "pingRequestId1"
+
+    autoGeneratedSessionEndHit = {}
+    autoGeneratedSessionEndHit.tsObject = {
+        "tsInMillis" : (30*60*1000 +1),
+        "tsInISO8601" : "1800001"
+    }
+    autoGeneratedSessionEndHit.eventType = "media.sessionEnd"
+    autoGeneratedSessionEndHit.xdmData = {
+        "xdm" : {
+            "eventType" : "media.sessionEnd",
+            "timestamp": "1800001",
+            "mediaCollection": {
+                "playhead": 1800
+            }
+        }
+    }
+
+    restartIdlePlayHit = {}
+    restartIdlePlayHit.tsObject = {
+        "tsInMillis" : (30*60*1000 +2),
+        "tsInISO8601" : "1800002"
+    }
+    restartIdlePlayHit.eventType = "media.play"
+    restartIdlePlayHit.xdmData = {
+        "xdm" : {
+            "eventType" : "media.play",
+            "mediaCollection": {
+                "playhead": 1800
+            }
+        }
+    }
+
+    autoGeneratedSessionStartHit = {}
+    autoGeneratedSessionStartHit.tsObject = {
+        "tsInMillis" : (30*60*1000 +2),
+        "tsInISO8601" : "1800002"
+    }
+    autoGeneratedSessionStartHit.eventType = "media.sessionStart"
+    autoGeneratedSessionStartHit.xdmData = {
+        "xdm" : {
+            "eventType" : "media.sessionStart",
+            "timestamp": "1800002",
+            "mediaCollection": {
+                "playhead": 1800,
+                "sessionDetails" : {
+                    "streamType" : "vod",
+                    "hasResume" : true,
+                    "contentType" : "video"
+                }
+            }
+        }
+    }
+
+    configurationModule = _adb_ConfigurationModule()
+    identityModule = _adb_IdentityModule(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+
+    ''' create media session
+    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeRequestQueue)
+
+    ''' mock _tryDispatchMediaEvents()
+    GetGlobalAA()._test_media_session_tryDispatchMediaEvents_called_count = 0
+    GetGlobalAA()._test_media_session_tryDispatchMediaEvents_idleSession_hits = []
+    mediaSession.tryDispatchMediaEvents = function() as void
+        GetGlobalAA()._test_media_session_tryDispatchMediaEvents_called_count = GetGlobalAA()._test_media_session_tryDispatchMediaEvents_called_count + 1
+        ''' to test session hits before idleTimeout
+        ''' expecting 4 events with auto sessionEnd
+        if GetGlobalAA()._test_media_session_tryDispatchMediaEvents_called_count <> 4 then
+            return
+        end if
+            GetGlobalAA()._test_media_session_tryDispatchMediaEvents_idleSession_hits = m._hitQueue
+    end function
+
+    ''' default playback state
+    UTF_assertFalse(mediaSession._isPlaying)
+
+    ''' test and verify
+    ''' sessionStart
+    mediaSession.process(sessionStartHit)
+    UTF_assertFalse(mediaSession._isPlaying, "sessionStart should not set _isPlaying")
+    UTF_assertInvalid(mediaSession._idleStartTS, "sessionStart should not set _idleStartTS")
+    UTF_assertFalse(mediaSession._isIdle, "sessionStart should not set _isIdle")
+
+    ''' play
+    mediaSession.process(playHit)
+    UTF_assertTrue(mediaSession._isPlaying, "Play should set _isPlaying")
+    UTF_assertInvalid(mediaSession._idleStartTS, "Play should not set _idleStartTS")
+    UTF_assertFalse(mediaSession._isIdle, "Play should not set _isIdle")
+
+    ''' pause
+    mediaSession.process(pauseHit)
+    UTF_assertFalse(mediaSession._isPlaying, "pauseStart should reset _isPlaying")
+    UTF_assertEqual(0, mediaSession._idleStartTS, "pauseStart should set _idleStartTS")
+    UTF_assertFalse(mediaSession._isIdle, "pauseStart should not set _isIdle")
+
+    ''' ping 1 (should trigger idleTimeout)
+    mediaSession.process(pingHit1)
+    UTF_assertFalse(mediaSession._isPlaying, "ping should not set _isPlaying")
+    UTF_assertEqual(0, mediaSession._idleStartTS, "ping should not update _idleStartTS")
+    UTF_assertTrue(mediaSession._isIdle, "ping should set _isIdle, since idle timeout is 30min")
+
+    ''' autoGeneratedSessionEndHit (should be queued since idleTimeout)
+
+    UTF_assertEqual(4, GetGlobalAA()._test_media_session_tryDispatchMediaEvents_called_count)
+    idleSessionHits = GetGlobalAA()._test_media_session_tryDispatchMediaEvents_idleSession_hits
+    UTF_assertEqual(4, idleSessionHits.count(), "hitQueue should have 2 hits but has:" + StrI(idleSessionHits.count()))
+
+    UTF_assertEqual(sessionStartHit, idleSessionHits[0])
+    UTF_assertEqual(playHit, idleSessionHits[1])
+    UTF_assertEqual(pauseHit, idleSessionHits[2])
+    ''' drop the pingHit1 since it triggered idleTimeout
+    UTF_assertEqual(autoGeneratedSessionEndHit.xdmData, idleSessionHits[3].xdmData, "sessionResume data (" + FormatJson(idleSessionHits[3].xdmData) + ") should have expected xdmData:(" + FormatJson(autoGeneratedSessionEndHit.xdmData) + ")") ''' generated by _closeIfIdle() -> _createSessionEndHit()
+    UTF_assertEqual(autoGeneratedSessionEndHit.tsObject, idleSessionHits[3].tsObject, "sessionResume should have expected tsObject") ''' generated by _closeIfIdle() -> _createSessionEndHit()
+    UTF_assertEqual(autoGeneratedSessionEndHit.eventType, idleSessionHits[3].eventType, "sessionResume should have expected eventType") ''' generated by _closeIfIdle() -> _createSessionEndHit()
+    UTF_assertFalse(mediaSession._isActive, "session should be inactive after idleTimeout") ''' closed by _closeIfIdle()
+
+    ''' reset count for idleRestart scenario
+    GetGlobalAA()._test_media_session_tryDispatchMediaEvents_called_count = 0
+
+    ''' play (should restart idle session) and autogenerate sessionStart
+    mediaSession.process(restartIdlePlayHit)
+    UTF_assertTrue(mediaSession._isActive, "session should be active after idle restart") ''' activated by _restartIdleSession()
+    UTF_assertTrue(mediaSession._isPlaying, "Play should set _isPlaying")
+    UTF_assertInvalid(mediaSession._idleStartTS, "Play should reset _idleStartTS")
+    UTF_assertFalse(mediaSession._isIdle, "Play should reset _isIdle")
+
+    ''' verify
+    UTF_assertEqual(2, GetGlobalAA()._test_media_session_tryDispatchMediaEvents_called_count)
+    UTF_assertEqual(2, mediaSession.getHitQueueSize(), "hitQueue should have 2 hits but has:" + StrI(mediaSession.getHitQueueSize()))
+    hits = mediaSession._hitQueue
+
+    print(hits[0].xdmData)
+    UTF_assertNotEqual(autoGeneratedSessionEndHit.requestId, hits[0].requestId, "sessionResume requestId should not match cached sessionStart requestId")
+    UTF_assertEqual(autoGeneratedSessionStartHit.xdmData, hits[0].xdmData, "sessionResume data (" + FormatJson(hits[0].xdmData) + ") should have expected xdmData:(" + FormatJson(autoGeneratedSessionStartHit.xdmData) + ")") ''' generated by _restartIdleSession() -> _createSessionResumeHit()
+    UTF_assertEqual(autoGeneratedSessionStartHit.tsObject, hits[0].tsObject, "sessionResume should have expected tsObject") ''' generated by _restartIdleSession() -> _createSessionResumeHit()
+    UTF_assertEqual(autoGeneratedSessionStartHit.eventType, hits[0].eventType, "sessionResume should have expected eventType") ''' generated by _restartIdleSession() -> _createSessionResumeHit()
+    UTF_assertEqual(autoGeneratedSessionStartHit.xdmData, mediaSession._sessionStartHit.xdmData, "sessionResume should have expected xdmData") ''' cached by __extractSessionStartData()
+    UTF_assertEqual(autoGeneratedSessionStartHit.tsObject, mediaSession._sessionStartHit.tsObject, "sessionResume should have expected tsObject")
+    UTF_assertEqual(autoGeneratedSessionStartHit.eventType, mediaSession._sessionStartHit.eventType, "sessionResume should have expected eventType")
+    UTF_assertNotInvalid(mediaSession._sessionStartHit.requestId, "Cached sessionResume should have requestId")
+    UTF_assertEqual(restartIdlePlayHit, hits[1], "Restart trigger play event to be sent after session start")
+
+end sub
 
 ' target: tryDispatchMediaEvents()
 ' @Test
@@ -846,7 +1489,7 @@ sub TC_adb_MediaSession_closeIfIdle_idleDurationOverIdleTimeout_endSession()
     expectedSessionEndHit = {
         "xdmData": {
             "xdm": {
-                "timestamp": "2000",
+                "timestamp": "1800001",
                 "eventType": "media.sessionEnd",
                 "mediaCollection": {
                     "playhead": 10,
@@ -872,7 +1515,7 @@ sub TC_adb_MediaSession_closeIfIdle_idleDurationOverIdleTimeout_endSession()
     UTF_assertEqual(1, hits.count(), "hit Queue is empty.")
     actualHit = hits[0]
     UTF_assertEqual(expectedSessionEndHit.eventType, actualHit.eventType, "expected eventType != actual eventType")
-    UTF_assertEqual(expectedSessionEndHit.xdmData, actualHit.xdmData, "expected sessionEnd xdmData != actual sessionEnd xdmData")
+    UTF_assertEqual(expectedSessionEndHit.xdmData, actualHit.xdmData, "expected sessionEnd xdmData(" + FormatJson(expectedSessionEndHit.xdmData) + ") != actual sessionEnd xdmData(" + FormatJson(actualHit.xdmData) + ")")
     UTF_assertEqual(expectedSessionEndHit.tsObject, actualHit.tsObject, "expected sessionEnd tsObject != actual sessionEnd tsObject")
     UTF_assertNotInvalid(actualHit.requestId)
     UTF_assertNotEqual(mediaHit.requestId, actualHit.requestId, "Request ID must not match with the play hit")
@@ -1025,10 +1668,8 @@ sub TC_adb_MediaSession_restartIdleSession_playAfterIdleTimeout_resumes()
     sessionStartHit.eventType = "media.sessionStart"
     sessionStartHit.requestId = "sessionStartRequestId"
     sessionStartHit.tsObject = {
-        "tsObject": {
-            "tsInMillis": 1000,
-            "tsInISO8601": "1000"
-        }
+        "tsInMillis": 1000,
+        "tsInISO8601": "1000"
     }
     sessionStartHit.xdmData = {
         "xdm": {
@@ -1074,10 +1715,8 @@ sub TC_adb_MediaSession_restartIdleSession_playAfterIdleTimeout_resumes()
     expectedSessionResumeHit = {}
     expectedSessionResumeHit.eventType = "media.sessionStart"
     expectedSessionResumeHit.tsObject = {
-        "tsObject": {
-            "tsInMillis": 2000,
-            "tsInISO8601": "2000"
-        }
+        "tsInMillis": 2000,
+        "tsInISO8601": "2000"
     }
     expectedSessionResumeHit.xdmData = {
         "xdm": {
@@ -1132,10 +1771,8 @@ sub TC_adb_MediaSession_restartIdleSession_notPlayEventAfterIdleTimeout_ignored(
     sessionStartHit.eventType = "media.sessionStart"
     sessionStartHit.requestId = "sessionStartRequestId"
     sessionStartHit.tsObject = {
-        "tsObject": {
-            "tsInMillis": 1000,
-            "tsInISO8601": "1000"
-        }
+        "tsInMillis": 1000,
+        "tsInISO8601": "1000"
     }
     sessionStartHit.xdmData = {
         "xdm": {
@@ -1322,7 +1959,7 @@ sub TC_adb_MediaSession_restartIfLongRunningSession_longRunningSession_restartsS
     mediaHit = {}
     mediaHit.eventType = "media.ping"
     mediaHit.tsObject = {}
-    mediaHit.tsObject.tsInISO8601 = "1000"
+    mediaHit.tsObject.tsInISO8601 = "86400001"
     mediaHit.tsObject.tsInMillis = (24 * 60 * 60 * 1000) + 1 ''' 24 hours + 1 ms
     mediaHit.requestId = "testRequestId"
     mediaHit.xdmData = {
@@ -1338,10 +1975,8 @@ sub TC_adb_MediaSession_restartIfLongRunningSession_longRunningSession_restartsS
     expectedSessionResumeHit = {}
     expectedSessionResumeHit.eventType = "media.sessionStart"
     expectedSessionResumeHit.tsObject = {
-        "tsObject": {
-            "tsInMillis": 86400,
-            "tsInISO8601": "86400001"
-        }
+        "tsInMillis": 86400,
+        "tsInISO8601": "86400001"
     }
     expectedSessionResumeHit.xdmData = {
         "xdm": {
@@ -1362,10 +1997,8 @@ sub TC_adb_MediaSession_restartIfLongRunningSession_longRunningSession_restartsS
     expectedSessionEndHit = {}
     expectedSessionEndHit.eventType = "media.sessionEnd"
     expectedSessionEndHit.tsObject = {
-        "tsObject": {
-            "tsInMillis": 86400,
-            "tsInISO8601": "86400001"
-        }
+        "tsInMillis": 86400,
+        "tsInISO8601": "86400001"
     }
     expectedSessionEndHit.xdmData = {
         "xdm": {
@@ -1396,7 +2029,7 @@ sub TC_adb_MediaSession_restartIfLongRunningSession_longRunningSession_restartsS
     UTF_assertEqual(expectedSessionEndHit.eventType, actualSessionEndHit.eventType, "SessionEnd Event types must match")
     UTF_assertEqual(expectedSessionEndHit.xdmData, actualSessionEndHit.xdmData, "SessionEnd XDM data must match")
     UTF_assertEqual(expectedSessionResumeHit.eventType, actualSessionResumeHit.eventType, "SessionStart Event types must match")
-    UTF_assertEqual(expectedSessionResumeHit.xdmData, actualSessionResumeHit.xdmData, "SessionStart XDM data must match")
+    UTF_assertEqual(expectedSessionResumeHit.xdmData, actualSessionResumeHit.xdmData, "SessionStart XDM data must match expected(" + FormatJson(expectedSessionResumeHit.xdmData) + ") != actual(" + FormatJson(actualSessionResumeHit.xdmData) + ")")
     UTF_assertEqual(mediaHit, pingHit)
 end sub
 
@@ -1589,10 +2222,8 @@ sub TC_adb_MediaSession_createSessionResumeHit()
     sessionStartHit.eventType = "media.sessionStart"
     sessionStartHit.requestId = "sessionStartRequestId"
     sessionStartHit.tsObject = {
-        "tsObject": {
-            "tsInMillis": 1000,
-            "tsInISO8601": "1000"
-        }
+        "tsInMillis": 1000,
+        "tsInISO8601": "1000"
     }
     sessionStartHit.xdmData = {
         "xdm": {
@@ -1613,10 +2244,8 @@ sub TC_adb_MediaSession_createSessionResumeHit()
     playHit.eventType = "media.play"
     playHit.requestId = "playRequestId"
     playHit.tsObject = {
-        "tsObject": {
-            "tsInMillis": 2000,
-            "tsInISO8601": "2000"
-        }
+        "tsInMillis": 2000,
+        "tsInISO8601": "2000"
     }
     playHit.xdmData = {
         "xdm": {
@@ -1636,10 +2265,8 @@ sub TC_adb_MediaSession_createSessionResumeHit()
     expectedSessionResumeHit = {}
     expectedSessionResumeHit.eventType = "media.sessionStart"
     expectedSessionResumeHit.tsObject = {
-        "tsObject": {
-            "tsInMillis": 2000,
-            "tsInISO8601": "2000"
-        }
+        "tsInMillis": 2000,
+        "tsInISO8601": "2000"
     }
     expectedSessionResumeHit.xdmData = {
         "xdm": {
@@ -1660,7 +2287,7 @@ sub TC_adb_MediaSession_createSessionResumeHit()
     UTF_assertNotEqual(sessionStartHit.requestId, actualSessionResumeHit.requestId, "Request ID must not match with the cached sessionStart hit")
     UTF_assertNotEqual(playHit.requestId, actualSessionResumeHit.requestId, "Request ID must not match with the play hit")
     UTF_assertEqual(expectedSessionResumeHit.eventType, actualSessionResumeHit.eventType, "Event types must match")
-    UTF_assertEqual(expectedSessionResumeHit.xdmData, actualSessionResumeHit.xdmData, "XDM data must match")
+    UTF_assertEqual(expectedSessionResumeHit.xdmData, actualSessionResumeHit.xdmData, "XDM data must match expected(" + FormatJson(expectedSessionResumeHit.xdmData) + ") != actual(" + FormatJson(actualSessionResumeHit.xdmData) + ")")
 end sub
 
 ' target: _shouldQueue()

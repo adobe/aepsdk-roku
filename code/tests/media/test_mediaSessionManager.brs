@@ -25,8 +25,6 @@ sub TC_adb_MediaSessionManager_createSession()
     mediaSessionManager = _adb_MediaSessionManager()
     UTF_assertInvalid(mediaSessionManager._activeSession)
 
-    sessionConfig = { "config.channel": "testChannel" }
-
     ''' test
     mediaSessionManager.createSession({}, {}, {})
 
