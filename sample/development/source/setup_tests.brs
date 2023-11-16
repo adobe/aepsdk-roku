@@ -138,6 +138,7 @@ function _adb_test_functions() as dynamic
         TC_adb_MediaModule_processEvent_MediaEventOtherThanSessionStart_validConfig_queuesEvent
         TC_adb_MediaModule_processEvent_SessionComplete_validConfig_queuesEventAndEndsSession
         TC_adb_MediaModule_processEvent_invalidMediaEvent_ignoresEvent
+        TC_adb_MediaModule_processEvent_invalidMediaEvent_inactiveSession
         TC_hasValidConfig
         ' test_mediaSessionManager.brs
         TC_adb_MediaSessionManager_init

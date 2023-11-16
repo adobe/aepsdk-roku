@@ -13,9 +13,9 @@
 
 ' ***************************** MODULE: MediaSession *******************************
 
-function _adb_MediaSession(id as string, configurationModule as object, sessionConfig as object, edgeRequestQueue as object) as object
+function _adb_MediaSession(clientSessionId as string, configurationModule as object, sessionConfig as object, edgeRequestQueue as object) as object
     sessionObj = {
-        _id: id,
+        _clientSessionId: clientSessionId,
 
         ' session level configuration
         _sessionChannelName: invalid,
@@ -66,6 +66,10 @@ function _adb_MediaSession(id as string, configurationModule as object, sessionC
             m._sessionMainPingInternal = _adb_optIntFromMap(sessionConfig, SESSION_CONFIGURATION.MAIN_PING_INTERVAL)
             m._sessionChannelName = _adb_optStringFromMap(sessionConfig, SESSION_CONFIGURATION.CHANNEL)
         end sub,
+
+        getClientsessionId: function() as string
+            return m._clientSessionId
+        end function,
 
         ''' Processes the mediaHit. Updates the playback state, ad state, idle state, etc.
         ''' Extracts the sessionStart data.
@@ -156,7 +160,7 @@ function _adb_MediaSession(id as string, configurationModule as object, sessionC
         ''' Queues media events which will then be dispatched to edgeRequestQueue
         _queue: function(mediaHit as object) as boolean
             if not m._isActive then
-                _adb_logWarning("handleQueueEvent() - Cannot queue media event, media session (" + FormatJson(m._id) + " is not active.")
+                _adb_logWarning("handleQueueEvent() - Cannot queue media event, media session (" + FormatJson(m._clientSessionId) + " is not active.")
                 return false
             end if
 
@@ -423,6 +427,6 @@ function _adb_MediaSession(id as string, configurationModule as object, sessionC
             end if
         end function,
     }
-    sessionObj._init(id, configurationModule, sessionConfig, edgeRequestQueue)
+    sessionObj._init(clientSessionId, configurationModule, sessionConfig, edgeRequestQueue)
     return sessionObj
 end function

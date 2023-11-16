@@ -26,7 +26,7 @@ sub TC_adb_MediaSessionManager_createSession()
     UTF_assertInvalid(mediaSessionManager._activeSession)
 
     ''' test
-    mediaSessionManager.createSession({}, {}, {})
+    mediaSessionManager.createSession("", {}, {}, {})
 
     ''' verify
     UTF_assertNotInvalid(mediaSessionManager._activeSession)
@@ -41,7 +41,7 @@ sub TC_adb_MediaSessionManager_createSession_endsOldSession()
     mediaSessionManager._activeSession = _adb_MediaSession("testSessionId1", {}, {}, {})
 
     ''' test
-    mediaSessionManager.createSession({}, {}, {})
+    mediaSessionManager.createSession("", {}, {}, {})
 
     ''' verify
     UTF_assertNotInvalid(mediaSessionManager._activeSession)
@@ -69,7 +69,7 @@ sub TC_adb_MediaSessionManager_queue_validActiveSession_queuesWithSession()
     end function
 
     ''' test
-    mediaSessionManager.createSession({}, {}, {})
+    mediaSessionManager.createSession("", {}, {}, {})
     ''' update active session with mock
     mediaSessionManager._activeSession = mockMediaSession
 
@@ -116,7 +116,7 @@ sub TC_adb_MediaSessionManager_endSession_validActiveSession_closesSession()
     end function
 
     ''' test
-    mediaSessionManager.createSession({}, {}, {})
+    mediaSessionManager.createSession("", {}, {}, {})
     ''' update active session with mock
     mediaSessionManager._activeSession = mockMediaSession
     mediaSessionManager.endSession()

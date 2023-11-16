@@ -32,7 +32,7 @@ end sub
 ' target: processEvent()
 ' @Test
 sub TC_adb_MediaModule_processEvent_sessionStart_validConfig_createsSessionAndQueuesEvent()
-    ''' setup
+    ' setup
     ADB_CONSTANTS = AdobeAEPSDKConstants()
     configuration = {}
     configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL] = "testChannel"
@@ -58,20 +58,20 @@ sub TC_adb_MediaModule_processEvent_sessionStart_validConfig_createsSessionAndQu
     testTSObject.tsInISO8601 = "testISOString"
     testTSObject.tsInMillis = 1234567890
 
-    ''' mock MediaSessionManager.createSession()
-    mediaSessionManager.createSession = function(configurationModule, sessionConfig, edgeRequestQueue) as void
+    ' mock MediaSessionManager.createSession()
+    mediaSessionManager.createSession = function(clientSessionId as string, configurationModule, sessionConfig, edgeRequestQueue) as void
         GetGlobalAA()._adb_sessionManager_createSession_called = true
         UTF_assertEqual(sessionConfig, { "config.channel": "testChannel" }, "Session configuration doesn't match")
         UTF_assertNotInvalid(edgeRequestQueue, "EdgeRequestQueue is invalid")
         UTF_assertNotInvalid(configurationModule, "ConfigurationModule is invalid")
     end function
 
-    ''' mock MediaSessionManager.endSession()
+    ' mock MediaSessionManager.endSession()
     mediaSessionManager.endSession = function() as void
         GetGlobalAA()._adb_sessionManager_endSession_called = true
     end function
 
-    ''' mock MediaSessionManager.queue()
+    ' mock MediaSessionManager.queue()
     mediaSessionManager.queue = function(mediaHit as object) as void
         GetGlobalAA()._adb_sessionManager_queue_called = true
 
@@ -93,7 +93,7 @@ sub TC_adb_MediaModule_processEvent_sessionStart_validConfig_createsSessionAndQu
         UTF_assertEqual(mediaHit.requestId, "testRequestid")
     end function
 
-    ''' test
+    ' test
     eventData = {}
     eventData.xdmData = {
         "xdm": {
@@ -108,11 +108,12 @@ sub TC_adb_MediaModule_processEvent_sessionStart_validConfig_createsSessionAndQu
         }
     }
     eventData.tsObject = testTSObject
+    eventData.clientSessionId = "testClientSessionId"
     eventData.configuration = { "config.channel": "testChannel" }
 
     mediaModule.processEvent("testRequestid", eventData)
 
-    ''' verify
+    ' verify
     UTF_assertTrue(GetGlobalAA()._adb_sessionManager_createSession_called, "MediaSessionManager::createSession() was not called.")
     UTF_assertTrue(GetGlobalAA()._adb_sessionManager_queue_called, "MediaSessionManager::queue() was not called.")
     UTF_assertFalse(GetGlobalAA()._adb_sessionManager_endSession_called, "MediaSessionManager::endSession() was called.")
@@ -121,7 +122,7 @@ end sub
 ' target: processEvent()
 ' @Test
 sub TC_adb_MediaModule_processEvent_sessionStart_InvalidConfig_ignoresEvent()
-    ''' setup
+    ' setup
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
     edgeModule = _adb_EdgeModule(configurationModule, identityModule)
@@ -140,22 +141,22 @@ sub TC_adb_MediaModule_processEvent_sessionStart_InvalidConfig_ignoresEvent()
     testTSObject.tsInISO8601 = "testISOString"
     testTSObject.tsInMillis = 1234567890
 
-    ''' mock MediaSessionManager.createSession()
-    mediaSessionManager.createSession = function(_configurationModule, _sessionConfig, _edgeRequestQueue) as void
+    ' mock MediaSessionManager.createSession()
+    mediaSessionManager.createSession = function(_clientSessionId, _configurationModule, _sessionConfig, _edgeRequestQueue) as void
         GetGlobalAA()._adb_sessionManager_createSession_called = true
     end function
 
-    ''' mock MediaSessionManager.endSession()
+    ' mock MediaSessionManager.endSession()
     mediaSessionManager.endSession = function() as void
         GetGlobalAA()._adb_sessionManager_endSession_called = true
     end function
 
-    ''' mock MediaSessionManager.queue()
+    ' mock MediaSessionManager.queue()
     mediaSessionManager.queue = function(_mediaHit as object) as void
         GetGlobalAA()._adb_sessionManager_queue_called = true
     end function
 
-    ''' test
+    ' test
     eventData = {}
     eventData.xdmData = {
         "xdm": {
@@ -171,10 +172,11 @@ sub TC_adb_MediaModule_processEvent_sessionStart_InvalidConfig_ignoresEvent()
     }
     eventData.tsObject = testTSObject
     eventData.configuration = { "config.channel": "testChannel" }
+    eventData.clientSessionId = "testClientSessionId"
 
     mediaModule.processEvent("testRequestid", eventData)
 
-    ''' verify
+    ' verify
     UTF_assertFalse(GetGlobalAA()._adb_sessionManager_createSession_called, "MediaSessionManager::createSession() was called.")
     UTF_assertFalse(GetGlobalAA()._adb_sessionManager_queue_called, "MediaSessionManager::queue() was called.")
     UTF_assertFalse(GetGlobalAA()._adb_sessionManager_endSession_called, "MediaSessionManager::endSession() was called.")
@@ -183,7 +185,7 @@ end sub
 ' target: processEvent()
 ' @Test
 sub TC_adb_MediaModule_processEvent_MediaEventOtherThanSessionStart_validConfig_queuesEvent()
-    ''' setup
+    ' setup
     ADB_CONSTANTS = AdobeAEPSDKConstants()
     configuration = {}
     configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL] = "testChannel"
@@ -209,17 +211,17 @@ sub TC_adb_MediaModule_processEvent_MediaEventOtherThanSessionStart_validConfig_
     testTSObject.tsInISO8601 = "testISOString"
     testTSObject.tsInMillis = 1234567890
 
-    ''' mock MediaSessionManager.createSession()
-    mediaSessionManager.createSession = function(_configurationModule, _sessionConfig, _edgeRequestQueue) as void
+    ' mock MediaSessionManager.createSession()
+    mediaSessionManager.createSession = function(_clientSessionId, _configurationModule, _sessionConfig, _edgeRequestQueue) as void
         GetGlobalAA()._adb_sessionManager_createSession_called = true
     end function
 
-    ''' mock MediaSessionManager.endSession()
+    ' mock MediaSessionManager.endSession()
     mediaSessionManager.endSession = function() as void
         GetGlobalAA()._adb_sessionManager_endSession_called = true
     end function
 
-    ''' mock MediaSessionManager.queue()
+    ' mock MediaSessionManager.queue()
     mediaSessionManager.queue = function(mediaHit as object) as void
         GetGlobalAA()._adb_sessionManager_queue_called = true
 
@@ -238,7 +240,13 @@ sub TC_adb_MediaModule_processEvent_MediaEventOtherThanSessionStart_validConfig_
         UTF_assertEqual(mediaHit.requestId, "testRequestid")
     end function
 
-    ''' test
+    ' mock MediaSessionManager.getActiveClientSessionId()
+    mediaSessionManager.getActiveClientSessionId = function() as string
+        return "active_session_id"
+    end function
+
+
+    ' test
     eventData = {}
     eventData.xdmData = {
         "xdm": {
@@ -251,10 +259,11 @@ sub TC_adb_MediaModule_processEvent_MediaEventOtherThanSessionStart_validConfig_
     }
     eventData.tsObject = testTSObject
     eventData.configuration = { "config.channel": "testChannel" }
+    eventData.clientSessionId = "active_session_id"
 
     mediaModule.processEvent("testRequestid", eventData)
 
-    ''' verify
+    ' verify
     UTF_assertTrue(GetGlobalAA()._adb_sessionManager_queue_called, "MediaSessionManager::queue() was not called.")
     UTF_assertFalse(GetGlobalAA()._adb_sessionManager_createSession_called, "MediaSessionManager::createSession() was called.")
     UTF_assertFalse(GetGlobalAA()._adb_sessionManager_endSession_called, "MediaSessionManager::endSession() was called.")
@@ -263,7 +272,7 @@ end sub
 ' target: processEvent()
 ' @Test
 sub TC_adb_MediaModule_processEvent_SessionComplete_validConfig_queuesEventAndEndsSession()
-    ''' setup
+    ' setup
     ADB_CONSTANTS = AdobeAEPSDKConstants()
     configuration = {}
     configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL] = "testChannel"
@@ -289,18 +298,18 @@ sub TC_adb_MediaModule_processEvent_SessionComplete_validConfig_queuesEventAndEn
     testTSObject.tsInISO8601 = "testISOString"
     testTSObject.tsInMillis = 1234567890
 
-    ''' mock MediaSessionManager.createSession()
-    mediaSessionManager.createSession = function(_configurationModule, _sessionConfig, _edgeRequestQueue) as void
+    ' mock MediaSessionManager.createSession()
+    mediaSessionManager.createSession = function(_clientSessionId, _configurationModule, _sessionConfig, _edgeRequestQueue) as void
         GetGlobalAA()._adb_sessionManager_createSession_called = true
     end function
 
-    ''' mock MediaSessionManager.endSession()
+    ' mock MediaSessionManager.endSession()
     mediaSessionManager.endSession = function() as void
         GetGlobalAA()._adb_sessionManager_endSession_called = true
 
     end function
 
-    ''' mock MediaSessionManager.queue()
+    ' mock MediaSessionManager.queue()
     mediaSessionManager.queue = function(mediaHit as object) as void
         GetGlobalAA()._adb_sessionManager_queue_called = true
 
@@ -318,8 +327,12 @@ sub TC_adb_MediaModule_processEvent_SessionComplete_validConfig_queuesEventAndEn
         UTF_assertEqual(mediaHit.tsObject.tsInMillis, 1234567890)
         UTF_assertEqual(mediaHit.requestId, "testRequestid")
     end function
+    ' mock MediaSessionManager.getActiveClientSessionId()
+    mediaSessionManager.getActiveClientSessionId = function() as string
+        return "active_session_id"
+    end function
 
-    ''' test
+    ' test
     eventData = {}
     eventData.xdmData = {
         "xdm": {
@@ -332,10 +345,11 @@ sub TC_adb_MediaModule_processEvent_SessionComplete_validConfig_queuesEventAndEn
     }
     eventData.tsObject = testTSObject
     eventData.configuration = { "config.channel": "testChannel" }
+    eventData.clientSessionId = "active_session_id"
 
     mediaModule.processEvent("testRequestid", eventData)
 
-    ''' verify
+    ' verify
     UTF_assertTrue(GetGlobalAA()._adb_sessionManager_queue_called, "MediaSessionManager::queue() was not called.")
     UTF_assertTrue(GetGlobalAA()._adb_sessionManager_endSession_called, "MediaSessionManager::endSession() was not called.")
     UTF_assertFalse(GetGlobalAA()._adb_sessionManager_createSession_called, "MediaSessionManager::createSession() was called.")
@@ -357,17 +371,17 @@ sub TC_adb_MediaModule_processEvent_invalidMediaEvent_ignoresEvent()
     GetGlobalAA()._adb_sessionManager_endSession_called = false
     GetGlobalAA()._adb_sessionManager_queue_called = false
 
-     ''' mock MediaSessionManager.createSession()
-     mediaSessionManager.createSession = function(_configurationModule, _sessionConfig, _edgeRequestQueue) as void
+    ' mock MediaSessionManager.createSession()
+    mediaSessionManager.createSession = function(_clientSessionId, _configurationModule, _sessionConfig, _edgeRequestQueue) as void
         GetGlobalAA()._adb_sessionManager_createSession_called = true
     end function
 
-    ''' mock MediaSessionManager.endSession()
+    ' mock MediaSessionManager.endSession()
     mediaSessionManager.endSession = function() as void
         GetGlobalAA()._adb_sessionManager_endSession_called = true
     end function
 
-    ''' mock MediaSessionManager.queue()
+    ' mock MediaSessionManager.queue()
     mediaSessionManager.queue = function(_mediaHit as object) as void
         GetGlobalAA()._adb_sessionManager_queue_called = true
     end function
@@ -390,6 +404,61 @@ sub TC_adb_MediaModule_processEvent_invalidMediaEvent_ignoresEvent()
     UTF_assertFalse(GetGlobalAA()._adb_sessionManager_createSession_called, "MediaSessionManager::createSession() was called.")
 end sub
 
+' target: processEvent()
+' @Test
+sub TC_adb_MediaModule_processEvent_invalidMediaEvent_inactiveSession()
+    configurationModule = _adb_ConfigurationModule()
+    identityModule = _adb_IdentityModule(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+    mediaModule = _adb_MediaModule(configurationModule, edgeRequestQueue)
+    mediaSessionManager = _adb_MediaSessionManager()
+    mediaModule._sessionManager = mediaSessionManager
+    UTF_assertTrue(_adb_isMediaModule(mediaModule))
+
+    GetGlobalAA()._adb_sessionManager_createSession_called = false
+    GetGlobalAA()._adb_sessionManager_endSession_called = false
+    GetGlobalAA()._adb_sessionManager_queue_called = false
+
+    ' mock MediaSessionManager.createSession()
+    mediaSessionManager.createSession = function(_clientSessionId, _configurationModule, _sessionConfig, _edgeRequestQueue) as void
+        GetGlobalAA()._adb_sessionManager_createSession_called = true
+    end function
+
+    ' mock MediaSessionManager.endSession()
+    mediaSessionManager.endSession = function() as void
+        GetGlobalAA()._adb_sessionManager_endSession_called = true
+    end function
+
+    ' mock MediaSessionManager.queue()
+    mediaSessionManager.queue = function(_mediaHit as object) as void
+        GetGlobalAA()._adb_sessionManager_queue_called = true
+    end function
+
+    ' mock MediaSessionManager.getActiveClientSessionId()
+    mediaSessionManager.getActiveClientSessionId = function() as string
+        return "active_session_id"
+    end function
+
+    ' handle the media event with a different clientSessionId
+    mediaModule.processEvent("request_id", {
+        clientSessionId: "new_session_id",
+        tsObject: _adb_TimestampObject(),
+        xdmData: {
+            "xdm": {
+                "eventType": "media.invalid",
+                "mediaCollection": {
+                    "playhead": 10,
+                }
+            }
+        }
+    })
+
+    ' the media module should dropt this event
+    UTF_assertFalse(GetGlobalAA()._adb_sessionManager_queue_called, "MediaSessionManager::queue() was called.")
+    UTF_assertFalse(GetGlobalAA()._adb_sessionManager_endSession_called, "MediaSessionManager::endSession() was called.")
+    UTF_assertFalse(GetGlobalAA()._adb_sessionManager_createSession_called, "MediaSessionManager::createSession() was called.")
+end sub
 
 ' target: _hasValidConfig()
 ' @Test
