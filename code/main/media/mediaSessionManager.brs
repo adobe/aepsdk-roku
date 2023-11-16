@@ -28,7 +28,7 @@ function _adb_MediaSessionManager() as object
 
         queue: function(mediaHit as object) as void
             ' Check if there is any active session
-            if m._activeSession = invalid then
+            if not m._existActiveSession() then
                 return
             end if
 
@@ -53,6 +53,18 @@ function _adb_MediaSessionManager() as object
             end if
 
             return m._activeSession.getClientSessionId()
+        end function,
+
+        _existActiveSession: function() as boolean
+            return m._activeSession <> invalid
+        end function,
+
+        _getBackendSessionId: function() as string
+            if m._activeSession = invalid then
+                return ""
+            end if
+
+            return m._activeSession._backendSessionId
         end function,
     }
 end function

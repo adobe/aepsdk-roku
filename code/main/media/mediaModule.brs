@@ -98,10 +98,10 @@ function _adb_MediaModule(configurationModule as object, edgeRequestQueue as obj
         end sub,
 
         dump: function() as object
-
             return {
-                ' TODO:
-                clientSessionId: invalid,
+                clientSessionId: m._sessionManager.getActiveClientSessionId(),
+                backendSessionId: m._sessionManager._getBackendSessionId(),
+                existActiveSession: m._sessionManager._existActiveSession(),
             }
         end function
     })
