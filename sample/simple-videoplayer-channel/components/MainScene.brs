@@ -52,8 +52,8 @@ sub _initSDK()
 
   configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = ""
   'configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = ""
-  configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL] = "channel_test"
-  configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_PLAYER_NAME] = "player_test"
+  configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL] = "channel_test_roku"
+  configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_PLAYER_NAME] = "player_test_roku"
   configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_APP_VERSION] = "1.0.0"
   m.aepSdk.updateConfiguration(configuration)
 

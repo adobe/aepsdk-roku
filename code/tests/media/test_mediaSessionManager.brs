@@ -22,18 +22,11 @@ end sub
 ' @Test
 sub TC_adb_MediaSessionManager_createSession()
     ''' setup
-    configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
-
     mediaSessionManager = _adb_MediaSessionManager()
     UTF_assertInvalid(mediaSessionManager._activeSession)
 
-    sessionConfig = { "config.channel": "testChannel" }
-
     ''' test
-    mediaSessionManager.createSession(configurationModule, sessionConfig, edgeRequestQueue)
+    mediaSessionManager.createSession({}, {}, {})
 
     ''' verify
     UTF_assertNotInvalid(mediaSessionManager._activeSession)
@@ -43,19 +36,12 @@ end sub
 ' @Test
 sub TC_adb_MediaSessionManager_createSession_endsOldSession()
     ''' setup
-    configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
-
     mediaSessionManager = _adb_MediaSessionManager()
     UTF_assertInvalid(mediaSessionManager._activeSession)
-    mediaSessionManager._activeSession = _adb_MediaSession("testSessionId1", configurationModule, {}, edgeRequestQueue)
-
-    sessionConfig = { "config.channel": "testChannel" }
+    mediaSessionManager._activeSession = _adb_MediaSession("testSessionId1", {}, {}, {})
 
     ''' test
-    mediaSessionManager.createSession(configurationModule, sessionConfig, edgeRequestQueue)
+    mediaSessionManager.createSession({}, {}, {})
 
     ''' verify
     UTF_assertNotInvalid(mediaSessionManager._activeSession)
@@ -66,31 +52,24 @@ end sub
 ' @Test
 sub TC_adb_MediaSessionManager_queue_validActiveSession_queuesWithSession()
     ''' setup
-    configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
-
     mediaSessionManager = _adb_MediaSessionManager()
-
-    sessionConfig = { "config.channel": "testChannel" }
 
     GetGlobalAA()._adb_session_process_called = false
     GetGlobalAA()._adb_session_close_called = false
 
     ''' mock MediaSession
-    mockMediaSession = _adb_MediaSession("testSessionId", configurationModule, sessionConfig, edgeRequestQueue)
+    mockMediaSession = _adb_MediaSession("testSessionId", {}, {}, {})
     mockMediaSession.process = function(mediaHit as object) as void
         GetGlobalAA()._adb_session_process_called = true
         UTF_assertEqual({ "test": "test" }, mediaHit)
     end function
 
-    mockMediaSession.close = function(isAbort = false as boolean) as void
+    mockMediaSession.close = function(_isAbort = false as boolean) as void
         GetGlobalAA()._adb_session_close_called = true
     end function
 
     ''' test
-    mediaSessionManager.createSession(configurationModule, sessionConfig, edgeRequestQueue)
+    mediaSessionManager.createSession({}, {}, {})
     ''' update active session with mock
     mediaSessionManager._activeSession = mockMediaSession
 
@@ -106,11 +85,6 @@ end sub
 ' @Test
 sub TC_adb_MediaSessionManager_queue_invalidActiveSession_ignoresMediaHit()
     ''' setup
-    configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
-
     mediaSessionManager = _adb_MediaSessionManager()
     UTF_assertInvalid(mediaSessionManager._activeSession)
 
@@ -125,21 +99,14 @@ end sub
 ' @Test
 sub TC_adb_MediaSessionManager_endSession_validActiveSession_closesSession()
     ''' setup
-    configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
-
     mediaSessionManager = _adb_MediaSessionManager()
     UTF_assertInvalid(mediaSessionManager._activeSession)
-
-    sessionConfig = { "config.channel": "testChannel" }
 
     GetGlobalAA()._adb_session_process_called = false
     GetGlobalAA()._adb_session_close_called = false
 
     ''' mock MediaSession
-    mockMediaSession = _adb_MediaSession("testSessionId", configurationModule, sessionConfig, edgeRequestQueue)
+    mockMediaSession = _adb_MediaSession("testSessionId", {}, {}, {})
     mockMediaSession.process = function(_mediaHit as object) as void
         GetGlobalAA()._adb_session_process_called = true
     end function
@@ -149,7 +116,7 @@ sub TC_adb_MediaSessionManager_endSession_validActiveSession_closesSession()
     end function
 
     ''' test
-    mediaSessionManager.createSession(configurationModule, sessionConfig, edgeRequestQueue)
+    mediaSessionManager.createSession({}, {}, {})
     ''' update active session with mock
     mediaSessionManager._activeSession = mockMediaSession
     mediaSessionManager.endSession()
@@ -164,11 +131,6 @@ end sub
 ' @Test
 sub TC_adb_MediaSessionManager_endSession_invalidActiveSession_getsIgnored()
     ''' setup
-    configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
-
     mediaSessionManager = _adb_MediaSessionManager()
     UTF_assertInvalid(mediaSessionManager._activeSession)
 

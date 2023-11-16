@@ -149,6 +149,19 @@ function _adb_test_functions() as dynamic
         TC_adb_MediaSessionManager_endSession_invalidActiveSession_getsIgnored
         ' test_mediaSession.brs
         TC_adb_MediaSession_init
+        TC_adb_MediaSession_process_notActiveSession
+        TC_adb_MediaSession_process_activeSession_sessionStartHit_queued
+        TC_adb_MediaSession_process_activeSession_playbackHits_queued
+        TC_adb_MediaSession_process_activeSession_adHits_queued
+        TC_adb_MediaSession_process_activeSession_idleTimeout_queued
+        TC_adb_MediaSession_process_activeSession_longRunningSession_queued
+        TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigAndSessionConfig
+        TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigNoSessionConfig
+        TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_NoValidConfigNoSessionConfig
+        TC_adb_MediaSession_tryDispatchMediaEvents_notSessionStart_validBackendId
+        TC_adb_MediaSession_tryDispatchMediaEvents_notSessionStart_invalidBackendId
+        TC_adb_MediaSession_close_noAbort_dispatchesHitQueue
+        TC_adb_MediaSession_close_abort_deletesHitQueue
         TC_adb_MediaSession_getPingInterval_validInterval
         TC_adb_MediaSession_getPingInterval_invalidInterval
         TC_adb_MediaSession_extractSessionStartData_sessionStartHit_cachesHit
@@ -162,6 +175,26 @@ function _adb_test_functions() as dynamic
         TC_adb_MediaSession_updateAdState_adStartEvent_setsIsInAd
         TC_adb_MediaSession_updateAdState_adCompleteEvent_adSkipEvent_resetsIsInAd
         TC_adb_MediaSession_updateAdState_nonAdEvent_ignored
+        TC_adb_MediaSession_createSessionResumeHit
+        TC_adb_MediaSession_closeIfIdle_idleDurationOverIdleTimeout_endSession
+        TC_adb_MediaSession_closeIfIdle_idleDurationUnderIdleTimeout_ignored
+        TC_adb_MediaSession_closeIfIdle_alreadyIdleTimedout_ignored
+        TC_adb_MediaSession_closeIfIdle_inPlayingState_ignored
+        TC_adb_MediaSession_restartIdleSession_playAfterIdleTimeout_resumes
+        TC_adb_MediaSession_restartIdleSession_notPlayEventAfterIdleTimeout_ignored
+        TC_adb_MediaSession_restartIdleSession_playifNotIdleTimeout_ignored
+        TC_adb_MediaSession_restartIdleSession_ifActiveSession_ignored
+        TC_adb_MediaSession_restartIfLongRunningSession_longRunningSession_restartsSession
+        TC_adb_MediaSession_restartIfLongRunningSession_notLongRunningSession_ignored
+        TC_adb_MediaSession_restartIfLongRunningSession_triggeredBySessionEndOrComplete_ignored
+        TC_adb_MediaSession_resetForRestart
+        TC_adb_MediaSession_shouldQueue_pingEvent_overPingInterval_returnsTrue
+        TC_adb_MediaSession_shouldQueue_pingEvent_underPingInterval_returnsFalse
+        TC_adb_MediaSession_shouldQueue_notPingEvent_returnsTrue
+        TC_adb_MediaSession_queue_sessionActive_queues
+        TC_adb_MediaSession_queue_sessionInActive_doesNotqueue
+        TC_adb_MediaSession_processEdgeRequestQueue_sessionStart_200_storesBackendSessionId
+        TC_adb_MediaSession_processEdgeRequestQueue_sessionStart_207_vaError400_closesSession
     ]
     initSDK = [
         'test_AdobeAEPSDKInit.brs
