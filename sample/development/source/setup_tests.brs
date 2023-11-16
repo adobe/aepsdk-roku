@@ -154,6 +154,7 @@ function _adb_test_functions() as dynamic
         TC_adb_MediaSession_process_activeSession_playbackHits_queued
         TC_adb_MediaSession_process_activeSession_adHits_queued
         TC_adb_MediaSession_process_activeSession_idleTimeout_queued
+        TC_adb_MediaSession_process_activeSession_longRunningSession_queued
         TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigAndSessionConfig
         TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigNoSessionConfig
         TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_NoValidConfigNoSessionConfig

@@ -352,8 +352,9 @@
 
                 sessionStart = m._createSessionResumeHit(mediaHit)
                 m.process(sessionStart)
-                ''' process the triggering hit
-                m.process(mediaHit)
+                ''' the triggering hit will be processed after this returns
+                ''' if the triggering hit is ping, it maybe dropped if the ping interval has not elapsed
+                return
             end if
             ' Check if the session is long running >= 24 hours
         end function,
