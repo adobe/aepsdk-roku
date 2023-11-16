@@ -146,7 +146,7 @@
             end if
 
             ' Create and add hit to queue for actual events or heartbeat pings
-            m._hitQueue.append(mediaHit)
+            m._hitQueue.push(mediaHit)
             m._lastHit = mediaHit
             m.tryDispatchMediaEvents()
             return true
@@ -361,7 +361,7 @@
 
             sessionResumeHit.xdmData.xdm["mediaCollection"]["sessionDetails"]["hasResume"] = true
             sessionResumeHit.xdmData.xdm["mediaCollection"]["playhead"] = mediaHit.xdmData.xdm["mediaCollection"]["playhead"]
-            sessionResumeHit.xdmData.xdm["timestamp"] = mediaHit.xdmData.xdm["timestamp"]
+            sessionResumeHit.xdmData.xdm["timestamp"] = mediaHit.tsObject.tsInISO8601
             sessionResumeHit.tsObject = mediaHit.tsObject
             sessionResumeHit.requestId = _adb_generate_UUID()
 
@@ -375,7 +375,7 @@
                     "mediaCollection": {
                         "playhead": mediaHit.xdmData.xdm["mediaCollection"]["playhead"],
                     },
-                    "timestamp": mediaHit.xdmData.xdm["timestamp"]
+                    "timestamp": mediaHit.tsObject.tsInISO8601
                 }
             }
 
