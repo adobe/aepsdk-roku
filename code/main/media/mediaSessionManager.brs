@@ -13,17 +13,16 @@
 
 ' ***************************** MODULE: MediaSessionManager *******************************
 
- function _adb_MediaSessionManager() as object
-     return {
+function _adb_MediaSessionManager() as object
+    return {
         _activeSession: invalid,
 
-        createSession: function(configurationModule as object, sessionConfig as object, edgeRequestQueue as object) as void
+        createSession: function(clientSessionId as string, configurationModule as object, sessionConfig as object, edgeRequestQueue as object) as void
             ' End the current session if any
             m.endSession()
 
             ' Start a new session
-            sessionId = _adb_generate_UUID()
-            m._activeSession = _adb_MediaSession(sessionId, configurationModule, sessionConfig, edgeRequestQueue)
+            m._activeSession = _adb_MediaSession(clientSessionId, configurationModule, sessionConfig, edgeRequestQueue)
 
         end function,
 
@@ -47,5 +46,13 @@
             m._activeSession.close(isAbort)
             m._activeSession = invalid
         end function,
-     }
- end function
+
+        getActiveClientSessionId: function() as string
+            if m._activeSession = invalid then
+                return ""
+            end if
+
+            return m._activeSession.getClientSessionId()
+        end function,
+    }
+end function

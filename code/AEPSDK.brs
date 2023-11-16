@@ -44,6 +44,7 @@ end function
 '
 ' The AEP task node performs the core logic of the SDK. Typically, a Roku project
 ' maintains only one instance of the AEP task node.
+'
 ' It's recommended to first call this function without passing an argument within
 ' the scene script. It initializes a new AEP task node and creates an associated
 ' SDK instance. Then, the task node instance can be retrieved via the getTaskNode() API.
@@ -56,7 +57,7 @@ end function
 '
 ' m.top.appendChild(adobeTaskNode)
 '
-' The task node's ID by default set to "adobeTaskNode".
+' The task node's ID is by default set to "adobeTaskNode".
 ' Then, retrieve it by ID and use it to create a new SDK instance in other components.
 '
 ' adobeTaskNode = m.top.getScene().findNode("adobeTaskNode")
