@@ -34,10 +34,6 @@ Initialize and configure the AEP Roku SDK inside your `scene` script.
 
 ```brightscript
   m.aepSdk = AdobeAEPSDKInit()
-  m.adobeTaskNode = m.aepSdk.getTaskNode()
-
-  ' To make the Adobe task node instance accessible in other components, appending it to the scene node is recommended.
-  m.top.appendChild(m.adobeTaskNode)
 
   ADB_CONSTANTS = AdobeAEPSDKConstants()
 
@@ -65,7 +61,16 @@ Initialize and configure the AEP Roku SDK inside your `scene` script.
 
 In order to access the SDK APIs in any SceneGraph component, it is required to create a new SDK instance within the component due to the limitations in the component scope of the Roku SceneGraph framework.
 
-The previous section presents the code to attach the Adobe task node instance to the Scene node. The code below shows how to retrieve the task node instance and use it to create a new SDK instance in a separate SceneGraph component.
+Firstly, you need to attach the Adobe task node instance to the Scene node. After initializing the SDK, add the code below in the Scene script.
+
+``` brightscript
+adobeTaskNode = m.aepSdk.getTaskNode()
+
+' To make the Adobe task node instance accessible in other components, appending it to the scene node is recommended.
+m.top.appendChild(adobeTaskNode)
+```
+
+Then, in other ScenenGraph components scripts, you can retrieve the task node instance and use it to create a new SDK instance in a separate SceneGraph component.
 
 ``` brightscript
 adobeTaskNode = m.top.getScene().findNode("adobeTaskNode")
