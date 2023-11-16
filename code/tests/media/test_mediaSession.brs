@@ -16,17 +16,20 @@
 sub TC_adb_MediaSession_init()
     ''' setup
     configurationModule = _adb_ConfigurationModule()
-    configurationModule._media_appVersion = "test_appVersion"
-    configurationModule._media_playerName = "test_playerName"
-    configurationModule._media_channel = "test_channel_global"
-
     identityModule = _adb_IdentityModule(configurationModule)
     edgeModule = _adb_EdgeModule(configurationModule, identityModule)
     edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
 
-    sessionConfig = { "config.channel": "test_channel" }
+    configuration = {}
+    ADB_CONSTANTS = AdobeAEPSDKConstants()
+    configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL] = "test_channel"
+    configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_PLAYER_NAME] = "test_playerName"
+    configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_APP_VERSION] = "test_appVersion"
+
+    configurationModule.updateConfiguration(configuration)
 
     ''' test
+    sessionConfig = { "config.channel": "test_channel_session" }
     mediaSession = _adb_MediaSession("testId", configurationModule, sessionConfig, edgeRequestQueue)
 
     ''' verify
@@ -35,10 +38,10 @@ sub TC_adb_MediaSession_init()
     UTF_assertEqual("testId", mediaSession._id)
     UTF_assertNotInvalid(mediaSession._configurationModule)
     UTF_assertNotInvalid(mediaSession._edgeRequestQueue)
-    UTF_assertEqual("test_channel", mediaSession._sessionChannelName)
+    UTF_assertEqual("test_channel_session", mediaSession._sessionChannelName)
     UTF_assertEqual("test_appVersion", mediaSession._getAppVersion())
     UTF_assertEqual("test_playerName", mediaSession._getPlayerName())
-    UTF_assertEqual("test_channel", mediaSession._getChannelName())
+    UTF_assertEqual("test_channel_session", mediaSession._getChannelName())
     isAd = true
     DEFAULT_PING_INTERVAL_SEC = 10
     UTF_assertEqual(DEFAULT_PING_INTERVAL_SEC, mediaSession._getPingInterval(isAd))
@@ -50,17 +53,21 @@ end sub
 sub TC_adb_MediaSession_init_withoutSessionConfig()
     ''' setup
     configurationModule = _adb_ConfigurationModule()
-    configurationModule._media_appVersion = "test_appVersion"
-    configurationModule._media_playerName = "test_playerName"
-    configurationModule._media_channel = "test_channel"
 
     identityModule = _adb_IdentityModule(configurationModule)
     edgeModule = _adb_EdgeModule(configurationModule, identityModule)
     edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
 
-    sessionConfig = {}
+    configuration = {}
+    ADB_CONSTANTS = AdobeAEPSDKConstants()
+    configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL] = "test_channel"
+    configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_PLAYER_NAME] = "test_playerName"
+    configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_APP_VERSION] = "test_appVersion"
+
+    configurationModule.updateConfiguration(configuration)
 
     ''' test
+    sessionConfig = {}
     mediaSession = _adb_MediaSession("testId", configurationModule, sessionConfig, edgeRequestQueue)
 
     ''' verify
@@ -84,13 +91,17 @@ end sub
 sub TC_adb_MediaSession_init_withFullSessionConfig()
     ''' setup
     configurationModule = _adb_ConfigurationModule()
-    configurationModule._media_appVersion = "test_appVersion"
-    configurationModule._media_playerName = "test_playerName"
-    configurationModule._media_channel = "test_channel"
-
     identityModule = _adb_IdentityModule(configurationModule)
     edgeModule = _adb_EdgeModule(configurationModule, identityModule)
     edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
+
+    configuration = {}
+    ADB_CONSTANTS = AdobeAEPSDKConstants()
+    configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL] = "test_channel"
+    configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_PLAYER_NAME] = "test_playerName"
+    configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_APP_VERSION] = "test_appVersion"
+
+    configurationModule.updateConfiguration(configuration)
 
     sessionConfig = {
         "config.channel": "test_channel_session",
