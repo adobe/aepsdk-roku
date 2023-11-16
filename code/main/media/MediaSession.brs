@@ -170,27 +170,15 @@
                         if m._sessionStartHit.requestId = requestId then
                             ''' Use constants
                             if responseCode >= m._RESPONSE_CODE_200 and responseCode < m._RESPONSE_CODE_300
-                                ''' handle the success responses
-                                for each handle in responseObj.handle
-                                    if handle.type = m._HANDLE_TYPE_SESSION_START
-                                        m._backendSessionId = handle.payload[0]["sessionId"]
-                                        ''' dispatch queued events.
-                                        m.tryDispatchMediaEvents()
-                                        ''' Exit since dont need to handle any other handle types
-                                        exit for
-                                    end if
-                                end for
+                                ''' process the response handles
+                                if not _adb_isEmptyOrInvalidArray(responseObj.handle) then
+                                    m._processEdgeResponseHandles(responseObj.handle)
+                                end if
 
-                                ''' handle the error responses
-                                for each error in responseObj.errors
-                                    if error.type = m._ERROR_TYPE_VA_EDGE_400
-                                        ''' abort the session if sessionStart fails
-                                        m.close(true)
-                                        ''' Exit since dont need to handle any other error types
-                                        exit for
-                                    end if
-                                end for
-
+                                ''' process the error responses
+                                if not _adb_isEmptyOrInvalidArray(responseObj.errors) then
+                                    m._processEdgeResponseErrors(responseObj.errors)
+                                end if
                             end if
                         end if
                     catch ex
@@ -199,6 +187,29 @@
                 end if
             end for
         end function,
+
+        _processEdgeResponseHandles: function(handleList as object) as void
+            for each handle in handleList
+                if handle.type = m._HANDLE_TYPE_SESSION_START
+                    m._backendSessionId = handle.payload[0]["sessionId"]
+                    ''' dispatch queued events.
+                    m.tryDispatchMediaEvents()
+                    ''' Exit since dont need to handle any other handle types
+                    exit for
+                end if
+            end for
+        end function
+
+        _processEdgeResponseErrors: function(errorList as object) as void
+            for each error in errorList
+                if error.type = m._ERROR_TYPE_VA_EDGE_400
+                    ''' abort the session if sessionStart fails
+                    m.close(true)
+                    ''' Exit since dont need to handle any other error types
+                    exit for
+                end if
+            end for
+        end function
 
         _shouldQueue: function(mediaHit as object) as boolean
             eventType = mediaHit.eventType
