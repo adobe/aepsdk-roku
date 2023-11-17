@@ -28,7 +28,7 @@ function _adb_MediaSessionManager() as object
 
         queue: function(mediaHit as object) as void
             ' Check if there is any active session
-            if not m._existActiveSession() then
+            if not m._activeSessionExists() then
                 return
             end if
 
@@ -55,7 +55,7 @@ function _adb_MediaSessionManager() as object
             return m._activeSession.getClientSessionId()
         end function,
 
-        _existActiveSession: function() as boolean
+        _activeSessionExists: function() as boolean
             return m._activeSession <> invalid
         end function,
 

@@ -101,7 +101,7 @@ function _adb_MediaModule(configurationModule as object, edgeRequestQueue as obj
             return {
                 clientSessionId: m._sessionManager.getActiveClientSessionId(),
                 backendSessionId: m._sessionManager._getBackendSessionId(),
-                existActiveSession: m._sessionManager._existActiveSession(),
+                existActiveSession: m._sessionManager._activeSessionExists(),
             }
         end function
     })

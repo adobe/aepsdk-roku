@@ -23,9 +23,9 @@ function TS_SDK_integration() as object
         init: sub()
             test_config = ParseJson(ReadAsciiFile("pkg:/source/test_config.json"))
             m.configId = test_config.config_id
-            m.mediaChannel = test_config.edgemedia_channel
-            m.mediaPlayerName = test_config.edgemedia_playerName
-            m.mediaAppVersion = test_config.edgemedia_appVersion
+            m.mediaChannel = "channel_test"
+            m.mediaPlayerName = "player_test"
+            m.mediaAppVersion = "1.0.0"
             if _adb_isEmptyOrInvalidString(m.configId) then
                 throw "Not found a valid config_id in test_config.json"
             end if
