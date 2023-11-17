@@ -6,6 +6,8 @@
 3. Setup schemas, datastream, dataset, Customer Journey Analytics (CJA) dashboard etc. using this [guide](https://experienceleague.adobe.com/docs/media-analytics/using/implementation/edge-recommended/media-edge-sdk/implementation-edge.html) for Media tracking using AEPEdge SDK.
 
 ## Table of contents
+| Sections |
+| -- |
 | [API comparison between SDKs](#api-comparison) |
 | [Initliaze SDK instance](#initliaze-sdk-instance) |
 | [Start Media session](#start-media-session) |
