@@ -12,6 +12,7 @@ This guide requires knowledge:
 
 ### Core Plaback APIs:
 | Media SDK | AEPRoku SDK|
+| -- | -- |
 | mediaTrackSessionStart(mediaInfo,mediaContextData) | createMediaSession(sessionStartXDM) |
 | mediaTrackPlay() | sendMediaEvent(playXDM) |
 | mediaTrackPause() | sendMediaEvent(pauseXDM) |
@@ -19,6 +20,8 @@ This guide requires knowledge:
 | mediaTrackSessionEnd() | sendMediaEvent(sessionEndXDM) |
 
 ### Ad Tracking APIs:
+| Media SDK | AEPRoku SDK|
+| -- | -- |
 | mediaTrackEvent(ADBMobile().MEDIA_AD_BREAK_START, adBreakInfo, contextData) | sendMediaEvent(adbreakStartXDM) |
 | mediaTrackEvent(ADBMobile().MEDIA_AD_BREAK_START, invalid, invalid) | sendMediaEvent(adbreakCompleteXDM) |
 | mediaTrackEvent(ADBMobile().MEDIA_AD_START, adInfo, contextData) | sendMediaEvent(adStartXDM) |
@@ -26,6 +29,8 @@ This guide requires knowledge:
 | mediaTrackEvent(ADBMobile().MEDIA_AD_SKIP, invalid, invalid) | sendMediaEvent(adSkipXDM) |
 
 ### Buffer and Seek APIs
+| Media SDK | AEPRoku SDK|
+| -- | -- |
 | mediaTrackEvent(ADBMobile().MEDIA_BUFFER_START, bufferInfo, bufferContextData) | sendMediaEvent(bufferCompleteXDM) |
 | mediaTrackEvent(ADBMobile().MEDIA_BUFFER_COMPLETE, invalid, invalid)| sendMediaEvent(bufferCompleteXDM) |
 | mediaTrackEvent(ADBMobile().MEDIA_SEEK_START, seekInfo, seekContextData) | sendMediaEvent(pauseXDM) |
@@ -35,12 +40,16 @@ This guide requires knowledge:
 > For tracking seek in AEPRoku SDK, use eventType `pauseStart` with correct playhead. Media backend will detect seek based on playhead and timestamp values.
 
 ### Chapter APIs
+| Media SDK | AEPRoku SDK|
+| -- | -- |
 | mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_START, chapterInfo, chapterContextData)
  | sendMediaEvent(chapterStartXDM) |
 | mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_COMPLETE, invalid, invalid) | sendMediaEvent(chapterCompleteXDM) |
 | mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_SKIP, invalid, invalid) | sendMediaEvent(chapterSkipXDM) |
 
 ### Quality of Experience and Error APIs
+| Media SDK | AEPRoku SDK|
+| -- | -- |
 | mediaUpdateQoS(qosinfo) | NA |
 | mediaTrackEvent(ADBMobile().MEDIA_BITRATE_CHANGE) | sendMediaEvent(pingXDM) |
 | mediaTrackError(errorId, ADBMobile().ERROR_SOURCE_PLAYER) | sendMediaEvent(errorXDM) |
@@ -49,10 +58,13 @@ This guide requires knowledge:
 > QoE info can be attached to any event's xdm data the sendMediaEvent(eventXDM) API. Refer to the [QoeDataDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/qoedatadetails.schema.md) fieldgroup
 
 ### Playhead update API
+| Media SDK | AEPRoku SDK|
+| -- | -- |
 | mediaUpdatePlayhead(position) | NA (sent with all the APIs in the xdm data) |
 
 ### Helper APIs
 | Media SDK | AEPRoku SDK|
+| -- | -- |
 | adb_media_init_mediainfo(title, id, length, streamType, mediaType) | NA |
 | adb_media_init_adinfo(title, id, position, duration) | NA |
 | adb_media_init_qosinfo(bitrate, startupTime, fps, droppedFrames) | NA |
