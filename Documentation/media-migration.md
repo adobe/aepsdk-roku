@@ -1,40 +1,46 @@
-# Migrate from Media Analytics SDK to AEP SDK on Roku platform
-
-Guide outlines one to one mapping for Media SDK APIs with AEPRoku SDK APIs
+# Migrate from Media SDK to AEPRoku SDK
 
 ## Prerequisistes
-This guide requires knowledge:
 1. [Experience Data Model (XDM)](https://experienceleague.adobe.com/docs/experience-platform/xdm/home.html?lang=en)
 2. [Datastreams](https://developer.adobe.com/client-sdks/home/getting-started/configure-datastreams/)
-3. Setup schemas, datastream, dataset, CJA etc. using this [guide](https://experienceleague.adobe.com/docs/media-analytics/using/implementation/edge-recommended/media-edge-sdk/implementation-edge.html) for Media tracking using AEPEdge SDK.
+3. Setup schemas, datastream, dataset, Customer Journey Analytics (CJA) dashboard etc. using this [guide](https://experienceleague.adobe.com/docs/media-analytics/using/implementation/edge-recommended/media-edge-sdk/implementation-edge.html) for Media tracking using AEPEdge SDK.
 
-## APIs
+## Table of contents
+| [API comparison between SDKs](#api-comparison) |
+| [Initliaze SDK instance](#initliaze-sdk-instance) |
+| [Start Media session](#start-media-session) |
+| [Track Media events](#track-media-events) |
+
+## API comparison
 
 ### Core Plaback APIs:
+> **Note**
+> AEPRoku SDK has only two media APIs `createMediaSession()` and `sendMediaEvent()`.
+
 | Media SDK | AEPRoku SDK|
 | -- | -- |
-| mediaTrackSessionStart(mediaInfo,mediaContextData) | createMediaSession(sessionStartXDM) |
-| mediaTrackPlay() | sendMediaEvent(playXDM) |
-| mediaTrackPause() | sendMediaEvent(pauseXDM) |
-| mediaTrackComplete() | sendMediaEvent(completeXDM) |
-| mediaTrackSessionEnd() | sendMediaEvent(sessionEndXDM) |
+| `mediaTrackSessionStart(mediaInfo,mediaContextData`) | `createMediaSession(sessionStartXDM)` |
+| `mediaTrackPlay()` | `sendMediaEvent(playXDM)` |
+| `mediaTrackPause()` | `sendMediaEvent(pauseXDM)` |
+| `mediaTrackComplete()` | `sendMediaEvent(completeXDM)` |
+| `mediaTrackSessionEnd()` | `sendMediaEvent(sessionEndXDM)` |
 
 ### Ad Tracking APIs:
 | Media SDK | AEPRoku SDK|
 | -- | -- |
-| mediaTrackEvent(ADBMobile().MEDIA_AD_BREAK_START, adBreakInfo, contextData) | sendMediaEvent(adbreakStartXDM) |
-| mediaTrackEvent(ADBMobile().MEDIA_AD_BREAK_START, invalid, invalid) | sendMediaEvent(adbreakCompleteXDM) |
-| mediaTrackEvent(ADBMobile().MEDIA_AD_START, adInfo, contextData) | sendMediaEvent(adStartXDM) |
-| mediaTrackEvent(ADBMobile().MEDIA_AD_COMPLETE, invalid, invalid) | sendMediaEvent(adCompleteXDM) |
-| mediaTrackEvent(ADBMobile().MEDIA_AD_SKIP, invalid, invalid) | sendMediaEvent(adSkipXDM) |
+| `mediaTrackEvent(ADBMobile().MEDIA_AD_BREAK_START, adBreakInfo, contextData)` | `sendMediaEvent(adbreakStartXDM)` |
+| `mediaTrackEvent(ADBMobile().MEDIA_AD_BREAK_START, invalid, invalid)` | `sendMediaEvent(adbreakCompleteXDM)` |
+| `mediaTrackEvent(ADBMobile().MEDIA_AD_START, adInfo, contextData)` | `sendMediaEvent(adStartXDM)` |
+| `mediaTrackEvent(ADBMobile().MEDIA_AD_COMPLETE, invalid, invalid)` | `sendMediaEvent(adCompleteXDM)` |
+| `mediaTrackEvent(ADBMobile().MEDIA_AD_SKIP, invalid, invalid)` | `sendMediaEvent(adSkipXDM)` |
 
 ### Buffer and Seek APIs
 | Media SDK | AEPRoku SDK|
 | -- | -- |
-| mediaTrackEvent(ADBMobile().MEDIA_BUFFER_START, bufferInfo, bufferContextData) | sendMediaEvent(bufferCompleteXDM) |
-| mediaTrackEvent(ADBMobile().MEDIA_BUFFER_COMPLETE, invalid, invalid)| sendMediaEvent(bufferCompleteXDM) |
-| mediaTrackEvent(ADBMobile().MEDIA_SEEK_START, seekInfo, seekContextData) | sendMediaEvent(pauseXDM) |
-| ADBMobile().mediaTrackEvent(ADBMobile().MEDIA_SEEK_COMPLETE, invalid, invalid) | sendMediaEvent(pauseXDM) |
+| `mediaTrackEvent(ADBMobile().MEDIA_BUFFER_START, bufferInfo, bufferContextData)` | `sendMediaEvent(bufferCompleteXDM)` |
+| `mediaTrackEvent(ADBMobile().MEDIA_BUFFER_COMPLETE, invalid, invalid)` | `sendMediaEvent(bufferCompleteXDM)` |
+| `mediaTrackEvent(ADBMobile().MEDIA_SEEK_START, seekInfo, seekContextData)` | `sendMediaEvent(pauseXDM)` |
+| `ADBMobile().mediaTrackEvent(ADBMobile().MEDIA_SEEK_COMPLETE, invalid, invalid)` | `sendMediaEvent(pauseXDM)` |
 
 > **Note**
 > For tracking seek in AEPRoku SDK, use eventType `pauseStart` with correct playhead. Media backend will detect seek based on playhead and timestamp values.
@@ -42,16 +48,16 @@ This guide requires knowledge:
 ### Chapter APIs
 | Media SDK | AEPRoku SDK|
 | -- | -- |
-| mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_START, chapterInfo, chapterContextData) | sendMediaEvent(chapterStartXDM) |
-| mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_COMPLETE, invalid, invalid) | sendMediaEvent(chapterCompleteXDM) |
-| mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_SKIP, invalid, invalid) | sendMediaEvent(chapterSkipXDM) |
+| `mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_START, chapterInfo, chapterContextData)` | `sendMediaEvent(chapterStartXDM)` |
+| `mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_COMPLETE, invalid, invalid)` | `sendMediaEvent(chapterCompleteXDM)` |
+| `mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_SKIP, invalid, invalid)` | `sendMediaEvent(chapterSkipXDM)` |
 
 ### Quality of Experience and Error APIs
 | Media SDK | AEPRoku SDK|
 | -- | -- |
-| mediaUpdateQoS(qosinfo) | NA |
-| mediaTrackEvent(ADBMobile().MEDIA_BITRATE_CHANGE) | sendMediaEvent(pingXDM) |
-| mediaTrackError(errorId, ADBMobile().ERROR_SOURCE_PLAYER) | sendMediaEvent(errorXDM) |
+| `mediaUpdateQoS(qosinfo)` | NA |
+| `mediaTrackEvent(ADBMobile().MEDIA_BITRATE_CHANGE)` | `sendMediaEvent(pingXDM)` |
+| `mediaTrackError(errorId, ADBMobile().ERROR_SOURCE_PLAYER)` | `sendMediaEvent(errorXDM)` |
 
 > **Note**
 > QoE info can be attached to any event's xdm data the sendMediaEvent(eventXDM) API. Refer to the [QoeDataDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/qoedatadetails.schema.md) fieldgroup
@@ -59,31 +65,27 @@ This guide requires knowledge:
 ### Playhead update API
 | Media SDK | AEPRoku SDK|
 | -- | -- |
-| mediaUpdatePlayhead(position) | NA (sent with all the APIs in the xdm data) |
+| `mediaUpdatePlayhead(position)` | NA (sent with all the APIs in the xdm data) |
 
 ### Helper APIs
 | Media SDK | AEPRoku SDK|
 | -- | -- |
-| adb_media_init_mediainfo(title, id, length, streamType, mediaType) | NA |
-| adb_media_init_adinfo(title, id, position, duration) | NA |
-| adb_media_init_qosinfo(bitrate, startupTime, fps, droppedFrames) | NA |
+| `adb_media_init_mediainfo(title, id, length, streamType, mediaType)` | NA |
+| `adb_media_init_adinfo(title, id, position, duration)` | NA |
+| `adb_media_init_qosinfo(bitrate, startupTime, fps, droppedFrames)` | NA |
 
-## AEPRoku SDK has only 2 APIs:
+## Initliaze SDK instance
 
-- `createMediaSession`
-- `sendMediaEvent`
+**Media SDK**
 
-In the AEP Roku SDK, calling the above APIs is the recommended implementation path for sending Media events to Edge Network.
-
-## Initliaze SDK instances
-
-Media SDK
 ```brightscript
 ' Create adbmobileTask node
 m.adbmobileTask = createObject("roSGNode","adbmobileTask") <br> Get AdobeMobile SG connector instance
 ' Create SDK instance
 m.adbmobile = ADBMobile().getADBMobileConnectorInstance(m.adbmobileTask)
 ```
+
+**AEPRoku SDK**
 
 ```brightscript
 ' Create SDK instance
@@ -93,9 +95,9 @@ m.aepSdk = AdobeAEPSDKInit()
 > **Note**
 > AEP SDK creates the taskNode internally.
 
-## Start the Media session
+## Start Media session
 
-- Media SDK
+**Media SDK**
 
 ``` brightscript
 ' Use the helper method to create mediaInfo object
@@ -115,7 +117,7 @@ customMetadata["cmk1"] = "cmv1"
 m.adbmobile.mediaTrackSessionStart(mediaInfo, customMetadata)
 ```
 
-- AEP SDK
+**AEPRoku SDK**
 
 ``` brightscript
 ' Create sessionDetails object following the [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) fieldGroup
@@ -152,13 +154,13 @@ m.aepSdk.createMediaSession({
 
 ### trackPlay
 
-- Media SDK
+**Media SDK**
 
 ``` brightscript
 m.adbmobile.mediaTrackPlay()
 ```
 
-- AEP SDK
+**AEPRoku SDK**
 
 ``` brightscript
 m.aepSdk.sendMediaEvent({
@@ -173,13 +175,13 @@ m.aepSdk.sendMediaEvent({
 
 ### trackPause
 
-- Media SDK
+**Media SDK**
 
 ``` brightscript
 m.adbmobile.mediaTrackPause()
 ```
 
-- AEP SDK
+**AEPRoku SDK**
 
 ``` brightscript
 m.aepSdk.sendMediaEvent({
@@ -194,13 +196,13 @@ m.aepSdk.sendMediaEvent({
 
 ### trackComplete
 
-- Media SDK
+**Media SDK**
 
 ``` brightscript
 m.adbmobile.mediaTrackComplete()
 ```
 
-- AEP SDK
+**AEPRoku SDK**
 
 ``` brightscript
 m.aepSdk.sendMediaEvent({
@@ -215,13 +217,13 @@ m.aepSdk.sendMediaEvent({
 
 ### trackSessionEnd
 
-- Media SDK
+**Media SDK**
 
 ``` brightscript
 m.adbmobile.mediaTrackSessionEnd()
 ```
 
-- AEP SDK
+**AEPRoku SDK**
 
 ``` brightscript
 m.aepSdk.sendMediaEvent({
@@ -236,13 +238,13 @@ m.aepSdk.sendMediaEvent({
 
 ### trackError
 
-- Media SDK
+**Media SDK**
 
 ``` brightscript
 m.adbmobile.mediaTrackError("errorId", "video-player-error-code")
 ```
 
-- AEP SDK
+**AEPRoku SDK**
 
 ``` brightscript
 m.aepSdk.sendMediaEvent({
@@ -261,7 +263,7 @@ m.aepSdk.sendMediaEvent({
 
 ### trackEvent
 
-- Media SDK
+**Media SDK**
 
 ``` brightscript
 seekContextData = {}
@@ -269,7 +271,7 @@ seekContextData = {}
 m.adbmobile.mediaTrackEvent(MEDIA_SEEK_START, seekInfo, seekContextData)
 ```
 
-- AEP SDK
+**AEPRoku SDK**
 
 ``` brightscript
 m.aepSdk.sendMediaEvent({
@@ -284,13 +286,13 @@ m.aepSdk.sendMediaEvent({
 
 ### updateCurrentPlayhead
 
-- Media SDK
+**Media SDK**
 
 ``` brightscript
 m.adbmobile.updateCurrentPlayhead(<CURRENT_PLAYHEAD_VALUE>)
 ```
 
-- AEP SDK
+**AEPRoku SDK**
 
 ``` brightscript
 m.aepSdk.sendMediaEvent({
@@ -311,7 +313,7 @@ m.aepSdk.sendMediaEvent({
 m.adbmobile.mediaUpdateQoS
 ```
 
-- AEP SDK
+**AEPRoku SDK**
 
 ``` brightscript
 ```
