@@ -357,6 +357,28 @@ m.aepSdk.createMediaSession({
 })
 ```
 
+```brightscript
+MEDIA_SESSION_CONFIGURATION = AdobeAEPSDKConstants().MEDIA_SESSION_CONFIGURATION
+sessionConfiguration = {}
+sessionConfiguration[MEDIA_SESSION_CONFIGURATION.CHANNEL] = "channle_name_for_current_session"
+m.aepSdk.createMediaSession({
+  "xdm": {
+    "eventType": "media.sessionStart"
+     "mediaCollection": {
+      "playhead": 0,
+      "sessionDetails": {
+        "streamType": "video",
+        "friendlyName": "test_media_name",
+        "hasResume": false,
+        "name": "test_media_id",
+        "length": 100,
+        "contentType": "vod"
+      }
+    }
+  }
+}, sessionConfiguration)
+```
+
 ---
 
 ### sendMediaEvent
