@@ -121,9 +121,10 @@ m.adbmobile.mediaTrackSessionStart(mediaInfo, customMetadata)
 
 **AEPRoku SDK**
 
+> [!Note]
+> Checkout [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) fieldgroup in the MediaAnalytics schema to know more about the required fields and StandardMetadata fields.
+
 ``` brightscript
-' Create sessionDetails object following the [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) fieldGroup
-' (Optional) Standard Metadata keys are available in the [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) fieldGroup
 sessionDetails = {
     "streamType": "video",
     "friendlyName": "test_media_name",
@@ -135,21 +136,23 @@ sessionDetails = {
     "show": "sample show"
 }
 
-' (Optional) create map for custom data if any
+' (Optional) Create map for custom data if any
 customMetadata = {
   "cmk1":"cmv "
 }
 
-m.aepSdk.createMediaSession({
-    "xdm": {
-      "eventType": "media.sessionStart"
-      "mediaCollection": {
-        "playhead":  <CURRENT_PLAYHEAD_VALUE>,
-        "sessionDetails": sessionDetails,
-        "customMetadata": customMetadata
-      }
+sessionStartXDM = {
+  "xdm": {
+    "eventType": "media.sessionStart"
+    "mediaCollection": {
+      "playhead":  <CURRENT_PLAYHEAD_VALUE>,
+      "sessionDetails": sessionDetails,
+      "customMetadata": customMetadata
     }
-  })
+  }
+}
+
+m.aepSdk.createMediaSession(sessionStartXDM)
 ```
 
 ## Track Media events
@@ -165,14 +168,16 @@ m.adbmobile.mediaTrackPlay()
 **AEPRoku SDK**
 
 ``` brightscript
-m.aepSdk.sendMediaEvent({
-      "xdm": {
-        "eventType": "media.play",
-        "mediaCollection": {
-          "playhead": <CURRENT_PLAYHEAD_VALUE>
-        }
-      }
-    })
+playXDM = {
+  "xdm": {
+    "eventType": "media.play",
+    "mediaCollection": {
+      "playhead": <CURRENT_PLAYHEAD_VALUE>
+    }
+  }
+}
+
+m.aepSdk.sendMediaEvent(playXDM)
 ```
 
 ### trackPause
@@ -186,14 +191,16 @@ m.adbmobile.mediaTrackPause()
 **AEPRoku SDK**
 
 ``` brightscript
-m.aepSdk.sendMediaEvent({
-      "xdm": {
-        "eventType": "media.pauseStart",
-        "mediaCollection": {
-          "playhead": <CURRENT_PLAYHEAD_VALUE>,
-        }
-      }
-    })
+pauseStartXDM = {
+  "xdm": {
+    "eventType": "media.pauseStart",
+    "mediaCollection": {
+      "playhead": <CURRENT_PLAYHEAD_VALUE>,
+    }
+  }
+}
+
+m.aepSdk.sendMediaEvent(pauseStartXDM)
 ```
 
 ### trackComplete
@@ -207,14 +214,16 @@ m.adbmobile.mediaTrackComplete()
 **AEPRoku SDK**
 
 ``` brightscript
-m.aepSdk.sendMediaEvent({
-      "xdm": {
-        "eventType": "media.sessionComplete",
-        "mediaCollection": {
-          "playhead": <CURRENT_PLAYHEAD_VALUE>,
-        }
-      }
-    })
+sessionCompleteXDM = {
+  "xdm": {
+    "eventType": "media.sessionComplete",
+    "mediaCollection": {
+      "playhead": <CURRENT_PLAYHEAD_VALUE>,
+    }
+  }
+}
+
+m.aepSdk.sendMediaEvent(sessionCompleteXDM)
 ```
 
 ### trackSessionEnd
@@ -228,14 +237,16 @@ m.adbmobile.mediaTrackSessionEnd()
 **AEPRoku SDK**
 
 ``` brightscript
-m.aepSdk.sendMediaEvent({
-      "xdm": {
-        "eventType": "media.sessionEnd",
-        "mediaCollection": {
-          "playhead": <CURRENT_PLAYHEAD_VALUE>,
-        }
-      }
-    })
+sessionEndXDM = {
+  "xdm": {
+    "eventType": "media.sessionEnd",
+    "mediaCollection": {
+      "playhead": <CURRENT_PLAYHEAD_VALUE>,
+    }
+  }
+}
+
+m.aepSdk.sendMediaEvent(sessionEndXDM)
 ```
 
 ### trackError
