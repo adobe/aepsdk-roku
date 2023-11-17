@@ -58,15 +58,15 @@
 | `mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_COMPLETE, invalid, invalid)` | `sendMediaEvent(chapterCompleteXDM)` |
 | `mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_SKIP, invalid, invalid)` | `sendMediaEvent(chapterSkipXDM)` |
 
-### Quality of Experience and Error APIs
+### Quality of Experience (QoE) and Error APIs
 | Media SDK | AEPRoku SDK|
 | -- | -- |
 | `mediaUpdateQoS(qosinfo)` | NA |
-| `mediaTrackEvent(ADBMobile().MEDIA_BITRATE_CHANGE)` | `sendMediaEvent(pingXDM)` |
+| `mediaTrackEvent(ADBMobile().MEDIA_BITRATE_CHANGE)` | `sendMediaEvent(bitrateChangeXDM)` |
 | `mediaTrackError(errorId, ADBMobile().ERROR_SOURCE_PLAYER)` | `sendMediaEvent(errorXDM)` |
 
 > [!NOTE]
-> QoE info can be attached to any event's xdm data the sendMediaEvent(eventXDM) API. Refer to the [QoeDataDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/qoedatadetails.schema.md) fieldgroup
+> QoE info has to be attached to the xdmData when calling `sendMediaEvent(bitrateChangeXDM)` for `bitrateChange` event. QoE info can also be attached to any other event's xdm data the sendMediaEvent(eventXDM) API. Refer to the [QoeDataDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/qoedatadetails.schema.md) fieldgroup
 
 ### Playhead update API
 | Media SDK | AEPRoku SDK|
