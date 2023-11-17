@@ -13,7 +13,7 @@
 1. [Experience Data Model (XDM)](https://experienceleague.adobe.com/docs/experience-platform/xdm/home.html?lang=en)
 2. [Datastreams](https://developer.adobe.com/client-sdks/home/getting-started/configure-datastreams/)
 3. [Getting Started with implementing Media tracking using AEP Roku SDK](./getting-started.md)
-4. [Setup schemas, datastream, dataset, Customer Journey Analytics (CJA) dashboard etc](https://experienceleague.adobe.com/docs/media-analytics/using/implementation/edge-recommended/media-edge-sdk/implementation-edge.html).
+4. [Setup schemas, datastream, dataset, Customer Journey Analytics (CJA) dashboard etc](https://experienceleague.adobe.com/docs/media-analytics/using/implementation/edge-recommended/media-edge-sdk/implementation-edge.html)
 
 
 ## API comparison
