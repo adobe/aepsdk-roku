@@ -69,11 +69,18 @@
 | -- | -- |
 | `mediaUpdatePlayhead(position)` | NA (sent with all the APIs in the xdm data) |
 
+## PlayerState Tracking API
+| Media SDK | AEPRoku SDK|
+| -- | -- |
+| NA | `sendMediaEvent(statesUpdateXDM)` |
+
 ### Helper APIs
 | Media SDK | AEPRoku SDK|
 | -- | -- |
 | `adb_media_init_mediainfo(title, id, length, streamType, mediaType)` | NA |
+| `adb_media_init_adbreakinfo(title, startTime, position)` | NA |
 | `adb_media_init_adinfo(title, id, position, duration)` | NA |
+| `adb_media_init_chapterinfo(title, position, length, startTime)` | NA |
 | `adb_media_init_qosinfo(bitrate, startupTime, fps, droppedFrames)` | NA |
 
 ## Initliaze SDK instance
