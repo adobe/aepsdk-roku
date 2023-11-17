@@ -358,7 +358,7 @@ createMediaSession: function(xdmData as object, configuration = {} as object) as
 | :-- | :--: | :--: | :--: | :--: |
 | `ADB_CONSTANTS.MEDIA_SESSION_CONFIGURATION.CHANNEL` | "config.channel" | String | | **No**
 | `ADB_CONSTANTS.MEDIA_SESSION_CONFIGURATION.AD_PING_INTERVAL` | "config.adpinginterval" | Integer | 1~10 | **No** 
-| `ADB_CONSTANTS.MEDIA_SESSION_CONFIGURATION.MAIN_PING_INTERVAL` | "ig.mainpinginterval" | Integer | 10~50 | **No** 
+| `ADB_CONSTANTS.MEDIA_SESSION_CONFIGURATION.MAIN_PING_INTERVAL` | "config.mainpinginterval" | Integer | 10~50 | **No** 
 
 ##### Example
 
