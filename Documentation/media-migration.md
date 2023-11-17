@@ -5,7 +5,7 @@
 | -- |
 | [Prerequisistes](#prerequisistes) |
 | [API comparison between SDKs](#api-comparison) |
-| [Initliaze SDK instance](#initliaze-sdk-instance) |
+| [Initialize SDK instance](#initialize-sdk-instance) |
 | [Start Media session](#start-media-session) |
 | [Track Media events](#track-media-events) |
 
@@ -87,7 +87,7 @@
 | `adb_media_init_chapterinfo(title, position, length, startTime)` | NA |
 | `adb_media_init_qosinfo(bitrate, startupTime, fps, droppedFrames)` | NA |
 
-## Initliaze SDK instance
+## Initialize SDK instance
 
 **Media SDK**
 
