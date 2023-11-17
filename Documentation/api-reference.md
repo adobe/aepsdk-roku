@@ -109,10 +109,20 @@ m.aepSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
 
 #### Configuration Keys
 
-| Constants | Raw value | Required |
-| :-- | :--: | :--: |
-| `ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID` | "edge.configId" | **Yes**
-| `ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN` | "edge.domain" | **No**
+- Required for all APIs
+
+| Constants | Raw value | Type | Required |
+| :-- | :--: | :--: | :--: |
+| `ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID` | "edge.configId" | String | **Yes**
+| `ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN` | "edge.domain" | String | **No**
+
+- Required for Media tracking APIs
+
+| Constants | Raw value | Type | Required |
+| :-- | :--: | :--: | :--: |
+| `ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL` | "edgemedia.channel" | String | **Yes**
+| `ADB_CONSTANTS.CONFIGURATION.MEDIA_PLAYER_NAME` | "edgemedia.playerName" | String | **Yes**
+| `ADB_CONSTANTS.CONFIGURATION.MEDIA_APP_VERSION` | "edgemedia.appVersion" | String | **No**
 
 ##### Syntax
 
@@ -335,6 +345,20 @@ About the XDM data structure, please refer to the [starting the session
 ```brightscript
 createMediaSession: function(xdmData as object, configuration = {} as object) as void
 ```
+
+- `@param xdmData as object : the XDM data of type "media.sessionStart"`
+- `@param configuration as object : the session-level configuration`
+
+> [!NOTE]
+> If the ping interval is not set, the default interval of `10 sec` will be used.
+
+##### Configuration Keys
+
+| Constants | Raw value | Type | Range | Required |
+| :-- | :--: | :--: | :--: | :--: |
+| `ADB_CONSTANTS.MEDIA_SESSION_CONFIGURATION.CHANNEL` | "config.channel" | String | | **No**
+| `ADB_CONSTANTS.MEDIA_SESSION_CONFIGURATION.AD_PING_INTERVAL` | "config.adpinginterval" | Integer | 1~10 | **No** 
+| `ADB_CONSTANTS.MEDIA_SESSION_CONFIGURATION.MAIN_PING_INTERVAL` | "config.mainpinginterval" | Integer | 10~50 | **No** 
 
 ##### Example
 
