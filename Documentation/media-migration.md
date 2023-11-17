@@ -42,8 +42,7 @@ This guide requires knowledge:
 ### Chapter APIs
 | Media SDK | AEPRoku SDK|
 | -- | -- |
-| mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_START, chapterInfo, chapterContextData)
- | sendMediaEvent(chapterStartXDM) |
+| mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_START, chapterInfo, chapterContextData) | sendMediaEvent(chapterStartXDM) |
 | mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_COMPLETE, invalid, invalid) | sendMediaEvent(chapterCompleteXDM) |
 | mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_SKIP, invalid, invalid) | sendMediaEvent(chapterSkipXDM) |
 
