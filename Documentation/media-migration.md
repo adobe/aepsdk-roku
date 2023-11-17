@@ -1,17 +1,20 @@
 # Migrate from Media SDK to AEPRoku SDK
 
-## Prerequisistes
-1. [Experience Data Model (XDM)](https://experienceleague.adobe.com/docs/experience-platform/xdm/home.html?lang=en)
-2. [Datastreams](https://developer.adobe.com/client-sdks/home/getting-started/configure-datastreams/)
-3. Setup schemas, datastream, dataset, Customer Journey Analytics (CJA) dashboard etc. using this [guide](https://experienceleague.adobe.com/docs/media-analytics/using/implementation/edge-recommended/media-edge-sdk/implementation-edge.html) for Media tracking using AEPEdge SDK.
-
 ## Table of contents
 | Sections |
 | -- |
+| [Prerequisistes](#prerequisistes) |
 | [API comparison between SDKs](#api-comparison) |
 | [Initliaze SDK instance](#initliaze-sdk-instance) |
 | [Start Media session](#start-media-session) |
 | [Track Media events](#track-media-events) |
+
+## Prerequisistes
+1. [Experience Data Model (XDM)](https://experienceleague.adobe.com/docs/experience-platform/xdm/home.html?lang=en)
+2. [Datastreams](https://developer.adobe.com/client-sdks/home/getting-started/configure-datastreams/)
+3. [Getting Started with implementing Media tracking using AEP Roku SDK.](./getting-started.md)
+4. Setup schemas, datastream, dataset, Customer Journey Analytics (CJA) dashboard etc. using this [guide](https://experienceleague.adobe.com/docs/media-analytics/using/implementation/edge-recommended/media-edge-sdk/implementation-edge.html).
+
 
 ## API comparison
 
@@ -89,7 +92,7 @@
 
 ```brightscript
 ' Create adbmobileTask node
-m.adbmobileTask = createObject("roSGNode","adbmobileTask") <br> Get AdobeMobile SG connector instance
+m.adbmobileTask = createObject("roSGNode","adbmobileTask")
 ' Create SDK instance
 m.adbmobile = ADBMobile().getADBMobileConnectorInstance(m.adbmobileTask)
 ```
@@ -139,7 +142,7 @@ sessionDetails = {
     "length": 10,
     "contentType": "vod",
 
-    ''' (Optional) Attach Standard metadata if any
+    ' (Optional) Attach Standard metadata if any
     "show": "sample show"
 }
 
