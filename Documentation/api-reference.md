@@ -349,6 +349,9 @@ createMediaSession: function(xdmData as object, configuration = {} as object) as
 - `@param xdmData as object : the XDM data of type "media.sessionStart"`
 - `@param configuration as object : the session-level configurationr`
 
+> [!NOTE]
+> If the ping interval is not set, the default interval of `10 sec` will be used.
+
 ##### Configuration Keys
 
 | Constants | Raw value | Type | Range | Required |
