@@ -96,6 +96,14 @@ function _adb_MediaModule(configurationModule as object, edgeRequestQueue as obj
             mediaHit.tsObject = tsObject
             return mediaHit
         end sub,
+
+        dump: function() as object
+            return {
+                clientSessionId: m._sessionManager.getActiveClientSessionId(),
+                backendSessionId: m._sessionManager._getBackendSessionId(),
+                existActiveSession: m._sessionManager._activeSessionExists(),
+            }
+        end function
     })
     return module
 end function
