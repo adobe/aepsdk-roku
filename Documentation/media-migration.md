@@ -16,12 +16,12 @@
 ## API comparison
 
 ### Core Plaback APIs:
-> **Note**
+> [!NOTE]
 > AEPRoku SDK has only two media APIs `createMediaSession()` and `sendMediaEvent()`.
 
 | Media SDK | AEPRoku SDK|
 | -- | -- |
-| `mediaTrackSessionStart(mediaInfo,mediaContextData`) | `createMediaSession(sessionStartXDM)` |
+| `mediaTrackSessionStart(mediaInfo,mediaContextData)` | `createMediaSession(sessionStartXDM)` |
 | `mediaTrackPlay()` | `sendMediaEvent(playXDM)` |
 | `mediaTrackPause()` | `sendMediaEvent(pauseXDM)` |
 | `mediaTrackComplete()` | `sendMediaEvent(completeXDM)` |
@@ -44,7 +44,7 @@
 | `mediaTrackEvent(ADBMobile().MEDIA_SEEK_START, seekInfo, seekContextData)` | `sendMediaEvent(pauseXDM)` |
 | `ADBMobile().mediaTrackEvent(ADBMobile().MEDIA_SEEK_COMPLETE, invalid, invalid)` | `sendMediaEvent(pauseXDM)` |
 
-> **Note**
+> [!NOTE]
 > For tracking seek in AEPRoku SDK, use eventType `pauseStart` with correct playhead. Media backend will detect seek based on playhead and timestamp values.
 
 ### Chapter APIs
@@ -61,7 +61,7 @@
 | `mediaTrackEvent(ADBMobile().MEDIA_BITRATE_CHANGE)` | `sendMediaEvent(pingXDM)` |
 | `mediaTrackError(errorId, ADBMobile().ERROR_SOURCE_PLAYER)` | `sendMediaEvent(errorXDM)` |
 
-> **Note**
+> [!NOTE]
 > QoE info can be attached to any event's xdm data the sendMediaEvent(eventXDM) API. Refer to the [QoeDataDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/qoedatadetails.schema.md) fieldgroup
 
 ### Playhead update API
@@ -94,7 +94,7 @@ m.adbmobile = ADBMobile().getADBMobileConnectorInstance(m.adbmobileTask)
 m.aepSdk = AdobeAEPSDKInit()
 ```
 
-> **Note**
+> [!NOTE]
 > AEP SDK creates the taskNode internally.
 
 ## Start Media session
