@@ -18,9 +18,10 @@
 
 ## API comparison
 
-### Core Plaback APIs:
 > [!NOTE]
 > AEPRoku SDK has only two media APIs `createMediaSession()` and `sendMediaEvent()`.
+
+### Core Plaback APIs:
 
 | Media SDK | AEPRoku SDK|
 | -- | -- |
