@@ -111,18 +111,18 @@ m.aepSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
 
 - Required for all APIs
 
-| Constants | Raw value | Required |
-| :-- | :--: | :--: |
-| `ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID` | "edge.configId" | **Yes**
-| `ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN` | "edge.domain" | **No**
+| Constants | Raw value | Type | Required |
+| :-- | :--: | :--: | :--: |
+| `ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID` | "edge.configId" | String | **Yes**
+| `ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN` | "edge.domain" | String | **No**
 
 - Required for Media tracking APIs
 
-| Constants | Raw value | Required |
-| :-- | :--: | :--: |
-| `ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL` | "edgemedia.channel" | **Yes**
-| `ADB_CONSTANTS.CONFIGURATION.MEDIA_PLAYER_NAME` | "edgemedia.playerName" | **Yes**
-| `ADB_CONSTANTS.CONFIGURATION.MEDIA_APP_VERSION` | "edgemedia.appVersion" | **No**
+| Constants | Raw value | Type | Required |
+| :-- | :--: | :--: | :--: |
+| `ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL` | "edgemedia.channel" | String | **Yes**
+| `ADB_CONSTANTS.CONFIGURATION.MEDIA_PLAYER_NAME` | "edgemedia.playerName" | String | **Yes**
+| `ADB_CONSTANTS.CONFIGURATION.MEDIA_APP_VERSION` | "edgemedia.appVersion" | String | **No**
 
 ##### Syntax
 
@@ -351,11 +351,11 @@ createMediaSession: function(xdmData as object, configuration = {} as object) as
 
 ##### Configuration Keys
 
-| Constants | Raw value | Required |
-| :-- | :--: | :--: |
-| `ADB_CONSTANTS.MEDIA_SESSION_CONFIGURATION.CHANNEL` | "config.channel" | **No**
-| `ADB_CONSTANTS.MEDIA_SESSION_CONFIGURATION.AD_PING_INTERVAL` | "config.adpinginterval" | **No**
-| `ADB_CONSTANTS.MEDIA_SESSION_CONFIGURATION.MAIN_PING_INTERVAL` | "ig.mainpinginterval" | **No**
+| Constants | Raw value | Type | Range | Required |
+| :-- | :--: | :--: | :--: | :--: |
+| `ADB_CONSTANTS.MEDIA_SESSION_CONFIGURATION.CHANNEL` | "config.channel" | String | | **No**
+| `ADB_CONSTANTS.MEDIA_SESSION_CONFIGURATION.AD_PING_INTERVAL` | "config.adpinginterval" | Integer | 1~10 | **No** 
+| `ADB_CONSTANTS.MEDIA_SESSION_CONFIGURATION.MAIN_PING_INTERVAL` | "ig.mainpinginterval" | Integer | 10~50 | **No** 
 
 ##### Example
 
