@@ -16,6 +16,6 @@
 sub TC_adb_ImplementationDetails()
     implementationDetails = _adb_ImplementationDetails()
     UTF_assertEqual(implementationDetails["name"], "https://ns.adobe.com/experience/mobilesdk/roku")
-    UTF_assertEqual(implementationDetails["version"], "1.0.0")
+    UTF_assertEqual(implementationDetails["version"], "1.1.0-alpha")
     UTF_assertEqual(implementationDetails["environment"], "app")
 end sub

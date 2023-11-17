@@ -26,7 +26,7 @@ function _adb_ConfigurationModule() as object
         _edge_configId: invalid,
         _edge_domain: invalid,
         ' media configuration
-        ' example: {"edgemedia.channel":"channel_x", "edgemedia.playerName": "player_y", "edgemedia.appVersion": "1.0.0"}
+        ' example: {"edgemedia.channel":"channel_x", "edgemedia.playerName": "player_y", "edgemedia.appVersion": "1.1.0-alpha"}
         _media_channel: invalid,
         _media_playerName: invalid,
         _media_appVersion: invalid,

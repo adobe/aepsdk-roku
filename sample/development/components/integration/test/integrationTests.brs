@@ -25,7 +25,7 @@ function TS_SDK_integration() as object
             m.configId = test_config.config_id
             m.mediaChannel = "channel_test"
             m.mediaPlayerName = "player_test"
-            m.mediaAppVersion = "1.0.0"
+            m.mediaAppVersion = "1.1.0-alpha"
             if _adb_isEmptyOrInvalidString(m.configId) then
                 throw "Not found a valid config_id in test_config.json"
             end if
@@ -53,7 +53,7 @@ function TS_SDK_integration() as object
 
             version$ = aepSdk.getVersion()
 
-            ADB_assertTrue((version$ = "1.0.0"), LINE_NUM, "assert getVersion() = 1.0.0")
+            ADB_assertTrue((version$ = "1.1.0-alpha"), LINE_NUM, "assert getVersion() = 1.1.0-alpha")
 
             return invalid
         end function,
@@ -521,7 +521,7 @@ function TS_SDK_integration() as object
                 ADB_assertTrue((debugInfo.configuration.edge_configid <> invalid and Len(debugInfo.configuration.edge_configid) > 10), LINE_NUM, "assert edge_configid is valid")
                 ADB_assertTrue((debugInfo.configuration.media_channel = "channel_test"), LINE_NUM, "assert media_channel is valid")
                 ADB_assertTrue((debugInfo.configuration.media_playerName = "player_test"), LINE_NUM, "assert media_playerName is valid")
-                ADB_assertTrue((debugInfo.configuration.media_appVersion = "1.0.0"), LINE_NUM, "assert media_appVersion is valid")
+                ADB_assertTrue((debugInfo.configuration.media_appVersion = "1.1.0-alpha"), LINE_NUM, "assert media_appVersion is valid")
             end sub
 
             validator[eventIdForCreateMediaSession] = sub(debugInfo)
@@ -534,7 +534,7 @@ function TS_SDK_integration() as object
                 ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.eventType = "media.sessionStart"), LINE_NUM, "assert eventType = media.sessionStart")
                 ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.playhead = 0), LINE_NUM, "assert playhead = 0")
                 ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm._id <> invalid), LINE_NUM, "assert _id <> invalid")
-                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.sessionDetails.appVersion = "1.0.0"), LINE_NUM, "assert appVersion = 1.0.0")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.sessionDetails.appVersion = "1.1.0-alpha"), LINE_NUM, "assert appVersion = 1.1.0-alpha")
                 ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.sessionDetails.channel = "channel_test"), LINE_NUM, "assert channel = channel_test")
                 ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.sessionDetails.contentType = "vod"), LINE_NUM, "assert contentType = vod")
                 ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.sessionDetails.friendlyName = "test_media_name"), LINE_NUM, "assert friendlyName = test_media_name")
@@ -599,7 +599,7 @@ function TS_SDK_integration() as object
                 ADB_assertTrue((debugInfo.configuration.edge_configid <> invalid and Len(debugInfo.configuration.edge_configid) > 10), LINE_NUM, "assert edge_configid is valid")
                 ADB_assertTrue((debugInfo.configuration.media_channel = "channel_test"), LINE_NUM, "assert media_channel is valid")
                 ADB_assertTrue((debugInfo.configuration.media_playerName = "player_test"), LINE_NUM, "assert media_playerName is valid")
-                ADB_assertTrue((debugInfo.configuration.media_appVersion = "1.0.0"), LINE_NUM, "assert media_appVersion is valid")
+                ADB_assertTrue((debugInfo.configuration.media_appVersion = "1.1.0-alpha"), LINE_NUM, "assert media_appVersion is valid")
             end sub
 
             validator[eventIdForCreateMediaSession] = sub(debugInfo)
@@ -612,7 +612,7 @@ function TS_SDK_integration() as object
                 ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.eventType = "media.sessionStart"), LINE_NUM, "assert eventType = media.sessionStart")
                 ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.playhead = 0), LINE_NUM, "assert playhead = 0")
                 ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm._id <> invalid), LINE_NUM, "assert _id <> invalid")
-                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.sessionDetails.appVersion = "1.0.0"), LINE_NUM, "assert appVersion = 1.0.0")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.sessionDetails.appVersion = "1.1.0-alpha"), LINE_NUM, "assert appVersion = 1.1.0-alpha")
                 ' session level config should be used
                 ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.sessionDetails.channel = "test_channel_session"), LINE_NUM, "assert channel = test_channel_session")
                 ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.sessionDetails.contentType = "vod"), LINE_NUM, "assert contentType = vod")
@@ -687,7 +687,7 @@ function TS_SDK_integration() as object
                 ADB_assertTrue((debugInfo.configuration.edge_configid <> invalid and Len(debugInfo.configuration.edge_configid) > 10), LINE_NUM, "assert edge_configid is valid")
                 ADB_assertTrue((debugInfo.configuration.media_channel = "channel_test"), LINE_NUM, "assert media_channel is valid")
                 ADB_assertTrue((debugInfo.configuration.media_playerName = "player_test"), LINE_NUM, "assert media_playerName is valid")
-                ADB_assertTrue((debugInfo.configuration.media_appVersion = "1.0.0"), LINE_NUM, "assert media_appVersion is valid")
+                ADB_assertTrue((debugInfo.configuration.media_appVersion = "1.1.0-alpha"), LINE_NUM, "assert media_appVersion is valid")
             end sub
 
             validator[eventIdForCreateMediaSession] = sub(debugInfo)
@@ -766,7 +766,7 @@ function TS_SDK_integration() as object
                 ADB_assertTrue((debugInfo.configuration.edge_configid <> invalid and Len(debugInfo.configuration.edge_configid) > 10), LINE_NUM, "assert edge_configid is valid")
                 ADB_assertTrue((debugInfo.configuration.media_channel = "channel_test"), LINE_NUM, "assert media_channel is valid")
                 ADB_assertTrue((debugInfo.configuration.media_playerName = "player_test"), LINE_NUM, "assert media_playerName is valid")
-                ADB_assertTrue((debugInfo.configuration.media_appVersion = "1.0.0"), LINE_NUM, "assert media_appVersion is valid")
+                ADB_assertTrue((debugInfo.configuration.media_appVersion = "1.1.0-alpha"), LINE_NUM, "assert media_appVersion is valid")
             end sub
 
             validator[eventIdForSessionEnd] = sub(debugInfo)
