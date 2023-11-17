@@ -187,6 +187,8 @@ playXDM = {
 m.aepSdk.sendMediaEvent(playXDM)
 ```
 
+---
+
 ### trackPause
 
 **Media SDK**
@@ -209,6 +211,8 @@ pauseStartXDM = {
 
 m.aepSdk.sendMediaEvent(pauseStartXDM)
 ```
+
+---
 
 ### trackComplete
 
@@ -233,6 +237,8 @@ sessionCompleteXDM = {
 m.aepSdk.sendMediaEvent(sessionCompleteXDM)
 ```
 
+---
+
 ### trackSessionEnd
 
 **Media SDK**
@@ -255,6 +261,8 @@ sessionEndXDM = {
 
 m.aepSdk.sendMediaEvent(sessionEndXDM)
 ```
+
+---
 
 ### trackError
 
@@ -281,6 +289,8 @@ m.aepSdk.sendMediaEvent({
     })
 ```
 
+---
+
 ### trackEvent
 
 **Media SDK**
@@ -304,6 +314,8 @@ m.aepSdk.sendMediaEvent({
   })
 ```
 
+---
+
 ### updateCurrentPlayhead
 
 **Media SDK**
@@ -324,6 +336,8 @@ m.aepSdk.sendMediaEvent({
     }
   })
 ```
+
+---
 
 ### updateQoEObject
 
