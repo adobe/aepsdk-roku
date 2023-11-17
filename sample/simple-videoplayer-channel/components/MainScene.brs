@@ -158,8 +158,8 @@ sub _showVideoScreen()
   m.video_position = 0
 
   MEDIA_SESSION_CONFIGURATION = AdobeAEPSDKConstants().MEDIA_SESSION_CONFIGURATION
-  sessionLevelConfiguration = {}
-  sessionLevelConfiguration[MEDIA_SESSION_CONFIGURATION.CHANNEL] = "session_level_channle_name"
+  sessionConfiguration = {}
+  sessionConfiguration[MEDIA_SESSION_CONFIGURATION.CHANNEL] = "session_level_channle_name"
 
   ' Note: the session level configuration is optional, it overrides the global configuration for media events within the session
   m.aepSdk.createMediaSession({
@@ -177,7 +177,7 @@ sub _showVideoScreen()
         }
       }
     }
-  }, sessionLevelConfiguration)
+  }, sessionConfiguration)
 
 end sub
 
