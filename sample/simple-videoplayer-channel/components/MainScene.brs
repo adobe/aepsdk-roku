@@ -50,8 +50,9 @@ sub _initSDK()
 
   configuration = {}
 
-  configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = ""
-  'configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = ""
+  configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = "05d4a30a-f0b5-4452-b7a0-3bafefd691c0"
+  ' Note: the below Edge domain configuration is optional
+  ' configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = ""
   configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL] = "channel_test_roku"
   configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_PLAYER_NAME] = "player_test_roku"
   configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_APP_VERSION] = "1.0.0"
@@ -156,6 +157,11 @@ sub _showVideoScreen()
   m.video.setFocus(true)
   m.video_position = 0
 
+  ADB_CONSTANTS = AdobeAEPSDKConstants()
+  sessionLevelConfiguration = {}
+  sessionLevelConfiguration[ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL] = "session_level_channle_name"
+
+  ' Note: the session level configuration is optional, it overrides the global configuration for media events within the session
   m.aepSdk.createMediaSession({
     "xdm": {
       "eventType": "media.sessionStart"
@@ -171,7 +177,7 @@ sub _showVideoScreen()
         }
       }
     }
-  })
+  }, sessionLevelConfiguration)
 
 end sub
 
