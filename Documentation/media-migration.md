@@ -23,8 +23,8 @@
 | -- | -- |
 | `mediaTrackSessionStart(mediaInfo,mediaContextData)` | `createMediaSession(sessionStartXDM)` |
 | `mediaTrackPlay()` | `sendMediaEvent(playXDM)` |
-| `mediaTrackPause()` | `sendMediaEvent(pauseXDM)` |
-| `mediaTrackComplete()` | `sendMediaEvent(completeXDM)` |
+| `mediaTrackPause()` | `sendMediaEvent(pauseStartXDM)` |
+| `mediaTrackComplete()` | `sendMediaEvent(sessionCompleteXDM)` |
 | `mediaTrackSessionEnd()` | `sendMediaEvent(sessionEndXDM)` |
 
 ### Ad Tracking APIs:
@@ -41,8 +41,8 @@
 | -- | -- |
 | `mediaTrackEvent(ADBMobile().MEDIA_BUFFER_START, bufferInfo, bufferContextData)` | `sendMediaEvent(bufferCompleteXDM)` |
 | `mediaTrackEvent(ADBMobile().MEDIA_BUFFER_COMPLETE, invalid, invalid)` | `sendMediaEvent(bufferCompleteXDM)` |
-| `mediaTrackEvent(ADBMobile().MEDIA_SEEK_START, seekInfo, seekContextData)` | `sendMediaEvent(pauseXDM)` |
-| `ADBMobile().mediaTrackEvent(ADBMobile().MEDIA_SEEK_COMPLETE, invalid, invalid)` | `sendMediaEvent(pauseXDM)` |
+| `mediaTrackEvent(ADBMobile().MEDIA_SEEK_START, seekInfo, seekContextData)` | `sendMediaEvent(pauseStartXDM)` |
+| `ADBMobile().mediaTrackEvent(ADBMobile().MEDIA_SEEK_COMPLETE, invalid, invalid)` | `sendMediaEvent(pauseStartXDM)` |
 
 > [!NOTE]
 > For tracking seek in AEPRoku SDK, use eventType `pauseStart` with correct playhead. Media backend will detect seek based on playhead and timestamp values.
