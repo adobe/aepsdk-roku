@@ -114,34 +114,43 @@ m.aepSdk = AdobeAEPSDKInit()
 
 ``` brightscript
 ' Use the helper method to create mediaInfo object
-mediaInfo = adb_media_init_mediainfo("test_media_name", "test_media_id", 10, ADBMobile().MEDIA_STREAM_TYPE_VOD, ADBMobile().MEDIA_TYPE_VIDEO)
+name = "mediaName"
+id = "mediaId"
+length = 10
+streamType = ADBMobile().MEDIA_STREAM_TYPE_VOD
+mediaType = ADBMobile().MEDIA_TYPE_VIDEO
 
-' (Optional) Attach Standard metadata if any
+mediaInfo = adb_media_init_mediainfo(name, id, length, streamType, mediaType)
+
+' (Optional) Attach standard metadata if any
 standardMetadata = {}
 standardMetadata[ADBMobile().MEDIA_VideoMetadataKeySHOW] = "sample show"
 
 mediaInfo[ADBMobile().MEDIA_STANDARD_MEDIA_METADATA] = standardMetadata
 
 ' (Optional) Create map for custom metadadata if any
-customMetadata = {}
-customMetadata["cmk1"] = "cmv1"
+mediaContextData = {}
+mediaContextData["cmk1"] = "cmv1"
 
 ' Call mediaTrackSessionStart API
-m.adbmobile.mediaTrackSessionStart(mediaInfo, customMetadata)
+m.adbmobile.mediaTrackSessionStart(mediaInfo, mediaContextData)
 ```
 
 **AEP SDK**
+
+> [!IMPORTANT]
+> All the XDM numeric field values should be of `Integer` data type.
 
 > [!Note]
 > Checkout [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) fieldgroup in the MediaAnalytics schema to know more about the required fields and StandardMetadata fields.
 
 ``` brightscript
 sessionDetails = {
-    "streamType": "video",
-    "friendlyName": "test_media_name",
-    "name": "test_media_id",
+    "friendlyName": "mediaName",
+    "name": "mediaId",
     "length": 10,
     "contentType": "vod",
+    "streamType" : "video",
 
     ' (Optional) Attach Standard metadata if any
     "show": "sample show"
@@ -156,7 +165,7 @@ sessionStartXDM = {
   "xdm": {
     "eventType": "media.sessionStart"
     "mediaCollection": {
-      "playhead":  <CURRENT_PLAYHEAD_VALUE>,
+      "playhead":  <CURRENT_PLAYHEAD_INTEGER_VALUE>,
       "sessionDetails": sessionDetails,
       "customMetadata": customMetadata
     }
@@ -183,7 +192,7 @@ playXDM = {
   "xdm": {
     "eventType": "media.play",
     "mediaCollection": {
-      "playhead": <CURRENT_PLAYHEAD_VALUE>
+      "playhead": <CURRENT_PLAYHEAD_INTEGER_VALUE>
     }
   }
 }
@@ -208,7 +217,7 @@ pauseStartXDM = {
   "xdm": {
     "eventType": "media.pauseStart",
     "mediaCollection": {
-      "playhead": <CURRENT_PLAYHEAD_VALUE>,
+      "playhead": <CURRENT_PLAYHEAD_INTEGER_VALUE>,
     }
   }
 }
@@ -233,7 +242,7 @@ sessionCompleteXDM = {
   "xdm": {
     "eventType": "media.sessionComplete",
     "mediaCollection": {
-      "playhead": <CURRENT_PLAYHEAD_VALUE>,
+      "playhead": <CURRENT_PLAYHEAD_INTEGER_VALUE>,
     }
   }
 }
@@ -258,7 +267,7 @@ sessionEndXDM = {
   "xdm": {
     "eventType": "media.sessionEnd",
     "mediaCollection": {
-      "playhead": <CURRENT_PLAYHEAD_VALUE>,
+      "playhead": <CURRENT_PLAYHEAD_INTEGER_VALUE>,
     }
   }
 }
@@ -266,6 +275,462 @@ sessionEndXDM = {
 m.aepSdk.sendMediaEvent(sessionEndXDM)
 ```
 
+---
+
+### trackEvent
+
+#### Track Ads
+
+#### AdBreakStart
+
+**Media SDK**
+
+``` brightscript
+name = "adBreakName"
+position = 1
+startTime = 0
+
+adBreakInfo = adb_media_init_adbreakinfo(name, position, startTime)
+
+m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_AD_BREAK_START, adBreakInfo, invalid)
+```
+
+**AEP SDK**
+
+``` brightscript
+advertisingPodDetails = {
+  "friendlyName": "adBreakName",
+  "index": 1,
+  "offset": 0
+}
+
+adBreakStartXDM = {
+  "xdm": {
+    "eventType": "media.adBreakStart",
+    "mediaCollection": {
+      "playhead": <CURRENT_PLAYHEAD_INTEGER_VALUE>,
+      "advertisingPodDetails": advertisingPodDetails
+    }
+  }
+}
+
+m.aepSdk.sendMediaEvent(adBreakStartXDM)
+```
+
+> [!NOTE]
+> To learn more refer to the [advertisingPodDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingpoddetails.schema.md) XDM fieldgroup.
+
+#### AdStart
+
+**Media SDK**
+
+``` brightscript
+name = "adName"
+position = 1
+length = 10
+startTime = 0
+
+adInfo = adb_media_init_adinfo(name, position, startTime)
+
+''' (Optional) Attach standard metadata if any
+standardAdMetadata = {}
+standardAdMetadata[ADBMobile().MEDIA_AdMetadataKeyCAMPAIGN_ID] = "sampleCampaignID"
+
+adInfo[ADBMobile().MEDIA_STANDARD_AD_METADATA] = standardAdMetadata
+
+''' (Optional) Create a map of custom metadata if any
+adContextData = {}
+adContextData["cmk1"] = "cmv1"
+
+m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_AD_START, adInfo, adContextData)
+```
+
+**AEP SDK**
+
+``` brightscript
+advertisingDetails = {
+  "friendlyName": "adName",
+  "index": 1,
+  "length": 10,
+  "offset": 0,
+
+  ' (Optional) Attach Standard metadata if any
+  "campaignID": "sampleCampaignID"
+}
+
+' (Optional) Create map for custom data if any
+customMetadata = {
+  "cmk1":"cmv1"
+}
+
+adStartXDM = {
+  "xdm": {
+    "eventType": "media.adStart",
+    "mediaCollection": {
+      "playhead": <CURRENT_PLAYHEAD_INTEGER_VALUE>,
+      "advertisingDetails": advertisingDetails,
+      "customMetadata": customMetadata
+    }
+  }
+}
+
+m.aepSdk.sendMediaEvent(adStartXDM)
+```
+
+> [!NOTE]
+> To learn more refer to the [advertisingDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md) XDM fieldgroup.
+
+#### AdComplete
+
+**Media SDK**
+
+``` brightscript
+m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_AD_COMPLETE, invalid, invalid)
+```
+
+**AEP SDK**
+
+``` brightscript
+adCompleteXDM = {
+  "xdm": {
+    "eventType": "media.adComplete",
+    "mediaCollection": {
+      "playhead": <CURRENT_PLAYHEAD_INTEGER_VALUE>
+    }
+  }
+}
+
+m.aepSdk.sendMediaEvent(adCompleteXDM)
+```
+
+#### AdSkip
+
+**Media SDK**
+
+``` brightscript
+m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_AD_SKIP, invalid, invalid)
+```
+
+**AEP SDK**
+
+``` brightscript
+adSkipXDM = {
+  "xdm": {
+    "eventType": "media.adSkip",
+    "mediaCollection": {
+      "playhead": <CURRENT_PLAYHEAD_INTEGER_VALUE>
+    }
+  }
+}
+
+m.aepSdk.sendMediaEvent(adSkipXDM)
+```
+
+#### AdbreakComplete
+``` brightscript
+m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_AD_BREAK_COMPLETE, invalid, invalid)
+```
+
+**AEP SDK**
+
+``` brightscript
+adBreakCompleteXDM = {
+  "xdm": {
+    "eventType": "media.adBreakComplete",
+    "mediaCollection": {
+      "playhead": <CURRENT_PLAYHEAD_INTEGER_VALUE>
+    }
+  }
+}
+
+m.aepSdk.sendMediaEvent(adBreakStartXDM)
+```
+
+#### Track Chapters
+
+##### ChapterStart
+
+**Media SDK**
+
+``` brightscript
+name = "chapterName"
+position = 1
+length = 10
+startTime = 0
+
+chapterInfo = adb_media_init_chapterinfo(name, position, length, startTime)
+
+''' (Optional) Create a map of custom metadata if any
+chapterContextData = {}
+chapterContextData["cmk1"] = "cmv1"
+
+m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_START, chapterInfo, chapterContextData)
+```
+
+**AEP SDK**
+
+``` brightscript
+chapterDetails = {
+  "friendlyName": "chapterName",
+  "index":1,
+  "length": 10,
+  "offset": 0
+}
+
+' (Optional) Create map for custom data if any
+customMetadata = {
+  "cmk1":"cmv1"
+}
+
+chapterStartXDM = {
+  "xdm": {
+    "eventType": "media.chapterStart",
+    "mediaCollection": {
+      "playhead": <CURRENT_PLAYHEAD_INTEGER_VALUE>,
+      "chapterDetails": chapterDetails,
+      "customMetadata": customMetadata
+    }
+  }
+}
+
+m.aepSdk.sendMediaEvent(chapterStartXDM)
+```
+
+> [!NOTE]
+> To learn more refer to the [chapterDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/chapterdetails.schema.md) XDM fieldgroup.
+
+##### ChapterComplete
+
+**Media SDK**
+
+``` brightscript
+m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_COMPLETE, invalid, invalid)
+```
+
+**AEP SDK**
+
+``` brightscript
+chapterCompleteXDM = {
+  "xdm": {
+    "eventType": "media.chapterComplete",
+    "mediaCollection": {
+      "playhead": <CURRENT_PLAYHEAD_INTEGER_VALUE>
+    }
+  }
+}
+
+m.aepSdk.sendMediaEvent(chapterCompleteXDM)
+```
+
+##### ChapterSkip
+
+**Media SDK**
+
+``` brightscript
+m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_SKIP, invalid, invalid)
+```
+
+**AEP SDK**
+
+``` brightscript
+chapterSkipXDM = {
+  "xdm": {
+    "eventType": "media.chapterSkip",
+    "mediaCollection": {
+      "playhead": <CURRENT_PLAYHEAD_INTEGER_VALUE>
+    }
+  }
+}
+
+m.aepSdk.sendMediaEvent(chapterSkipXDM)
+```
+
+#### Track Buffer and Seek
+
+##### BufferStart
+
+**Media SDK**
+
+``` brightscript
+m.adbmobile.mediaTrackEvent(MEDIA_BUFFER_START, invalid, invalid)
+```
+
+**AEP SDK**
+
+``` brightscript
+bufferStartXDM = {
+  "xdm": {
+    "eventType": "media.bufferStart",
+    "mediaCollection": {
+      "playhead": <CURRENT_PLAYHEAD_INTEGER_VALUE>
+    }
+  }
+}
+
+m.aepSdk.sendMediaEvent(bufferStartXDM)
+```
+
+##### BufferComplete
+
+**Media SDK**
+
+``` brightscript
+m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_BUFFER_COMPLETE, invalid, invalid)
+```
+
+**AEP SDK**
+
+``` brightscript
+bufferCompleteXDM = {
+  "xdm": {
+    "eventType": "media.bufferComplete",
+    "mediaCollection": {
+      "playhead": <CURRENT_PLAYHEAD_INTEGER_VALUE>
+    }
+  }
+}
+
+m.aepSdk.sendMediaEvent(bufferCompleteXDM)
+```
+
+##### SeekStart
+
+> [!IMPORTANT]
+> Seeking is detected automatically by the backend using the playhead and timestamp value. So at the seek start, playback pauses and can be tracked as `pauseStart` and when seek completes, playback resumes and can be tracked as `play`.
+
+**Media SDK**
+
+``` brightscript
+m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_SEEK_START, invalid, invalid)
+```
+
+**AEP SDK**
+
+seekStartXDM = {
+  "xdm": {
+    "eventType": "media.pauseStart",
+    "mediaCollection": {
+      "playhead": <CURRENT_PLAYHEAD_INTEGER_VALUE>
+    }
+  }
+}
+
+``` brightscript
+m.aepSdk.sendMediaEvent(seekStartXDM)
+```
+
+##### SeekComplete
+
+**Media SDK**
+
+``` brightscript
+m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_SEEK_COMPLETE, invalid, invalid)
+```
+
+**AEP SDK**
+
+seekCompleteXDM = {
+  "xdm": {
+    "eventType": "media.play",
+    "mediaCollection": {
+      "playhead": <CURRENT_PLAYHEAD_INTEGER_VALUE>
+    }
+  }
+}
+
+``` brightscript
+m.aepSdk.sendMediaEvent(seekCompleteXDM)
+```
+---
+
+### updateCurrentPlayhead
+
+**Media SDK**
+
+``` brightscript
+m.adbmobile.updateCurrentPlayhead(<CURRENT_PLAYHEAD_INTEGER_VALUE>)
+```
+
+**AEP SDK**
+
+> [!IMPORTANT]
+> Playhead value is expected in the XDM data for all the API calls. AEP SDK requires calling ping event with latest playhead value every second as a proxy for updateCurrentPlayhead API.
+
+playheadUpdatePingXDM = {
+  "xdm": {
+    "eventType": "media.ping",
+    "mediaCollection": {
+      "playhead": <CURRENT_PLAYHEAD_INTEGER_VALUE>
+    }
+  }
+}
+
+``` brightscript
+m.aepSdk.sendMediaEvent(playheadUpdatePingXDM)
+```
+
+---
+
+### updateQoEObject
+
+**Media SDK**
+
+``` brightscript
+' Use the helper method to create mediaInfo object
+bitrate = 200000
+fps = 24
+droppedFrames = 1
+startupTime = 2
+qosInfo = m.adbmobile.adb_media_init_qosinfo(bitrate, startupTime, fps, droppedFrames)
+
+m.adbmobile.mediaUpdateQoS(qosInfo)
+```
+
+**AEP SDK**
+
+> [!IMPORTANT]
+> All the QoE field values should be of `Integer` data type.
+
+``` brightscript
+qoeDataDetails = {
+  "bitrate" : 200000,
+  "framesPerSecond" : 24,
+  "droppedFrames" : 1,
+  "timeToStart" : 2
+}
+
+bitrateChangeXDM = {
+  "xdm": {
+    "eventType": "media.bitrateChange",
+    "mediaCollection": {
+      "playhead": <CURRENT_PLAYHEAD_INTEGER_VALUE>,
+      "qoeDataDetails": qoeDataDetails
+    }
+  }
+}
+
+m.aepSdk.sendMediaEvent(bitrateChangeXDM)
+```
+
+> [!NOTE]
+> To learn more refer to the [qoeDataDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/qoedatadetails.schema.md) XDM fieldgroup.
+> `qoeDataDetails` is supported and can be attached to any event going out.
+
+Following is the sample to send qoeDataDetails with play event:
+
+``` brightscript
+playWithQoeXDM = {
+  "xdm": {
+    "eventType": "media.play",
+    "mediaCollection": {
+      "playhead": <CURRENT_PLAYHEAD_INTEGER_VALUE>,
+      "qoeDataDetails": qoeDataDetails
+    }
+  }
+}
+
+m.aepSdk.sendMediaEvent(playWithQoeXDM)
+```
 ---
 
 ### trackError
@@ -277,81 +742,87 @@ m.adbmobile.mediaTrackError("errorId", "video-player-error-code")
 ```
 
 **AEP SDK**
-
 ``` brightscript
-m.aepSdk.sendMediaEvent({
-      "xdm": {
-        "eventType": "media.error",
-        "mediaCollection": {
-          "playhead": <CURRENT_PLAYHEAD_VALUE>,
-          "errorDetails": {
-            "name": "errorId",
-            "source": "video-player-error-code"
-          }
-        }
-      }
-    })
-```
+errorDetails = {
+  "name": "errorId",
+  "source": "video-player-error-code"
+}
 
----
-
-### trackEvent
-
-**Media SDK**
-
-``` brightscript
-seekContextData = {}
-seekContextData = {}
-m.adbmobile.mediaTrackEvent(MEDIA_SEEK_START, seekInfo, seekContextData)
-```
-
-**AEP SDK**
-
-``` brightscript
-m.aepSdk.sendMediaEvent({
-    "xdm": {
-      "eventType": "media.ping",
-      "mediaCollection": {
-        "playhead": 123,
-      }
+errorXDM = {
+  "xdm": {
+    "eventType": "media.error",
+    "mediaCollection": {
+      "playhead": <CURRENT_PLAYHEAD_INTEGER_VALUE>,
+      "errorDetails": errorDetails
     }
-  })
+  }
+}
+
+m.aepSdk.sendMediaEvent(errorXDM)
 ```
 
----
+> [!NOTE]
+> To learn more refer to the [errorDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/errordetails.schema.md) XDM fieldgroup.
 
-### updateCurrentPlayhead
+## Public Constants
 
-**Media SDK**
+### StreamType
 
-``` brightscript
-m.adbmobile.updateCurrentPlayhead(<CURRENT_PLAYHEAD_VALUE>)
-```
+| Media SDK | AEP SDK |
+| -- | -- |
+| MEDIA_STREAM_TYPE_VOD | NA |
+| MEDIA_STREAM_TYPE_LIVE | NA |
+| MEDIA_STREAM_TYPE_LINEAR | NA |
+| MEDIA_STREAM_TYPE_AOD | NA |
+| MEDIA_STREAM_TYPE_AUDIOBOOK | NA |
+| MEDIA_STREAM_TYPE_PODCAST | NA |
 
-**AEP SDK**
+### MediaType
 
-``` brightscript
-m.aepSdk.sendMediaEvent({
-    "xdm": {
-      "eventType": "media.ping",
-      "mediaCollection": {
-        "playhead": <CURRENT_PLAYHEAD_VALUE>,
-      }
-    }
-  })
-```
+| Media SDK | AEP SDK |
+| -- | -- |
+| MEDIA_STREAM_TYPE_AUDIO | NA |
+| MEDIA_STREAM_TYPE_VIDEO | NA |
 
----
+### Standard Video Metadata
 
-### updateQoEObject
+| Media SDK | AEP SDK |
+| -- | -- |
+| MEDIA_VideoMetadataKeySHOW                    | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
+| MEDIA_VideoMetadataKeySEASON                  | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
+| MEDIA_VideoMetadataKeyEPISODE                 | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
+| MEDIA_VideoMetadataKeyASSET_ID                | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
+| MEDIA_VideoMetadataKeyGENRE                   | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
+| MEDIA_VideoMetadataKeyFIRST_AIR_DATE          | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
+| MEDIA_VideoMetadataKeyFIRST_DIGITAL_DATE      | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
+| MEDIA_VideoMetadataKeyRATING                  | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
+| MEDIA_VideoMetadataKeyORIGINATOR              | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
+| MEDIA_VideoMetadataKeyNETWORK                 | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
+| MEDIA_VideoMetadataKeySHOW_TYPE               | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
+| MEDIA_VideoMetadataKeyAD_LOAD                 | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
+| MEDIA_VideoMetadataKeyMVPD                    | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
+| MEDIA_VideoMetadataKeyAUTHORIZED              | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
+| MEDIA_VideoMetadataKeyDAY_PART                | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
+| MEDIA_VideoMetadataKeyFEED                    | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
+| MEDIA_VideoMetadataKeySTREAM_FORMAT           | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
 
-**Media SDK**
+### Standard Audio Metadata
 
-``` brightscript
-m.adbmobile.mediaUpdateQoS
-```
+| Media SDK | AEP SDK |
+| -- | -- |
+| MEDIA_AudioMetadataKeyARTIST    | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
+| MEDIA_AudioMetadataKeyAUTHOR    | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
+| MEDIA_AudioMetadataKeyLABEL     | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
+| MEDIA_AudioMetadataKeySTATION   | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
+| MEDIA_AudioMetadataKeyPUBLISHER | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
 
-**AEP SDK**
+### Standard Ad Metadata
 
-``` brightscript
-```
+| Media SDK | AEP SDK |
+| -- | -- |
+| MEDIA_AdMetadataKeyADVERTISER   | Refer to [advertisingDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md) XDM fieldgroup |
+| MEDIA_AdMetadataKeyCAMPAIGN_ID  | Refer to [advertisingDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md) XDM fieldgroup |
+| MEDIA_AdMetadataKeyCREATIVE_ID  | Refer to [advertisingDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md) XDM fieldgroup |
+| MEDIA_AdMetadataKeyPLACEMENT_ID | Refer to [advertisingDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md) XDM fieldgroup |
+| MEDIA_AdMetadataKeySITE_ID      | Refer to [advertisingDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md) XDM fieldgroup |
+| MEDIA_AdMetadataKeyCREATIVE_URL | Refer to [advertisingDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md) XDM fieldgroup |
