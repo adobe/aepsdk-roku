@@ -19,7 +19,7 @@
 ## API comparison
 
 > [!NOTE]
-> AEP SDK has only two media APIs `createMediaSession()` and `sendMediaEvent()`.
+> AEP SDK has only two APIs for tracking media `createMediaSession()` and `sendMediaEvent()`.
 
 ### Core Plaback APIs:
 
@@ -46,10 +46,10 @@
 | `mediaTrackEvent(ADBMobile().MEDIA_BUFFER_START, invalid, invalid)` | `sendMediaEvent(bufferStartXDM)` |
 | `mediaTrackEvent(ADBMobile().MEDIA_BUFFER_COMPLETE, invalid, invalid)` | `sendMediaEvent(bufferCompleteXDM)` |
 | `mediaTrackEvent(ADBMobile().MEDIA_SEEK_START, invalid, invalid)` | `sendMediaEvent(pauseStartXDM)` |
-| `ADBMobile().mediaTrackEvent(ADBMobile().MEDIA_SEEK_COMPLETE, invalid, invalid)` | `sendMediaEvent(pauseStartXDM)` |
+| `ADBMobile().mediaTrackEvent(ADBMobile().MEDIA_SEEK_COMPLETE, invalid, invalid)` | `sendMediaEvent(playXDM)` |
 
 > [!NOTE]
-> For tracking seek in AEP SDK, use eventType `pauseStart` with correct playhead. Media backend will detect seek based on playhead and timestamp values.
+> For tracking seek in AEP SDK, use eventType `pauseStart` with correct playhead. Media backend will detect seek based on change in playhead and timestamp values.
 
 ### Chapter APIs
 | Media SDK | AEP SDK|
@@ -320,6 +320,27 @@ m.aepSdk.sendMediaEvent(adBreakStartXDM)
 > [!NOTE]
 > To learn more refer to the [advertisingPodDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingpoddetails.schema.md) XDM fieldgroup.
 
+#### AdbreakComplete
+``` brightscript
+m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_AD_BREAK_COMPLETE, invalid, invalid)
+```
+
+**AEP SDK**
+
+``` brightscript
+adBreakCompleteXDM = {
+  "xdm": {
+    "eventType": "media.adBreakComplete",
+    "mediaCollection": {
+      "playhead": <CURRENT_PLAYHEAD_INTEGER_VALUE>
+    }
+  }
+}
+
+m.aepSdk.sendMediaEvent(adBreakCompleteXDM)
+```
+
+
 #### AdStart
 
 **Media SDK**
@@ -424,26 +445,6 @@ adSkipXDM = {
 }
 
 m.aepSdk.sendMediaEvent(adSkipXDM)
-```
-
-#### AdbreakComplete
-``` brightscript
-m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_AD_BREAK_COMPLETE, invalid, invalid)
-```
-
-**AEP SDK**
-
-``` brightscript
-adBreakCompleteXDM = {
-  "xdm": {
-    "eventType": "media.adBreakComplete",
-    "mediaCollection": {
-      "playhead": <CURRENT_PLAYHEAD_INTEGER_VALUE>
-    }
-  }
-}
-
-m.aepSdk.sendMediaEvent(adBreakStartXDM)
 ```
 
 #### Track Chapters
@@ -770,59 +771,59 @@ m.aepSdk.sendMediaEvent(errorXDM)
 
 | Media SDK | AEP SDK |
 | -- | -- |
-| MEDIA_STREAM_TYPE_VOD | NA |
-| MEDIA_STREAM_TYPE_LIVE | NA |
-| MEDIA_STREAM_TYPE_LINEAR | NA |
-| MEDIA_STREAM_TYPE_AOD | NA |
-| MEDIA_STREAM_TYPE_AUDIOBOOK | NA |
-| MEDIA_STREAM_TYPE_PODCAST | NA |
+| MEDIA_STREAM_TYPE_VOD | "vod" |
+| MEDIA_STREAM_TYPE_LIVE | "live" |
+| MEDIA_STREAM_TYPE_LINEAR | "linear" |
+| MEDIA_STREAM_TYPE_AOD | "aod" |
+| MEDIA_STREAM_TYPE_AUDIOBOOK | "audiobook" |
+| MEDIA_STREAM_TYPE_PODCAST | "podcast" |
 
 ### MediaType
 
 | Media SDK | AEP SDK |
 | -- | -- |
-| MEDIA_STREAM_TYPE_AUDIO | NA |
-| MEDIA_STREAM_TYPE_VIDEO | NA |
+| MEDIA_STREAM_TYPE_AUDIO | [xdm:streamType](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmstreamtype-known-values) |
+| MEDIA_STREAM_TYPE_VIDEO | [xdm:streamType](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmstreamtype-known-values) |
 
 ### Standard Video Metadata
 
 | Media SDK | AEP SDK |
 | -- | -- |
-| MEDIA_VideoMetadataKeySHOW                    | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
-| MEDIA_VideoMetadataKeySEASON                  | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
-| MEDIA_VideoMetadataKeyEPISODE                 | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
-| MEDIA_VideoMetadataKeyASSET_ID                | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
-| MEDIA_VideoMetadataKeyGENRE                   | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
-| MEDIA_VideoMetadataKeyFIRST_AIR_DATE          | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
-| MEDIA_VideoMetadataKeyFIRST_DIGITAL_DATE      | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
-| MEDIA_VideoMetadataKeyRATING                  | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
-| MEDIA_VideoMetadataKeyORIGINATOR              | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
-| MEDIA_VideoMetadataKeyNETWORK                 | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
-| MEDIA_VideoMetadataKeySHOW_TYPE               | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
-| MEDIA_VideoMetadataKeyAD_LOAD                 | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
-| MEDIA_VideoMetadataKeyMVPD                    | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
-| MEDIA_VideoMetadataKeyAUTHORIZED              | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
-| MEDIA_VideoMetadataKeyDAY_PART                | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
-| MEDIA_VideoMetadataKeyFEED                    | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
-| MEDIA_VideoMetadataKeySTREAM_FORMAT           | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
+| MEDIA_VideoMetadataKeyAD_LOAD                 | [xdm:adLoad](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmadload) |
+| MEDIA_VideoMetadataKeyASSET_ID                | [xdm:assetID](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmassetid) |
+| MEDIA_VideoMetadataKeyAUTHORIZED              | [xdm:isAuthorized](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmisauthorized) |
+| MEDIA_VideoMetadataKeyDAY_PART                | [xdm:dayPart](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmdaypart) |
+| MEDIA_VideoMetadataKeyEPISODE                 | [xdm:episode](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmepisode) |
+| MEDIA_VideoMetadataKeyFEED                    | [xdm:feed](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmfeed) |
+| MEDIA_VideoMetadataKeyFIRST_AIR_DATE          | [xdm:firstAirDate](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmfirstairdate) |
+| MEDIA_VideoMetadataKeyFIRST_DIGITAL_DATE      | [xdm:firstDigitalDate](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmfirstdigitaldate) |
+| MEDIA_VideoMetadataKeyGENRE                   | [xdm:genre](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmgenre) |
+| MEDIA_VideoMetadataKeyMVPD                    | [xdm:mvpd](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmmvpd) |
+| MEDIA_VideoMetadataKeyNETWORK                 | [xdm:network](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmnetwork) |
+| MEDIA_VideoMetadataKeyORIGINATOR              |[xdm:originator](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmoriginator) |
+| MEDIA_VideoMetadataKeyRATING                  | [xdm:rating](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmrating) |
+| MEDIA_VideoMetadataKeySEASON                  | [xdm:season](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmseason) |
+| MEDIA_VideoMetadataKeySHOW                    | [xdm:show](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmshow) |
+| MEDIA_VideoMetadataKeySHOW_TYPE               | [xdm:showType](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmshowtype) |
+| MEDIA_VideoMetadataKeySTREAM_FORMAT           | [xdm:streamFormat](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmstreamformat) |
 
 ### Standard Audio Metadata
 
 | Media SDK | AEP SDK |
 | -- | -- |
-| MEDIA_AudioMetadataKeyARTIST    | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
-| MEDIA_AudioMetadataKeyAUTHOR    | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
-| MEDIA_AudioMetadataKeyLABEL     | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
-| MEDIA_AudioMetadataKeySTATION   | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
-| MEDIA_AudioMetadataKeyPUBLISHER | Refer to [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) XDM fieldgroup |
-
+| MEDIA_AudioMetadataKeyARTIST    | [xdm:artist](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmartist) |
+| MEDIA_AudioMetadataKeyAUTHOR    | [xdm:author](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmauthor) |
+| MEDIA_AudioMetadataKeyLABEL     | [xdm:label](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmlabel) |
+| MEDIA_AudioMetadataKeyPUBLISHER | [xdm:publisher](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmpublisher) |
+| MEDIA_AudioMetadataKeySTATION   | [xdm:station](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmstation) |
 ### Standard Ad Metadata
 
 | Media SDK | AEP SDK |
 | -- | -- |
-| MEDIA_AdMetadataKeyADVERTISER   | Refer to [advertisingDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md) XDM fieldgroup |
-| MEDIA_AdMetadataKeyCAMPAIGN_ID  | Refer to [advertisingDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md) XDM fieldgroup |
-| MEDIA_AdMetadataKeyCREATIVE_ID  | Refer to [advertisingDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md) XDM fieldgroup |
-| MEDIA_AdMetadataKeyPLACEMENT_ID | Refer to [advertisingDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md) XDM fieldgroup |
-| MEDIA_AdMetadataKeySITE_ID      | Refer to [advertisingDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md) XDM fieldgroup |
-| MEDIA_AdMetadataKeyCREATIVE_URL | Refer to [advertisingDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md) XDM fieldgroup |
+| MEDIA_AdMetadataKeyADVERTISER   | [xdm:advertiser](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md#xdmadvertiser)  |
+| MEDIA_AdMetadataKeyCAMPAIGN_ID  | [xdm:campaignID](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md#xdmcampaignid) |
+| MEDIA_AdMetadataKeyCREATIVE_ID  | [xdm:creativeID](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md#xdmcreativeid) |
+| MEDIA_AdMetadataKeyCREATIVE_URL | [xdm:creativeURL](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md#xdmcreativeurl) |
+| MEDIA_AdMetadataKeyPLACEMENT_ID | [xdm:placementID](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md#xdmplacementid) |
+| MEDIA_AdMetadataKeySITE_ID      | [xdm:siteID](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md#xdmsiteid) |
+
