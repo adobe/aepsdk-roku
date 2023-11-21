@@ -64,6 +64,10 @@ function _adb_MediaSessionManager() as object
                 return ""
             end if
 
+            if m._activeSession._backendSessionId = invalid then
+                return ""
+            end if
+
             return m._activeSession._backendSessionId
         end function,
     }
