@@ -59,7 +59,7 @@ sub TC_adb_MediaModule_processEvent_sessionStart_validConfig_createsSessionAndQu
     testTSObject.tsInMillis = 1234567890
 
     ' mock MediaSessionManager.createSession()
-    mediaSessionManager.createSession = function(clientSessionId as string, configurationModule, sessionConfig, edgeRequestQueue) as void
+    mediaSessionManager.createSession = function(_clientSessionId as string, configurationModule, sessionConfig, edgeRequestQueue) as void
         GetGlobalAA()._adb_sessionManager_createSession_called = true
         UTF_assertEqual(sessionConfig, { "config.channel": "testChannel" }, "Session configuration doesn't match")
         UTF_assertNotInvalid(edgeRequestQueue, "EdgeRequestQueue is invalid")

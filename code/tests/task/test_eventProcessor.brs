@@ -155,7 +155,7 @@ sub TC_adb_eventProcessor_handleEvent_handleMediaEvents_invalid()
     GetGlobalAA().processEvent_is_called = false
     tsObj = _adb_TimestampObject()
     eventProcessor = _createMockedEventProcessor()
-    eventProcessor._mediaModule.processEvent = function(requestId as string, data as object) as void
+    eventProcessor._mediaModule.processEvent = function(_requestId as string, _data as object) as void
         GetGlobalAA().processEvent_is_called = true
     end function
 
@@ -242,7 +242,7 @@ sub TC_adb_eventProcessor_handleCreateMediaSession_invalid()
     GetGlobalAA().processEvent_is_called = false
     tsObj = _adb_TimestampObject()
     eventProcessor = _createMockedEventProcessor()
-    eventProcessor._mediaModule.processEvent = function(requestId as string, data as object) as void
+    eventProcessor._mediaModule.processEvent = function(_requestId as string, _data as object) as void
         GetGlobalAA().processEvent_is_called = true
     end function
     event = _adb_RequestEvent("createMediaSession", {

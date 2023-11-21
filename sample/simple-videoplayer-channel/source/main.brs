@@ -11,7 +11,7 @@
 
 ' *****************************************************************************************
 
-sub Main(input as dynamic)
+sub Main(_input as dynamic)
   screen = CreateObject("roSGScreen")
   m.port = CreateObject("roMessagePort")
   screen.setMessagePort(m.port)
