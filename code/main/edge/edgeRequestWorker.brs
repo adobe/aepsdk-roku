@@ -117,17 +117,17 @@ function _adb_EdgeRequestWorker() as object
                     responseArray.Push(edgeResponse)
                     ' Request sent out successfully
                     m._lastFailedRequestTS = m._INVALID_WAIT_TIME
-                    _adb_logVerbose("processRequests() - Edge request with id:(" + FormatJson(requestId) + ") was sent successfully code:(" + FormatJson(networkResponse.getResponseCode()) + ").")
+                    _adb_logVerbose("processRequests() - Edge request with id (" + FormatJson(requestId) + ") was sent successfully code (" + FormatJson(networkResponse.getResponseCode()) + ").")
                 else if networkResponse.isRecoverable()
                     m._lastFailedRequestTS = _adb_timestampInMillis()
-                    _adb_logWarning("processRequests() - Edge request with id:(" + FormatJson(requestId) + ") failed with recoverable error code:(" + FormatJson(networkResponse.getResponseCode()) + "). Request will be retried after (" + FormatJson(m._RETRY_WAIT_TIME_MS) + ") ms.")
+                    _adb_logWarning("processRequests() - Edge request with id (" + FormatJson(requestId) + ") failed with recoverable error code (" + FormatJson(networkResponse.getResponseCode()) + "). Request will be retried after (" + FormatJson(m._RETRY_WAIT_TIME_MS) + ") ms.")
                     m._queue.Unshift(requestEntity)
                     exit while
                 else
                     ''' TODO Add nonrecoverable error response to the responseArray
                     edgeResponse = _adb_EdgeResponse(requestId, networkResponse.getResponseCode(), networkResponse.getResponseString())
                     responseArray.Push(edgeResponse)
-                    _adb_logError("processRequests() - Failed to send Edge request with id:(" + FormatJson(requestId) + ") code:(" + FormatJson(networkResponse.getResponseCode()) + ") response:(" + networkResponse.toString() + ")")
+                    _adb_logError("processRequests() - Failed to send Edge request with id (" + FormatJson(requestId) + ") code (" + FormatJson(networkResponse.getResponseCode()) + ") response:(" + networkResponse.toString() + ")")
                 end if
             end while
             return responseArray

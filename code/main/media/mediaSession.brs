@@ -224,7 +224,7 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
 
                     if _adb_isEmptyOrInvalidString(payloadSessionId)
                         m.close(true)
-                        _adb_logVerbose("_processEdgeResponseHandles() - SessionStart request returned with empty or invalid sessionID.")
+                        _adb_logWarning("_processEdgeResponseHandles() - SessionStart request returned with empty or invalid sessionID.")
                         return
                     end if
 
@@ -244,7 +244,7 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
                 if error.type = m._ERROR_TYPE_VA_EDGE_400
                     ''' abort the session if sessionStart fails
                     m.close(true)
-                    _adb_logVerbose("_processEdgeResponseErrors() - Closing the session as the SessionStart request failed.")
+                    _adb_logError("_processEdgeResponseErrors() - Closing the session as the SessionStart request failed.")
                     ''' Exit since dont need to handle any other error types
                     exit for
                 end if
