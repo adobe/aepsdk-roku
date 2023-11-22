@@ -2,18 +2,20 @@
 
 This document lists the APIs provided by AEP Roku SDK, along with code samples for API usage.
 
-| Module | APIs|
-| -- | -- |
-| Core | [AdobeAEPSDKInit](#AdobeAEPSDKInit) |
-| | [getVersion](#getVersion) |
-| | [resetIdentities](#resetIdentities) |
-| | [(optional) setExperienceCloudId](#setExperienceCloudId) |
-| | [setLogLevel](#setLogLevel) |
-| | [shutdown](#shutdown) |
-| | [updateConfiguration](#updateConfiguration) |
-| Edge | [sendEvent](#sendEvent) |
-| Media | [createMediaSession](#createMediaSession) |
-| | [sendMediaEvent](#sendMediaEvent) |
+
+- Core APIs
+    - [AdobeAEPSDKInit](#AdobeAEPSDKInit)
+    - [getVersion](#getVersion)
+    - [resetIdentities](#resetIdentities)
+    - [(optional) setExperienceCloudId](#setExperienceCloudId)
+    - [setLogLevel](#setLogLevel)
+    - [shutdown](#shutdown)
+    - [updateConfiguration](#updateConfiguration)
+- Edge APIs
+    - [sendEvent](#sendEvent)
+- Media APIs
+    - [createMediaSession](#createMediaSession)
+    - [sendMediaEvent](#sendMediaEvent)
 
 ---
 
