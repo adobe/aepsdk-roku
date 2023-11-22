@@ -2,10 +2,9 @@
 
 This document lists the APIs provided by AEP Roku SDK, along with code samples for API usage.
 
-| Module | API |
+| Module | APIs|
 | -- | -- |
-| Core | |
-| | [AdobeAEPSDKInit](#AdobeAEPSDKInit) |
+| Core | [AdobeAEPSDKInit](#AdobeAEPSDKInit) |
 | | [getVersion](#getVersion) |
 | | [resetIdentities](#resetIdentities) |
 | | [(optional) setExperienceCloudId](#setExperienceCloudId) |
