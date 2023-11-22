@@ -205,7 +205,7 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
                                 ''' Should execute this code when there is a non-recoverable error for sessionStart request
                                 ''' Abort the session
                                 m.close(true)
-                                _adb_logVerbose("_processEdgeRequestQueue() - SessionStart request failed with unrecoverable error.")
+                                _adb_logWarning("_processEdgeRequestQueue() - SessionStart request failed with unrecoverable error.")
                         return
                             end if
 
