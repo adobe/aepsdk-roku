@@ -141,8 +141,7 @@ m.adbmobile.mediaTrackSessionStart(mediaInfo, mediaContextData)
 > [!IMPORTANT]
 > SessionStart API requires [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) fieldgroup with all the required fields present in the request payload.
 
-| sessionDetails |
-| Fields (Requried) | Type |
+| SessionDetails Fields (Requried) | Type |
 | -- | -- |
 | [friendlyName](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmfriendlyname) | `String` |
 | [name]() | `String` |
