@@ -139,10 +139,17 @@ m.adbmobile.mediaTrackSessionStart(mediaInfo, mediaContextData)
 **AEP SDK**
 
 > [!IMPORTANT]
-> All the XDM numeric field values should be of `Integer` data type.
+> SessionStart API requires [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) fieldgroup with all the required fields present in the request payload.
 
-> [!Note]
-> Checkout [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) fieldgroup in the MediaAnalytics schema to know more about the required fields and StandardMetadata fields.
+| sessionDetails |
+| Fields (Requried) | Type |
+| -- | -- |
+| [friendlyName](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmfriendlyname) | `String` |
+| [name]() | `String` |
+| [length]() | `Integer` |
+| [contentType]() | `String` |
+| [streamType]() | `String` |
+
 
 ``` brightscript
 sessionDetails = {
@@ -791,7 +798,7 @@ m.aepSdk.sendMediaEvent(errorXDM)
 | -- | -- |
 | MEDIA_VideoMetadataKeyAD_LOAD                 | [xdm:adLoad](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmadload) |
 | MEDIA_VideoMetadataKeyASSET_ID                | [xdm:assetID](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmassetid) |
-| MEDIA_VideoMetadataKeyAUTHORIZED              | [xdm:isAuthorized](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmisauthorized) |
+| MEDIA_VideoMetadataKeyAUTHORIZED              | [xdm:authorized](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmisauthorized) |
 | MEDIA_VideoMetadataKeyDAY_PART                | [xdm:dayPart](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmdaypart) |
 | MEDIA_VideoMetadataKeyEPISODE                 | [xdm:episode](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmepisode) |
 | MEDIA_VideoMetadataKeyFEED                    | [xdm:feed](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmfeed) |
