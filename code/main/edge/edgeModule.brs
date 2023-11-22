@@ -70,7 +70,6 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
 
             edgeConfig = m._getEdgeConfig()
             if edgeConfig = invalid
-                _adb_logVerbose("processQueuedRequests() - Cannot send network request, invalid configuration.")
                 return responseEvents
             end if
 

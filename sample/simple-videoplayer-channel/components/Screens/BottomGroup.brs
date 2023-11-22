@@ -43,7 +43,7 @@ sub onButtonSelected()
                 }
             ]
         }
-    }, sub(context, result)
+    }, sub(_context, _result)
         ' print "callback result: "
         ' print result
         ' print context

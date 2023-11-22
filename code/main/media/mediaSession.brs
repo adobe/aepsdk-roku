@@ -15,7 +15,7 @@
 
 function _adb_MediaSession(clientSessionId as string, configurationModule as object, sessionConfig as object, edgeRequestQueue as object) as object
     sessionObj = {
-        _clientSessionId: clientSessionId,
+        _clientSessionId: invalid,
 
         ' session level configuration
         _sessionChannelName: invalid,
@@ -57,7 +57,8 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
         _ERROR_TYPE_VA_EDGE_400: "https://ns.adobe.com/aep/errors/va-edge-0400-400"
         _HANDLE_TYPE_SESSION_START: "media-analytics:new-session"
 
-        _init: sub(id as string, configurationModule as object, sessionConfig as object, edgeRequestQueue as object)
+        _init: sub(clientSessionId as string, configurationModule as object, sessionConfig as object, edgeRequestQueue as object)
+            m._clientSessionId = clientSessionId
             m._configurationModule = configurationModule
             m._edgeRequestQueue = edgeRequestQueue
 
@@ -102,6 +103,7 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
             ' Process the queue and send the hits to edgeWorker
             while m._hitQueue.Count() <> 0
                 hit = m._hitQueue.Shift()
+
                 requestId = hit.requestId
                 tsInMillis = hit.tsObject.tsInMillis
                 xdmData = hit.xdmData
@@ -117,7 +119,7 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
                 else
                     ''' Cannot send hit of type other than sessionStart if backendSessionId is not set.
                     if m._backendSessionId = invalid then
-                        _adb_logError("tryDispatchMediaEvents() - Cannot dispatch media event, backend session ID is not set.")
+                        _adb_logVerbose("tryDispatchMediaEvents() - Cannot dispatch media event, backend session ID is not set.")
                         return
                     end if
 
@@ -171,7 +173,6 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
             return true
         end function,
 
-        ''' TODO verify this
         _processEdgeRequestQueue: function() as void
             ' Process the queue and send the hits to edgeWorker
             ' EdgeRequestQueue.process and handle the responses
@@ -183,12 +184,14 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
                         requestId = edgeResponse.getRequestId()
                         responseCode = edgeResponse.getResponseCode()
                         responseString = edgeResponse.getResponseString()
-                        responseObj = ParseJson(responseString)
 
                         ''' only handle the response for sessionStart event
                         if m._sessionStartHit.requestId = requestId then
                             ''' Use constants
                             if responseCode >= m._RESPONSE_CODE_200 and responseCode < m._RESPONSE_CODE_300
+
+                                responseObj = ParseJson(responseString)
+
                                 ''' process the response handles
                                 if not _adb_isEmptyOrInvalidArray(responseObj.handle) then
                                     m._processEdgeResponseHandles(responseObj.handle)
@@ -198,10 +201,17 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
                                 if not _adb_isEmptyOrInvalidArray(responseObj.errors) then
                                     m._processEdgeResponseErrors(responseObj.errors)
                                 end if
+                            else
+                                ''' Should execute this code when there is a non-recoverable error for sessionStart request
+                                ''' Abort the session
+                                m.close(true)
+                                _adb_logWarning("_processEdgeRequestQueue() - SessionStart request failed with unrecoverable error.")
+                        return
                             end if
+
                         end if
                     catch ex
-                        _adb_logError("_kickRequestQueue() - Failed to process the edge media reqsponse, the exception message: " + ex.Message)
+                        _adb_logError("_processEdgeRequestQueue() - Failed to process the edge media response, the exception message: " + ex.Message)
                     end try
                 end if
             end for
@@ -210,8 +220,18 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
         _processEdgeResponseHandles: function(handleList as object) as void
             for each handle in handleList
                 if handle.type = m._HANDLE_TYPE_SESSION_START
-                    m._backendSessionId = handle.payload[0]["sessionId"]
+                    payloadSessionId = handle.payload[0]["sessionId"]
+
+                    if _adb_isEmptyOrInvalidString(payloadSessionId)
+                        m.close(true)
+                        _adb_logWarning("_processEdgeResponseHandles() - SessionStart request returned with empty or invalid sessionID.")
+                        return
+                    end if
+
+                    ''' set the backendSessionId
+                    m._backendSessionId = payloadSessionId
                     ''' dispatch queued events.
+                    _adb_logVerbose("_processEdgeResponseHandles() - Dispatching queued hits as the SessionStart request returned with valid sessionID.")
                     m.tryDispatchMediaEvents()
                     ''' Exit since dont need to handle any other handle types
                     exit for
@@ -224,6 +244,7 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
                 if error.type = m._ERROR_TYPE_VA_EDGE_400
                     ''' abort the session if sessionStart fails
                     m.close(true)
+                    _adb_logError("_processEdgeResponseErrors() - Closing the session as the SessionStart request failed.")
                     ''' Exit since dont need to handle any other error types
                     exit for
                 end if
@@ -278,6 +299,7 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
             eventType = mediaHit.eventType
             if eventType = m._MEDIA_EVENT_TYPE.AD_START
                 m._isInAd = true
+
             else if eventType = m._MEDIA_EVENT_TYPE.AD_COMPLETE or eventType = m._MEDIA_EVENT_TYPE.AD_SKIP
                 m._isInAd = false
             end if
