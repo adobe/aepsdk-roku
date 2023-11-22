@@ -3,23 +3,20 @@
 This document lists the APIs provided by AEP Roku SDK, along with code samples for API usage.
 
 
-- Core APIs
+- Edge APIs
     - [AdobeAEPSDKInit](#AdobeAEPSDKInit)
     - [getVersion](#getVersion)
     - [resetIdentities](#resetIdentities)
     - [(optional) setExperienceCloudId](#setExperienceCloudId)
+    - [sendEvent](#sendEvent)
     - [setLogLevel](#setLogLevel)
     - [shutdown](#shutdown)
     - [updateConfiguration](#updateConfiguration)
-- Edge APIs
-    - [sendEvent](#sendEvent)
 - Media APIs
     - [createMediaSession](#createMediaSession)
     - [sendMediaEvent](#sendMediaEvent)
 
----
-
-## Core APIs:
+## Edge APIs:
 
 ### AdobeAEPSDKInit
 
@@ -105,6 +102,104 @@ resetIdentities: function() as void
 m.aepSdk.resetIdentities()
 ```
 
+---
+
+### sendEvent
+
+Sends an Experience event to Edge Network.
+
+##### Syntax
+
+```brightscript
+sendEvent: function(xdmData as object, callback = _adb_default_callback as function, context = invalid as dynamic) as void
+```
+
+- `@param data as object : xdm data following the XDM schema that is defined in the Schema Editor`
+- `@param [optional] callback as function(context, result) : handle Edge response`
+- `@param [optional] context as dynamic : context to be passed to the callback function`
+
+
+> **Note**
+> The `sendEvent` API automatically attaches the following information with each Experience Event:
+> - `IdentityMap` with the ECID - included by default to Experience Event class based XDM schemas
+> - `Implementation Details` - for more details see the [Implementation Details XDM field group](https://github.com/adobe/xdm/blob/master/components/datatypes/industry-verticals/implementationdetails.schema.json)
+
+> **Note**
+> If the SDK fails to receive the Edge response within 5 seconds, the callback function will not be executed.
+
+
+> **Note**
+> Variables are not case sensitive in [BrightScript](https://developer.roku.com/docs/references/brightscript/language/expressions-variables-types.md), so always use the `String literals` to present the XDM data **keys**.
+
+##### Example: sendEvent
+
+```brightscript
+  m.aepSdk.sendEvent({
+    "eventType": "commerce.orderPlaced",
+      "commerce": {
+        .....
+      }
+  })
+```
+
+##### Example: sendEvent with callback
+
+```brightscript
+  m.aepSdk.sendEvent({
+      "eventType": "commerce.orderPlaced",
+      "commerce": {
+        .....
+      }
+  }, sub(context, result)
+      print "callback result: "
+      print result
+      print context
+  end sub, context)
+```
+
+#### Send Custom IdentityMap
+
+`sendEvent` API allows passing custom identifiers to the Edge Network using custom Identity map . Create the map using the identifier namespace as key and pass in the identity items for the namespace as an array. Configure the "primary" and "authenticatedState" per individual identity item per your application's requirements.
+
+> **Note**
+> Passing custom Identity map is optional. Do not pass the ECID with the sendEvent API, the ECID automatically attaches it on all requests. By default, the ECID is set as primary server-side if no other identifier uses "primary" : true.
+
+
+##### Example
+
+```brightscript
+customIdentityMap = {
+    "RIDA" : [
+          {
+            "id" : "SampleAdIdentifier",
+            "authenticatedState": "ambiguous",
+            "primary": false
+          }
+    ],
+    "EMAIL" : [
+          {
+            "id" : "user@example.com",
+            "authenticatedState": "ambiguous",
+            "primary": false
+          },
+          {
+            "id" : "useralias@example.com",
+            "authenticatedState": "ambiguous",
+            "primary": false
+          }
+    ]
+}
+```
+
+```brightscript
+  m.aepSdk.sendEvent({
+    "eventType": "commerce.orderPlaced",
+      "commerce": {
+        .....
+      },
+      "identityMap": customIdentityMap
+  })
+```
 ---
 
 ### setExperienceCloudId
@@ -255,107 +350,6 @@ m.aepSdk.updateConfiguration(configuration)
 The `EDGE_CONFIG_ID` value is presented as `Datastream ID` in the [Datastream details](https://experienceleague.adobe.com/docs/experience-platform/edge/datastreams/configure.html?lang=en#view-details) page.
 
 The `EDGE_DOMAIN` value is the first-party domain mapped to the Adobe-provisioned Edge Network domain. For more information, see this [documentation](https://developer.adobe.com/client-sdks/documentation/edge-network/#domain-configuration)
-
----
-
-## Edge APIs
-
-### sendEvent
-
-Sends an Experience event to Edge Network.
-
-##### Syntax
-
-```brightscript
-sendEvent: function(xdmData as object, callback = _adb_default_callback as function, context = invalid as dynamic) as void
-```
-
-- `@param data as object : xdm data following the XDM schema that is defined in the Schema Editor`
-- `@param [optional] callback as function(context, result) : handle Edge response`
-- `@param [optional] context as dynamic : context to be passed to the callback function`
-
-
-> **Note**
-> The `sendEvent` API automatically attaches the following information with each Experience Event:
-> - `IdentityMap` with the ECID - included by default to Experience Event class based XDM schemas
-> - `Implementation Details` - for more details see the [Implementation Details XDM field group](https://github.com/adobe/xdm/blob/master/components/datatypes/industry-verticals/implementationdetails.schema.json)
-
-> **Note**
-> If the SDK fails to receive the Edge response within 5 seconds, the callback function will not be executed.
-
-
-> **Note**
-> Variables are not case sensitive in [BrightScript](https://developer.roku.com/docs/references/brightscript/language/expressions-variables-types.md), so always use the `String literals` to present the XDM data **keys**.
-
-##### Example: sendEvent
-
-```brightscript
-  m.aepSdk.sendEvent({
-    "eventType": "commerce.orderPlaced",
-      "commerce": {
-        .....
-      }
-  })
-```
-
-##### Example: sendEvent with callback
-
-```brightscript
-  m.aepSdk.sendEvent({
-      "eventType": "commerce.orderPlaced",
-      "commerce": {
-        .....
-      }
-  }, sub(context, result)
-      print "callback result: "
-      print result
-      print context
-  end sub, context)
-```
-
-#### Send Custom IdentityMap
-
-`sendEvent` API allows passing custom identifiers to the Edge Network using custom Identity map . Create the map using the identifier namespace as key and pass in the identity items for the namespace as an array. Configure the "primary" and "authenticatedState" per individual identity item per your application's requirements.
-
-> **Note**
-> Passing custom Identity map is optional. Do not pass the ECID with the sendEvent API, the ECID automatically attaches it on all requests. By default, the ECID is set as primary server-side if no other identifier uses "primary" : true.
-
-
-##### Example
-
-```brightscript
-customIdentityMap = {
-    "RIDA" : [
-          {
-            "id" : "SampleAdIdentifier",
-            "authenticatedState": "ambiguous",
-            "primary": false
-          }
-    ],
-    "EMAIL" : [
-          {
-            "id" : "user@example.com",
-            "authenticatedState": "ambiguous",
-            "primary": false
-          },
-          {
-            "id" : "useralias@example.com",
-            "authenticatedState": "ambiguous",
-            "primary": false
-          }
-    ]
-}
-```
-
-```brightscript
-  m.aepSdk.sendEvent({
-    "eventType": "commerce.orderPlaced",
-      "commerce": {
-        .....
-      },
-      "identityMap": customIdentityMap
-  })
-```
 
 ## Media APIs
 
