@@ -139,16 +139,7 @@ m.adbmobile.mediaTrackSessionStart(mediaInfo, mediaContextData)
 **AEP SDK**
 
 > [!IMPORTANT]
-> SessionStart API requires [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) fieldgroup with all the required fields present in the request payload.
-
-| SessionDetails Fields (Requried) | Type |
-| -- | -- |
-| [friendlyName](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmfriendlyname) | `String` |
-| [name]() | `String` |
-| [length]() | `Integer` |
-| [contentType]() | `String` |
-| [streamType]() | `String` |
-
+> SessionStart API requires [sessionDetails](./mediaXDM/sessionDetails.md) fieldgroup with all the required fields present in the request payload.
 
 ``` brightscript
 sessionDetails = {
