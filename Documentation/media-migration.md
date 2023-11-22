@@ -139,7 +139,7 @@ m.adbmobile.mediaTrackSessionStart(mediaInfo, mediaContextData)
 **AEP SDK**
 
 > [!IMPORTANT]
-> SessionStart API requires [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) fieldgroup with all the required fields present in the request payload.
+> createMediaSession() API requires [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) fieldgroup with all the required fields present in the request payload.
 
 | SessionDetails Fields (Requried) |
 | -- |
@@ -148,6 +148,8 @@ m.adbmobile.mediaTrackSessionStart(mediaInfo, mediaContextData)
 | [length](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmlength) |
 | [contentType](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmcontenttype) |
 | [streamType](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmstreamtype) |
+| [channel](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmchannel) |
+| [playerName](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmplayername) |
 
 ``` brightscript
 sessionDetails = {
@@ -157,6 +159,10 @@ sessionDetails = {
     "length": 10,
     "contentType": "vod",
     "streamType" : "video",
+
+    ' (Required) Auto populated by the SDK based on Media configuration
+    "channel": "sampleChannel",
+    "playerName": "playerName,
 
     ' (Optional) Attach Standard metadata if any
     "show": "sample show"
@@ -303,8 +309,18 @@ m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_AD_BREAK_START, adBreakInfo, inval
 
 **AEP SDK**
 
+> [!IMPORTANT]
+> sendMediaEvent() API for event type `media.adBreakStart` requires [advertisingPodDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingpoddetails.schema.md) fieldgroup with all the required fields present in the request payload.
+
+| AdvertisingPodDetails Fields (Requried) |
+| -- |
+| [friendlyName](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingpoddetails.schema.md#xdmfriendlyname) |
+| [index](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingpoddetails.schema.md#xdmindex) |
+| [offset](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingpoddetails.schema.md#xdmoffset) |
+
 ``` brightscript
 advertisingPodDetails = {
+  ' (Required)
   "friendlyName": "adBreakName",
   "index": 1,
   "offset": 0
@@ -322,9 +338,6 @@ adBreakStartXDM = {
 
 m.aepSdk.sendMediaEvent(adBreakStartXDM)
 ```
-
-> [!NOTE]
-> To learn more refer to the [advertisingPodDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingpoddetails.schema.md) XDM fieldgroup.
 
 #### AdbreakComplete
 ``` brightscript
@@ -374,12 +387,25 @@ m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_AD_START, adInfo, adContextData)
 
 **AEP SDK**
 
+> [!IMPORTANT]
+> sendMediaEvent() API for event type `media.adStart` requires [advertisingDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md) fieldgroup with all the required fields present in the request payload.
+
+| AdvertisingDetails Fields (Requried) |
+| -- |
+| friendlyName |
+| name |
+| [podPosition](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md#xdmpodposition) |
+| [length](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md#xdmlength) |
+| [playerName](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md#xdmplayername) |
+
 ``` brightscript
 advertisingDetails = {
+  ' (Required)
   "friendlyName": "adName",
-  "index": 1,
+  "name": "adId",
+  "podPosition": 1,
   "length": 10,
-  "offset": 0,
+  "playerName": "samplePlayerName"
 
   ' (Optional) Attach Standard metadata if any
   "campaignID": "sampleCampaignID"
@@ -475,6 +501,16 @@ m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_START, chapterInfo, chapte
 ```
 
 **AEP SDK**
+
+> [!IMPORTANT]
+> sendMediaEvent() API for event type `media.chapterStart` requires [chapterDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/chapterdetails.schema.md) fieldgroup with all the required fields present in the request payload.
+
+| ChapterDetails Fields (Requried) |
+| -- |
+| [friendlyName](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/chapterdetails.schema.md#xdmfriendlyname) |
+| [index](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/chapterdetails.schema.md#xdmindex) |
+| [length](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/chapterdetails.schema.md#xdmlength) |
+| [offset](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/chapterdetails.schema.md#xdmoffset) |
 
 ``` brightscript
 chapterDetails = {
