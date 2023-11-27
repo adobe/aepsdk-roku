@@ -9,7 +9,7 @@
 | [Start Media session](#start-media-session) |
 | [Track Media events](#track-media-events) |
 
-## Prerequisistes
+## Prerequisites
 1. [Experience Data Model (XDM)](https://experienceleague.adobe.com/docs/experience-platform/xdm/home.html?lang=en)
 2. [Datastreams](https://developer.adobe.com/client-sdks/home/getting-started/configure-datastreams/)
 3. [Getting Started with implementing Media tracking using AEP Roku SDK](./getting-started.md)
@@ -23,13 +23,13 @@
 
 ### Core Plaback APIs:
 
-| Media SDK | AEP SDK|
-| -- | -- |
-| `mediaTrackSessionStart(mediaInfo,mediaContextData)` | `createMediaSession(sessionStartXDM)` |
-| `mediaTrackPlay()` | `sendMediaEvent(playXDM)` |
-| `mediaTrackPause()` | `sendMediaEvent(pauseStartXDM)` |
-| `mediaTrackComplete()` | `sendMediaEvent(sessionCompleteXDM)` |
-| `mediaTrackSessionEnd()` | `sendMediaEvent(sessionEndXDM)` |
+| Media SDK | AEP SDK| Sample |
+| -- | -- | -- |
+| `mediaTrackSessionStart(mediaInfo,mediaContextData)` | `createMediaSession(sessionStartXDM)` | [SessionStart](#tracksessionstart) |
+| `mediaTrackPlay()` | `sendMediaEvent(playXDM)` | [Play](#trackplay) |
+| `mediaTrackPause()` | `sendMediaEvent(pauseStartXDM)` | [Pause](#trackpause) |
+| `mediaTrackComplete()` | `sendMediaEvent(sessionCompleteXDM)` | [SessionComplete](#trackcomplete) |
+| `mediaTrackSessionEnd()` | `sendMediaEvent(sessionEndXDM)` | [SessionEnd](#tracksessionend) |
 
 ### Ad Tracking APIs:
 | Media SDK | AEP SDK|
@@ -110,6 +110,8 @@ m.aepSdk = AdobeAEPSDKInit()
 
 ## Start Media session
 
+### trackSessionStart
+
 **Media SDK**
 
 ``` brightscript
@@ -141,7 +143,7 @@ m.adbmobile.mediaTrackSessionStart(mediaInfo, mediaContextData)
 > [!IMPORTANT]
 > createMediaSession() API requires [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) fieldgroup with all the required fields present in the request payload.
 
-| SessionDetails Fields (Requried) |
+| SessionDetails Fields (Required) |
 | -- |
 | [friendlyName](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmfriendlyname) |
 | [name](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmname) |
@@ -312,7 +314,7 @@ m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_AD_BREAK_START, adBreakInfo, inval
 > [!IMPORTANT]
 > sendMediaEvent() API for event type `media.adBreakStart` requires [advertisingPodDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingpoddetails.schema.md) fieldgroup with all the required fields present in the request payload.
 
-| AdvertisingPodDetails Fields (Requried) |
+| AdvertisingPodDetails Fields (Required) |
 | -- |
 | [friendlyName](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingpoddetails.schema.md#xdmfriendlyname) |
 | [index](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingpoddetails.schema.md#xdmindex) |
@@ -390,7 +392,7 @@ m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_AD_START, adInfo, adContextData)
 > [!IMPORTANT]
 > sendMediaEvent() API for event type `media.adStart` requires [advertisingDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md) fieldgroup with all the required fields present in the request payload.
 
-| AdvertisingDetails Fields (Requried) |
+| AdvertisingDetails Fields (Required) |
 | -- |
 | friendlyName |
 | name |
@@ -505,7 +507,7 @@ m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_START, chapterInfo, chapte
 > [!IMPORTANT]
 > sendMediaEvent() API for event type `media.chapterStart` requires [chapterDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/chapterdetails.schema.md) fieldgroup with all the required fields present in the request payload.
 
-| ChapterDetails Fields (Requried) |
+| ChapterDetails Fields (Required) |
 | -- |
 | [friendlyName](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/chapterdetails.schema.md#xdmfriendlyname) |
 | [index](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/chapterdetails.schema.md#xdmindex) |

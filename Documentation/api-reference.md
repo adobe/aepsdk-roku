@@ -23,7 +23,7 @@ This document lists the APIs provided by AEP Roku SDK, along with code samples f
 > [!IMPORTANT]
 > The AEP task node performs the core logic of the SDK. Typically, a Roku project maintains only one instance of the AEP task node.
 
-It's rquired to first call AdobeAEPSDKInit() without passing an argument within the scene script. It initializes a new AEP task node and creates an associated SDK instance. Then, the task node instance can be retrieved via the getTaskNode() API.
+It's required to first call AdobeAEPSDKInit() without passing an argument within the scene script. It initializes a new AEP task node and creates an associated SDK instance. Then, the task node instance can be retrieved via the getTaskNode() API.
 
 For example:
 ```brightscript
@@ -381,7 +381,7 @@ createMediaSession: function(xdmData as object, configuration = {} as object) as
 | `ADB_CONSTANTS.MEDIA_SESSION_CONFIGURATION.MAIN_PING_INTERVAL` | "config.mainpinginterval" | Integer | 10~50 | **No**
 
 > [!IMPORTANT]
-> SessionStart API requires [sessionDetails](./mediaXDM/sessionDetails.md) fieldgroup with all the required fields present in the request payload.
+> SessionStart API requires [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) fieldgroup with all the required fields present in the request payload.
 
 ##### Example
 
@@ -407,7 +407,7 @@ m.aepSdk.createMediaSession({
 ```brightscript
 MEDIA_SESSION_CONFIGURATION = AdobeAEPSDKConstants().MEDIA_SESSION_CONFIGURATION
 sessionConfiguration = {}
-sessionConfiguration[MEDIA_SESSION_CONFIGURATION.CHANNEL] = "channle_name_for_current_session"
+sessionConfiguration[MEDIA_SESSION_CONFIGURATION.CHANNEL] = "channel_name_for_current_session"
 m.aepSdk.createMediaSession({
   "xdm": {
     "eventType": "media.sessionStart"
@@ -456,15 +456,4 @@ m.aepSdk.sendMediaEvent({
     }
   }
 })
-```
-
-```brightscript
-m.aepSdk.sendMediaEvent({
-   "xdm": {
-        "eventType": "media.ping"
-        "mediaCollection": {
-             "playhead": <current_playhead>,
-          }
-      }
- })
 ```
