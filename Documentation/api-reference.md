@@ -385,6 +385,8 @@ createMediaSession: function(xdmData as object, configuration = {} as object) as
 
 ##### Example
 
+**createMediaSession**
+
 ```brightscript
 m.aepSdk.createMediaSession({
   "xdm": {
@@ -403,6 +405,8 @@ m.aepSdk.createMediaSession({
   }
 })
 ```
+
+**createMediaSession with sessionConfiguration**
 
 ```brightscript
 MEDIA_SESSION_CONFIGURATION = AdobeAEPSDKConstants().MEDIA_SESSION_CONFIGURATION

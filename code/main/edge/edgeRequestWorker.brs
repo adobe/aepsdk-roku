@@ -124,7 +124,6 @@ function _adb_EdgeRequestWorker() as object
                     m._queue.Unshift(requestEntity)
                     exit while
                 else
-                    ''' TODO Add nonrecoverable error response to the responseArray
                     edgeResponse = _adb_EdgeResponse(requestId, networkResponse.getResponseCode(), networkResponse.getResponseString())
                     responseArray.Push(edgeResponse)
                     _adb_logError("EdgeRequestWorker::processRequests() - Failed to send Edge request with id (" + FormatJson(requestId) + ") code (" + FormatJson(networkResponse.getResponseCode()) + ") response:(" + networkResponse.toString() + ")")

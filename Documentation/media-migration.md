@@ -32,38 +32,38 @@
 | `mediaTrackSessionEnd()` | `sendMediaEvent(sessionEndXDM)` | [SessionEnd](#tracksessionend) |
 
 ### Ad Tracking APIs:
-| Media SDK | AEP SDK|
-| -- | -- |
-| `mediaTrackEvent(ADBMobile().MEDIA_AD_BREAK_START, adBreakInfo, contextData)` | `sendMediaEvent(adbreakStartXDM)` |
-| `mediaTrackEvent(ADBMobile().MEDIA_AD_BREAK_COMPLETE, invalid, invalid)` | `sendMediaEvent(adbreakCompleteXDM)` |
-| `mediaTrackEvent(ADBMobile().MEDIA_AD_START, adInfo, contextData)` | `sendMediaEvent(adStartXDM)` |
-| `mediaTrackEvent(ADBMobile().MEDIA_AD_COMPLETE, invalid, invalid)` | `sendMediaEvent(adCompleteXDM)` |
-| `mediaTrackEvent(ADBMobile().MEDIA_AD_SKIP, invalid, invalid)` | `sendMediaEvent(adSkipXDM)` |
+| Media SDK | AEP SDK| Sample |
+| -- | -- | -- |
+| `mediaTrackEvent(ADBMobile().MEDIA_AD_BREAK_START, adBreakInfo, contextData)` | `sendMediaEvent(adbreakStartXDM)` | [AdBreakStart](#adbreakstart) |
+| `mediaTrackEvent(ADBMobile().MEDIA_AD_BREAK_COMPLETE, invalid, invalid)` | `sendMediaEvent(adbreakCompleteXDM)` | [AdBreakComplete](#adbreakcomplete) |
+| `mediaTrackEvent(ADBMobile().MEDIA_AD_START, adInfo, contextData)` | `sendMediaEvent(adStartXDM)` | [AdStart](#adstart) |
+| `mediaTrackEvent(ADBMobile().MEDIA_AD_COMPLETE, invalid, invalid)` | `sendMediaEvent(adCompleteXDM)` | [AdComplete](#adcomplete) |
+| `mediaTrackEvent(ADBMobile().MEDIA_AD_SKIP, invalid, invalid)` | `sendMediaEvent(adSkipXDM)` | [AdSkip](#adskip) |
 
 ### Buffer and Seek APIs
-| Media SDK | AEP SDK|
-| -- | -- |
-| `mediaTrackEvent(ADBMobile().MEDIA_BUFFER_START, invalid, invalid)` | `sendMediaEvent(bufferStartXDM)` |
-| `mediaTrackEvent(ADBMobile().MEDIA_BUFFER_COMPLETE, invalid, invalid)` | `sendMediaEvent(bufferCompleteXDM)` |
-| `mediaTrackEvent(ADBMobile().MEDIA_SEEK_START, invalid, invalid)` | `sendMediaEvent(pauseStartXDM)` |
-| `ADBMobile().mediaTrackEvent(ADBMobile().MEDIA_SEEK_COMPLETE, invalid, invalid)` | `sendMediaEvent(playXDM)` |
+| Media SDK | AEP SDK| Sample |
+| -- | -- | -- |
+| `mediaTrackEvent(ADBMobile().MEDIA_BUFFER_START, invalid, invalid)` | `sendMediaEvent(bufferStartXDM)` | [BufferStart](#bufferstart) |
+| `mediaTrackEvent(ADBMobile().MEDIA_BUFFER_COMPLETE, invalid, invalid)` | `sendMediaEvent(bufferCompleteXDM)` | [BufferComplete](#buffercomplete) |
+| `mediaTrackEvent(ADBMobile().MEDIA_SEEK_START, invalid, invalid)` | `sendMediaEvent(pauseStartXDM)` | [SeekStart](#seekstart) |
+| `mediaTrackEvent(ADBMobile().MEDIA_SEEK_COMPLETE, invalid, invalid)` | `sendMediaEvent(playXDM)` | [SeekComplete](#seekcomplete) |
 
 > [!NOTE]
 > For tracking seek in AEP SDK, use eventType `pauseStart` with correct playhead. Media backend will detect seek based on change in playhead and timestamp values.
 
 ### Chapter APIs
-| Media SDK | AEP SDK|
-| -- | -- |
-| `mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_START, chapterInfo, chapterContextData)` | `sendMediaEvent(chapterStartXDM)` |
-| `mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_COMPLETE, invalid, invalid)` | `sendMediaEvent(chapterCompleteXDM)` |
-| `mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_SKIP, invalid, invalid)` | `sendMediaEvent(chapterSkipXDM)` |
+| Media SDK | AEP SDK| Sample |
+| -- | -- | -- |
+| `mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_START, chapterInfo, chapterContextData)` | `sendMediaEvent(chapterStartXDM)` | [ChapterStart](#chapterstart) |
+| `mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_COMPLETE, invalid, invalid)` | `sendMediaEvent(chapterCompleteXDM)` | [ChapterComplete](#chaptercomplete) |
+| `mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_SKIP, invalid, invalid)` | `sendMediaEvent(chapterSkipXDM)` | [ChapterSkip](#chapterskip) |
 
 ### Quality of Experience (QoE) and Error APIs
-| Media SDK | AEP SDK|
-| -- | -- |
-| `mediaUpdateQoS(qosinfo)` | NA |
-| `mediaTrackEvent(ADBMobile().MEDIA_BITRATE_CHANGE)` | `sendMediaEvent(bitrateChangeXDM)` |
-| `mediaTrackError(errorId, ADBMobile().ERROR_SOURCE_PLAYER)` | `sendMediaEvent(errorXDM)` |
+| Media SDK | AEP SDK| Sample |
+| -- | -- | -- |
+| `mediaUpdateQoS(qosinfo)` | `sendMediaEvent(bitrateChangeXDM)` | [UpdateQoS](#updateqos) |
+| `mediaTrackEvent(ADBMobile().MEDIA_BITRATE_CHANGE)` | `sendMediaEvent(bitrateChangeXDM)` | [BitrateChange](#bitratechange) |
+| `mediaTrackError(errorId, ADBMobile().ERROR_SOURCE_PLAYER)` | `sendMediaEvent(errorXDM)` | [Error](#trackerror) |
 
 > [!NOTE]
 > QoE info has to be attached to the xdmData when calling `sendMediaEvent(bitrateChangeXDM)` for `bitrateChange` event. QoE info can also be attached to any other event's xdm data the sendMediaEvent(eventXDM) API. Refer to the [QoeDataDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/qoedatadetails.schema.md) fieldgroup
@@ -651,6 +651,7 @@ m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_SEEK_START, invalid, invalid)
 
 **AEP SDK**
 
+``` brightscript
 seekStartXDM = {
   "xdm": {
     "eventType": "media.pauseStart",
@@ -660,7 +661,6 @@ seekStartXDM = {
   }
 }
 
-``` brightscript
 m.aepSdk.sendMediaEvent(seekStartXDM)
 ```
 
@@ -674,6 +674,7 @@ m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_SEEK_COMPLETE, invalid, invalid)
 
 **AEP SDK**
 
+``` brightscript
 seekCompleteXDM = {
   "xdm": {
     "eventType": "media.play",
@@ -683,8 +684,48 @@ seekCompleteXDM = {
   }
 }
 
-``` brightscript
 m.aepSdk.sendMediaEvent(seekCompleteXDM)
+```
+---
+
+##### BitrateChange
+
+**Media SDK**
+
+``` brightscript
+' Use the helper method to create mediaInfo object
+bitrate = 200000
+fps = 24
+droppedFrames = 1
+startupTime = 2
+qosInfo = m.adbmobile.adb_media_init_qosinfo(bitrate, startupTime, fps, droppedFrames)
+
+m.adbmobile.mediaUpdateQoS(qosInfo)
+
+m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_BITRATE_CHANGE, invalid, invalid)
+```
+
+**AEP SDK**
+
+``` brightscript
+qoeDataDetails = {
+  "bitrate" : 200000,
+  "framesPerSecond" : 24,
+  "droppedFrames" : 1,
+  "timeToStart" : 2
+}
+
+bitrateChangeXDM = {
+  "xdm": {
+    "eventType": "media.bitrateChange",
+    "mediaCollection": {
+      "playhead": <CURRENT_PLAYHEAD_INTEGER_VALUE>,
+      "qoeDataDetails": qoeDataDetails
+    }
+  }
+}
+
+m.aepSdk.sendMediaEvent(bitrateChangeXDM)
 ```
 ---
 
@@ -701,6 +742,7 @@ m.adbmobile.updateCurrentPlayhead(<CURRENT_PLAYHEAD_INTEGER_VALUE>)
 > [!IMPORTANT]
 > Playhead value is expected in the XDM data for all the API calls. AEP SDK requires calling ping event with latest playhead value every second as a proxy for updateCurrentPlayhead API.
 
+```brightscript
 playheadUpdatePingXDM = {
   "xdm": {
     "eventType": "media.ping",
@@ -710,13 +752,13 @@ playheadUpdatePingXDM = {
   }
 }
 
-``` brightscript
+
 m.aepSdk.sendMediaEvent(playheadUpdatePingXDM)
 ```
 
 ---
 
-### updateQoEObject
+### updateQoS
 
 **Media SDK**
 
