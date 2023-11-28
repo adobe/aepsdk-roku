@@ -159,7 +159,8 @@ sub _showVideoScreen()
 
   MEDIA_SESSION_CONFIGURATION = AdobeAEPSDKConstants().MEDIA_SESSION_CONFIGURATION
   sessionConfiguration = {}
-  sessionConfiguration[MEDIA_SESSION_CONFIGURATION.CHANNEL] = "session_level_channle_name"
+  sessionConfiguration[MEDIA_SESSION_CONFIGURATION.AD_PING_INTERVAL] = 10
+  sessionConfiguration[MEDIA_SESSION_CONFIGURATION.MAIN_PING_INTERVAL] = 20
   sessionConfiguration[MEDIA_SESSION_CONFIGURATION.CHANNEL] = "session_level_channel_name"
 
   ' Note: the session level configuration is optional, it overrides the global configuration for media events within the session
