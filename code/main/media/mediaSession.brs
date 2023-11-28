@@ -75,18 +75,18 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
 
             if adInterval <> invalid and adInterval >= m._MIN_AD_PING_INTERVAL_SEC and adInterval <= m._MAX_AD_PING_INTERVAL_SEC then
                 m._sessionAdPingInterval = adInterval
-                _adb_logVerbose("_extractSessionConfiguration() - Setting ad ping interval as (" + FormatJson(m._sessionAdPingInterval) + ") seconds.")
+                _adb_logVerbose("MediaSession::_extractSessionConfiguration() - Setting ad ping interval as (" + FormatJson(m._sessionAdPingInterval) + ") seconds.")
             else
                 m._sessionAdPingInterval = m._DEFAULT_PING_INTERVAL_SEC
-                _adb_logVerbose("_extractSessionConfiguration() - Setting ad ping interval as default (" + FormatJson(m._DEFAULT_PING_INTERVAL_SEC) + ") seconds.")
+                _adb_logVerbose("MediaSession::_extractSessionConfiguration() - Setting ad ping interval as default (" + FormatJson(m._DEFAULT_PING_INTERVAL_SEC) + ") seconds.")
             end if
 
             if mainInterval <> invalid and mainInterval >= m._MIN_MAIN_PING_INTERVAL_SEC and mainInterval <= m._MAX_MAIN_PING_INTERVAL_SEC then
                 m._sessionMainPingInterval = mainInterval
-                _adb_logVerbose("_extractSessionConfiguration() - Setting main ping interval as (" + FormatJson(m._sessionMainPingInterval) + ") seconds.")
+                _adb_logVerbose("MediaSession::_extractSessionConfiguration() - Setting main ping interval as (" + FormatJson(m._sessionMainPingInterval) + ") seconds.")
             else
                 m._sessionMainPingInterval = m._DEFAULT_PING_INTERVAL_SEC
-                _adb_logVerbose("_extractSessionConfiguration() - Setting main ping interval as default (" + FormatJson(m._DEFAULT_PING_INTERVAL_SEC) + ") seconds.")
+                _adb_logVerbose("MediaSession::_extractSessionConfiguration() - Setting main ping interval as default (" + FormatJson(m._DEFAULT_PING_INTERVAL_SEC) + ") seconds.")
             end if
 
         end function,
@@ -142,7 +142,7 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
                 else
                     ''' Cannot send hit of type other than sessionStart if backendSessionId is not set.
                     if m._backendSessionId = invalid then
-                        _adb_logVerbose("tryDispatchMediaEvents() - Cannot dispatch media event, backend session ID is not set.")
+                        _adb_logVerbose("MediaSession::tryDispatchMediaEvents() - Cannot dispatch media event, backend session ID is not set.")
                         return
                     end if
 
@@ -163,7 +163,7 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
 
         close: function(isAbort = false as boolean) as void
             if not m._isActive then
-                _adb_logWarning("close() - Cannot close media session, there is no active session.")
+                _adb_logWarning("MediaSession::close() - Cannot close media session, there is no active session.")
                 return
             end if
 
@@ -185,7 +185,7 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
         ''' Queues media events which will then be dispatched to edgeRequestQueue
         _queue: function(mediaHit as object) as boolean
             if not m._isActive then
-                _adb_logWarning("handleQueueEvent() - Cannot queue media event, media session (" + FormatJson(m._clientSessionId) + " is not active.")
+                _adb_logWarning("MediaSession::handleQueueEvent() - Cannot queue media event, media session (" + FormatJson(m._clientSessionId) + " is not active.")
                 return false
             end if
 
@@ -228,13 +228,13 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
                                 ''' Should execute this code when there is a non-recoverable error for sessionStart request
                                 ''' Abort the session
                                 m.close(true)
-                                _adb_logWarning("_processEdgeRequestQueue() - SessionStart request failed with unrecoverable error.")
+                                _adb_logWarning("MediaSession::_processEdgeRequestQueue() - SessionStart request failed with unrecoverable error.")
                         return
                             end if
 
                         end if
                     catch ex
-                        _adb_logError("_processEdgeRequestQueue() - Failed to process the edge media response, the exception message: " + ex.Message)
+                        _adb_logError("MediaSession::_processEdgeRequestQueue() - Failed to process the edge media response, the exception message: " + ex.Message)
                     end try
                 end if
             end for
@@ -247,14 +247,14 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
 
                     if _adb_isEmptyOrInvalidString(payloadSessionId)
                         m.close(true)
-                        _adb_logWarning("_processEdgeResponseHandles() - SessionStart request returned with empty or invalid sessionID.")
+                        _adb_logWarning("MediaSession::_processEdgeResponseHandles() - SessionStart request returned with empty or invalid sessionID.")
                         return
                     end if
 
                     ''' set the backendSessionId
                     m._backendSessionId = payloadSessionId
                     ''' dispatch queued events.
-                    _adb_logVerbose("_processEdgeResponseHandles() - Dispatching queued hits as the SessionStart request returned with valid sessionID.")
+                    _adb_logVerbose("MediaSession::_processEdgeResponseHandles() - Dispatching queued hits as the SessionStart request returned with valid sessionID.")
                     m.tryDispatchMediaEvents()
                     ''' Exit since dont need to handle any other handle types
                     exit for
@@ -267,7 +267,7 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
                 if error.type = m._ERROR_TYPE_VA_EDGE_400
                     ''' abort the session if sessionStart fails
                     m.close(true)
-                    _adb_logError("_processEdgeResponseErrors() - Closing the session as the SessionStart request failed.")
+                    _adb_logError("MediaSession::_processEdgeResponseErrors() - Closing the session as the SessionStart request failed.")
                     ''' Exit since dont need to handle any other error types
                     exit for
                 end if

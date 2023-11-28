@@ -19,7 +19,10 @@ function _adb_MediaSessionManager() as object
 
         createSession: function(clientSessionId as string, configurationModule as object, sessionConfig as object, edgeRequestQueue as object) as void
             ' End the current session if any
-            m.endSession()
+            if m._activeSession <> invalid then
+                _adb_logVerbose("MediaSessionManager::createSession() - Ending active session before creating the new session.")
+                m.endSession()
+            end if
 
             ' Start a new session
             m._activeSession = _adb_MediaSession(clientSessionId, configurationModule, sessionConfig, edgeRequestQueue)
@@ -29,6 +32,7 @@ function _adb_MediaSessionManager() as object
         queue: function(mediaHit as object) as void
             ' Check if there is any active session
             if not m._activeSessionExists() then
+                _adb_logDebug("MediaSessionManager::queue() - Cannot queue media hit. No active session.")
                 return
             end if
 
@@ -38,6 +42,7 @@ function _adb_MediaSessionManager() as object
         endSession: function(isAbort = false as boolean) as void
             ' Check if there is any active session
             if m._activeSession = invalid then
+                _adb_logDebug("MediaSessionManager::endSession() - Cannot end session as there is no active session.")
                 return
             end if
 
@@ -49,6 +54,7 @@ function _adb_MediaSessionManager() as object
 
         getActiveClientSessionId: function() as string
             if m._activeSession = invalid then
+                _adb_logDebug("MediaSessionManager::getActiveClientSessionId() - . Returning empty string as there is no active session.")
                 return ""
             end if
 
@@ -61,10 +67,12 @@ function _adb_MediaSessionManager() as object
 
         _getBackendSessionId: function() as string
             if m._activeSession = invalid then
+                _adb_logDebug("MediaSessionManager::_getBackendSessionId() - Returning empty string as there is no active session.")
                 return ""
             end if
 
             if m._activeSession._backendSessionId = invalid then
+                _adb_logDebug("MediaSessionManager::_getBackendSessionId() - Returning empty string as no valid backendSessionId found.")
                 return ""
             end if
 

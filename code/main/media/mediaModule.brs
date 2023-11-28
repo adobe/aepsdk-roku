@@ -18,12 +18,12 @@ end function
 
 function _adb_MediaModule(configurationModule as object, edgeRequestQueue as object) as object
     if _adb_isConfigurationModule(configurationModule) = false then
-        _adb_logError("_adb_MediaModule() - configurationModule is not valid.")
+        _adb_logError("MediaModule::_adb_MediaModule() - configurationModule is not valid.")
         return invalid
     end if
 
     if _adb_isEdgeRequestQueue(edgeRequestQueue) = false then
-        _adb_logError("_adb_MediaModule() - edgeRequestQueue is not valid.")
+        _adb_logError("MediaModule::_adb_MediaModule() - edgeRequestQueue is not valid.")
         return invalid
     end if
 
@@ -50,17 +50,17 @@ function _adb_MediaModule(configurationModule as object, edgeRequestQueue as obj
             clientSessionId = eventData.clientSessionId
 
             if eventType <> m._CONSTANTS.MEDIA.EVENT_TYPE.SESSION_START and clientSessionId <> m._sessionManager.getActiveClientSessionId() then
-                _adb_logError("processEvent() - Cannot process the media event. It's clientSessionId (" + FormatJson(clientSessionId) + ") does not match the active clientSessionId (" + FormatJson(m._sessionManager.getActiveClientSessionId()) + ").")
+                _adb_logError("MediaModule::processEvent() - Cannot process the media event. It's clientSessionId (" + FormatJson(clientSessionId) + ") does not match the active clientSessionId (" + FormatJson(m._sessionManager.getActiveClientSessionId()) + ").")
                 return
             end if
 
             if not _adb_isValidMediaEvent(eventType) then
-                _adb_logError("processEvent() - Cannot process media event (" + FormatJson(eventType) + "), media event type (" + FormatJson(eventType) + ") is invalid.")
+                _adb_logError("MediaModule::processEvent() - Cannot process media event (" + FormatJson(eventType) + "), media event type (" + FormatJson(eventType) + ") is invalid.")
                 return
             end if
 
             if not m._hasValidConfig() then
-                _adb_logError("processMediaEvents() - Cannot process media event (" + FormatJson(eventType) + "), missing required configuration.")
+                _adb_logError("MediaModule::processMediaEvents() - Cannot process media event (" + FormatJson(eventType) + "), missing required configuration.")
                 return
             end if
 

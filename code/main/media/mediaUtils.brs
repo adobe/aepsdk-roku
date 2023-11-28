@@ -19,11 +19,8 @@ function _adb_isValidMediaXDMData(xdmData as object) as boolean
     end if
 
     eventType = xdmData.xdm["eventType"]
-    MEDIA_CONS = _adb_InternalConstants().MEDIA
 
-    if eventType <> MEDIA_CONS.SESSION_START_EVENT_TYPE and not _adb_isStringInArray(eventType, MEDIA_CONS.EVENT_TYPES)
-        return false
-    end if
+    return _adb_isValidMediaEvent(eventType)
 
     return true
 end function

@@ -56,7 +56,7 @@ function _adb_isAEPTaskNode(taskNode as object) as boolean
             return true
         end if
     catch ex
-        _adb_logError("_adb_isAEPTaskNode() - " + ex.message)
+        _adb_logError("TaskNode::_adb_isAEPTaskNode() - " + ex.message)
     end try
     return false
 end function

@@ -351,7 +351,7 @@ function AdobeAEPSDKInit(taskNode = invalid as dynamic) as object
             event = _adb_RequestEvent(m._private.cons.PUBLIC_API.SEND_MEDIA_EVENT, data)
             m._private.dispatchEvent(event)
 
-            if xdmData.xdm.eventType = m._private.cons.MEDIA.SESSION_END_EVENT_TYPE
+            if xdmData.xdm.eventType = m._private.cons.MEDIA.EVENT_TYPE.SESSION_END or xdmData.xdm.eventType = m._private.cons.MEDIA.EVENT_TYPE.SESSION_COMPLETE
                 m._private.mediaSession.endSession()
             end if
         end function,
