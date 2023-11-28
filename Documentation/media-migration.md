@@ -9,7 +9,7 @@
 | [Start Media session](#start-media-session) |
 | [Track Media events](#track-media-events) |
 
-## Prerequisistes
+## Prerequisites
 1. [Experience Data Model (XDM)](https://experienceleague.adobe.com/docs/experience-platform/xdm/home.html?lang=en)
 2. [Datastreams](https://developer.adobe.com/client-sdks/home/getting-started/configure-datastreams/)
 3. [Getting Started with implementing Media tracking using AEP Roku SDK](./getting-started.md)
@@ -23,13 +23,13 @@
 
 ### Core Plaback APIs:
 
-| Media SDK | AEP SDK|
-| -- | -- |
-| `mediaTrackSessionStart(mediaInfo,mediaContextData)` | `createMediaSession(sessionStartXDM)` |
-| `mediaTrackPlay()` | `sendMediaEvent(playXDM)` |
-| `mediaTrackPause()` | `sendMediaEvent(pauseStartXDM)` |
-| `mediaTrackComplete()` | `sendMediaEvent(sessionCompleteXDM)` |
-| `mediaTrackSessionEnd()` | `sendMediaEvent(sessionEndXDM)` |
+| Media SDK | AEP SDK| Sample |
+| -- | -- | -- |
+| `mediaTrackSessionStart(mediaInfo,mediaContextData)` | `createMediaSession(sessionStartXDM)` | [SessionStart](#tracksessionstart) |
+| `mediaTrackPlay()` | `sendMediaEvent(playXDM)` | [Play](#trackplay) |
+| `mediaTrackPause()` | `sendMediaEvent(pauseStartXDM)` | [Pause](#trackpause) |
+| `mediaTrackComplete()` | `sendMediaEvent(sessionCompleteXDM)` | [SessionComplete](#trackcomplete) |
+| `mediaTrackSessionEnd()` | `sendMediaEvent(sessionEndXDM)` | [SessionEnd](#tracksessionend) |
 
 ### Ad Tracking APIs:
 | Media SDK | AEP SDK|
@@ -110,6 +110,8 @@ m.aepSdk = AdobeAEPSDKInit()
 
 ## Start Media session
 
+### trackSessionStart
+
 **Media SDK**
 
 ``` brightscript
@@ -139,18 +141,30 @@ m.adbmobile.mediaTrackSessionStart(mediaInfo, mediaContextData)
 **AEP SDK**
 
 > [!IMPORTANT]
-> All the XDM numeric field values should be of `Integer` data type.
+> createMediaSession() API requires [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) fieldgroup with all the required fields present in the request payload.
 
-> [!Note]
-> Checkout [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) fieldgroup in the MediaAnalytics schema to know more about the required fields and StandardMetadata fields.
+| SessionDetails Fields (Required) |
+| -- |
+| [friendlyName](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmfriendlyname) |
+| [name](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmname) |
+| [length](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmlength) |
+| [contentType](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmcontenttype) |
+| [streamType](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmstreamtype) |
+| [channel](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmchannel) |
+| [playerName](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmplayername) |
 
 ``` brightscript
 sessionDetails = {
+    ' (Required)
     "friendlyName": "mediaName",
     "name": "mediaId",
     "length": 10,
     "contentType": "vod",
     "streamType" : "video",
+
+    ' (Required) Auto populated by the SDK based on Media configuration
+    "channel": "sampleChannel",
+    "playerName": "playerName,
 
     ' (Optional) Attach Standard metadata if any
     "show": "sample show"
@@ -297,8 +311,18 @@ m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_AD_BREAK_START, adBreakInfo, inval
 
 **AEP SDK**
 
+> [!IMPORTANT]
+> sendMediaEvent() API for event type `media.adBreakStart` requires [advertisingPodDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingpoddetails.schema.md) fieldgroup with all the required fields present in the request payload.
+
+| AdvertisingPodDetails Fields (Required) |
+| -- |
+| [friendlyName](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingpoddetails.schema.md#xdmfriendlyname) |
+| [index](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingpoddetails.schema.md#xdmindex) |
+| [offset](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingpoddetails.schema.md#xdmoffset) |
+
 ``` brightscript
 advertisingPodDetails = {
+  ' (Required)
   "friendlyName": "adBreakName",
   "index": 1,
   "offset": 0
@@ -316,9 +340,6 @@ adBreakStartXDM = {
 
 m.aepSdk.sendMediaEvent(adBreakStartXDM)
 ```
-
-> [!NOTE]
-> To learn more refer to the [advertisingPodDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingpoddetails.schema.md) XDM fieldgroup.
 
 #### AdbreakComplete
 ``` brightscript
@@ -368,12 +389,25 @@ m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_AD_START, adInfo, adContextData)
 
 **AEP SDK**
 
+> [!IMPORTANT]
+> sendMediaEvent() API for event type `media.adStart` requires [advertisingDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md) fieldgroup with all the required fields present in the request payload.
+
+| AdvertisingDetails Fields (Required) |
+| -- |
+| friendlyName |
+| name |
+| [podPosition](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md#xdmpodposition) |
+| [length](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md#xdmlength) |
+| [playerName](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md#xdmplayername) |
+
 ``` brightscript
 advertisingDetails = {
+  ' (Required)
   "friendlyName": "adName",
-  "index": 1,
+  "name": "adId",
+  "podPosition": 1,
   "length": 10,
-  "offset": 0,
+  "playerName": "samplePlayerName"
 
   ' (Optional) Attach Standard metadata if any
   "campaignID": "sampleCampaignID"
@@ -469,6 +503,16 @@ m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_START, chapterInfo, chapte
 ```
 
 **AEP SDK**
+
+> [!IMPORTANT]
+> sendMediaEvent() API for event type `media.chapterStart` requires [chapterDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/chapterdetails.schema.md) fieldgroup with all the required fields present in the request payload.
+
+| ChapterDetails Fields (Required) |
+| -- |
+| [friendlyName](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/chapterdetails.schema.md#xdmfriendlyname) |
+| [index](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/chapterdetails.schema.md#xdmindex) |
+| [length](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/chapterdetails.schema.md#xdmlength) |
+| [offset](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/chapterdetails.schema.md#xdmoffset) |
 
 ``` brightscript
 chapterDetails = {
@@ -791,7 +835,7 @@ m.aepSdk.sendMediaEvent(errorXDM)
 | -- | -- |
 | MEDIA_VideoMetadataKeyAD_LOAD                 | [xdm:adLoad](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmadload) |
 | MEDIA_VideoMetadataKeyASSET_ID                | [xdm:assetID](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmassetid) |
-| MEDIA_VideoMetadataKeyAUTHORIZED              | [xdm:isAuthorized](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmisauthorized) |
+| MEDIA_VideoMetadataKeyAUTHORIZED              | [xdm:authorized](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmisauthorized) |
 | MEDIA_VideoMetadataKeyDAY_PART                | [xdm:dayPart](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmdaypart) |
 | MEDIA_VideoMetadataKeyEPISODE                 | [xdm:episode](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmepisode) |
 | MEDIA_VideoMetadataKeyFEED                    | [xdm:feed](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmfeed) |

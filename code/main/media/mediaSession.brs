@@ -19,8 +19,8 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
 
         ' session level configuration
         _sessionChannelName: invalid,
-        _sessionAdPingInternal: invalid,
-        _sessionMainPingInternal: invalid,
+        _sessionAdPingInterval: invalid,
+        _sessionMainPingInterval: invalid,
 
         ' external dependencies
         _configurationModule: invalid,
@@ -62,11 +62,34 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
             m._configurationModule = configurationModule
             m._edgeRequestQueue = edgeRequestQueue
 
-            SESSION_CONFIGURATION = AdobeAEPSDKConstants().MEDIA_SESSION_CONFIGURATION
-            m._sessionAdPingInternal = _adb_optIntFromMap(sessionConfig, SESSION_CONFIGURATION.AD_PING_INTERVAL)
-            m._sessionMainPingInternal = _adb_optIntFromMap(sessionConfig, SESSION_CONFIGURATION.MAIN_PING_INTERVAL)
-            m._sessionChannelName = _adb_optStringFromMap(sessionConfig, SESSION_CONFIGURATION.CHANNEL)
+            m._extractSessionConfiguration(sessionConfig)
         end sub,
+
+        _extractSessionConfiguration: function(sessionConfig as object) as void
+            SESSION_CONFIGURATION = AdobeAEPSDKConstants().MEDIA_SESSION_CONFIGURATION
+
+            m._sessionChannelName = _adb_optStringFromMap(sessionConfig, SESSION_CONFIGURATION.CHANNEL)
+
+            adInterval = _adb_optIntFromMap(sessionConfig, SESSION_CONFIGURATION.AD_PING_INTERVAL)
+            mainInterval = _adb_optIntFromMap(sessionConfig, SESSION_CONFIGURATION.MAIN_PING_INTERVAL)
+
+            if adInterval <> invalid and adInterval >= m._MIN_AD_PING_INTERVAL_SEC and adInterval <= m._MAX_AD_PING_INTERVAL_SEC then
+                m._sessionAdPingInterval = adInterval
+                _adb_logVerbose("_extractSessionConfiguration() - Setting ad ping interval as (" + FormatJson(m._sessionAdPingInterval) + ") seconds.")
+            else
+                m._sessionAdPingInterval = m._DEFAULT_PING_INTERVAL_SEC
+                _adb_logVerbose("_extractSessionConfiguration() - Setting ad ping interval as default (" + FormatJson(m._DEFAULT_PING_INTERVAL_SEC) + ") seconds.")
+            end if
+
+            if mainInterval <> invalid and mainInterval >= m._MIN_MAIN_PING_INTERVAL_SEC and mainInterval <= m._MAX_MAIN_PING_INTERVAL_SEC then
+                m._sessionMainPingInterval = mainInterval
+                _adb_logVerbose("_extractSessionConfiguration() - Setting main ping interval as (" + FormatJson(m._sessionMainPingInterval) + ") seconds.")
+            else
+                m._sessionMainPingInterval = m._DEFAULT_PING_INTERVAL_SEC
+                _adb_logVerbose("_extractSessionConfiguration() - Setting main ping interval as default (" + FormatJson(m._DEFAULT_PING_INTERVAL_SEC) + ") seconds.")
+            end if
+
+        end function,
 
         getClientsessionId: function() as string
             return m._clientSessionId
@@ -419,18 +442,10 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
 
         _getPingInterval: function(isAd = false as boolean) as integer
             if isAd then
-                if m._sessionAdPingInternal <> invalid and m._sessionAdPingInternal >= m._MIN_AD_PING_INTERVAL_SEC and m._sessionAdPingInternal <= m._MAX_AD_PING_INTERVAL_SEC then
-                    _adb_logVerbose("_getPingInterval() - Setting ad ping interval as " + FormatJson(m._sessionAdPingInternal) + " seconds.")
-                    return m._sessionAdPingInternal
-                end if
+                return m._sessionAdPingInterval
             else
-                if m._sessionMainPingInternal <> invalid and m._sessionMainPingInternal >= m._MIN_MAIN_PING_INTERVAL_SEC and m._sessionMainPingInternal <= m._MAX_MAIN_PING_INTERVAL_SEC then
-                    _adb_logVerbose("_getPingInterval() - Setting main ping interval as " + FormatJson(m._sessionMainPingInternal) + " seconds.")
-                    return m._sessionMainPingInternal
-                end if
+                return m._sessionMainPingInterval
             end if
-            _adb_logVerbose("_getPingInterval() - Setting ping interval with the default 10 seconds.")
-            return m._DEFAULT_PING_INTERVAL_SEC
         end function,
 
         _getAppVersion: function() as string
