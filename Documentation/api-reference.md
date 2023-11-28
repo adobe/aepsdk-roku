@@ -407,7 +407,10 @@ m.aepSdk.createMediaSession({
 ```brightscript
 MEDIA_SESSION_CONFIGURATION = AdobeAEPSDKConstants().MEDIA_SESSION_CONFIGURATION
 sessionConfiguration = {}
-sessionConfiguration[MEDIA_SESSION_CONFIGURATION.CHANNEL] = "channel_name_for_current_session"
+sessionConfiguration[MEDIA_SESSION_CONFIGURATION.CHANNEL] = "channel_name_for_current_session" ''' Overwrites channel configured in the SDK configuration.
+sessionConfiguration[MEDIA_SESSION_CONFIGURATION.AD_PING_INTERVAL] = 1 ''' Overwrites ad content ping interval to 1 second.
+sessionConfiguration[MEDIA_SESSION_CONFIGURATION.MAIN_PING_INTERVAL] = 30 ''' Overwrites main content ping interval to 30 seconds.
+
 m.aepSdk.createMediaSession({
   "xdm": {
     "eventType": "media.sessionStart"
