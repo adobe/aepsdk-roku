@@ -1,5 +1,7 @@
 # Migrate from Adobe Media SDK to Adobe Experience Platform Roku SDK
 
+Follow this guide to migrate from [Adobe Media SDK](https://github.com/Adobe-Marketing-Cloud/media-sdks/tree/master/sdks/roku) to the latest Adobe Experience Platform Roku SDK.
+
 ## Table of contents
 | Sections |
 | -- |
