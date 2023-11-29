@@ -40,7 +40,7 @@ function _adb_timestampInMillis(dateTime = createObject("roDateTime") as object)
     end if
 
     if timeInMillis.Len() < 13
-        _adb_logError("_adb_timestampInMillis() - timeInMillis is not 13 digits long: " + timeInMillis)
+        _adb_logError("Datetime::_adb_timestampInMillis() - timeInMillis is not 13 digits long: " + timeInMillis)
         return longInt&
     end if
 

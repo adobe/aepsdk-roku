@@ -385,48 +385,57 @@ createMediaSession: function(xdmData as object, configuration = {} as object) as
 
 ##### Example
 
+**createMediaSession**
+
 ```brightscript
-m.aepSdk.createMediaSession({
+sessionStartXDM = {
   "xdm": {
     "eventType": "media.sessionStart"
      "mediaCollection": {
       "playhead": 0,
+
       "sessionDetails": {
         "streamType": "video",
         "friendlyName": "test_media_name",
-        "hasResume": false,
         "name": "test_media_id",
         "length": 100,
         "contentType": "vod"
       }
     }
   }
-})
+}
+
+m.aepSdk.createMediaSession(sessionStartXDM)
 ```
+
+**createMediaSession with session configuration**
 
 ```brightscript
 MEDIA_SESSION_CONFIGURATION = AdobeAEPSDKConstants().MEDIA_SESSION_CONFIGURATION
+
 sessionConfiguration = {}
 sessionConfiguration[MEDIA_SESSION_CONFIGURATION.CHANNEL] = "channel_name_for_current_session" ''' Overwrites channel configured in the SDK configuration.
 sessionConfiguration[MEDIA_SESSION_CONFIGURATION.AD_PING_INTERVAL] = 1 ''' Overwrites ad content ping interval to 1 second.
 sessionConfiguration[MEDIA_SESSION_CONFIGURATION.MAIN_PING_INTERVAL] = 30 ''' Overwrites main content ping interval to 30 seconds.
 
-m.aepSdk.createMediaSession({
+sessionStartXDM = {
   "xdm": {
     "eventType": "media.sessionStart"
      "mediaCollection": {
       "playhead": 0,
+
       "sessionDetails": {
         "streamType": "video",
         "friendlyName": "test_media_name",
-        "hasResume": false,
         "name": "test_media_id",
         "length": 100,
         "contentType": "vod"
       }
     }
   }
-}, sessionConfiguration)
+}
+
+m.aepSdk.createMediaSession(sessionStartXDM, sessionConfiguration)
 ```
 
 ---
@@ -450,13 +459,17 @@ sendMediaEvent: function(xdmData as object) as void
 
 ##### Example
 
+Example to send `media.play` event using `sendMediaEvent()` API
+
 ```brightscript
-m.aepSdk.sendMediaEvent({
+playXDM = {
   "xdm": {
     "eventType": "media.play",
     "mediaCollection": {
       "playhead": <current_playhead>,
     }
   }
-})
+}
+
+m.aepSdk.sendMediaEvent(playXDM)
 ```

@@ -19,12 +19,12 @@ end function
 
 function _adb_EdgeModule(configurationModule as object, identityModule as object) as object
     if _adb_isConfigurationModule(configurationModule) = false then
-        _adb_logError("_adb_EdgeModule() - configurationModule is not valid.")
+        _adb_logError("EdgeModule::_adb_EdgeModule() - configurationModule is not valid.")
         return invalid
     end if
 
     if _adb_isIdentityModule(identityModule) = false then
-        _adb_logError("_adb_EdgeModule() - identityModule is not valid.")
+        _adb_logError("EdgeModule::_adb_EdgeModule() - identityModule is not valid.")
         return invalid
     end if
 

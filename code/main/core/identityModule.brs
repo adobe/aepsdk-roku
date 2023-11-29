@@ -42,24 +42,24 @@ function _adb_IdentityModule(configurationModule as object) as object
                 m.updateECID(m._queryECID())
             end if
 
-            _adb_logVerbose("getECID() - Returning ECID:(" + FormatJson(m._ecid) + ")")
+            _adb_logVerbose("IdentityModule::getECID() - Returning ECID:(" + FormatJson(m._ecid) + ")")
             return m._ecid
         end function,
 
         updateECID: function(ecid as dynamic) as void
             m._ecid = ecid
             if _adb_isEmptyOrInvalidString(m._ecid)
-                _adb_logDebug("updateECID() - Deleting ECID, updateECID() called with empty or invalid string value.")
+                _adb_logDebug("IdentityModule::updateECID() - Deleting ECID, updateECID() called with empty or invalid string value.")
                 m._deleteECID()
             else
-                _adb_logVerbose("updateECID() - Saving ECID:(" + FormatJson(m._ecid) + ") in cache and persistence.")
+                _adb_logVerbose("IdentityModule::updateECID() - Saving ECID:(" + FormatJson(m._ecid) + ") in cache and persistence.")
                 m._saveECID(m._ecid)
             end if
 
         end function,
 
         _loadECID: function() as dynamic
-            _adb_logVerbose("_loadECID() - Loading ECID from persistence.")
+            _adb_logVerbose("IdentityModule::_loadECID() - Loading ECID from persistence.")
             localDataStoreService = _adb_serviceProvider().localDataStoreService
             ecid = localDataStoreService.readValue(_adb_InternalConstants().LOCAL_DATA_STORE_KEYS.ECID)
 
@@ -67,25 +67,25 @@ function _adb_IdentityModule(configurationModule as object) as object
         end function,
 
         _saveECID: function(ecid as dynamic) as void
-            _adb_logVerbose("_saveECID() - Saving ECID:(" + FormatJson(ecid) + ") to presistence.")
+            _adb_logVerbose("IdentityModule::_saveECID() - Saving ECID:(" + FormatJson(ecid) + ") to presistence.")
             localDataStoreService = _adb_serviceProvider().localDataStoreService
             localDataStoreService.writeValue(_adb_InternalConstants().LOCAL_DATA_STORE_KEYS.ECID, ecid)
         end function,
 
         _deleteECID: function() as void
-            _adb_logVerbose("_deleteECID() - Removing ECID from persistence.")
+            _adb_logVerbose("IdentityModule::_deleteECID() - Removing ECID from persistence.")
             localDataStoreService = _adb_serviceProvider().localDataStoreService
             localDataStoreService.removeValue(_adb_InternalConstants().LOCAL_DATA_STORE_KEYS.ECID)
             return
         end function
 
         _queryECID: function() as dynamic
-            _adb_logInfo("_queryECID() - Fetching ECID from service side.")
+            _adb_logInfo("IdentityModule::_queryECID() - Fetching ECID from service side.")
             configId = m._configurationModule.getConfigId()
             edgeDomain = m._configurationModule.getEdgeDomain()
 
             if _adb_isEmptyOrInvalidString(configId)
-                _adb_logError("_queryECID() - Unable to fetch ECID from service side, invalid configuration.")
+                _adb_logError("IdentityModule::_queryECID() - Unable to fetch ECID from service side, invalid configuration.")
                 return invalid
             end if
 
@@ -99,19 +99,19 @@ function _adb_IdentityModule(configurationModule as object) as object
 
         _getECIDFromQueryResponse: function(networkResponse as dynamic) as dynamic
             if not _adb_isNetworkResponse(networkResponse)
-                _adb_logError("_getECIDFromQueryResponse() - Edge response is invalid.")
+                _adb_logError("IdentityModule::_getECIDFromQueryResponse() - Edge response is invalid.")
                 return invalid
             end if
 
             responseJson = ParseJson(networkResponse.getResponseString())
 
             if _adb_isEmptyOrInvalidMap(responseJson) or not networkResponse.isSuccessful() or _adb_isEmptyOrInvalidString(networkResponse.getResponseString())
-                _adb_logError("_getECIDFromQueryResponse() - Request to fetch ECID failed with response: (" + FormatJson(responseJson) + ")")
+                _adb_logError("IdentityModule::_getECIDFromQueryResponse() - Request to fetch ECID failed with response: (" + FormatJson(responseJson) + ")")
                 return invalid
             end if
 
             if _adb_isEmptyOrInvalidArray(responseJson.handle) or _adb_isEmptyOrInvalidArray(responseJson.handle[0].payload) or _adb_isEmptyOrInvalidString(responseJson.handle[0].payload[0].id)
-                _adb_logError("_getECIDFromQueryResponse() - Unable to parse ECID from the response: (" + FormatJson(responseJson) + ")")
+                _adb_logError("IdentityModule::_getECIDFromQueryResponse() - Unable to parse ECID from the response: (" + FormatJson(responseJson) + ")")
                 return invalid
             end if
 

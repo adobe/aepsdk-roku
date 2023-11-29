@@ -19,7 +19,7 @@ end function
 
 function _adb_edgeRequestQueue(name as string, edgeModule as object) as object
     if _adb_isEdgeModule(edgeModule) = false then
-        _adb_logError("_adb_edgeRequestQueue() - edgeModule is not valid.")
+        _adb_logError("EdgeRequestQueue::_adb_edgeRequestQueue() - edgeModule is not valid.")
         return invalid
     end if
     requestQueue = _adb_AdobeObject("com.adobe.module.edge.requestQueue")
@@ -41,7 +41,7 @@ function _adb_edgeRequestQueue(name as string, edgeModule as object) as object
 
             edgeConfig = m._edgeModule._getEdgeConfig()
             if edgeConfig = invalid
-                _adb_logVerbose("_adb_edgeRequestQueue() - Cannot send network request, invalid configuration.")
+                _adb_logVerbose("EdgeRequestQueue::_adb_edgeRequestQueue() - Cannot send network request, invalid configuration.")
                 return responseEvents
             end if
 

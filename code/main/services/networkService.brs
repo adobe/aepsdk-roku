@@ -62,7 +62,7 @@ function _adb_NetworkService() as object
         end sub,
 
         _syncPostRequest: function(url as string, jsonObj as object, headers = [] as dynamic) as object
-            _adb_logDebug("syncPostRequest() - Attempting to send request with url:("  + chr(10) +  FormatJson(url)  + chr(10) + ") and body:("  + chr(10) + FormatJson(jsonObj)  + chr(10) + ").")
+            _adb_logDebug("NetworkService::syncPostRequest() - Attempting to send request with url:("  + chr(10) +  FormatJson(url)  + chr(10) + ") and body:("  + chr(10) + FormatJson(jsonObj)  + chr(10) + ").")
 
             request = CreateObject("roUrlTransfer")
             port = CreateObject("roMessagePort")
@@ -86,11 +86,11 @@ function _adb_NetworkService() as object
                         responseCode = msg.GetResponseCode()
                         responseString = msg.getString()
                         failureMessage = msg.GetFailureReason()
-                        _adb_logDebug("syncPostRequest() -  Received response code:(" + FormatJson(responseCode) + ") body:("  + chr(10) + responseString  + chr(10) + ") message:("  + chr(10) + failureMessage  + chr(10) + ").")
+                        _adb_logDebug("NetworkService::syncPostRequest() - Received response code:(" + FormatJson(responseCode) + ") body:("  + chr(10) + responseString  + chr(10) + ") message:("  + chr(10) + failureMessage  + chr(10) + ").")
                         return _adb_NetworkResponse(responseCode, responseString)
                     end if
                     if (msg = invalid)
-                        _adb_logDebug("syncPostRequest() - Failed to send edge request url:("  + chr(10) + FormatJson(url)  + chr(10) + ") and body:("  + chr(10) + FormatJson(jsonObj)  + chr(10) + ").")
+                        _adb_logDebug("NetworkService::syncPostRequest() - Failed to send edge request url:("  + chr(10) + FormatJson(url)  + chr(10) + ") and body:("  + chr(10) + FormatJson(jsonObj)  + chr(10) + ").")
                         request.AsyncCancel()
                         return invalid
                     end if
