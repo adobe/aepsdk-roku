@@ -1,4 +1,4 @@
-# Migrate from Media SDK to AEP SDK
+# Migrate from Adobe Media SDK to Adobe Experience Platform Roku SDK
 
 ## Table of contents
 | Sections |
@@ -19,11 +19,11 @@
 ## API comparison
 
 > [!NOTE]
-> AEP SDK has only two APIs for tracking media `createMediaSession()` and `sendMediaEvent()`.
+> AEP Roku SDK has only two APIs for tracking media `createMediaSession()` and `sendMediaEvent()`.
 
 ### Core Plaback APIs:
 
-| Media SDK | AEP SDK| Sample |
+| Media SDK | AEP Roku SDK | Sample |
 | -- | -- | -- |
 | `mediaTrackSessionStart(mediaInfo,mediaContextData)` | `createMediaSession(sessionStartXDM)` | [SessionStart](#tracksessionstart) |
 | `mediaTrackPlay()` | `sendMediaEvent(playXDM)` | [Play](#trackplay) |
@@ -32,7 +32,7 @@
 | `mediaTrackSessionEnd()` | `sendMediaEvent(sessionEndXDM)` | [SessionEnd](#tracksessionend) |
 
 ### Ad Tracking APIs:
-| Media SDK | AEP SDK| Sample |
+| Media SDK | AEP Roku SDK| Sample |
 | -- | -- | -- |
 | `mediaTrackEvent(ADBMobile().MEDIA_AD_BREAK_START, adBreakInfo, contextData)` | `sendMediaEvent(adbreakStartXDM)` | [AdBreakStart](#adbreakstart) |
 | `mediaTrackEvent(ADBMobile().MEDIA_AD_BREAK_COMPLETE, invalid, invalid)` | `sendMediaEvent(adbreakCompleteXDM)` | [AdBreakComplete](#adbreakcomplete) |
@@ -41,7 +41,7 @@
 | `mediaTrackEvent(ADBMobile().MEDIA_AD_SKIP, invalid, invalid)` | `sendMediaEvent(adSkipXDM)` | [AdSkip](#adskip) |
 
 ### Buffer and Seek APIs
-| Media SDK | AEP SDK| Sample |
+| Media SDK | AEP Roku SDK| Sample |
 | -- | -- | -- |
 | `mediaTrackEvent(ADBMobile().MEDIA_BUFFER_START, invalid, invalid)` | `sendMediaEvent(bufferStartXDM)` | [BufferStart](#bufferstart) |
 | `mediaTrackEvent(ADBMobile().MEDIA_BUFFER_COMPLETE, invalid, invalid)` | `sendMediaEvent(bufferCompleteXDM)` | [BufferComplete](#buffercomplete) |
@@ -49,17 +49,17 @@
 | `mediaTrackEvent(ADBMobile().MEDIA_SEEK_COMPLETE, invalid, invalid)` | `sendMediaEvent(playXDM)` | [SeekComplete](#seekcomplete) |
 
 > [!NOTE]
-> For tracking seek in AEP SDK, use eventType `pauseStart` with correct playhead. Media backend will detect seek based on change in playhead and timestamp values.
+> For tracking seek in AEP Roku SDK, use eventType `pauseStart` with correct playhead. Media backend will detect seek based on change in playhead and timestamp values.
 
 ### Chapter APIs
-| Media SDK | AEP SDK| Sample |
+| Media SDK | AEP Roku SDK| Sample |
 | -- | -- | -- |
 | `mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_START, chapterInfo, chapterContextData)` | `sendMediaEvent(chapterStartXDM)` | [ChapterStart](#chapterstart) |
 | `mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_COMPLETE, invalid, invalid)` | `sendMediaEvent(chapterCompleteXDM)` | [ChapterComplete](#chaptercomplete) |
 | `mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_SKIP, invalid, invalid)` | `sendMediaEvent(chapterSkipXDM)` | [ChapterSkip](#chapterskip) |
 
 ### Quality of Experience (QoE) and Error APIs
-| Media SDK | AEP SDK| Sample |
+| Media SDK | AEP Roku SDK| Sample |
 | -- | -- | -- |
 | `mediaUpdateQoS(qosinfo)` | `sendMediaEvent(bitrateChangeXDM)` | [UpdateQoS](#updateqos) |
 | `mediaTrackEvent(ADBMobile().MEDIA_BITRATE_CHANGE)` | `sendMediaEvent(bitrateChangeXDM)` | [BitrateChange](#bitratechange) |
@@ -69,17 +69,17 @@
 > QoE info has to be attached to the xdmData when calling `sendMediaEvent(bitrateChangeXDM)` for `bitrateChange` event. QoE info can also be attached to any other event's xdm data the sendMediaEvent(eventXDM) API. Refer to the [QoeDataDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/qoedatadetails.schema.md) fieldgroup
 
 ### Playhead update API
-| Media SDK | AEP SDK|
+| Media SDK | AEP Roku SDK|
 | -- | -- |
 | `mediaUpdatePlayhead(position)` | NA (sent with all the APIs in the xdm data) |
 
 ## PlayerState Tracking API
-| Media SDK | AEP SDK|
+| Media SDK | AEP Roku SDK|
 | -- | -- |
 | NA | `sendMediaEvent(statesUpdateXDM)` |
 
 ### Helper APIs
-| Media SDK | AEP SDK|
+| Media SDK | AEP Roku SDK|
 | -- | -- |
 | `adb_media_init_mediainfo(title, id, length, streamType, mediaType)` | NA |
 | `adb_media_init_adbreakinfo(title, startTime, position)` | NA |
@@ -98,7 +98,7 @@ m.adbmobileTask = createObject("roSGNode","adbmobileTask")
 m.adbmobile = ADBMobile().getADBMobileConnectorInstance(m.adbmobileTask)
 ```
 
-**AEP SDK**
+**AEP Roku SDK**
 
 ```brightscript
 ' Create SDK instance
@@ -106,7 +106,7 @@ m.aepSdk = AdobeAEPSDKInit()
 ```
 
 > [!NOTE]
-> AEP SDK creates the taskNode internally.
+> AEP Roku SDK creates the taskNode internally.
 
 ## Start Media session
 
@@ -138,7 +138,7 @@ mediaContextData["cmk1"] = "cmv1"
 m.adbmobile.mediaTrackSessionStart(mediaInfo, mediaContextData)
 ```
 
-**AEP SDK**
+**AEP Roku SDK**
 
 > [!IMPORTANT]
 > createMediaSession() API requires [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) fieldgroup with all the required fields present in the request payload.
@@ -199,7 +199,7 @@ m.aepSdk.createMediaSession(sessionStartXDM)
 m.adbmobile.mediaTrackPlay()
 ```
 
-**AEP SDK**
+**AEP Roku SDK**
 
 ``` brightscript
 playXDM = {
@@ -224,7 +224,7 @@ m.aepSdk.sendMediaEvent(playXDM)
 m.adbmobile.mediaTrackPause()
 ```
 
-**AEP SDK**
+**AEP Roku SDK**
 
 ``` brightscript
 pauseStartXDM = {
@@ -249,7 +249,7 @@ m.aepSdk.sendMediaEvent(pauseStartXDM)
 m.adbmobile.mediaTrackComplete()
 ```
 
-**AEP SDK**
+**AEP Roku SDK**
 
 ``` brightscript
 sessionCompleteXDM = {
@@ -274,7 +274,7 @@ m.aepSdk.sendMediaEvent(sessionCompleteXDM)
 m.adbmobile.mediaTrackSessionEnd()
 ```
 
-**AEP SDK**
+**AEP Roku SDK**
 
 ``` brightscript
 sessionEndXDM = {
@@ -309,7 +309,7 @@ adBreakInfo = adb_media_init_adbreakinfo(name, position, startTime)
 m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_AD_BREAK_START, adBreakInfo, invalid)
 ```
 
-**AEP SDK**
+**AEP Roku SDK**
 
 > [!IMPORTANT]
 > sendMediaEvent() API for event type `media.adBreakStart` requires [advertisingPodDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingpoddetails.schema.md) fieldgroup with all the required fields present in the request payload.
@@ -346,7 +346,7 @@ m.aepSdk.sendMediaEvent(adBreakStartXDM)
 m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_AD_BREAK_COMPLETE, invalid, invalid)
 ```
 
-**AEP SDK**
+**AEP Roku SDK**
 
 ``` brightscript
 adBreakCompleteXDM = {
@@ -387,7 +387,7 @@ adContextData["cmk1"] = "cmv1"
 m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_AD_START, adInfo, adContextData)
 ```
 
-**AEP SDK**
+**AEP Roku SDK**
 
 > [!IMPORTANT]
 > sendMediaEvent() API for event type `media.adStart` requires [advertisingDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md) fieldgroup with all the required fields present in the request payload.
@@ -443,7 +443,7 @@ m.aepSdk.sendMediaEvent(adStartXDM)
 m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_AD_COMPLETE, invalid, invalid)
 ```
 
-**AEP SDK**
+**AEP Roku SDK**
 
 ``` brightscript
 adCompleteXDM = {
@@ -466,7 +466,7 @@ m.aepSdk.sendMediaEvent(adCompleteXDM)
 m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_AD_SKIP, invalid, invalid)
 ```
 
-**AEP SDK**
+**AEP Roku SDK**
 
 ``` brightscript
 adSkipXDM = {
@@ -502,7 +502,7 @@ chapterContextData["cmk1"] = "cmv1"
 m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_START, chapterInfo, chapterContextData)
 ```
 
-**AEP SDK**
+**AEP Roku SDK**
 
 > [!IMPORTANT]
 > sendMediaEvent() API for event type `media.chapterStart` requires [chapterDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/chapterdetails.schema.md) fieldgroup with all the required fields present in the request payload.
@@ -552,7 +552,7 @@ m.aepSdk.sendMediaEvent(chapterStartXDM)
 m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_COMPLETE, invalid, invalid)
 ```
 
-**AEP SDK**
+**AEP Roku SDK**
 
 ``` brightscript
 chapterCompleteXDM = {
@@ -575,7 +575,7 @@ m.aepSdk.sendMediaEvent(chapterCompleteXDM)
 m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_CHAPTER_SKIP, invalid, invalid)
 ```
 
-**AEP SDK**
+**AEP Roku SDK**
 
 ``` brightscript
 chapterSkipXDM = {
@@ -600,7 +600,7 @@ m.aepSdk.sendMediaEvent(chapterSkipXDM)
 m.adbmobile.mediaTrackEvent(MEDIA_BUFFER_START, invalid, invalid)
 ```
 
-**AEP SDK**
+**AEP Roku SDK**
 
 ``` brightscript
 bufferStartXDM = {
@@ -623,7 +623,7 @@ m.aepSdk.sendMediaEvent(bufferStartXDM)
 m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_BUFFER_COMPLETE, invalid, invalid)
 ```
 
-**AEP SDK**
+**AEP Roku SDK**
 
 ``` brightscript
 bufferCompleteXDM = {
@@ -649,7 +649,7 @@ m.aepSdk.sendMediaEvent(bufferCompleteXDM)
 m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_SEEK_START, invalid, invalid)
 ```
 
-**AEP SDK**
+**AEP Roku SDK**
 
 ``` brightscript
 seekStartXDM = {
@@ -672,7 +672,7 @@ m.aepSdk.sendMediaEvent(seekStartXDM)
 m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_SEEK_COMPLETE, invalid, invalid)
 ```
 
-**AEP SDK**
+**AEP Roku SDK**
 
 ``` brightscript
 seekCompleteXDM = {
@@ -705,7 +705,7 @@ m.adbmobile.mediaUpdateQoS(qosInfo)
 m.adbmobile.mediaTrackEvent(ADBMobile().MEDIA_BITRATE_CHANGE, invalid, invalid)
 ```
 
-**AEP SDK**
+**AEP Roku SDK**
 
 ``` brightscript
 qoeDataDetails = {
@@ -737,10 +737,10 @@ m.aepSdk.sendMediaEvent(bitrateChangeXDM)
 m.adbmobile.updateCurrentPlayhead(<CURRENT_PLAYHEAD_INTEGER_VALUE>)
 ```
 
-**AEP SDK**
+**AEP Roku SDK**
 
 > [!IMPORTANT]
-> Playhead value is expected in the XDM data for all the API calls. AEP SDK requires calling ping event with latest playhead value every second as a proxy for updateCurrentPlayhead API.
+> Playhead value is expected in the XDM data for all the API calls. AEP Roku SDK requires calling ping event with latest playhead value every second as a proxy for updateCurrentPlayhead API.
 
 ```brightscript
 playheadUpdatePingXDM = {
@@ -773,7 +773,7 @@ qosInfo = m.adbmobile.adb_media_init_qosinfo(bitrate, startupTime, fps, droppedF
 m.adbmobile.mediaUpdateQoS(qosInfo)
 ```
 
-**AEP SDK**
+**AEP Roku SDK**
 
 > [!IMPORTANT]
 > All the QoE field values should be of `Integer` data type.
@@ -828,7 +828,7 @@ m.aepSdk.sendMediaEvent(playWithQoeXDM)
 m.adbmobile.mediaTrackError("errorId", "video-player-error-code")
 ```
 
-**AEP SDK**
+**AEP Roku SDK**
 ``` brightscript
 errorDetails = {
   "name": "errorId",
@@ -855,7 +855,7 @@ m.aepSdk.sendMediaEvent(errorXDM)
 
 ### StreamType
 
-| Media SDK | AEP SDK |
+| Media SDK | AEP Roku SDK |
 | -- | -- |
 | MEDIA_STREAM_TYPE_VOD | "vod" |
 | MEDIA_STREAM_TYPE_LIVE | "live" |
@@ -866,14 +866,14 @@ m.aepSdk.sendMediaEvent(errorXDM)
 
 ### MediaType
 
-| Media SDK | AEP SDK |
+| Media SDK | AEP Roku SDK |
 | -- | -- |
 | MEDIA_STREAM_TYPE_AUDIO | [xdm:streamType](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmstreamtype-known-values) |
 | MEDIA_STREAM_TYPE_VIDEO | [xdm:streamType](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmstreamtype-known-values) |
 
 ### Standard Video Metadata
 
-| Media SDK | AEP SDK |
+| Media SDK | AEP Roku SDK |
 | -- | -- |
 | MEDIA_VideoMetadataKeyAD_LOAD                 | [xdm:adLoad](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmadload) |
 | MEDIA_VideoMetadataKeyASSET_ID                | [xdm:assetID](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmassetid) |
@@ -895,7 +895,7 @@ m.aepSdk.sendMediaEvent(errorXDM)
 
 ### Standard Audio Metadata
 
-| Media SDK | AEP SDK |
+| Media SDK | AEP Roku SDK |
 | -- | -- |
 | MEDIA_AudioMetadataKeyARTIST    | [xdm:artist](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmartist) |
 | MEDIA_AudioMetadataKeyAUTHOR    | [xdm:author](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmauthor) |
@@ -904,7 +904,7 @@ m.aepSdk.sendMediaEvent(errorXDM)
 | MEDIA_AudioMetadataKeySTATION   | [xdm:station](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md#xdmstation) |
 ### Standard Ad Metadata
 
-| Media SDK | AEP SDK |
+| Media SDK | AEP Roku SDK |
 | -- | -- |
 | MEDIA_AdMetadataKeyADVERTISER   | [xdm:advertiser](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md#xdmadvertiser)  |
 | MEDIA_AdMetadataKeyCAMPAIGN_ID  | [xdm:campaignID](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/advertisingdetails.schema.md#xdmcampaignid) |

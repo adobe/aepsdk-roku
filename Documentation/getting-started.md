@@ -57,11 +57,11 @@ Initialize and configure the AEP Roku SDK inside your `scene` script.
 > **Note**
 > If you need to run both Media SDK for Roku and AEP Roku SDK in the same Roku channel and want to use the same ECID, use `setExperienceCloudId` API to set the ECID from Media SDK with the AEP Roku SDK. For more information, refer to the [API reference](./api-reference.md#setexperiencecloudid).
 
-## Access SDK APIs in other components
+## Access AEP Roku SDK APIs in other components
 
-In order to access the SDK APIs in any SceneGraph component, it is required to create a new SDK instance within the component due to the limitations in the component scope of the Roku SceneGraph framework.
+In order to access the AEP Roku SDK APIs in any SceneGraph component, it is required to create a new AEP Roku SDK instance within the component due to the limitations in the component scope of the Roku SceneGraph framework.
 
-Firstly, you need to attach the Adobe task node instance to the Scene node. After initializing the SDK, add the code below in the Scene script.
+Firstly, you need to attach the Adobe task node instance to the Scene node. After initializing the AEP Roku SDK, add the code below in the Scene script.
 
 ``` brightscript
 adobeTaskNode = m.aepSdk.getTaskNode()
@@ -70,7 +70,7 @@ adobeTaskNode = m.aepSdk.getTaskNode()
 m.top.appendChild(adobeTaskNode)
 ```
 
-Then, in other ScenenGraph components scripts, you can retrieve the task node instance and use it to create a new SDK instance in a separate SceneGraph component.
+Then, in other ScenenGraph components scripts, you can retrieve the task node instance and use it to create a new AEP Roku SDK instance in a separate SceneGraph component.
 
 ``` brightscript
 adobeTaskNode = m.top.getScene().findNode("adobeTaskNode")
