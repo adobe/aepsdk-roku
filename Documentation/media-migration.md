@@ -173,9 +173,12 @@ sessionDetails = {
 }
 
 ' (Optional) Create map for custom data if any
-customMetadata = {
-  "cmk1":"cmv "
-}
+customMetadata = [
+  {
+  "name" : "cmk1",
+  "value" : "cmv1"
+  }
+]
 
 sessionStartXDM = {
   "xdm": {
@@ -416,9 +419,12 @@ advertisingDetails = {
 }
 
 ' (Optional) Create map for custom data if any
-customMetadata = {
-  "cmk1":"cmv1"
-}
+customMetadata = [
+  {
+  "name" : "cmk1",
+  "value" : "cmv1"
+  }
+]
 
 adStartXDM = {
   "xdm": {
@@ -525,9 +531,12 @@ chapterDetails = {
 }
 
 ' (Optional) Create map for custom data if any
-customMetadata = {
-  "cmk1":"cmv1"
-}
+customMetadata = [
+  {
+  "name" : "cmk1",
+  "value" : "cmv1"
+  }
+]
 
 chapterStartXDM = {
   "xdm": {
