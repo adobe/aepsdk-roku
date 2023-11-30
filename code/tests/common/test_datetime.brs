@@ -19,7 +19,6 @@ sub TC_adb_timestampInMillis()
     UTF_assertTrue(FormatJson(timestampInMillis).Len() > 12, "timestampInMillis should be longer than 12 digits")
 end sub
 
-
 ' target: _adb_ISO8601_timestamp()
 ' @Test
 sub TC_adb_ISO8601_timestamp()
@@ -27,4 +26,15 @@ sub TC_adb_ISO8601_timestamp()
     regexPattern = CreateObject("roRegex", "^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(([+-]\d\d:\d\d)|Z)?$", "")
     UTF_assertFalse(_adb_isEmptyOrInvalidString(isoString))
     UTF_assertTrue(regexPattern.isMatch(isoString))
+end sub
+
+' target: _adb_TimestampObject()
+' @Test
+sub TC_adb_TimestampObject()
+    obj = _adb_TimestampObject()
+    UTF_assertEqual("LongInteger", Type(obj.tsInMillis), "timestampInMillis is not a long int")
+    UTF_assertTrue(FormatJson(obj.tsInMillis).Len() > 12, "timestampInMillis should be longer than 12 digits")
+    regexPattern = CreateObject("roRegex", "^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(\.\d+)?(([+-]\d\d:\d\d)|Z)?$", "")
+    UTF_assertFalse(_adb_isEmptyOrInvalidString(obj.tsInISO8601))
+    UTF_assertTrue(regexPattern.isMatch(obj.tsInISO8601))
 end sub

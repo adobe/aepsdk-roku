@@ -21,32 +21,32 @@ function _adb_LocalDataStoreService() as object
 
         ''' public Functions
         writeValue: function(key as string, value as string) as void
-            _adb_logVerbose("localDataStoreService::writeValue() - Write key:(" + key + ") value:(" + value + ") to registry.")
+            _adb_logVerbose("LocalDataStoreService::writeValue() - Write key:(" + key + ") value:(" + value + ") to registry.")
             m._registry.Write(key, value)
             sucess = m._registry.Flush()
             if not sucess then
-                _adb_logError("localDataStoreService::writeValue() - Failed to write key:(" + key + ") value:(" + value + ") to registry.")
+                _adb_logError("LocalDataStoreService::writeValue() - Failed to write key:(" + key + ") value:(" + value + ") to registry.")
             end if
         end function,
 
         readValue: function(key as string) as dynamic
-            _adb_logVerbose("localDataStoreService::readValue() - Read key:(" + key + ") from registry.")
+            _adb_logVerbose("LocalDataStoreService::readValue() - Read key:(" + key + ") from registry.")
             '''bug in roku - Exists returns true even if no key. value in that case is an empty string
             if m._registry.Exists(key) and m._registry.Read(key).Len() > 0
-                _adb_logVerbose("localDataStoreService::readValue() - Found key:(" + key + ") with value:(" + m._registry.Read(key) + ") in registry.")
+                _adb_logVerbose("LocalDataStoreService::readValue() - Found key:(" + key + ") with value:(" + m._registry.Read(key) + ") in registry.")
                 return m._registry.Read(key)
             end if
 
-            _adb_logVerbose("localDataStoreService::readValue() - key:(" + key + ") not found in registry.")
+            _adb_logVerbose("LocalDataStoreService::readValue() - key:(" + key + ") not found in registry.")
             return invalid
         end function,
 
         removeValue: function(key as string) as void
-            _adb_logVerbose("localDataStoreService::removeValue() - Deleting key:(" + key + ") from registry.")
+            _adb_logVerbose("LocalDataStoreService::removeValue() - Deleting key:(" + key + ") from registry.")
             m._registry.Delete(key)
             sucess = m._registry.Flush()
             if not sucess then
-                _adb_logError("localDataStoreService::writeValue() - Failed to delete key:(" + key + ") from registry.")
+                _adb_logError("LocalDataStoreService::writeValue() - Failed to delete key:(" + key + ") from registry.")
             end if
         end function,
     }

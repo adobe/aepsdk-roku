@@ -16,12 +16,24 @@ function TS_SDK_integration() as object
 
         _testECID: "12345678901234567890123456789012345678",
         configId: invalid,
+        mediaChannel: invalid,
+        mediaPlayerName: invalid,
+        mediaAppVersion: invalid,
 
         init: sub()
             test_config = ParseJson(ReadAsciiFile("pkg:/source/test_config.json"))
             m.configId = test_config.config_id
+            m.mediaChannel = "channel_test"
+            m.mediaPlayerName = "player_test"
+            m.mediaAppVersion = "1.0.0"
             if _adb_isEmptyOrInvalidString(m.configId) then
                 throw "Not found a valid config_id in test_config.json"
+            end if
+            if _adb_isEmptyOrInvalidString(m.mediaChannel) then
+                throw "Not found a valid edgemedia_channel in test_config.json"
+            end if
+            if _adb_isEmptyOrInvalidString(m.mediaPlayerName) then
+                throw "Not found a valid edgemedia_playerName in test_config.json"
             end if
         end sub,
 
@@ -41,7 +53,7 @@ function TS_SDK_integration() as object
 
             version$ = aepSdk.getVersion()
 
-            ADB_assertTrue((version$ = "1.0.0"), LINE_NUM, "assert getVersion() = 1.0.0")
+            ADB_assertTrue((version$ = "1.1.0-alpha"), LINE_NUM, "assert getVersion() = 1.1.0-alpha")
 
             return invalid
         end function,
@@ -470,6 +482,305 @@ function TS_SDK_integration() as object
             return validator
         end function,
 
+        TC_SDK_createMediaSession: function() as dynamic
+
+            aepSdk = ADB_retrieveSDKInstance()
+
+            ADB_CONSTANTS = AdobeAEPSDKConstants()
+
+            configuration = {}
+
+            configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = m.configId
+            configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL] = m.mediaChannel
+            configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_PLAYER_NAME] = m.mediaPlayerName
+            configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_APP_VERSION] = m.mediaAppVersion
+
+            aepSdk.updateConfiguration(configuration)
+            eventIdForUpdateConfiguration = aepSdk._private.lastEventId
+            aepSdk.createMediaSession({
+                "xdm": {
+                    "eventType": "media.sessionStart"
+                    "mediaCollection": {
+                        "playhead": 0,
+                        "sessionDetails": {
+                            "streamType": "video",
+                            "friendlyName": "test_media_name",
+                            "hasResume": false,
+                            "name": "test_media_id",
+                            "length": 100,
+                            "contentType": "vod"
+                        }
+                    }
+                }
+            })
+            eventIdForCreateMediaSession = aepSdk._private.lastEventId
+
+            validator = {}
+            validator[eventIdForUpdateConfiguration] = sub(debugInfo)
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "setConfiguration"), LINE_NUM, "assert debugInfo.apiName = setConfiguration")
+                ADB_assertTrue((debugInfo.configuration.edge_configid <> invalid and Len(debugInfo.configuration.edge_configid) > 10), LINE_NUM, "assert edge_configid is valid")
+                ADB_assertTrue((debugInfo.configuration.media_channel = "channel_test"), LINE_NUM, "assert media_channel is valid")
+                ADB_assertTrue((debugInfo.configuration.media_playerName = "player_test"), LINE_NUM, "assert media_playerName is valid")
+                ADB_assertTrue((debugInfo.configuration.media_appVersion = "1.0.0"), LINE_NUM, "assert media_appVersion is valid")
+            end sub
+
+            validator[eventIdForCreateMediaSession] = sub(debugInfo)
+                clientSessionId = debugInfo.eventData.clientSessionId
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "createMediaSession"), LINE_NUM, "assert debugInfo.apiName = createMediaSession")
+                ADB_assertTrue((clientSessionId = debugInfo.media.clientSessionId), LINE_NUM, "assert clientSessionId is stored correctly")
+                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 2), LINE_NUM, "assert networkRequests.count() = 2")
+
+                ' the First request is to fetch ECID
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.eventType = "media.sessionStart"), LINE_NUM, "assert eventType = media.sessionStart")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.playhead = 0), LINE_NUM, "assert playhead = 0")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm._id <> invalid), LINE_NUM, "assert _id <> invalid")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.sessionDetails.appVersion = "1.0.0"), LINE_NUM, "assert appVersion = 1.0.0")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.sessionDetails.channel = "channel_test"), LINE_NUM, "assert channel = channel_test")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.sessionDetails.contentType = "vod"), LINE_NUM, "assert contentType = vod")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.sessionDetails.friendlyName = "test_media_name"), LINE_NUM, "assert friendlyName = test_media_name")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.sessionDetails.hasResume = false), LINE_NUM, "assert hasResume = false")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.sessionDetails.length = 100), LINE_NUM, "assert length = 100")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.sessionDetails.name = "test_media_id"), LINE_NUM, "assert name = test_media_id")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.sessionDetails.playerName = "player_test"), LINE_NUM, "assert playerName = player_test")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.sessionDetails.streamType = "video"), LINE_NUM, "assert streamType = video")
+
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.xdm.identityMap.ECID <> invalid), LINE_NUM, "assert include ECID in identityMap")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.xdm.implementationDetails <> invalid), LINE_NUM, "assert include implementationDetails")
+                ADB_assertTrue((debugInfo.networkRequests[1].response.code = 200), LINE_NUM, "assert response code = 200")
+
+                ADB_assertTrue((debugInfo.networkRequests[1].url.StartsWith("https://edge.adobedc.net/ee/va/v1/sessionStart?configId=")), LINE_NUM, "assert url")
+
+                ADB_assertTrue((debugInfo.networkRequests[1].response.body.Instr(debugInfo.media.backendSessionId) > 0), LINE_NUM, "assert backendSerssionId is extracted correctly")
+            end sub
+
+            return validator
+        end function,
+
+        TC_SDK_createMediaSessionWithConfig: function() as dynamic
+
+            aepSdk = ADB_retrieveSDKInstance()
+
+            ADB_CONSTANTS = AdobeAEPSDKConstants()
+
+            configuration = {}
+
+            configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = m.configId
+            configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL] = m.mediaChannel
+            configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_PLAYER_NAME] = m.mediaPlayerName
+            configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_APP_VERSION] = m.mediaAppVersion
+
+            aepSdk.updateConfiguration(configuration)
+            eventIdForUpdateConfiguration = aepSdk._private.lastEventId
+            aepSdk.createMediaSession({
+                "xdm": {
+                    "eventType": "media.sessionStart"
+                    "mediaCollection": {
+                        "playhead": 0,
+                        "sessionDetails": {
+                            "streamType": "video",
+                            "friendlyName": "test_media_name",
+                            "hasResume": false,
+                            "name": "test_media_id",
+                            "length": 100,
+                            "contentType": "vod"
+                        }
+                    }
+                }
+            }, {
+                "config.channel": "test_channel_session",
+                "config.adpinginterval": 5,
+                "config.mainpinginterval": 35,
+            })
+            eventIdForCreateMediaSession = aepSdk._private.lastEventId
+
+            validator = {}
+            validator[eventIdForUpdateConfiguration] = sub(debugInfo)
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "setConfiguration"), LINE_NUM, "assert debugInfo.apiName = setConfiguration")
+                ADB_assertTrue((debugInfo.configuration.edge_configid <> invalid and Len(debugInfo.configuration.edge_configid) > 10), LINE_NUM, "assert edge_configid is valid")
+                ADB_assertTrue((debugInfo.configuration.media_channel = "channel_test"), LINE_NUM, "assert media_channel is valid")
+                ADB_assertTrue((debugInfo.configuration.media_playerName = "player_test"), LINE_NUM, "assert media_playerName is valid")
+                ADB_assertTrue((debugInfo.configuration.media_appVersion = "1.0.0"), LINE_NUM, "assert media_appVersion is valid")
+            end sub
+
+            validator[eventIdForCreateMediaSession] = sub(debugInfo)
+                clientSessionId = debugInfo.eventData.clientSessionId
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "createMediaSession"), LINE_NUM, "assert debugInfo.apiName = createMediaSession")
+                ADB_assertTrue((clientSessionId = debugInfo.media.clientSessionId), LINE_NUM, "assert clientSessionId is stored correctly")
+                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 2), LINE_NUM, "assert networkRequests.count() = 2")
+
+                ' the First request is to fetch ECID
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.eventType = "media.sessionStart"), LINE_NUM, "assert eventType = media.sessionStart")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.playhead = 0), LINE_NUM, "assert playhead = 0")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm._id <> invalid), LINE_NUM, "assert _id <> invalid")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.sessionDetails.appVersion = "1.0.0"), LINE_NUM, "assert appVersion = 1.0.0")
+                ' session level config should be used
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.sessionDetails.channel = "test_channel_session"), LINE_NUM, "assert channel = test_channel_session")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.sessionDetails.contentType = "vod"), LINE_NUM, "assert contentType = vod")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.sessionDetails.friendlyName = "test_media_name"), LINE_NUM, "assert friendlyName = test_media_name")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.sessionDetails.hasResume = false), LINE_NUM, "assert hasResume = false")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.sessionDetails.length = 100), LINE_NUM, "assert length = 100")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.sessionDetails.name = "test_media_id"), LINE_NUM, "assert name = test_media_id")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.sessionDetails.playerName = "player_test"), LINE_NUM, "assert playerName = player_test")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.mediaCollection.sessionDetails.streamType = "video"), LINE_NUM, "assert streamType = video")
+
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.xdm.identityMap.ECID <> invalid), LINE_NUM, "assert include ECID in identityMap")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.xdm.implementationDetails <> invalid), LINE_NUM, "assert include implementationDetails")
+                ADB_assertTrue((debugInfo.networkRequests[1].response.code = 200), LINE_NUM, "assert response code = 200")
+
+                ADB_assertTrue((debugInfo.networkRequests[1].url.StartsWith("https://edge.adobedc.net/ee/va/v1/sessionStart?configId=")), LINE_NUM, "assert url")
+
+                ADB_assertTrue((debugInfo.networkRequests[1].response.body.Instr(debugInfo.media.backendSessionId) > 0), LINE_NUM, "assert backendSerssionId is extracted correctly")
+            end sub
+
+            return validator
+        end function,
+
+        TC_SDK_sendMediaEvent: function() as dynamic
+
+            aepSdk = ADB_retrieveSDKInstance()
+
+            ADB_CONSTANTS = AdobeAEPSDKConstants()
+
+            aepSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
+
+            configuration = {}
+
+            configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = m.configId
+            configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL] = m.mediaChannel
+            configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_PLAYER_NAME] = m.mediaPlayerName
+            configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_APP_VERSION] = m.mediaAppVersion
+
+            aepSdk.updateConfiguration(configuration)
+            eventIdForUpdateConfiguration = aepSdk._private.lastEventId
+            aepSdk.createMediaSession({
+                "xdm": {
+                    "eventType": "media.sessionStart"
+                    "mediaCollection": {
+                        "playhead": 0,
+                        "sessionDetails": {
+                            "streamType": "video",
+                            "friendlyName": "test_media_name",
+                            "hasResume": false,
+                            "name": "test_media_id",
+                            "length": 100,
+                            "contentType": "vod"
+                        }
+                    }
+                }
+            })
+
+            eventIdForCreateMediaSession = aepSdk._private.lastEventId
+
+            aepSdk.sendMediaEvent({
+                "xdm": {
+                    "eventType": "media.play",
+                    "mediaCollection": {
+                        "playhead": 123,
+                    }
+                }
+            })
+            eventIdForSendMediaEvent = aepSdk._private.lastEventId
+
+            validator = {}
+            validator[eventIdForUpdateConfiguration] = sub(debugInfo)
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "setConfiguration"), LINE_NUM, "assert debugInfo.apiName = setConfiguration")
+                ADB_assertTrue((debugInfo.configuration.edge_configid <> invalid and Len(debugInfo.configuration.edge_configid) > 10), LINE_NUM, "assert edge_configid is valid")
+                ADB_assertTrue((debugInfo.configuration.media_channel = "channel_test"), LINE_NUM, "assert media_channel is valid")
+                ADB_assertTrue((debugInfo.configuration.media_playerName = "player_test"), LINE_NUM, "assert media_playerName is valid")
+                ADB_assertTrue((debugInfo.configuration.media_appVersion = "1.0.0"), LINE_NUM, "assert media_appVersion is valid")
+            end sub
+
+            validator[eventIdForCreateMediaSession] = sub(debugInfo)
+                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 2), LINE_NUM, "assert requests = 2")
+
+                ADB_assertTrue((debugInfo.networkRequests[1].response.body.Instr(debugInfo.media.backendSessionId) > 0), LINE_NUM, "assert backendSerssionId is extracted correctly")
+            end sub
+
+            validator[eventIdForSendMediaEvent] = sub(debugInfo)
+                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 1), LINE_NUM, "assert requests = 1")
+
+                ADB_assertTrue((debugInfo.networkRequests[0].jsonObj.events[0].xdm._id <> invalid), LINE_NUM, "assert _id <> invalid")
+                ADB_assertTrue((debugInfo.networkRequests[0].jsonObj.events[0].xdm.eventType = "media.play"), LINE_NUM, "assert eventType = media.play")
+                ADB_assertTrue((debugInfo.networkRequests[0].jsonObj.events[0].xdm.mediaCollection.playhead = 123), LINE_NUM, "assert playhead = 123")
+                ADB_assertTrue((debugInfo.networkRequests[0].jsonObj.events[0].xdm.mediaCollection.sessionID = debugInfo.media.backendSessionId), LINE_NUM, "assert sessionID = backendSessionId")
+
+                ADB_assertTrue((debugInfo.networkRequests[0].jsonObj.xdm.identityMap.ECID <> invalid), LINE_NUM, "assert include ECID in identityMap")
+                ADB_assertTrue((debugInfo.networkRequests[0].jsonObj.xdm.implementationDetails <> invalid), LINE_NUM, "assert include implementationDetails")
+
+                ADB_assertTrue((debugInfo.networkRequests[0].response.code = 204), LINE_NUM, "assert response code = 204")
+
+                ADB_assertTrue((debugInfo.networkRequests[0].url.StartsWith("https://edge.adobedc.net/ee/va/v1/play?configId=")), LINE_NUM, "assert url")
+
+            end sub
+
+            return validator
+        end function,
+
+        TC_SDK_sendMediaEvent_sessionEnd: function() as dynamic
+
+            aepSdk = ADB_retrieveSDKInstance()
+
+            ADB_CONSTANTS = AdobeAEPSDKConstants()
+
+            configuration = {}
+
+            configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = m.configId
+            configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL] = m.mediaChannel
+            configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_PLAYER_NAME] = m.mediaPlayerName
+            configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_APP_VERSION] = m.mediaAppVersion
+
+            ADB_CONSTANTS = AdobeAEPSDKConstants()
+            aepSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
+
+            aepSdk.updateConfiguration(configuration)
+            eventIdForUpdateConfiguration = aepSdk._private.lastEventId
+            aepSdk.createMediaSession({
+                "xdm": {
+                    "eventType": "media.sessionStart"
+                    "mediaCollection": {
+                        "playhead": 0,
+                        "sessionDetails": {
+                            "streamType": "video",
+                            "friendlyName": "test_media_name",
+                            "hasResume": false,
+                            "name": "test_media_id",
+                            "length": 100,
+                            "contentType": "vod"
+                        }
+                    }
+                }
+            })
+            aepSdk.sendMediaEvent({
+                "xdm": {
+                    "eventType": "media.sessionEnd",
+                    "mediaCollection": {
+                        "playhead": 100,
+                    }
+                }
+            })
+            eventIdForSessionEnd = aepSdk._private.lastEventId
+
+            validator = {}
+            validator[eventIdForUpdateConfiguration] = sub(debugInfo)
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "setConfiguration"), LINE_NUM, "assert debugInfo.apiName = setConfiguration")
+                ADB_assertTrue((debugInfo.configuration.edge_configid <> invalid and Len(debugInfo.configuration.edge_configid) > 10), LINE_NUM, "assert edge_configid is valid")
+                ADB_assertTrue((debugInfo.configuration.media_channel = "channel_test"), LINE_NUM, "assert media_channel is valid")
+                ADB_assertTrue((debugInfo.configuration.media_playerName = "player_test"), LINE_NUM, "assert media_playerName is valid")
+                ADB_assertTrue((debugInfo.configuration.media_appVersion = "1.0.0"), LINE_NUM, "assert media_appVersion is valid")
+            end sub
+
+            validator[eventIdForSessionEnd] = sub(debugInfo)
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "sendMediaEvent"), LINE_NUM, "assert debugInfo.apiName = sendMediaEvent")
+
+                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 1), LINE_NUM, "assert networkRequests.count() = 1")
+
+                ADB_assertTrue((debugInfo.media.clientSessionId = ""), LINE_NUM, "assert clientSessionId is empty")
+                ADB_assertTrue((debugInfo.media.clientSessionId = ""), LINE_NUM, "assert clientSessionId is empty")
+                ADB_assertTrue((debugInfo.media.existActiveSession = false), LINE_NUM, "assert no active session")
+            end sub
+
+            return validator
+        end function,
     }
 
     instance.init()

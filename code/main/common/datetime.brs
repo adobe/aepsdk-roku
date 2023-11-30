@@ -13,8 +13,8 @@
 
 ' ******************************** MODULE: datetime utils *********************************
 
-function _adb_ISO8601_timestamp() as string
-    dateTime = createObject("roDateTime")
+function _adb_ISO8601_timestamp(dateTime = createObject("roDateTime") as object) as string
+
     isoString = dateTime.toIsoString()
     if isoString.EndsWith("Z")
         milliSeconds = StrI(dateTime.GetMilliseconds()).Trim()
@@ -24,10 +24,9 @@ function _adb_ISO8601_timestamp() as string
 end function
 
 ' Returns the current time in milliseconds.
-function _adb_timestampInMillis() as longinteger
+function _adb_timestampInMillis(dateTime = createObject("roDateTime") as object) as longinteger
     longInt& = 0
 
-    dateTime = CreateObject("roDateTime")
     currMS = dateTime.GetMilliseconds()
     timeInSeconds = dateTime.AsSeconds()
 
@@ -41,7 +40,7 @@ function _adb_timestampInMillis() as longinteger
     end if
 
     if timeInMillis.Len() < 13
-        _adb_logError("_adb_timestampInMillis() - timeInMillis is not 13 digits long: " + timeInMillis)
+        _adb_logError("Datetime::_adb_timestampInMillis() - timeInMillis is not 13 digits long: " + timeInMillis)
         return longInt&
     end if
 
@@ -51,4 +50,15 @@ function _adb_timestampInMillis() as longinteger
 
     return longInt&
 
+end function
+
+function _adb_TimestampObject() as object
+    dateTime = createObject("roDateTime")
+
+    tsInMillis& = _adb_timestampInMillis(dateTime)
+    tsInISO8601$ = _adb_ISO8601_timestamp(dateTime)
+    return {
+        tsInISO8601: tsInISO8601$,
+        tsInMillis: tsInMillis&
+    }
 end function

@@ -1,46 +1,22 @@
+' ********************** Copyright 2023 Adobe. All rights reserved. **********************
 
-' 1st function called when channel application starts.
-sub Main(input as dynamic)
-  print "################"
-  print "Start of Channel"
-  print "################"
-  print input
-  ' Add deep linking support here. Input is an associative array containing
-  ' parameters that the client defines. Examples include "options, contentID, etc."
-  ' See guide here: https://sdkdocs.roku.com/display/sdkdoc/External+Control+Guide
-  ' For example, if a user clicks on an ad for a movie that your app provides,
-  ' you will have mapped that movie to a contentID and you can parse that ID
-  ' out from the input parameter here.
-  ' Call the service provider API to look up
-  ' the content details, or right data from feed for id
-  if input <> invalid
-    print "Received Input -- write code here to check it!"
-    print input
-    if input.reason <> invalid
-      if input.reason = "ad" then
-        print "Channel launched from ad click"
-        'do ad stuff here
-      end if
-    end if
-    if input.contentID <> invalid
-      m.contentID = input.contentID
-      print "contentID is: " + input.contentID
-      'launch/prep the content mapped to the contentID here
-    end if
-  end if
-  showHeroScreen()
-end sub
+' This file is licensed to you under the Apache License, Version 2.0 (the "License");
+' you may not use this file except in compliance with the License. You may obtain a copy
+' of the License at http://www.apache.org/licenses/LICENSE-2.0
 
-' Initializes the scene and shows the main homepage.
-' Handles closing of the channel.
-sub showHeroScreen()
-  print "main.brs - [showHeroScreen]"
+' Unless required by applicable law or agreed to in writing, software distributed under
+' the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR REPRESENTATIONS
+' OF ANY KIND, either express or implied. See the License for the specific language
+' governing permissions and limitations under the License.
+
+' *****************************************************************************************
+
+sub Main(_input as dynamic)
   screen = CreateObject("roSGScreen")
   m.port = CreateObject("roMessagePort")
   screen.setMessagePort(m.port)
-  _scene = screen.CreateScene("SimpleVideoScene")
+  _scene = screen.CreateScene("MainScene")
   screen.show()
-  ' vscode_rdb_on_device_component_entry
 
   while(true)
     msg = wait(0, m.port)
