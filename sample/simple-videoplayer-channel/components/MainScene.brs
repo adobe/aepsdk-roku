@@ -256,8 +256,8 @@ function _createContentNode() as object
   contentNode.streamFormat = "mp4"
   contentNode.url = "http://video.ted.com/talks/podcast/DanGilbert_2004_480.mp4"
   contentNode.StarRating = 80
-  contentNode.Length = 1972
-  contentNode.Title = "Craig Venter asks, Can we create new life out of our digital universe?"
+  contentNode.Length = 1280
+  contentNode.Title = "Dan Gilbert asks, Why are we happy?"
   return contentNode
 end function
 
