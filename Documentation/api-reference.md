@@ -1,4 +1,4 @@
-# AEP Roku SDK API Usage
+# Adobe Experience Platform Roku SDK API Reference
 
 This document lists the APIs provided by AEP Roku SDK, along with code samples for API usage.
 
@@ -21,9 +21,9 @@ This document lists the APIs provided by AEP Roku SDK, along with code samples f
 ### AdobeAEPSDKInit
 
 > [!IMPORTANT]
-> The AEP task node performs the core logic of the SDK. Typically, a Roku project maintains only one instance of the AEP task node.
+> The AEP task node performs the core logic of the AEP Roku SDK. Typically, a Roku project maintains only one instance of the AEP task node.
 
-It's required to first call AdobeAEPSDKInit() without passing an argument within the scene script. It initializes a new AEP task node and creates an associated SDK instance. Then, the task node instance can be retrieved via the getTaskNode() API.
+It's required to first call AdobeAEPSDKInit() without passing an argument within the scene script. It initializes a new AEP task node and creates an associated AEP Roku SDK instance. Then, the task node instance can be retrieved via the getTaskNode() API.
 
 For example:
 ```brightscript
@@ -38,7 +38,7 @@ For example:
 m.top.appendChild(adobeTaskNode)
 ```
 
-The task node's ID is by default set to "adobeTaskNode". Then, retrieve it by ID and use it to create a new SDK instance in other components.
+The task node's ID is by default set to "adobeTaskNode". Then, retrieve it by ID and use it to create a new AEP Roku SDK instance in other components.
 
 For example:
 ```brightscript
@@ -47,7 +47,7 @@ sdkInstance = AdobeAEPSDKInit(adobeTaskNode)
 ```
 
 > **Note**
-> The following variables are reserved to hold the SDK instances in GetGlobalAA():
+> The following variables are reserved to hold the AEP Roku SDK instances in GetGlobalAA():
 >- `GetGlobalAA()._adb_public_api`
 >- `GetGlobalAA()._adb_main_task_node`
 >- `GetGlobalAA()._adb_serviceProvider_instance`
@@ -88,7 +88,7 @@ sdkVersion = m.aepSdk.getVersion()
 
 ### resetIdentities
 
-Call this function to reset the Adobe identities such as ECID from the SDK.
+Call this function to reset the Adobe identities such as ECID from the AEP Roku SDK.
 
 ##### Syntax
 
@@ -125,7 +125,7 @@ sendEvent: function(xdmData as object, callback = _adb_default_callback as funct
 > - `Implementation Details` - for more details see the [Implementation Details XDM field group](https://github.com/adobe/xdm/blob/master/components/datatypes/industry-verticals/implementationdetails.schema.json)
 
 > **Note**
-> If the SDK fails to receive the Edge response within 5 seconds, the callback function will not be executed.
+> If the AEP Roku SDK fails to receive the Edge response within 5 seconds, the callback function will not be executed.
 
 
 > **Note**
@@ -355,7 +355,7 @@ The `EDGE_DOMAIN` value is the first-party domain mapped to the Adobe-provisione
 
 ### createMediaSession
 
-Creates a new Media session with the provided XDM data. The XDM data event type should be `media.sessionStart`. If the `playerName`, `channel`, and `appVersion` are not provided in the XDM data, the SDK will use the global values passed via `updateConfiguration` API.
+Creates a new Media session with the provided XDM data. The XDM data event type should be `media.sessionStart`. If the `playerName`, `channel`, and `appVersion` are not provided in the XDM data, the AEP Roku SDK will use the global values passed via `updateConfiguration` API.
 
 About the XDM data structure, please refer to the [starting the session
 ](https://experienceleague.adobe.com/docs/experience-platform/edge-network-server-api/media-edge-apis/getting-started.html?lang=en#start-session) document.
@@ -414,7 +414,7 @@ m.aepSdk.createMediaSession(sessionStartXDM)
 MEDIA_SESSION_CONFIGURATION = AdobeAEPSDKConstants().MEDIA_SESSION_CONFIGURATION
 
 sessionConfiguration = {}
-sessionConfiguration[MEDIA_SESSION_CONFIGURATION.CHANNEL] = "channel_name_for_current_session" ''' Overwrites channel configured in the SDK configuration.
+sessionConfiguration[MEDIA_SESSION_CONFIGURATION.CHANNEL] = "channel_name_for_current_session" ''' Overwrites channel configured in the AEP Roku SDK configuration.
 sessionConfiguration[MEDIA_SESSION_CONFIGURATION.AD_PING_INTERVAL] = 1 ''' Overwrites ad content ping interval to 1 second.
 sessionConfiguration[MEDIA_SESSION_CONFIGURATION.MAIN_PING_INTERVAL] = 30 ''' Overwrites main content ping interval to 30 seconds.
 
@@ -448,7 +448,7 @@ m.aepSdk.createMediaSession(sessionStartXDM, sessionConfiguration)
 About the XDM data structure, please refer to the [Media Edge API Documentation](https://experienceleague.adobe.com/docs/experience-platform/edge-network-server-api/media-edge-apis/getting-started.html?lang=en).
 
 > **Important**
-> Ensure that the `media.ping` event is sent at least once every second with the latest playhead value during the video playback. SDK relies on these pings to function properly.
+> Ensure that the `media.ping` event is sent at least once every second with the latest playhead value during the video playback. AEP Roku SDK relies on these pings to function properly.
 > Refer to [MainScene.brs](../sample/simple-videoplayer-channel/components/MainScene.brs) for information on how the sample app uses a timer to send ping events every second.
 
 ##### Syntax
