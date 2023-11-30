@@ -12,15 +12,11 @@
 ' *****************************************************************************************
 
 sub init()
-  m.Warning = m.top.findNode("WarningDialog")
+  m.dialog = m.top.findNode("messageDialog")
 
   m.ButtonGroup = m.top.findNode("ButtonGroup")
-  m.ButtonGroup.buttons = ["SendEventWithCallback", "Shutdown", "NewScreen(API)", "MediaTracking"]
+  m.ButtonGroup.buttons = ["SendEventWithCallback", "NewScreen(API)", "MediaTracking"]
   m.ButtonGroup.observeField("buttonSelected", "onButtonSelected")
-
-  m.timer = m.top.findNode("MainTimer")
-  m.timer.control = "start"
-  m.timer.ObserveField("fire", "timerExecutor")
 
   m.videoTimer = m.top.findNode("VideoTimer")
   m.videoTimer.control = "none"
@@ -53,19 +49,15 @@ sub _initSDK()
   m.aepSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
 
   configuration = {}
-  test_config = ParseJson(ReadAsciiFile("pkg:/source/test_config.json"))
 
-  if test_config <> invalid and test_config.count() > 0
-    configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = test_config.config_id
-    configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL] = test_config.edgemedia_channel
-    configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_PLAYER_NAME] = test_config.edgemedia_playerName
-    configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_APP_VERSION] = test_config.edgemedia_appVersion
-  end if
-
+  configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = ""
+  ' Note: the below Edge domain configuration is optional
+  ' configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = ""
+  configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL] = "channel_test_roku"
+  configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_PLAYER_NAME] = "player_test_roku"
+  configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_APP_VERSION] = "1.0.0"
   m.aepSdk.updateConfiguration(configuration)
 
-  ' initialize the SDK flags/vars
-  m.test_shutdown = false
   m.video_position = 0
 
 end sub
@@ -93,8 +85,8 @@ sub _sendEventWithCallback()
     jsonObj = ParseJson(result.message)
     message = _extractLocationHint(jsonObj, "Not found locationHint")
     ' show result in dialog
-    context.Warning.visible = "true"
-    context.Warning.message = message
+    context.dialog.visible = "true"
+    context.dialog.message = message
   end sub, m)
 end sub
 
@@ -104,7 +96,7 @@ function _extractLocationHint(jsonObj as object, defaultMessage as string) as st
     if item.type = "locationHint:result" then
       for each data in item.payload
         if data.scope = "EdgeNetwork" then
-          message = "locationHint:EdgeNetwork: " + data.hint
+          message = "locationHint: " + data.hint
         end if
       end for
     end if
@@ -133,14 +125,12 @@ sub _testShutdownAPI()
 end sub
 
 sub onButtonSelected()
-  ' 0: "SendEventWithCallback",  1: "Shutdown", 2: "NewScreen(API)", 3: "MediaTracking"
+  ' 0: "SendEventWithCallback",  1: "NewScreen(API)", 2: "MediaTracking"
   if m.ButtonGroup.buttonSelected = 0
     _sendEventWithCallback()
   else if m.ButtonGroup.buttonSelected = 1
-    _testShutdownAPI()
-  else if m.ButtonGroup.buttonSelected = 2
     _createAndShowNewScreen()
-  else if m.ButtonGroup.buttonSelected = 3
+  else if m.ButtonGroup.buttonSelected = 2
     _showVideoScreen()
   else
   end if
@@ -167,6 +157,13 @@ sub _showVideoScreen()
   m.video.setFocus(true)
   m.video_position = 0
 
+  MEDIA_SESSION_CONFIGURATION = AdobeAEPSDKConstants().MEDIA_SESSION_CONFIGURATION
+  sessionConfiguration = {}
+  sessionConfiguration[MEDIA_SESSION_CONFIGURATION.AD_PING_INTERVAL] = 10
+  sessionConfiguration[MEDIA_SESSION_CONFIGURATION.MAIN_PING_INTERVAL] = 20
+  sessionConfiguration[MEDIA_SESSION_CONFIGURATION.CHANNEL] = "session_level_channel_name"
+
+  ' Note: the session level configuration is optional, it overrides the global configuration for media events within the session
   m.aepSdk.createMediaSession({
     "xdm": {
       "eventType": "media.sessionStart"
@@ -182,7 +179,7 @@ sub _showVideoScreen()
         }
       }
     }
-  })
+  }, sessionConfiguration)
 
 end sub
 
@@ -202,9 +199,9 @@ sub _hideButtonGroup()
   m.ButtonGroup.visible = false
 end sub
 
-sub _hideWarningDialog()
-  if m.Warning <> invalid
-    m.Warning.visible = false
+sub _hideDialog()
+  if m.dialog <> invalid
+    m.dialog.visible = false
   end if
 end sub
 
@@ -225,8 +222,8 @@ end sub
 function onKeyEvent(key as string, press as boolean) as boolean
   if press then
     if key = "back"
-      if m.Warning.visible
-        _hideWarningDialog()
+      if m.dialog.visible
+        _hideDialog()
         _focusOnButtonGroup()
         return true
       else if m.newScreen <> invalid and m.newScreen.visible
@@ -241,8 +238,8 @@ function onKeyEvent(key as string, press as boolean) as boolean
         return false
       end if
     else if key = "OK"
-      if m.Warning.visible
-        _hideWarningDialog()
+      if m.dialog.visible
+        _hideDialog()
         _focusOnButtonGroup()
         return true
       end if
@@ -254,58 +251,10 @@ function onKeyEvent(key as string, press as boolean) as boolean
   return false
 end function
 
-sub timerExecutor()
-  if m.test_shutdown
-    m.aepSdk.shutdown()
-    m.aepSdk = invalid
-
-    m.aepSdk_2 = AdobeAEPSDKInit()
-    ADB_CONSTANTS = AdobeAEPSDKConstants()
-    m.aepSdk_2.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
-
-    configuration = {}
-
-    test_config = ParseJson(ReadAsciiFile("pkg:/source/test_config.json"))
-    if test_config <> invalid and test_config.count() > 0
-      configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = test_config.config_id
-    end if
-    m.aepSdk_2.updateConfiguration(configuration)
-
-    m.aepSdk_2.sendEvent({
-      "eventType": "commerce.orderPlaced",
-      "commerce": {
-        "key3": "value3"
-      }
-    }, sub(context, result)
-      jsonObj = ParseJson(result.message)
-      message = ""
-      for each item in jsonObj.handle
-        if item.type = "locationHint:result" then
-          for each data in item.payload
-            if data.scope = "EdgeNetwork" then
-              message = "shutdown -> re-init -> sendEvent: " + data.hint
-            end if
-          end for
-        end if
-      end for
-
-      ' show result in dialog
-      context.Warning.visible = "true"
-
-      context.Warning.message = message
-    end sub, m)
-
-  end if
-
-  m.test_shutdown = false
-end sub
-
 function _createContentNode() as object
   contentNode = CreateObject("roSGNode", "ContentNode")
   contentNode.streamFormat = "mp4"
   contentNode.url = "http://video.ted.com/talks/podcast/DanGilbert_2004_480.mp4"
-  contentNode.ShortDescriptionLine1 = "Can we create new life out of our digital universe?"
-  contentNode.Description = "He walks the TED2008 audience through his latest research into fourth-generation fuels -- biologically created fuels with CO2 as their feedstock. His talk covers the details of creating brand-new chromosomes using digital technology, the reasons why we would want to do this, and the bioethics of synthetic life. A fascinating Q and A with TED's Chris Anderson follows."
   contentNode.StarRating = 80
   contentNode.Length = 1972
   contentNode.Title = "Craig Venter asks, Can we create new life out of our digital universe?"

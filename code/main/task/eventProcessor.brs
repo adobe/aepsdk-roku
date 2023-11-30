@@ -20,11 +20,13 @@ function _adb_EventProcessor(task as object) as object
         _configurationModule: invalid,
         _identityModule: invalid,
         _edgeModule: invalid,
+        _mediaModule: invalid,
 
         init: function() as void
             m._configurationModule = _adb_ConfigurationModule()
             m._identityModule = _adb_IdentityModule(m._configurationModule)
             m._edgeModule = _adb_EdgeModule(m._configurationModule, m._identityModule)
+            m._mediaModule = _adb_MediaModule(m._configurationModule, m._edgeModule.createEdgeRequestQueue("MediaRequestQueue"))
 
             ' enable debug mode if needed
             if m._isInDebugMode()
@@ -36,12 +38,12 @@ function _adb_EventProcessor(task as object) as object
         handleEvent: function(event as dynamic) as void
 
             if _adb_isRequestEvent(event)
-                _adb_logInfo("handleEvent() - handle event: " + FormatJson(event))
+                _adb_logInfo("EventProcessor::handleEvent() - Received request event:(" + chr(10) + FormatJson(event) + chr(10) + ")")
 
                 try
                     m._processAdbRequestEvent(event)
                 catch ex
-                    _adb_logError("handleEvent() - Failed to process the request event, the exception message: " + ex.Message)
+                    _adb_logError("EventProcessor::handleEvent() - Failed to process the request event, the exception message: " + ex.Message)
                 end try
 
                 if m._isInDebugMode()
@@ -49,7 +51,7 @@ function _adb_EventProcessor(task as object) as object
                 end if
 
             else
-                _adb_logWarning("handleEvent() - event is invalid: " + FormatJson(event))
+                _adb_logWarning("EventProcessor::handleEvent() - Cannot handle event, invalid event: (" + chr(10) + FormatJson(event) + chr(10) + ")")
             end if
         end function,
 
@@ -71,6 +73,7 @@ function _adb_EventProcessor(task as object) as object
             debugInfo["configuration"] = m._configurationModule.dump()
             debugInfo["identity"] = m._identityModule.dump()
             debugInfo["edge"] = m._edgeModule.dump()
+            debugInfo["media"] = m._mediaModule.dump()
             debugInfo["networkRequests"] = networkService.dump()
 
             m._task.setField("debugInfo", debugInfo)
@@ -89,9 +92,63 @@ function _adb_EventProcessor(task as object) as object
                 m._resetIdentities(event)
             else if event.apiName = m._CONSTANTS.PUBLIC_API.RESET_SDK
                 m._resetSDK(event)
+            else if event.apiName = m._CONSTANTS.PUBLIC_API.SEND_MEDIA_EVENT
+                m._handleMediaEvents(event)
+            else if event.apiName = m._CONSTANTS.PUBLIC_API.CREATE_MEDIA_SESSION
+                m._handleCreateMediaSession(event)
             else
-                _adb_logWarning("handleEvent() - event is invalid: " + FormatJson(event))
+                _adb_logWarning("EventProcessor::handleEvent() - Cannot handle event, invalid event: " + FormatJson(event))
             end if
+        end function,
+
+        _handleCreateMediaSession: function(event as object) as void
+            requestId = event.uuid
+            data = event.data
+
+            ' validate the event data
+            if not m._isValidEventDataForSessionStartRequest(data)
+                _adb_logError("EventProcessor::_handleCreateMediaSession() - Dropping the sessionStart media event, invalid data passed: (" + chr(10) + FormatJson(event) + chr(10) + ")" )
+                return
+            end if
+
+            m._mediaModule.processEvent(requestId, data)
+        end function,
+
+        _isValidEventDataForSessionStartRequest: function(data as object) as boolean
+            if data = invalid or _adb_isEmptyOrInvalidString(data.clientSessionId) or data.tsObject = invalid
+                return false
+            end if
+
+            if data.xdmData = invalid or data.xdmData.xdm = invalid or data.xdmData.xdm.Count() = 0 or data.configuration = invalid
+                return false
+            end if
+
+            return true
+        end function,
+
+        _handleMediaEvents: function(event as object) as void
+            requestId = event.uuid
+            data = event.data
+
+            ' validate the event data
+            if not m._isValidEventDataForMediaEventRequest(data)
+                _adb_logError("EventProcessor::_handleMediaEvents() - Dropping the media event, invalid data passed: (" + chr(10) + FormatJson(event) + chr(10) + ")" )
+                return
+            end if
+
+            m._mediaModule.processEvent(requestId, data)
+        end function,
+
+        _isValidEventDataForMediaEventRequest: function(data as object) as boolean
+            if data = invalid or _adb_isEmptyOrInvalidString(data.clientSessionId) or data.tsObject = invalid
+                return false
+            end if
+
+            if data.xdmData = invalid or data.xdmData.xdm = invalid or data.xdmData.xdm.Count() = 0
+                return false
+            end if
+
+            return true
         end function,
 
         _setLogLevel: function(event as object) as void
@@ -99,43 +156,40 @@ function _adb_EventProcessor(task as object) as object
             if logLevel <> invalid
                 loggingService = _adb_serviceProvider().loggingService
                 loggingService.setLogLevel(logLevel)
-                _adb_logInfo("_setLogLevel() - set log level: " + FormatJson(logLevel))
+                _adb_logInfo("EventProcessor::_setLogLevel() - Setting log level to (" + FormatJson(logLevel) + ")")
             else
-                _adb_logWarning("_setLogLevel() - log level is not found in event data")
+                _adb_logWarning("EventProcessor::_setLogLevel() - Cannot set log level, level not found in event data.")
             end if
         end function,
 
         _resetIdentities: function(_event as object) as void
-            _adb_logInfo("_resetIdentities() - Reset presisted Identities.")
+            _adb_logInfo("EventProcessor::_resetIdentities() - Resetting persisted identities.")
             m._identityModule.resetIdentities()
         end function,
 
         _resetSDK: function(_event as object) as void
-            _adb_logInfo("_resetSDK() - Reset SDK.")
+            _adb_logInfo("EventProcessor::_resetSDK() - Resetting SDK.")
             m.init()
         end function,
 
         _setConfiguration: function(event as object) as void
-            _adb_logInfo("_setConfiguration() - set configuration")
-            _adb_logVerbose("configuration before: " + FormatJson(m._configurationModule.dump()))
-
             if _adb_isEmptyOrInvalidMap(event.data)
-                _adb_logWarning("_setConfiguration() - configuration map is not found in event data")
+                _adb_logWarning("EventProcessor::_setConfiguration() - Cannot set configuration, valid configuration not found in event data.")
                 return
             end if
 
             m._configurationModule.updateConfiguration(event.data)
 
-            _adb_logVerbose("configuration after: " + FormatJson(m._configurationModule.dump()))
+            _adb_logVerbose("EventProcessor::_setConfiguration() - Configuration updated: " + chr(10) + FormatJson(m._configurationModule.dump()))
         end function,
 
         _setECID: function(event as object) as void
-            _adb_logInfo("_setECID() - Handle setECID.")
 
             ecid = _adb_optStringFromMap(event.data, m._CONSTANTS.EVENT_DATA_KEY.ECID)
             if _adb_isEmptyOrInvalidString(ecid)
-                _adb_logWarning("_setECID() - valid ECID not found in event data.")
+                _adb_logWarning("EventProcessor::_setECID() - Cannot set ECID, not found in event data.")
             else
+                _adb_logDebug("EventProcessor::_setECID() - Setting ECID to: (" + ecid + ")")
                 m._identityModule.updateECID(ecid)
             end if
         end function,
@@ -145,10 +199,10 @@ function _adb_EventProcessor(task as object) as object
         end function,
 
         _sendEvent: function(event as object) as void
-            _adb_logInfo("_sendEvent() - Try sending event with uuid:(" + FormatJson(event.uuid) + ").")
+            _adb_logInfo("EventProcessor::_sendEvent() - Try sending event with uuid:(" + FormatJson(event.uuid) + ").")
 
             if not m._hasXDMData(event)
-                _adb_logError("_sendEvent() - Not sending event, XDM data is empty.")
+                _adb_logError("EventProcessor::_sendEvent() - Not sending event, XDM data is empty.")
                 return
             end if
 
@@ -169,17 +223,17 @@ function _adb_EventProcessor(task as object) as object
         end function
 
         _sendResponseEvent: function(event as object) as void
-            _adb_logInfo("_sendResponseEvent() - Send response event: (" + FormatJson(event) + ").")
+            _adb_logInfo("EventProcessor::_sendResponseEvent() - Sending response event: (" + chr(10) + FormatJson(event) + chr(10) + ")")
 
             if m._task = invalid
-                _adb_logError("_sendResponseEvent() - Cannot send response event, task node instance is invalid.")
+                _adb_logError("EventProcessor::_sendResponseEvent() - Cannot send response event, task node instance is invalid.")
                 return
             end if
 
             if _adb_isResponseEvent(event)
                 m._task[m._CONSTANTS.TASK.RESPONSE_EVENT] = event
             else
-                _adb_logError("_sendResponseEvent() - Invalid response event:(" + FormatJson(event) + ").")
+                _adb_logError("EventProcessor::_sendResponseEvent() - Cannot send response event, invalid event:(" + chr(10) + FormatJson(event) + chr(10) + ")")
             end if
         end function,
 
