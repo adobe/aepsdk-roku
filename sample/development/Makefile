@@ -9,6 +9,7 @@ link-sdk:
 	(ln -s ../../../../code/main/services ./source/adobe/services)
 	(ln -s ../../../../code/main/task ./source/adobe/task)
 	(ln -s ../../../../code/main/core ./source/adobe/core)
+	(ln -s ../../../../code/main/media ./source/adobe/media)
 
 
 link-tests:

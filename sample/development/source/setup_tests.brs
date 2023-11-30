@@ -41,9 +41,12 @@ function _adb_test_functions() as dynamic
         TC_adb_optIntFromMap
         'test_string.brs
         TC_adb_isEmptyOrInvalidString
+        TC_adb_isStringEndsWith
+        TC_adb_isStringInArray
         'test_datetime.brs
         TC_adb_timestampInMillis
         TC_adb_ISO8601_timestamp
+        TC_adb_TimestampObject
         ' test_log.brs
         TS_logUtils_SetUp
         TS_logUtils_BeforeEach
@@ -78,6 +81,10 @@ function _adb_test_functions() as dynamic
         TC_adb_ConfigurationModule_separateUpdates
         TC_adb_ConfigurationModule_invalidConfigurationKeys
         TC_adb_ConfigurationModule_invalidConfigurationValues
+        TC_adb_ConfigurationModule_validMediaConfig
+        TC_adb_ConfigurationModule_overwrittingMediaConfig
+        TC_adb_ConfigurationModule_emptyMediaConfig
+        TC_adb_ConfigurationModule_invalidMediaConfig
         ' test_identityModule.brs
         TS_identityModule_BeforeEach
         TC_adb_IdentityModule_bad_init
@@ -96,6 +103,7 @@ function _adb_test_functions() as dynamic
     edge = [
         'test_buildEdgeRequestURL.brs
         TC_adb_buildEdgeRequestURL_validDomain
+        TC_adb_buildEdgeRequestURL_validPathOverwriting
         'test_implementationDetails.brs
         TC_adb_ImplementationDetails
         ' test_edgeRequestWorker.brs
@@ -115,6 +123,80 @@ function _adb_test_functions() as dynamic
         TC_adb_EdgeModule_init
         TC_adb_EdgeModule_processEvent
         TC_adb_EdgeModule_processQueuedRequests
+    ]
+    media = [
+        'test_mediaUtils.brs
+        TC_adb_extractPlayheadFromMediaXDMData
+        TC_adb_extractPlayheadFromMediaXDMData_invalid
+        TC_adb_extractPlayheadFromMediaXDMData_invalidType
+        TC_adb_isValidMediaXDMData
+        TC_adb_isValidMediaXDMData_invalid
+        ' test_mediaModule.brs
+        TC_adb_MediaModule_init
+        TC_adb_MediaModule_processEvent_sessionStart_validConfig_createsSessionAndQueuesEvent
+        TC_adb_MediaModule_processEvent_sessionStart_InvalidConfig_ignoresEvent
+        TC_adb_MediaModule_processEvent_MediaEventOtherThanSessionStart_validConfig_queuesEvent
+        TC_adb_MediaModule_processEvent_SessionComplete_validConfig_queuesEventAndEndsSession
+        TC_adb_MediaModule_processEvent_invalidMediaEvent_ignoresEvent
+        TC_adb_MediaModule_processEvent_invalidMediaEvent_inactiveSession
+        TC_hasValidConfig
+        ' test_mediaSessionManager.brs
+        TC_adb_MediaSessionManager_init
+        TC_adb_MediaSessionManager_createSession
+        TC_adb_MediaSessionManager_createSession_endsOldSession
+        TC_adb_MediaSessionManager_queue_validActiveSession_queuesWithSession
+        TC_adb_MediaSessionManager_queue_invalidActiveSession_ignoresMediaHit
+        TC_adb_MediaSessionManager_endSession_validActiveSession_closesSession
+        TC_adb_MediaSessionManager_endSession_invalidActiveSession_getsIgnored
+        ' test_mediaSession.brs
+        TC_adb_MediaSession_init
+        TC_adb_MediaSession_init_withoutSessionConfig
+        TC_adb_MediaSession_init_withFullSessionConfig
+        TC_adb_MediaSession_process_notActiveSession
+        TC_adb_MediaSession_process_activeSession_sessionStartHit_queued
+        TC_adb_MediaSession_process_activeSession_playbackHits_queued
+        TC_adb_MediaSession_process_activeSession_adHits_queued
+        TC_adb_MediaSession_process_activeSession_idleTimeout_queued
+        TC_adb_MediaSession_process_activeSession_longRunningSession_queued
+        TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigAndSessionConfig
+        TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigNoSessionConfig
+        TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_NoValidConfigNoSessionConfig
+        TC_adb_MediaSession_tryDispatchMediaEvents_notSessionStart_validBackendId
+        TC_adb_MediaSession_tryDispatchMediaEvents_notSessionStart_invalidBackendId
+        TC_adb_MediaSession_close_noAbort_dispatchesHitQueue
+        TC_adb_MediaSession_close_abort_deletesHitQueue
+        TC_adb_MediaSession_getPingInterval_validInterval
+        TC_adb_MediaSession_getPingInterval_invalidInterval
+        TC_adb_MediaSession_extractSessionStartData_sessionStartHit_cachesHit
+        TC_adb_MediaSession_extractSessionStartData_notSessionStartHit_doesNotCacheHit
+        TC_adb_MediaSession_attachMediaConfig
+        TC_adb_MediaSession_updatePlaybackState_playEvent
+        TC_adb_MediaSession_updatePlaybackState_pauseStartEvent
+        TC_adb_MediaSession_updatePlaybackState_pauseStart_bufferStartEvent
+        TC_adb_MediaSession_updatePlaybackState_nonPlaybackEvents_ignored
+        TC_adb_MediaSession_updateAdState_adStartEvent_setsIsInAd
+        TC_adb_MediaSession_updateAdState_adCompleteEvent_adSkipEvent_resetsIsInAd
+        TC_adb_MediaSession_updateAdState_nonAdEvent_ignored
+        TC_adb_MediaSession_createSessionResumeHit
+        TC_adb_MediaSession_closeIfIdle_idleDurationOverIdleTimeout_endSession
+        TC_adb_MediaSession_closeIfIdle_idleDurationUnderIdleTimeout_ignored
+        TC_adb_MediaSession_closeIfIdle_alreadyIdleTimedout_ignored
+        TC_adb_MediaSession_closeIfIdle_inPlayingState_ignored
+        TC_adb_MediaSession_restartIdleSession_playAfterIdleTimeout_resumes
+        TC_adb_MediaSession_restartIdleSession_notPlayEventAfterIdleTimeout_ignored
+        TC_adb_MediaSession_restartIdleSession_playifNotIdleTimeout_ignored
+        TC_adb_MediaSession_restartIdleSession_ifActiveSession_ignored
+        TC_adb_MediaSession_restartIfLongRunningSession_longRunningSession_restartsSession
+        TC_adb_MediaSession_restartIfLongRunningSession_notLongRunningSession_ignored
+        TC_adb_MediaSession_restartIfLongRunningSession_triggeredBySessionEndOrComplete_ignored
+        TC_adb_MediaSession_resetForRestart
+        TC_adb_MediaSession_shouldQueue_pingEvent_overPingInterval_returnsTrue
+        TC_adb_MediaSession_shouldQueue_pingEvent_underPingInterval_returnsFalse
+        TC_adb_MediaSession_shouldQueue_notPingEvent_returnsTrue
+        TC_adb_MediaSession_queue_sessionActive_queues
+        TC_adb_MediaSession_queue_sessionInActive_doesNotqueue
+        TC_adb_MediaSession_processEdgeRequestQueue_sessionStart_200_storesBackendSessionId
+        TC_adb_MediaSession_processEdgeRequestQueue_sessionStart_207_vaError400_closesSession
     ]
     initSDK = [
         'test_AdobeAEPSDKInit.brs
@@ -138,6 +220,15 @@ function _adb_test_functions() as dynamic
         TC_APIs_sendEventWithCallback
         TC_APIs_sendEventWithCallback_timeout
         TC_APIs_setExperienceCloudId
+        TC_APIs_createMediaSession
+        TC_APIs_createMediaSession_withConfiguration
+        TC_APIs_createMediaSession_invalidXDMData
+        TC_APIs_createMediaSession_endPrevisouSession
+        TC_APIs_sendMediaEvent
+        TC_APIs_sendMediaEvent_invalidXDMData
+        TC_APIs_sendMediaEvent_invalidSession
+        TC_APIs_sendMediaEvent_sessionEnd
+        TC_adb_ClientMediaSession
     ]
     task = [
         'test_eventProcessor.brs
@@ -146,6 +237,10 @@ function _adb_test_functions() as dynamic
         TC_adb_eventProcessor_handleEvent_resetIdentities
         TC_adb_eventProcessor_handleEvent_setConfiguration
         TC_adb_eventProcessor_handleEvent_setECID
+        TC_adb_eventProcessor_handleEvent_handleMediaEvents
+        TC_adb_eventProcessor_handleEvent_handleMediaEvents_invalid
+        TC_adb_eventProcessor_handleCreateMediaSession
+        TC_adb_eventProcessor_handleCreateMediaSession_invalid
         TC_adb_eventProcessor_hasXDMData
         TC_adb_eventProcessor_handleEvent_sendEvent
         TC_adb_eventProcessor_sendResponseEvent
@@ -159,6 +254,7 @@ function _adb_test_functions() as dynamic
     functionList.Append(services)
     functionList.Append(core)
     functionList.Append(edge)
+    functionList.Append(media)
     functionList.Append(initSDK)
     functionList.Append(api)
     functionList.Append(task)

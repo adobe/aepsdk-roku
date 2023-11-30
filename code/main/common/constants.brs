@@ -22,6 +22,8 @@ function _adb_InternalConstants() as object
             SEND_EDGE_EVENT: "sendEvent",
             SET_LOG_LEVEL: "setLogLevel",
             RESET_SDK: "resetSDK",
+            CREATE_MEDIA_SESSION: "createMediaSession",
+            SEND_MEDIA_EVENT: "sendMediaEvent",
         },
         EVENT_DATA_KEY: {
             LOG: { LEVEL: "level" },
@@ -33,6 +35,28 @@ function _adb_InternalConstants() as object
         TASK: {
             REQUEST_EVENT: "requestEvent",
             RESPONSE_EVENT: "responseEvent",
+        },
+        MEDIA: {
+            EVENT_TYPE : {
+                SESSION_START: "media.sessionStart",
+                PLAY: "media.play",
+                PING: "media.ping",
+                BITRATE_CHANGE: "media.bitrateChange",
+                BUFFER_START: "media.bufferStart",
+                PAUSE_START: "media.pauseStart",
+                AD_BREAK_START: "media.adBreakStart",
+                AD_START: "media.adStart",
+                AD_COMPLETE: "media.adComplete",
+                AD_SKIP: "media.adSkip",
+                AD_BREAK_COMPLETE: "media.adBreakComplete",
+                CHAPTER_START: "media.chapterStart",
+                CHAPTER_COMPLETE: "media.chapterComplete",
+                CHAPTER_SKIP: "media.chapterSkip",
+                ERROR: "media.error",
+                STATES_UPDATE: "media.statesUpdate",
+                SESSION_END: "media.sessionEnd",
+                SESSION_COMPLETE: "media.sessionComplete"
+            }
         },
         CALLBACK_TIMEOUT_MS: 5000,
         EVENT_OWNER: "adobe",

@@ -16,7 +16,14 @@
 function _adb_createTaskNode() as void
     if GetGlobalAA()._adb_main_task_node = invalid
         sdkThread = CreateObject("roSGNode", "AEPSDKTask")
+        sdkThread.id = "adobeTaskNode"
         GetGlobalAA()._adb_main_task_node = sdkThread
+    end if
+end function
+
+function _adb_storeTaskNode(taskNode as object) as void
+    if GetGlobalAA()._adb_main_task_node = invalid
+        GetGlobalAA()._adb_main_task_node = taskNode
     end if
 end function
 
@@ -40,4 +47,16 @@ function _adb_stopTaskNode() as void
         GetGlobalAA()._adb_main_task_node.control = "DONE"
         GetGlobalAA()._adb_main_task_node = invalid
     end if
+end function
+
+function _adb_isAEPTaskNode(taskNode as object) as boolean
+    try
+        types = taskNode.getFieldTypes()
+        if types.requestEvent = "associativearray" and types.responseEvent = "associativearray"
+            return true
+        end if
+    catch ex
+        _adb_logError("TaskNode::_adb_isAEPTaskNode() - " + ex.message)
+    end try
+    return false
 end function

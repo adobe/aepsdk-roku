@@ -21,6 +21,18 @@ sub TC_AdobeAEPSDKConstants()
     UTF_assertEqual(cons.LOG_LEVEL.WARNING, 3)
     UTF_assertEqual(cons.LOG_LEVEL.ERROR, 4)
 
+    ' Edge configuration
     UTF_assertEqual(cons.CONFIGURATION.EDGE_CONFIG_ID, "edge.configId")
     UTF_assertEqual(cons.CONFIGURATION.EDGE_DOMAIN, "edge.domain")
+
+    ' Media configuration
+    UTF_assertEqual(cons.CONFIGURATION.MEDIA_CHANNEL, "edgemedia.channel")
+    UTF_assertEqual(cons.CONFIGURATION.MEDIA_PLAYER_NAME, "edgemedia.playerName")
+    UTF_assertEqual(cons.CONFIGURATION.MEDIA_APP_VERSION, "edgemedia.appVersion")
+
+    ' Media session-level configuration
+    UTF_assertEqual(cons.MEDIA_SESSION_CONFIGURATION.CHANNEL, "config.channel")
+    UTF_assertEqual(cons.MEDIA_SESSION_CONFIGURATION.MAIN_PING_INTERVAL, "config.mainpinginterval")
+    UTF_assertEqual(cons.MEDIA_SESSION_CONFIGURATION.AD_PING_INTERVAL, "config.adpinginterval")
+
 end sub

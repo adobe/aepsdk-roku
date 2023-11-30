@@ -19,24 +19,29 @@ end function
 
 function _adb_EdgeModule(configurationModule as object, identityModule as object) as object
     if _adb_isConfigurationModule(configurationModule) = false then
-        _adb_logError("_adb_EdgeModule() - configurationModule is not valid.")
+        _adb_logError("EdgeModule::_adb_EdgeModule() - configurationModule is not valid.")
         return invalid
     end if
 
     if _adb_isIdentityModule(identityModule) = false then
-        _adb_logError("_adb_EdgeModule() - identityModule is not valid.")
+        _adb_logError("EdgeModule::_adb_EdgeModule() - identityModule is not valid.")
         return invalid
     end if
 
     module = _adb_AdobeObject("com.adobe.module.edge")
     module.Append({
+        _EDGE_REQUEST_PATH: "/ee/v1/interact",
         _configurationModule: configurationModule,
         _identityModule: identityModule,
         _edgeRequestWorker: _adb_EdgeRequestWorker(),
 
         processEvent: function(requestId as string, xdmData as object, timestampInMillis as longinteger) as dynamic
-            m._edgeRequestWorker.queue(requestId, xdmData, timestampInMillis)
+            m._edgeRequestWorker.queue(requestId, [xdmData], timestampInMillis, {}, m._EDGE_REQUEST_PATH)
             return m.processQueuedRequests()
+        end function,
+
+        createEdgeRequestQueue: function(name as string) as object
+            return _adb_edgeRequestQueue(name, m)
         end function,
 
         _getEdgeConfig: function() as object
@@ -55,7 +60,7 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
             }
         end function,
 
-        processQueuedRequests: function() as dynamic
+        processQueuedRequests: function() as object
             responseEvents = []
 
             if not m._edgeRequestWorker.hasQueuedEvent()
@@ -65,7 +70,6 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
 
             edgeConfig = m._getEdgeConfig()
             if edgeConfig = invalid
-                _adb_logVerbose("processQueuedRequests() - Cannot send network request, invalid configuration.")
                 return responseEvents
             end if
 

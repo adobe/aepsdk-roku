@@ -1,30 +1,61 @@
-# AEP Roku SDK API Usage
+# Adobe Experience Platform Roku SDK API Reference
 
 This document lists the APIs provided by AEP Roku SDK, along with code samples for API usage.
 
-- [AdobeAEPSDKInit](#AdobeAEPSDKInit)
-- [getVersion](#getVersion)
-- [setLogLevel](#setLogLevel)
-- [updateConfiguration](#updateConfiguration)
-- [sendEvent](#sendEvent)
-- [resetIdentities](#resetIdentities)
-- [(optional) setExperienceCloudId](#setExperienceCloudId)
-- [shutdown](#shutdown)
 
----
+- Edge APIs
+    - [AdobeAEPSDKInit](#AdobeAEPSDKInit)
+    - [getVersion](#getVersion)
+    - [resetIdentities](#resetIdentities)
+    - [(optional) setExperienceCloudId](#setExperienceCloudId)
+    - [sendEvent](#sendEvent)
+    - [setLogLevel](#setLogLevel)
+    - [shutdown](#shutdown)
+    - [updateConfiguration](#updateConfiguration)
+- Media APIs
+    - [createMediaSession](#createMediaSession)
+    - [sendMediaEvent](#sendMediaEvent)
+
+## Edge APIs:
 
 ### AdobeAEPSDKInit
 
-Initialize the AEP Roku SDK and return the public API instance. `*` The following variables are reserved to hold the SDK instances in GetGlobalAA():
+> [!IMPORTANT]
+> The AEP task node performs the core logic of the AEP Roku SDK. Typically, a Roku project maintains only one instance of the AEP task node.
 
-- `GetGlobalAA()._adb_public_api`
-- `GetGlobalAA()._adb_main_task_node`
-- `GetGlobalAA()._adb_serviceProvider_instance`
+It's required to first call AdobeAEPSDKInit() without passing an argument within the scene script. It initializes a new AEP task node and creates an associated AEP Roku SDK instance. Then, the task node instance can be retrieved via the getTaskNode() API.
+
+For example:
+```brightscript
+sdkInstance = AdobeAEPSDKInit()
+adobeTaskNode = sdkInstance.getTaskNode()
+```
+
+To make this task node instance accessible in other components, appending it to the scene node is recommended.
+
+For example:
+```brightscript
+m.top.appendChild(adobeTaskNode)
+```
+
+The task node's ID is by default set to "adobeTaskNode". Then, retrieve it by ID and use it to create a new AEP Roku SDK instance in other components.
+
+For example:
+```brightscript
+adobeTaskNode = m.top.getScene().findNode("adobeTaskNode")
+sdkInstance = AdobeAEPSDKInit(adobeTaskNode)
+```
+
+> **Note**
+> The following variables are reserved to hold the AEP Roku SDK instances in GetGlobalAA():
+>- `GetGlobalAA()._adb_public_api`
+>- `GetGlobalAA()._adb_main_task_node`
+>- `GetGlobalAA()._adb_serviceProvider_instance`
 
 ##### Syntax
 
 ```brightscript
-function AdobeAEPSDKInit() as object
+function AdobeAEPSDKInit(taskNode = invalid as dynamic) as object
 ```
 
 - `@return instance as object : public API instance`
@@ -55,60 +86,21 @@ sdkVersion = m.aepSdk.getVersion()
 
 ---
 
-### setLogLevel
+### resetIdentities
+
+Call this function to reset the Adobe identities such as ECID from the AEP Roku SDK.
 
 ##### Syntax
 
 ```brightscript
-setLogLevel: function(level as integer) as void
+resetIdentities: function() as void
 ```
-
-- `@param level as integer : the accepted values are (VERBOSE: 0, DEBUG: 1, INFO: 2, WARNING: 3, ERROR: 4)`
 
 ##### Example
 
 ```brightscript
-ADB_CONSTANTS = AdobeAEPSDKConstants()
-m.aepSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
+m.aepSdk.resetIdentities()
 ```
-
----
-
-### updateConfiguration
-
-> **Note**
-> Some public APIs need valid configuration to process the data and make the network call to Adobe Experience Edge Network. All the hits will be queued if no valid configuration is found. It is ideal to call updateConfiguration API with valid require configuration before any other public APIs.
-
-#### Configuration Keys
-
-| Constants | Raw value | Required |
-| :-- | :--: | :--: |
-| `ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID` | "edge.configId" | **Yes**
-| `ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN` | "edge.domain" | **No**
-
-##### Syntax
-
-```brightscript
-updateConfiguration: function(configuration as object) as void
-```
-
-- `@param configuration as object`
-
-##### Example
-
-```brightscript
-ADB_CONSTANTS = AdobeAEPSDKConstants()
-
-configuration = {}
-configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = "<YOUR_CONFIG_ID>"
-configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = "<YOUR_DOMAIN_NAME>"
-
-m.aepSdk.updateConfiguration(configuration)
-```
-
-The `EDGE_CONFIG_ID` value is presented as `Datastream ID` in the [Datastream details](https://experienceleague.adobe.com/docs/experience-platform/edge/datastreams/configure.html?lang=en#view-details) page.
-
-The `EDGE_DOMAIN` value is the first-party domain mapped to the Adobe-provisioned Edge Network domain. For more information, see this [documentation](https://developer.adobe.com/client-sdks/documentation/edge-network/#domain-configuration)
 
 ---
 
@@ -133,7 +125,7 @@ sendEvent: function(xdmData as object, callback = _adb_default_callback as funct
 > - `Implementation Details` - for more details see the [Implementation Details XDM field group](https://github.com/adobe/xdm/blob/master/components/datatypes/industry-verticals/implementationdetails.schema.json)
 
 > **Note**
-> If the SDK fails to receive the Edge response within 5 seconds, the callback function will not be executed.
+> If the AEP Roku SDK fails to receive the Edge response within 5 seconds, the callback function will not be executed.
 
 
 > **Note**
@@ -208,25 +200,6 @@ customIdentityMap = {
       "identityMap": customIdentityMap
   })
 ```
-
----
-
-### resetIdentities
-
-Call this function to reset the Adobe identities such as ECID from the SDK.
-
-##### Syntax
-
-```brightscript
-resetIdentities: function() as void
-```
-
-##### Example
-
-```brightscript
-m.aepSdk.resetIdentities()
-```
-
 ---
 
 ### setExperienceCloudId
@@ -295,6 +268,25 @@ function onAdbmobileApiResponse() as void
 
 ---
 
+### setLogLevel
+
+##### Syntax
+
+```brightscript
+setLogLevel: function(level as integer) as void
+```
+
+- `@param level as integer : the accepted values are (VERBOSE: 0, DEBUG: 1, INFO: 2, WARNING: 3, ERROR: 4)`
+
+##### Example
+
+```brightscript
+ADB_CONSTANTS = AdobeAEPSDKConstants()
+m.aepSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
+```
+
+---
+
 ### shutdown
 
 Call this function to shut down the AEP Roku SDK and drop further API calls.
@@ -309,4 +301,175 @@ shutdown: function() as void
 
 ```brightscript
 m.aepSdk.shutdown();
+```
+
+---
+
+### updateConfiguration
+
+> **Note**
+> Some public APIs need valid configuration to process the data and make the network call to Adobe Experience Edge Network. All the hits will be queued if no valid configuration is found. It is ideal to call updateConfiguration API with valid require configuration before any other public APIs.
+
+#### Configuration Keys
+
+- Required for all APIs
+
+| Constants | Raw value | Type | Required |
+| :-- | :--: | :--: | :--: |
+| `ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID` | "edge.configId" | String | **Yes**
+| `ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN` | "edge.domain" | String | **No**
+
+- Required for Media tracking APIs
+
+| Constants | Raw value | Type | Required |
+| :-- | :--: | :--: | :--: |
+| `ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL` | "edgemedia.channel" | String | **Yes**
+| `ADB_CONSTANTS.CONFIGURATION.MEDIA_PLAYER_NAME` | "edgemedia.playerName" | String | **Yes**
+| `ADB_CONSTANTS.CONFIGURATION.MEDIA_APP_VERSION` | "edgemedia.appVersion" | String | **No**
+
+##### Syntax
+
+```brightscript
+updateConfiguration: function(configuration as object) as void
+```
+
+- `@param configuration as object`
+
+##### Example
+
+```brightscript
+ADB_CONSTANTS = AdobeAEPSDKConstants()
+
+configuration = {}
+configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = "<YOUR_CONFIG_ID>"
+configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = "<YOUR_DOMAIN_NAME>"
+
+m.aepSdk.updateConfiguration(configuration)
+```
+
+The `EDGE_CONFIG_ID` value is presented as `Datastream ID` in the [Datastream details](https://experienceleague.adobe.com/docs/experience-platform/edge/datastreams/configure.html?lang=en#view-details) page.
+
+The `EDGE_DOMAIN` value is the first-party domain mapped to the Adobe-provisioned Edge Network domain. For more information, see this [documentation](https://developer.adobe.com/client-sdks/documentation/edge-network/#domain-configuration)
+
+## Media APIs
+
+### createMediaSession
+
+Creates a new Media session with the provided XDM data. The XDM data event type should be `media.sessionStart`. If the `playerName`, `channel`, and `appVersion` are not provided in the XDM data, the AEP Roku SDK will use the global values passed via `updateConfiguration` API.
+
+About the XDM data structure, please refer to the [starting the session
+](https://experienceleague.adobe.com/docs/experience-platform/edge-network-server-api/media-edge-apis/getting-started.html?lang=en#start-session) document.
+
+##### Syntax
+
+```brightscript
+createMediaSession: function(xdmData as object, configuration = {} as object) as void
+```
+
+- `@param xdmData as object : the XDM data of type "media.sessionStart"`
+- `@param configuration as object : the session-level configuration`
+
+> [!NOTE]
+> If the ping interval is not set, the default interval of `10 sec` will be used.
+
+##### Configuration Keys
+
+| Constants | Raw value | Type | Range | Required |
+| :-- | :--: | :--: | :--: | :--: |
+| `ADB_CONSTANTS.MEDIA_SESSION_CONFIGURATION.CHANNEL` | "config.channel" | String | | **No**
+| `ADB_CONSTANTS.MEDIA_SESSION_CONFIGURATION.AD_PING_INTERVAL` | "config.adpinginterval" | Integer | 1~10 | **No**
+| `ADB_CONSTANTS.MEDIA_SESSION_CONFIGURATION.MAIN_PING_INTERVAL` | "config.mainpinginterval" | Integer | 10~50 | **No**
+
+> [!IMPORTANT]
+> SessionStart API requires [sessionDetails](https://github.com/adobe/xdm/blob/master/docs/reference/datatypes/sessiondetails.schema.md) fieldgroup with all the required fields present in the request payload.
+
+##### Example
+
+**createMediaSession**
+
+```brightscript
+sessionStartXDM = {
+  "xdm": {
+    "eventType": "media.sessionStart"
+     "mediaCollection": {
+      "playhead": 0,
+
+      "sessionDetails": {
+        "streamType": "video",
+        "friendlyName": "test_media_name",
+        "name": "test_media_id",
+        "length": 100,
+        "contentType": "vod"
+      }
+    }
+  }
+}
+
+m.aepSdk.createMediaSession(sessionStartXDM)
+```
+
+**createMediaSession with session configuration**
+
+```brightscript
+MEDIA_SESSION_CONFIGURATION = AdobeAEPSDKConstants().MEDIA_SESSION_CONFIGURATION
+
+sessionConfiguration = {}
+sessionConfiguration[MEDIA_SESSION_CONFIGURATION.CHANNEL] = "channel_name_for_current_session" ''' Overwrites channel configured in the AEP Roku SDK configuration.
+sessionConfiguration[MEDIA_SESSION_CONFIGURATION.AD_PING_INTERVAL] = 1 ''' Overwrites ad content ping interval to 1 second.
+sessionConfiguration[MEDIA_SESSION_CONFIGURATION.MAIN_PING_INTERVAL] = 30 ''' Overwrites main content ping interval to 30 seconds.
+
+sessionStartXDM = {
+  "xdm": {
+    "eventType": "media.sessionStart"
+     "mediaCollection": {
+      "playhead": 0,
+
+      "sessionDetails": {
+        "streamType": "video",
+        "friendlyName": "test_media_name",
+        "name": "test_media_id",
+        "length": 100,
+        "contentType": "vod"
+      }
+    }
+  }
+}
+
+m.aepSdk.createMediaSession(sessionStartXDM, sessionConfiguration)
+```
+
+---
+
+### sendMediaEvent
+
+> **Important**
+> Media session needs to be active before using `sendMediaEvent` API. Use `createMediaSession` API to create the session.
+
+About the XDM data structure, please refer to the [Media Edge API Documentation](https://experienceleague.adobe.com/docs/experience-platform/edge-network-server-api/media-edge-apis/getting-started.html?lang=en).
+
+> **Important**
+> Ensure that the `media.ping` event is sent at least once every second with the latest playhead value during the video playback. AEP Roku SDK relies on these pings to function properly.
+> Refer to [MainScene.brs](../sample/simple-videoplayer-channel/components/MainScene.brs) for information on how the sample app uses a timer to send ping events every second.
+
+##### Syntax
+
+```brightscript
+sendMediaEvent: function(xdmData as object) as void
+```
+
+##### Example
+
+Example to send `media.play` event using `sendMediaEvent()` API
+
+```brightscript
+playXDM = {
+  "xdm": {
+    "eventType": "media.play",
+    "mediaCollection": {
+      "playhead": <current_playhead>,
+    }
+  }
+}
+
+m.aepSdk.sendMediaEvent(playXDM)
 ```
