@@ -322,6 +322,7 @@ sub onVideoPlayerStateChange()
         }
       }
     })
+    m.videoTimer.control = "stop"
   else if m.video.state = "paused"
     m.aepSdk.sendMediaEvent({
       "xdm": {
