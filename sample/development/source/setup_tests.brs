@@ -219,6 +219,11 @@ function _adb_test_functions() as dynamic
         TC_APIs_sendEvent_invalid
         TC_APIs_sendEventWithCallback
         TC_APIs_sendEventWithCallback_timeout
+        TC_APIs_sendEventWithData
+        TC_APIs_sendEventWithData_invalidXDMData
+        TC_APIs_sendEventWithData_InvalidData
+        TC_APIs_sendEventWithDataWithCallback
+        TC_APIs_sendEventWithDataWithCallback_timeout
         TC_APIs_setExperienceCloudId
         TC_APIs_createMediaSession
         TC_APIs_createMediaSession_withConfiguration

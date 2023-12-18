@@ -214,6 +214,162 @@ sub TC_APIs_sendEventWithCallback_timeout()
 
 end sub
 
+' target: sendEventWithData()
+' @Test
+sub TC_APIs_sendEventWithData()
+    _internal_const = _adb_InternalConstants()
+    sdkInstance = AdobeAEPSDKInit()
+    xdmData = {
+        eventType: "commerce.orderPlaced",
+        commerce: {}
+    }
+
+    data = {
+        "key": "val"
+    }
+
+    sdkInstance.sendEventWithData(xdmData, data)
+    event = GetGlobalAA()._adb_main_task_node["requestEvent"]
+    UTF_assertEqual(event.apiName, _internal_const.PUBLIC_API.SEND_EDGE_EVENT)
+    UTF_assertEqual(sdkInstance._private.cachedCallbackInfo.Count(), 0)
+    UTF_AssertNotInvalid(event.uuid)
+    UTF_AssertNotInvalid(event.timestamp)
+
+    UTF_assertEqual(event.data, { xdm:  xdmData, data: data })
+end sub
+
+' target: sendEventWithData()
+' @Test
+sub TC_APIs_sendEventWithData_invalidXDMData()
+    sdkInstance = AdobeAEPSDKInit()
+
+    data = {
+        "key": "val"
+    }
+
+    sdkInstance.sendEventWithData("invalid xdm data", data)
+    event = GetGlobalAA()._adb_main_task_node["requestEvent"]
+
+    UTF_assertEqual(0, event.Count())
+
+    UTF_assertEqual(sdkInstance._private.cachedCallbackInfo.Count(), 0)
+end sub
+
+' @Test
+sub TC_APIs_sendEventWithData_InvalidData()
+    _internal_const = _adb_InternalConstants()
+    sdkInstance = AdobeAEPSDKInit()
+    xdmData = {
+        eventType: "commerce.orderPlaced",
+        commerce: {}
+    }
+
+    sdkInstance.sendEventWithData(xdmData)
+    sdkInstance.sendEventWithData(xdmData, {})
+    sdkInstance.sendEventWithData(xdmData, "invalid data")
+
+    event = GetGlobalAA()._adb_main_task_node["requestEvent"]
+    UTF_assertEqual(event.apiName, _internal_const.PUBLIC_API.SEND_EDGE_EVENT)
+    UTF_assertEqual(sdkInstance._private.cachedCallbackInfo.Count(), 0)
+    UTF_AssertNotInvalid(event.uuid)
+    UTF_AssertNotInvalid(event.timestamp)
+
+    UTF_assertEqual(event.data, { xdm: xdmData })
+    UTF_AssertInvalid(event.data.data)
+end sub
+
+' target: sendEventWithData()
+' @Test
+sub TC_APIs_sendEventWithDataWithCallback()
+    sdkInstance = AdobeAEPSDKInit()
+
+    xdmData = {
+        eventType: "commerce.orderPlaced",
+        commerce: {}
+    }
+
+    data = {
+        "key": "val"
+    }
+
+    context = {
+        content: "test"
+    }
+    callback_result = {
+        "test": "test"
+    }
+
+    sdkInstance.sendEventWithData(xdmData, data, sub(ctx, result)
+        UTF_assertEqual({
+            content: "test"
+        }, ctx)
+        UTF_assertEqual(result, {
+            "test": "test"
+        })
+    end sub, context)
+
+    event = GetGlobalAA()._adb_main_task_node["requestEvent"]
+    callbackInfo = sdkInstance._private.cachedCallbackInfo[event.uuid]
+
+    UTF_assertEqual(callbackInfo.context, context)
+    UTF_AssertNotInvalid(callbackInfo.timestampInMillis)
+    callbackInfo.cb(context, callback_result)
+    UTF_assertEqual(event.apiName, "sendEvent")
+    UTF_AssertNotInvalid(event.uuid)
+    UTF_AssertNotInvalid(event.timestamp)
+
+    UTF_assertEqual(event.data, { xdm: xdmData, data: data })
+end sub
+
+' target: sendEventWithData()
+' @Test
+sub TC_APIs_sendEventWithDataWithCallback_timeout()
+    sdkInstance = AdobeAEPSDKInit()
+
+    xdmData = {
+        eventType: "commerce.orderPlaced",
+        commerce: {}
+    }
+
+    data = {
+        "key": "val"
+    }
+
+    context = {
+        content: "test"
+    }
+    _callback_result = {
+        "test": "test"
+    }
+    sdkInstance.sendEventWithData(xdmData, sub(_ctx, _result)
+        throw "should not be called"
+    end sub, context)
+
+    event = GetGlobalAA()._adb_main_task_node["requestEvent"]
+    callbackInfo = sdkInstance._private.cachedCallbackInfo[event.uuid]
+
+    UTF_assertEqual(callbackInfo.context, context)
+    UTF_AssertNotInvalid(callbackInfo.timestampInMillis)
+
+    UTF_assertEqual(event.apiName, "sendEvent")
+    UTF_assertEqual(event.data, { xdm: xdmData, data: data })
+    UTF_AssertNotInvalid(event.uuid)
+    UTF_AssertNotInvalid(event.timestamp)
+    requestId = event.uuid
+
+    sleep(5001)
+
+    responseEvent = _adb_ResponseEvent(requestId, {})
+    GetGlobalAA()._adb_main_task_node["responseEvent"] = responseEvent
+    try
+        _adb_handleResponseEvent()
+        UTF_assertFalse(sdkInstance._private.cachedCallbackInfo.DoesExist(requestId))
+    catch e
+        UTF_fail(e.message)
+    end try
+
+end sub
+
 ' target: setExperienceCloudId()
 ' @Test
 sub TC_APIs_setExperienceCloudId()
