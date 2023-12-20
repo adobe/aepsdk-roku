@@ -67,21 +67,28 @@ sub _sendEventWithCallback()
   ' Send an Experience Event with callback
   '----------------------------------------
 
-  m.aepSdk.sendEvent({
-    "eventType": "commerce.orderPlaced",
-    "commerce": {
-      "key3": "value3"
-    },
-    "identityMap": {
-      "RIDA": [
-        {
-          "id": "SampleAdId",
-          "authenticatedState": "ambiguous",
-          "primary": false
+  m.aepSdk.sendEvent(
+    {
+      "xdm" : {
+        "eventType": "commerce.orderPlaced",
+        "commerce": {
+          "key3": "value3"
+        },
+        "identityMap": {
+          "RIDA": [
+            {
+              "id": "SampleAdId",
+              "authenticatedState": "ambiguous",
+              "primary": false
+            }
+          ]
         }
-      ]
-    }
-  }, sub(context, result)
+      },
+      ''' free form data
+      "data": {
+        "key" : "value"
+      }
+    }, sub(context, result)
     jsonObj = ParseJson(result.message)
     message = _extractLocationHint(jsonObj, "Not found locationHint")
     ' show result in dialog
@@ -111,13 +118,21 @@ sub _testShutdownAPI()
 
   counter = 0
   while counter < 20
-    m.aepSdk.sendEvent({
-      "eventType": "commerce.orderPlaced",
-      "commerce": {
-        "key1": "value1",
-        "counter": counter
+    m.aepSdk.sendEvent(
+      {
+        "xdm": {
+          "eventType": "commerce.orderPlaced",
+          "commerce": {
+            "key1": "value1",
+            "counter": counter
+          }
+        },
+        ''' free form data
+        "data": {
+          "key" : "value"
+        }
       }
-    })
+    )
     counter++
   end while
 

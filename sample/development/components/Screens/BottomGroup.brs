@@ -29,21 +29,24 @@ sub _initSDK()
 end sub
 
 sub onButtonSelected()
-    m.aepSdk.sendEvent({
-        "eventType": "commerce.orderPlaced",
-        "commerce": {
-            "key3": "value3"
-        },
-        "identityMap": {
-            "RIDA": [
-                {
-                    "id": "SampleAdId",
-                    "authenticatedState": "ambiguous",
-                    "primary": false
-                }
-            ]
+    orderPlacedData = {
+        "xdm": {
+            "eventType": "commerce.orderPlaced",
+            "commerce": {
+                "key3": "value3"
+            },
+            "identityMap": {
+                "RIDA": [
+                    {
+                        "id": "SampleAdId",
+                        "authenticatedState": "ambiguous",
+                        "primary": false
+                    }
+                ]
+            }
         }
-    }, sub(context, result)
+    }
+    m.aepSdk.sendEvent(orderPlacedData, sub(context, result)
         ' print "callback result: "
         ' print result
         ' print context
