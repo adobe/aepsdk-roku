@@ -131,7 +131,7 @@ sendEvent: function(data as object, callback = _adb_default_callback as function
 > **Note**
 > Variables are not case sensitive in [BrightScript](https://developer.roku.com/docs/references/brightscript/language/expressions-variables-types.md), so always use the `String literals` to present the XDM data **keys**.
 
-##### Example: sendEvent
+##### Example: sendEvent with XDM data
 
 ```brightscript
   data = {
@@ -140,7 +140,16 @@ sendEvent: function(data as object, callback = _adb_default_callback as function
       "commerce": {
         .....
       }
-    },
+    }
+  }
+
+  m.aepSdk.sendEvent(data)
+```
+
+##### Example: sendEvent with non-XDM data
+
+```brightscript
+  data = {
     "data" : {
       "customKey" : "customValue"
     }

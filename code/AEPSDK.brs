@@ -203,7 +203,7 @@ function AdobeAEPSDKInit(taskNode = invalid as dynamic) as object
         '
         ' This function allows passing custom identifiers using identityMap.
         '
-        ' @param data as object : Dictionary containg xdm and freeform data
+        ' @param data as object : Dictionary containing XDM and/or free-form data
         ' @param [optional] callback as function(context, result) : handle Edge response
         ' @param [optional] context as dynamic : context to be passed to the callback function
         '
