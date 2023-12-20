@@ -45,13 +45,16 @@ Initialize and configure the AEP Roku SDK inside your `scene` script.
   m.aepSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.DEBUG)
 
   ' send XDM data to Adobe Edge Network '
-
-  m.aepSdk.sendEvent({
-    "eventType": "commerce.orderPlaced",
-    "eventType": {
-      "key": "value"
+  data = {
+    "xdm": {
+      "eventType": "commerce.orderPlaced",
+      "eventType": {
+        "key": "value"
+      }
     }
-  })
+  }
+
+  m.aepSdk.sendEvent(data)
 ```
 
 > **Note**
