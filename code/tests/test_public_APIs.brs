@@ -113,7 +113,7 @@ sub TC_APIs_sendEvent()
         }
     }
 
-    sdkInstance.sendEvent(xdmData)
+    sdkInstance.sendEvent(data)
 
     event = GetGlobalAA()._adb_main_task_node["requestEvent"]
     expectedData = {
@@ -145,7 +145,7 @@ sub TC_APIs_sendEventWithData()
         }
     }
 
-    sdkInstance.sendEvent(xdmData)
+    sdkInstance.sendEvent(data)
 
     event = GetGlobalAA()._adb_main_task_node["requestEvent"]
     expectedData = {
@@ -171,6 +171,27 @@ end sub
 sub TC_APIs_sendEvent_invalid()
     sdkInstance = AdobeAEPSDKInit()
     sdkInstance.sendEvent("invalid xdm data")
+    event = GetGlobalAA()._adb_main_task_node["requestEvent"]
+
+    UTF_assertEqual(0, event.Count())
+
+    UTF_assertEqual(sdkInstance._private.cachedCallbackInfo.Count(), 0)
+end sub
+
+' target: sendEvent()
+' @Test
+sub TC_APIs_sendEventWithData_invalidData()
+    sdkInstance = AdobeAEPSDKInit()
+
+    data = {
+        "xdm" : {
+            eventType: "commerce.orderPlaced",
+            commerce: {}
+        }
+        "data" : "Not a map"
+    }
+
+    sdkInstance.sendEvent(data)
     event = GetGlobalAA()._adb_main_task_node["requestEvent"]
 
     UTF_assertEqual(0, event.Count())
@@ -220,7 +241,7 @@ sub TC_APIs_sendEventWithCallback()
         "test": "test"
     }
 
-    sdkInstance.sendEvent(xdm, sub(ctx, result)
+    sdkInstance.sendEvent(data, sub(ctx, result)
         UTF_assertEqual({
             content: "test"
         }, ctx)

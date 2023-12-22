@@ -217,7 +217,12 @@ function AdobeAEPSDKInit(taskNode = invalid as dynamic) as object
                 return
             end if
 
-            ' event data: { "xdm": xdmData, "data" : data }
+            if data.data <> invalid and _adb_isEmptyOrInvalidMap(data.data) then
+                _adb_logError("sendEvent() - Cannot send event, invalid value for key:data (free-form data), must be a dictionary.")
+                return
+            end if
+
+            ' event data: { "xdm": xdmData, "data" : nonXdmdata }
             ' add a timestamp to the XDM data
             data.xdm.timestamp = _adb_ISO8601_timestamp()
             event = _adb_RequestEvent(m._private.cons.PUBLIC_API.SEND_EDGE_EVENT, data)
