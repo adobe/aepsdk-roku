@@ -164,7 +164,16 @@ function TS_SDK_integration() as object
                 ]
             }
 
-            aepSdk.sendEvent({ key: "value", "identityMap": idMap })
+            data = {
+                "xdm": {
+                    key: "value",
+                    "identityMap": idMap
+                },
+                "data": {
+                    "testKey": "testValue"
+                }
+            }
+            aepSdk.sendEvent(data)
 
             eventIdForSendEvent = aepSdk._private.lastEventId
 
@@ -232,10 +241,20 @@ function TS_SDK_integration() as object
 
             aepSdk = ADB_retrieveSDKInstance()
 
-            aepSdk.sendEvent({ key: "value1" })
+            data1 = {
+                "xdm": {
+                    key: "value1"
+                }
+            }
+            aepSdk.sendEvent(data1)
             eventIdForFirstSendEvent = aepSdk._private.lastEventId
 
-            aepSdk.sendEvent({ key: "value2" })
+            data2 = {
+                "xdm": {
+                    key: "value2"
+                }
+            }
+            aepSdk.sendEvent(data2)
             eventIdForSecondSendEvent = aepSdk._private.lastEventId
 
             validator = {}
@@ -267,10 +286,20 @@ function TS_SDK_integration() as object
 
             aepSdk = ADB_retrieveSDKInstance()
 
-            aepSdk.sendEvent({ key: "value1" })
+            data1 = {
+                "xdm": {
+                    key: "value1"
+                }
+            }
+            aepSdk.sendEvent(data1)
             eventIdForFirstSendEvent = aepSdk._private.lastEventId
 
-            aepSdk.sendEvent({ key: "value2" })
+            data2 = {
+                "xdm": {
+                    key: "value2"
+                }
+            }
+            aepSdk.sendEvent(data2)
             eventIdForSecondSendEvent = aepSdk._private.lastEventId
 
             ADB_CONSTANTS = AdobeAEPSDKConstants()
@@ -280,7 +309,12 @@ function TS_SDK_integration() as object
 
             aepSdk.updateConfiguration(configuration)
 
-            aepSdk.sendEvent({ key: "value3" })
+            data3 = {
+                "xdm": {
+                    key: "value3"
+                }
+            }
+            aepSdk.sendEvent(data3)
             eventIdForThirdSendEvent = aepSdk._private.lastEventId
 
             validator = {}
@@ -356,7 +390,13 @@ function TS_SDK_integration() as object
             aepSdk.updateConfiguration(configuration)
 
             GetGlobalAA()._adb_integration_test_callback_result = invalid
-            aepSdk.sendEvent({ key: "value" }, sub(_context, result)
+
+            data = {
+                "xdm": {
+                    key: "value"
+                }
+            }
+            aepSdk.sendEvent(data, sub(_context, result)
                 GetGlobalAA()._adb_integration_test_callback_result = result
             end sub, {})
 
@@ -398,7 +438,12 @@ function TS_SDK_integration() as object
             aepSdk.updateConfiguration(configuration)
             eventIdForUpdateConfiguration = aepSdk._private.lastEventId
 
-            aepSdk.sendEvent({ key: "value" })
+            data = {
+                "xdm": {
+                    key: "value"
+                }
+            }
+            aepSdk.sendEvent(data)
 
             eventIdForSendEvent = aepSdk._private.lastEventId
 
@@ -449,7 +494,12 @@ function TS_SDK_integration() as object
             aepSdk.updateConfiguration(configuration)
             eventIdForUpdateConfiguration = aepSdk._private.lastEventId
 
-            aepSdk.sendEvent({ key: "value" })
+            data = {
+                "xdm": {
+                    key: "value"
+                }
+            }
+            aepSdk.sendEvent(data)
 
             eventIdForSendEvent = aepSdk._private.lastEventId
 

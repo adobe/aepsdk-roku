@@ -203,24 +203,29 @@ function AdobeAEPSDKInit(taskNode = invalid as dynamic) as object
         '
         ' This function allows passing custom identifiers using identityMap.
         '
-        ' @param data as object : xdm data
+        ' @param data as object : Dictionary containing XDM and/or free-form data
         ' @param [optional] callback as function(context, result) : handle Edge response
         ' @param [optional] context as dynamic : context to be passed to the callback function
         '
         ' *************************************************************************************
 
-        sendEvent: function(xdmData as object, callback = _adb_defaultCallback as function, context = invalid as dynamic) as void
+        sendEvent: function(data as object, callback = _adb_defaultCallback as function, context = invalid as dynamic) as void
             _adb_logDebug("API: sendEvent()")
-            if _adb_isEmptyOrInvalidMap(xdmData) then
-                _adb_logError("sendEvent() - Cannot send event, invalid XDM data")
+
+            if _adb_isEmptyOrInvalidMap(data.xdm) then
+                _adb_logError("sendEvent() - Cannot send event, XDM data not found.")
                 return
             end if
-            ' event data: { "xdm": xdmData }
+
+            if data.data <> invalid and _adb_isEmptyOrInvalidMap(data.data) then
+                _adb_logError("sendEvent() - Cannot send event, invalid value for key:data (free-form data), must be a dictionary.")
+                return
+            end if
+
+            ' event data: { "xdm": xdmData, "data" : nonXdmdata }
             ' add a timestamp to the XDM data
-            xdmData.timestamp = _adb_ISO8601_timestamp()
-            event = _adb_RequestEvent(m._private.cons.PUBLIC_API.SEND_EDGE_EVENT, {
-                xdm: xdmData,
-            })
+            data.xdm.timestamp = _adb_ISO8601_timestamp()
+            event = _adb_RequestEvent(m._private.cons.PUBLIC_API.SEND_EDGE_EVENT, data)
 
             ' event.data.xdm.timestamp = event.getISOTimestamp()
             if callback <> _adb_defaultCallback then

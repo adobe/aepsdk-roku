@@ -111,10 +111,10 @@ Sends an Experience event to Edge Network.
 ##### Syntax
 
 ```brightscript
-sendEvent: function(xdmData as object, callback = _adb_default_callback as function, context = invalid as dynamic) as void
+sendEvent: function(data as object, callback = _adb_default_callback as function, context = invalid as dynamic) as void
 ```
 
-- `@param data as object : xdm data following the XDM schema that is defined in the Schema Editor`
+- `@param data as object : xdm data following the XDM schema that is defined in the Schema Editor, and free form non xdm data`
 - `@param [optional] callback as function(context, result) : handle Edge response`
 - `@param [optional] context as dynamic : context to be passed to the callback function`
 
@@ -131,26 +131,50 @@ sendEvent: function(xdmData as object, callback = _adb_default_callback as funct
 > **Note**
 > Variables are not case sensitive in [BrightScript](https://developer.roku.com/docs/references/brightscript/language/expressions-variables-types.md), so always use the `String literals` to present the XDM data **keys**.
 
-##### Example: sendEvent
+##### Example: sendEvent with XDM data
 
 ```brightscript
-  m.aepSdk.sendEvent({
-    "eventType": "commerce.orderPlaced",
+  data = {
+    "xdm" : {
+      "eventType": "commerce.orderPlaced",
       "commerce": {
         .....
       }
-  })
+    }
+  }
+
+  m.aepSdk.sendEvent(data)
+```
+
+##### Example: sendEvent with non-XDM data
+
+```brightscript
+  data = {
+    "data" : {
+      "customKey" : "customValue"
+    }
+  }
+
+  m.aepSdk.sendEvent(data)
 ```
 
 ##### Example: sendEvent with callback
 
 ```brightscript
-  m.aepSdk.sendEvent({
+  data = {
+    "xdm" : {
       "eventType": "commerce.orderPlaced",
       "commerce": {
         .....
       }
-  }, sub(context, result)
+    },
+    "data" : {
+      "customKey" : "customValue"
+    }
+  }
+
+
+  m.aepSdk.sendEvent(data, sub(context, result)
       print "callback result: "
       print result
       print context
@@ -192,13 +216,23 @@ customIdentityMap = {
 ```
 
 ```brightscript
-  m.aepSdk.sendEvent({
-    "eventType": "commerce.orderPlaced",
+  data = {
+    "xdm" : {
+      "eventType": "commerce.orderPlaced",
       "commerce": {
         .....
       },
+
       "identityMap": customIdentityMap
-  })
+    },
+
+    "data" : {
+      "customKey" : "customValue"
+    }
+  }
+
+
+  m.aepSdk.sendEvent(data)
 ```
 ---
 
