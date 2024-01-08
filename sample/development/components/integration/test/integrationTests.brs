@@ -212,7 +212,8 @@ function TS_SDK_integration() as object
                 ADB_assertTrue((firstResponseJson.requestId <> eventid), LINE_NUM, "assert response (1) verify request ID")
 
                 ' Verify XDM data
-                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.key = "value"), LINE_NUM, "assert networkRequests(2) is to send Edge event")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm.key = "value"), LINE_NUM, "assert networkRequests(2) is to send Edge event with xdm data")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].data["testKey"] = "testValue"), LINE_NUM, "assert networkRequests(2) is to send Edge event with non-xdm data")
                 ADB_assertTrue((Len(debugInfo.networkRequests[1].jsonObj.events[0].xdm.timestamp) > 10), LINE_NUM, "assert networkRequests(2) is to send Edge event with timestamp")
                 ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.xdm.identityMap.ECID <> invalid), LINE_NUM, "assert networkRequests(2) is to send Edge event with ecid")
 

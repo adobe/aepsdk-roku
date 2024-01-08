@@ -107,7 +107,7 @@ sub TC_APIs_sendEvent()
     sdkInstance = AdobeAEPSDKInit()
 
     data = {
-        "xdm" : {
+        "xdm": {
             eventType: "commerce.orderPlaced",
             commerce: {}
         }
@@ -117,7 +117,7 @@ sub TC_APIs_sendEvent()
 
     event = GetGlobalAA()._adb_main_task_node["requestEvent"]
     expectedData = {
-        "xdm" : {
+        "xdm": {
             eventType: "commerce.orderPlaced",
             timestamp: event.timestamp,
             commerce: {}
@@ -131,16 +131,18 @@ sub TC_APIs_sendEvent()
     UTF_AssertNotInvalid(event.timestamp)
 end sub
 
+' target: sendEvent()
+' @Test
 sub TC_APIs_sendEventWithData()
     _internal_const = _adb_InternalConstants()
     sdkInstance = AdobeAEPSDKInit()
 
     data = {
-        "xdm" : {
+        "xdm": {
             eventType: "commerce.orderPlaced",
             commerce: {}
         }
-        "data" : {
+        "data": {
             "testKey": "testValue"
         }
     }
@@ -149,12 +151,12 @@ sub TC_APIs_sendEventWithData()
 
     event = GetGlobalAA()._adb_main_task_node["requestEvent"]
     expectedData = {
-        "xdm" : {
+        "xdm": {
             eventType: "commerce.orderPlaced",
             timestamp: event.timestamp,
             commerce: {}
         },
-        "data" : {
+        "data": {
             "testKey": "testValue"
         }
     }
@@ -170,7 +172,7 @@ end sub
 ' @Test
 sub TC_APIs_sendEvent_invalid()
     sdkInstance = AdobeAEPSDKInit()
-    sdkInstance.sendEvent("invalid xdm data")
+    sdkInstance.sendEvent("invalid event data")
     event = GetGlobalAA()._adb_main_task_node["requestEvent"]
 
     UTF_assertEqual(0, event.Count())
@@ -184,11 +186,11 @@ sub TC_APIs_sendEventWithData_invalidData()
     sdkInstance = AdobeAEPSDKInit()
 
     data = {
-        "xdm" : {
+        "xdm": {
             eventType: "commerce.orderPlaced",
             commerce: {}
         }
-        "data" : "Not a map"
+        "data": "Not a map"
     }
 
     sdkInstance.sendEvent(data)
@@ -204,7 +206,7 @@ end sub
 sub TC_APIs_sendEvent_missingRequiredXDMData()
     sdkInstance = AdobeAEPSDKInit()
     data = {
-        "data" : {
+        "data": {
             eventType: "commerce.orderPlaced",
             commerce: {}
         }
@@ -225,11 +227,11 @@ sub TC_APIs_sendEventWithCallback()
     sdkInstance = AdobeAEPSDKInit()
 
     data = {
-        "xdm" : {
+        "xdm": {
             eventType: "commerce.orderPlaced",
             commerce: {}
         },
-        "data" : {
+        "data": {
             "testKey": "testValue"
         }
     }
@@ -268,11 +270,11 @@ sub TC_APIs_sendEventWithCallback_timeout()
     sdkInstance = AdobeAEPSDKInit()
 
     data = {
-        "xdm" : {
+        "xdm": {
             eventType: "commerce.orderPlaced",
             commerce: {}
         },
-        "data" : {
+        "data": {
             "testKey": "testValue"
         }
     }

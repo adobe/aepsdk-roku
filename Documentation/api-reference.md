@@ -146,10 +146,16 @@ sendEvent: function(data as object, callback = _adb_default_callback as function
   m.aepSdk.sendEvent(data)
 ```
 
-##### Example: sendEvent with non-XDM data
+##### Example: sendEvent with XDM data and non-XDM data
 
 ```brightscript
   data = {
+    "xdm" : {
+      "eventType": "commerce.orderPlaced",
+      "commerce": {
+        .....
+      }
+    },
     "data" : {
       "customKey" : "customValue"
     }

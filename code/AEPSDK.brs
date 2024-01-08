@@ -203,7 +203,7 @@ function AdobeAEPSDKInit(taskNode = invalid as dynamic) as object
         '
         ' This function allows passing custom identifiers using identityMap.
         '
-        ' @param data as object : Dictionary containing XDM and/or free-form data
+        ' @param data as object : an associative array containing XDM and/or free-form data
         ' @param [optional] callback as function(context, result) : handle Edge response
         ' @param [optional] context as dynamic : context to be passed to the callback function
         '
@@ -212,13 +212,18 @@ function AdobeAEPSDKInit(taskNode = invalid as dynamic) as object
         sendEvent: function(data as object, callback = _adb_defaultCallback as function, context = invalid as dynamic) as void
             _adb_logDebug("API: sendEvent()")
 
+            if _adb_isEmptyOrInvalidMap(data) then
+                _adb_logError("sendEvent() - Invaid event data, must be an associative array")
+                return
+            end if
+
             if _adb_isEmptyOrInvalidMap(data.xdm) then
                 _adb_logError("sendEvent() - Cannot send event, XDM data not found.")
                 return
             end if
 
             if data.data <> invalid and _adb_isEmptyOrInvalidMap(data.data) then
-                _adb_logError("sendEvent() - Cannot send event, invalid value for key:data (free-form data), must be a dictionary.")
+                _adb_logError("sendEvent() - Cannot send event, invalid value for key:data (free-form data), must be an associative array.")
                 return
             end if
 
