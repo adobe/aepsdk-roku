@@ -136,22 +136,20 @@ sendEvent: function(data as object, callback = _adb_default_callback as function
 ##### Example: sendEvent with XDM data
 
 ```brightscript
-  data = {
+  m.aepSdk.sendEvent({
     "xdm" : {
       "eventType": "commerce.orderPlaced",
       "commerce": {
         .....
       }
     }
-  }
-
-  m.aepSdk.sendEvent(data)
+  })
 ```
 
 ##### Example: sendEvent with XDM data and non-XDM data
 
 ```brightscript
-  data = {
+  m.aepSdk.sendEvent({
     "xdm" : {
       "eventType": "commerce.orderPlaced",
       "commerce": {
@@ -161,15 +159,13 @@ sendEvent: function(data as object, callback = _adb_default_callback as function
     "data" : {
       "customKey" : "customValue"
     }
-  }
-
-  m.aepSdk.sendEvent(data)
+  })
 ```
 
 ##### Example: sendEvent with callback
 
 ```brightscript
-  data = {
+  eventData = {
     "xdm" : {
       "eventType": "commerce.orderPlaced",
       "commerce": {
@@ -182,7 +178,7 @@ sendEvent: function(data as object, callback = _adb_default_callback as function
   }
 
 
-  m.aepSdk.sendEvent(data, sub(context, result)
+  m.aepSdk.sendEvent(eventData, sub(context, result)
       print "callback result: "
       print result
       print context
