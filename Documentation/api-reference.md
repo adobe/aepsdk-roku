@@ -114,7 +114,9 @@ Sends an Experience event to Edge Network.
 sendEvent: function(data as object, callback = _adb_default_callback as function, context = invalid as dynamic) as void
 ```
 
-- `@param data as object : xdm data following the XDM schema that is defined in the Schema Editor, and free form non xdm data`
+- `@param data as object : an associative array that includs data to be sent with the event. It's structure should follow:`
+  - `data.xdm (required) - xdm data following the XDM schema that is defined in the Schema Editor.`
+  - `data.data (optional) - the free form non xdm data to be sent along with the event.`
 - `@param [optional] callback as function(context, result) : handle Edge response`
 - `@param [optional] context as dynamic : context to be passed to the callback function`
 

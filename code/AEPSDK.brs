@@ -213,17 +213,17 @@ function AdobeAEPSDKInit(taskNode = invalid as dynamic) as object
             _adb_logDebug("API: sendEvent()")
 
             if _adb_isEmptyOrInvalidMap(data) then
-                _adb_logError("sendEvent() - Invaid event data, must be an associative array")
+                _adb_logError("sendEvent() - Invalid event data, must be an associative array")
                 return
             end if
 
             if _adb_isEmptyOrInvalidMap(data.xdm) then
-                _adb_logError("sendEvent() - Cannot send event, XDM data not found.")
+                _adb_logError("sendEvent() - Invalid event data, XDM data is required.")
                 return
             end if
 
             if data.data <> invalid and _adb_isEmptyOrInvalidMap(data.data) then
-                _adb_logError("sendEvent() - Cannot send event, invalid value for key:data (free-form data), must be an associative array.")
+                _adb_logError("sendEvent() - Invalid value for key:data (free-form data), must be an associative array.")
                 return
             end if
 
