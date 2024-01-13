@@ -111,10 +111,12 @@ Sends an Experience event to Edge Network.
 ##### Syntax
 
 ```brightscript
-sendEvent: function(xdmData as object, callback = _adb_default_callback as function, context = invalid as dynamic) as void
+sendEvent: function(data as object, callback = _adb_default_callback as function, context = invalid as dynamic) as void
 ```
 
-- `@param data as object : xdm data following the XDM schema that is defined in the Schema Editor`
+- `@param data as object : an associative array that includs data to be sent with the event. It's structure should follow:`
+  - `data.xdm (required) - xdm data following the XDM schema that is defined in the Schema Editor.`
+  - `data.data (optional) - the free form non xdm data to be sent along with the event.`
 - `@param [optional] callback as function(context, result) : handle Edge response`
 - `@param [optional] context as dynamic : context to be passed to the callback function`
 
@@ -131,26 +133,52 @@ sendEvent: function(xdmData as object, callback = _adb_default_callback as funct
 > **Note**
 > Variables are not case sensitive in [BrightScript](https://developer.roku.com/docs/references/brightscript/language/expressions-variables-types.md), so always use the `String literals` to present the XDM data **keys**.
 
-##### Example: sendEvent
+##### Example: sendEvent with XDM data
 
 ```brightscript
   m.aepSdk.sendEvent({
-    "eventType": "commerce.orderPlaced",
+    "xdm" : {
+      "eventType": "commerce.orderPlaced",
       "commerce": {
         .....
       }
+    }
+  })
+```
+
+##### Example: sendEvent with XDM data and non-XDM data
+
+```brightscript
+  m.aepSdk.sendEvent({
+    "xdm" : {
+      "eventType": "commerce.orderPlaced",
+      "commerce": {
+        .....
+      }
+    },
+    "data" : {
+      "customKey" : "customValue"
+    }
   })
 ```
 
 ##### Example: sendEvent with callback
 
 ```brightscript
-  m.aepSdk.sendEvent({
+  eventData = {
+    "xdm" : {
       "eventType": "commerce.orderPlaced",
       "commerce": {
         .....
       }
-  }, sub(context, result)
+    },
+    "data" : {
+      "customKey" : "customValue"
+    }
+  }
+
+
+  m.aepSdk.sendEvent(eventData, sub(context, result)
       print "callback result: "
       print result
       print context
@@ -192,13 +220,23 @@ customIdentityMap = {
 ```
 
 ```brightscript
-  m.aepSdk.sendEvent({
-    "eventType": "commerce.orderPlaced",
+  data = {
+    "xdm" : {
+      "eventType": "commerce.orderPlaced",
       "commerce": {
         .....
       },
+
       "identityMap": customIdentityMap
-  })
+    },
+
+    "data" : {
+      "customKey" : "customValue"
+    }
+  }
+
+
+  m.aepSdk.sendEvent(data)
 ```
 ---
 
