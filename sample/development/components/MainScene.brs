@@ -75,21 +75,25 @@ sub _sendEventWithCallback()
   ' Send an Experience Event with callback
   '----------------------------------------
 
-  m.aepSdk.sendEvent({
-    "eventType": "commerce.orderPlaced",
-    "commerce": {
-      "key3": "value3"
-    },
-    "identityMap": {
-      "RIDA": [
-        {
-          "id": "SampleAdId",
-          "authenticatedState": "ambiguous",
-          "primary": false
-        }
-      ]
+  data = {
+    "xdm":{
+      "eventType": "commerce.orderPlaced",
+      "commerce": {
+        "key3": "value3"
+      },
+      "identityMap": {
+        "RIDA": [
+          {
+            "id": "SampleAdId",
+            "authenticatedState": "ambiguous",
+            "primary": false
+          }
+        ]
+      }
     }
-  }, sub(context, result)
+  }
+
+  m.aepSdk.sendEvent(data, sub(context, result)
     jsonObj = ParseJson(result.message)
     message = _extractLocationHint(jsonObj, "Not found locationHint")
     ' show result in dialog
@@ -119,13 +123,16 @@ sub _testShutdownAPI()
 
   counter = 0
   while counter < 20
-    m.aepSdk.sendEvent({
-      "eventType": "commerce.orderPlaced",
-      "commerce": {
-        "key1": "value1",
-        "counter": counter
+    data = {
+      "xdm": {
+        "eventType": "commerce.orderPlaced",
+        "commerce": {
+          "key1": "value1",
+          "counter": counter
+        }
       }
-    })
+    }
+    m.aepSdk.sendEvent(data)
     counter++
   end while
 
@@ -271,12 +278,15 @@ sub timerExecutor()
     end if
     m.aepSdk_2.updateConfiguration(configuration)
 
-    m.aepSdk_2.sendEvent({
-      "eventType": "commerce.orderPlaced",
-      "commerce": {
-        "key3": "value3"
+    addToCartData = {
+      "xdm": {
+        "eventType": "commerce.addedToCart",
+        "commerce": {
+          "key3": "value3"
+        }
       }
-    }, sub(context, result)
+    }
+    m.aepSdk_2.sendEvent(addToCartData, sub(context, result)
       jsonObj = ParseJson(result.message)
       message = ""
       for each item in jsonObj.handle

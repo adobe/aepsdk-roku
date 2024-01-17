@@ -33,7 +33,7 @@ end sub
 ' @Test
 sub TC_APIs_getVersion()
     sdkInstance = AdobeAEPSDKInit()
-    UTF_assertEqual(sdkInstance.getVersion(), "1.1.0-alpha")
+    UTF_assertEqual(sdkInstance.getVersion(), "1.1.0-beta")
 end sub
 
 ' target: setLogLevel()
@@ -105,19 +105,65 @@ end sub
 sub TC_APIs_sendEvent()
     _internal_const = _adb_InternalConstants()
     sdkInstance = AdobeAEPSDKInit()
-    xdmData = {
-        eventType: "commerce.orderPlaced",
-        commerce: {
-    } }
-    sdkInstance.sendEvent(xdmData)
+
+    data = {
+        "xdm": {
+            eventType: "commerce.orderPlaced",
+            commerce: {}
+        }
+    }
+
+    sdkInstance.sendEvent(data)
+
     event = GetGlobalAA()._adb_main_task_node["requestEvent"]
-    UTF_assertEqual(event.apiName, _internal_const.PUBLIC_API.SEND_EDGE_EVENT)
-    UTF_assertEqual(sdkInstance._private.cachedCallbackInfo.Count(), 0)
-    UTF_assertEqual(event.data, { xdm: {
+    expectedData = {
+        "xdm": {
             eventType: "commerce.orderPlaced",
             timestamp: event.timestamp,
-            commerce: {
-    } } })
+            commerce: {}
+        }
+    }
+
+    UTF_assertEqual(event.apiName, _internal_const.PUBLIC_API.SEND_EDGE_EVENT)
+    UTF_assertEqual(sdkInstance._private.cachedCallbackInfo.Count(), 0)
+    UTF_assertEqual(event.data, expectedData)
+    UTF_AssertNotInvalid(event.uuid)
+    UTF_AssertNotInvalid(event.timestamp)
+end sub
+
+' target: sendEvent()
+' @Test
+sub TC_APIs_sendEventWithData()
+    _internal_const = _adb_InternalConstants()
+    sdkInstance = AdobeAEPSDKInit()
+
+    data = {
+        "xdm": {
+            eventType: "commerce.orderPlaced",
+            commerce: {}
+        }
+        "data": {
+            "testKey": "testValue"
+        }
+    }
+
+    sdkInstance.sendEvent(data)
+
+    event = GetGlobalAA()._adb_main_task_node["requestEvent"]
+    expectedData = {
+        "xdm": {
+            eventType: "commerce.orderPlaced",
+            timestamp: event.timestamp,
+            commerce: {}
+        },
+        "data": {
+            "testKey": "testValue"
+        }
+    }
+
+    UTF_assertEqual(event.apiName, _internal_const.PUBLIC_API.SEND_EDGE_EVENT)
+    UTF_assertEqual(sdkInstance._private.cachedCallbackInfo.Count(), 0)
+    UTF_assertEqual(event.data, expectedData)
     UTF_AssertNotInvalid(event.uuid)
     UTF_AssertNotInvalid(event.timestamp)
 end sub
@@ -126,7 +172,48 @@ end sub
 ' @Test
 sub TC_APIs_sendEvent_invalid()
     sdkInstance = AdobeAEPSDKInit()
-    sdkInstance.sendEvent("invalid xdm data")
+    sdkInstance.sendEvent("invalid event data")
+    event = GetGlobalAA()._adb_main_task_node["requestEvent"]
+
+    UTF_assertEqual(0, event.Count())
+
+    UTF_assertEqual(sdkInstance._private.cachedCallbackInfo.Count(), 0)
+end sub
+
+' target: sendEvent()
+' @Test
+sub TC_APIs_sendEventWithData_invalidData()
+    sdkInstance = AdobeAEPSDKInit()
+
+    data = {
+        "xdm": {
+            eventType: "commerce.orderPlaced",
+            commerce: {}
+        }
+        "data": "Not a map"
+    }
+
+    sdkInstance.sendEvent(data)
+    event = GetGlobalAA()._adb_main_task_node["requestEvent"]
+
+    UTF_assertEqual(0, event.Count())
+
+    UTF_assertEqual(sdkInstance._private.cachedCallbackInfo.Count(), 0)
+end sub
+
+' target: sendEvent()
+' @Test
+sub TC_APIs_sendEvent_missingRequiredXDMData()
+    sdkInstance = AdobeAEPSDKInit()
+    data = {
+        "data": {
+            eventType: "commerce.orderPlaced",
+            commerce: {}
+        }
+    }
+
+    sdkInstance.sendEvent(data)
+
     event = GetGlobalAA()._adb_main_task_node["requestEvent"]
 
     UTF_assertEqual(0, event.Count())
@@ -139,17 +226,24 @@ end sub
 sub TC_APIs_sendEventWithCallback()
     sdkInstance = AdobeAEPSDKInit()
 
-    xdmData = {
-        eventType: "commerce.orderPlaced",
-        commerce: {
-    } }
+    data = {
+        "xdm": {
+            eventType: "commerce.orderPlaced",
+            commerce: {}
+        },
+        "data": {
+            "testKey": "testValue"
+        }
+    }
+
     context = {
         content: "test"
     }
     callback_result = {
         "test": "test"
     }
-    sdkInstance.sendEvent(xdmData, sub(ctx, result)
+
+    sdkInstance.sendEvent(data, sub(ctx, result)
         UTF_assertEqual({
             content: "test"
         }, ctx)
@@ -165,7 +259,7 @@ sub TC_APIs_sendEventWithCallback()
     UTF_AssertNotInvalid(callbackInfo.timestampInMillis)
     callbackInfo.cb(context, callback_result)
     UTF_assertEqual(event.apiName, "sendEvent")
-    UTF_assertEqual(event.data, { xdm: xdmData })
+    UTF_assertEqual(event.data, data)
     UTF_AssertNotInvalid(event.uuid)
     UTF_AssertNotInvalid(event.timestamp)
 end sub
@@ -175,17 +269,24 @@ end sub
 sub TC_APIs_sendEventWithCallback_timeout()
     sdkInstance = AdobeAEPSDKInit()
 
-    xdmData = {
-        eventType: "commerce.orderPlaced",
-        commerce: {
-    } }
+    data = {
+        "xdm": {
+            eventType: "commerce.orderPlaced",
+            commerce: {}
+        },
+        "data": {
+            "testKey": "testValue"
+        }
+    }
+
     context = {
         content: "test"
     }
     _callback_result = {
         "test": "test"
     }
-    sdkInstance.sendEvent(xdmData, sub(_ctx, _result)
+
+    sdkInstance.sendEvent(data, sub(_ctx, _result)
         throw "should not be called"
     end sub, context)
 
@@ -196,7 +297,7 @@ sub TC_APIs_sendEventWithCallback_timeout()
     UTF_AssertNotInvalid(callbackInfo.timestampInMillis)
 
     UTF_assertEqual(event.apiName, "sendEvent")
-    UTF_assertEqual(event.data, { xdm: xdmData })
+    UTF_assertEqual(event.data, data)
     UTF_AssertNotInvalid(event.uuid)
     UTF_AssertNotInvalid(event.timestamp)
     requestId = event.uuid
