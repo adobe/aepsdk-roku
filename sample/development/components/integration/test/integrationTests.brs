@@ -53,7 +53,7 @@ function TS_SDK_integration() as object
 
             version$ = aepSdk.getVersion()
 
-            ADB_assertTrue((version$ = "1.1.0-alpha"), LINE_NUM, "assert getVersion() = 1.1.0-alpha")
+            ADB_assertTrue((version$ = "1.1.0-beta"), LINE_NUM, "assert getVersion() = 1.1.0-beta")
 
             return invalid
         end function,
