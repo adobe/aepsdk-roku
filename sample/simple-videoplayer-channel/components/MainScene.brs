@@ -67,28 +67,26 @@ sub _sendEventWithCallback()
   ' Send an Experience Event with callback
   '----------------------------------------
 
-  m.aepSdk.sendEvent(
-    {
-      "xdm" : {
-        "eventType": "commerce.orderPlaced",
-        "commerce": {
-          "key3": "value3"
-        },
-        "identityMap": {
-          "RIDA": [
-            {
-              "id": "SampleAdId",
-              "authenticatedState": "ambiguous",
-              "primary": false
-            }
-          ]
-        }
+  m.aepSdk.sendEvent({
+    "xdm": {
+      "eventType": "commerce.orderPlaced",
+      "commerce": {
+        "key3": "value3"
       },
-      ''' free form data
-      "data": {
-        "key" : "value"
+      "identityMap": {
+        "RIDA": [
+          {
+            "id": "SampleAdId",
+            "authenticatedState": "ambiguous",
+            "primary": false
+          }
+        ]
       }
-    }, sub(context, result)
+    },
+    "data": {
+      "key": "value"
+    }
+  }, sub(context, result)
     jsonObj = ParseJson(result.message)
     message = _extractLocationHint(jsonObj, "Not found locationHint")
     ' show result in dialog
@@ -110,34 +108,6 @@ function _extractLocationHint(jsonObj as object, defaultMessage as string) as st
   end for
   return message
 end function
-
-sub _testShutdownAPI()
-  if m.aepSdk = invalid
-    throw "Adobe Edge SDK is not initialized"
-  end if
-
-  counter = 0
-  while counter < 20
-    m.aepSdk.sendEvent(
-      {
-        "xdm": {
-          "eventType": "commerce.orderPlaced",
-          "commerce": {
-            "key1": "value1",
-            "counter": counter
-          }
-        },
-        ''' free form data
-        "data": {
-          "key" : "value"
-        }
-      }
-    )
-    counter++
-  end while
-
-  m.test_shutdown = true
-end sub
 
 sub onButtonSelected()
   ' 0: "SendEventWithCallback",  1: "NewScreen(API)", 2: "MediaTracking"
