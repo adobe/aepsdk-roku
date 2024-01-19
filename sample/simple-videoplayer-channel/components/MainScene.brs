@@ -68,18 +68,23 @@ sub _sendEventWithCallback()
   '----------------------------------------
 
   m.aepSdk.sendEvent({
-    "eventType": "commerce.orderPlaced",
-    "commerce": {
-      "key3": "value3"
+    "xdm": {
+      "eventType": "commerce.orderPlaced",
+      "commerce": {
+        "key3": "value3"
+      },
+      "identityMap": {
+        "RIDA": [
+          {
+            "id": "SampleAdId",
+            "authenticatedState": "ambiguous",
+            "primary": false
+          }
+        ]
+      }
     },
-    "identityMap": {
-      "RIDA": [
-        {
-          "id": "SampleAdId",
-          "authenticatedState": "ambiguous",
-          "primary": false
-        }
-      ]
+    "data": {
+      "key": "value"
     }
   }, sub(context, result)
     jsonObj = ParseJson(result.message)
@@ -103,26 +108,6 @@ function _extractLocationHint(jsonObj as object, defaultMessage as string) as st
   end for
   return message
 end function
-
-sub _testShutdownAPI()
-  if m.aepSdk = invalid
-    throw "Adobe Edge SDK is not initialized"
-  end if
-
-  counter = 0
-  while counter < 20
-    m.aepSdk.sendEvent({
-      "eventType": "commerce.orderPlaced",
-      "commerce": {
-        "key1": "value1",
-        "counter": counter
-      }
-    })
-    counter++
-  end while
-
-  m.test_shutdown = true
-end sub
 
 sub onButtonSelected()
   ' 0: "SendEventWithCallback",  1: "NewScreen(API)", 2: "MediaTracking"
