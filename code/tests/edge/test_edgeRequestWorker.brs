@@ -110,7 +110,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_valid_response()
             implementationdetails: {
                 environment: "app",
                 name: "https://ns.adobe.com/experience/mobilesdk/roku",
-                version: "1.1.0-beta"
+                version: "1.1.0"
             }
         }
         UTF_assertEqual(expectedXdmObj, jsonObj.xdm, "Expected != actual (Top level XDM object in the request)")
