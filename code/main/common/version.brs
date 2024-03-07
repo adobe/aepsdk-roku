@@ -14,6 +14,6 @@
 ' ************************************ MODULE: version ************************************
 
 function _adb_sdkVersion() as string
-    VERSION = "1.1.0-beta"
+    VERSION = "1.1.0"
     return VERSION
 end function
