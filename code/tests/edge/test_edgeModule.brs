@@ -46,7 +46,7 @@ sub TC_adb_EdgeModule_processEvent()
     queue = edgeModule._edgeRequestWorker._queue
     UTF_assertEqual(1, queue.Count())
     UTF_assertEqual("request_id", queue[0].requestId)
-    UTF_assertEqual({ key: "value" }, queue[0].xdmEvents[0])
+    UTF_assertEqual({ key: "value" }, queue[0].eventData)
     UTF_assertEqual(timestampInMillis&, queue[0].timestampInMillis)
 
     UTF_assertTrue(_adb_isArray(result))

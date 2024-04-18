@@ -207,9 +207,9 @@ function _adb_EventProcessor(task as object) as object
             end if
 
             requestId = event.uuid
-            xdmData = event.data
+            eventData = event.data
             timestampInMillis = event.timestampInMillis
-            responseEvents = m._edgeModule.processEvent(requestId, xdmData, timestampInMillis)
+            responseEvents = m._edgeModule.processEvent(requestId, eventData, timestampInMillis)
 
             for each responseEvent in responseEvents
                 m._sendResponseEvent(responseEvent)
