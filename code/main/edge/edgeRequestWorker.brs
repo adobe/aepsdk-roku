@@ -32,7 +32,7 @@ function _adb_EdgeRequestWorker() as object
         '
         ' @return void
         ' ------------------------------------------------------------------------------------------------
-        queue: function(requestId as string, xdmEvents as object, timestampInMillis as longinteger, meta as object, path as string) as void
+        queue: function(requestId as string, eventData as object, timestampInMillis as longinteger, meta as object, path as string) as void
             if meta = invalid
                 meta = {}
             end if
@@ -42,8 +42,8 @@ function _adb_EdgeRequestWorker() as object
                 return
             end if
 
-            if _adb_isEmptyOrInvalidArray(xdmEvents)
-                _adb_logDebug("EdgeRequestWorker::queue() - Cannot queue request, xdmEvents object is invalid")
+            if _adb_isEmptyOrInvalidMap(eventData)
+                _adb_logDebug("EdgeRequestWorker::queue() - Cannot queue request, eventData object is invalid")
                 return
             end if
 
@@ -54,7 +54,7 @@ function _adb_EdgeRequestWorker() as object
 
             requestEntity = {
                 requestId: requestId,
-                xdmEvents: xdmEvents,
+                eventData: eventData,
                 timestampInMillis: timestampInMillis,
                 path: path,
                 meta: meta
@@ -99,11 +99,11 @@ function _adb_EdgeRequestWorker() as object
                 ' grab oldest hit in the queue
                 requestEntity = m._queue.Shift()
 
-                xdmEvents = requestEntity.xdmEvents
+                eventData = requestEntity.eventData
                 requestId = requestEntity.requestId
                 path = requestEntity.path
 
-                networkResponse = m._processRequest(xdmEvents, ecid, configId, requestId, path, edgeDomain)
+                networkResponse = m._processRequest(eventData, ecid, configId, requestId, path, edgeDomain)
                 if not _adb_isNetworkResponse(networkResponse)
                     _adb_logError("EdgeRequestWorker::processRequests() - Edge request dropped. Response is invalid.")
                     ' drop the request
@@ -132,8 +132,8 @@ function _adb_EdgeRequestWorker() as object
             return responseArray
         end function,
 
-        _processRequest: function(xdmEvents as object, ecid as string, configId as string, requestId as string, path as string, edgeDomain = invalid as dynamic) as object
-            requestBody = m._createEdgeRequestBody(xdmEvents, ecid)
+        _processRequest: function(eventData as object, ecid as string, configId as string, requestId as string, path as string, edgeDomain = invalid as dynamic) as object
+            requestBody = m._createEdgeRequestBody(eventData, ecid)
 
             url = _adb_buildEdgeRequestURL(configId, requestId, path, edgeDomain)
             _adb_logVerbose("EdgeRequestWorker::_processRequest() - Processing Request with url:(" + chr(10) + FormatJson(url) + chr(10) + ") with payload:(" + chr(10) + FormatJson(requestBody) + chr(10) + ")")
@@ -141,7 +141,7 @@ function _adb_EdgeRequestWorker() as object
             return networkResponse
         end function
 
-        _createEdgeRequestBody: function(xdmEvents as object, ecid as string) as object
+        _createEdgeRequestBody: function(eventData as object, ecid as string) as object
             requestBody = {
                 "xdm": {
                     "identityMap": m._getIdentityMap(ecid),
@@ -150,7 +150,8 @@ function _adb_EdgeRequestWorker() as object
                 "events": []
             }
 
-            requestBody.events = xdmEvents
+            ''' Add eventData under events key as an array
+            requestBody.events = [eventData]
 
             return requestBody
         end function,
