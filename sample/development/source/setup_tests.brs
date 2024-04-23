@@ -114,6 +114,9 @@ function _adb_test_functions() as dynamic
         TC_adb_EdgeRequestWorker_queue_limit
         TC_adb_EdgeRequestWorker_clear
         TC_adb_EdgeRequestWorker_processRequest_valid_response
+        TC_adb_EdgeRequestWorker_processRequest_datastreamIdOverride_valid_response
+        TC_adb_EdgeRequestWorker_processRequest_datastreamConfigOverride_valid_response
+        TC_adb_EdgeRequestWorker_processRequest_datastreamIdAndConfigOverride_valid_response
         TC_adb_EdgeRequestWorker_processRequest_invalid_response
         TC_adb_EdgeRequestWorker_processRequests
         TC_adb_EdgeRequestWorker_processRequests_empty_queue

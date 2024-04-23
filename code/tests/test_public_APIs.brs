@@ -110,6 +110,17 @@ sub TC_APIs_sendEvent()
         "xdm": {
             eventType: "commerce.orderPlaced",
             commerce: {}
+        },
+        "data": {
+            "testKey": "testValue"
+        },
+        "config": {
+            "datastreamIdOverride": "testDatastreamIdOverride",
+            "datastreamConfigOverride": {
+                "test": {
+                    "testKey": "testValue"
+                }
+            }
         }
     }
 
@@ -121,6 +132,17 @@ sub TC_APIs_sendEvent()
             eventType: "commerce.orderPlaced",
             timestamp: event.timestamp,
             commerce: {}
+        },
+        "data": {
+            "testKey": "testValue"
+        },
+        "config": {
+            "datastreamIdOverride": "testDatastreamIdOverride",
+            "datastreamConfigOverride": {
+                "test": {
+                    "testKey": "testValue"
+                }
+            }
         }
     }
 

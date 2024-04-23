@@ -137,6 +137,192 @@ end sub
 
 ' target: _processRequest()
 ' @Test
+sub TC_adb_EdgeRequestWorker_processRequest_datastreamConfigOverride_valid_response()
+    cachedFuntion = _adb_serviceProvider().networkService.syncPostRequest
+    _adb_serviceProvider().networkService.syncPostRequest = function(url as string, jsonObj as object, headers = [] as object) as object
+        UTF_assertEqual(0, headers.Count(), "Expected != Actual (Number of headers)")
+        UTF_assertEqual("https://edge.adobedc.net/ee/v1/interact?configId=config_id&requestId=request_id", url)
+        UTF_assertEqual(3, jsonObj.Count(), "Expected != Actual (Request json body size)")
+        UTF_assertNotInvalid(jsonObj.xdm)
+        expectedXdmObj = {
+            identitymap: {
+                ecid: [
+                    {
+                        authenticatedstate: "ambiguous",
+                        id: "ecid_test",
+                        primary: false
+                    }
+                ]
+            },
+            implementationdetails: {
+                environment: "app",
+                name: "https://ns.adobe.com/experience/mobilesdk/roku",
+                version: "1.1.0"
+            }
+        }
+        UTF_assertEqual(expectedXdmObj, jsonObj.xdm, "Expected != actual (Top level XDM object in the request)")
+
+        ''' Assert configOverrides in under meta
+        UTF_assertNotInvalid(jsonObj.meta)
+        expectedMetaObj = {
+            configOverrides: {
+                "test": {
+                    "key": "value"
+                }
+            }
+        }
+        UTF_assertEqual(expectedMetaObj, jsonObj.meta, "Expected != actual (Meta object in the request)")
+
+        UTF_assertNotInvalid(jsonObj.events)
+        expectedEventsArray = [
+            {
+                xdm: {
+                    key: "value"
+                }
+            }
+        ]
+        UTF_assertEqual(expectedEventsArray, jsonObj.events, "Expected != actual (Events payload in the request)")
+        return _adb_NetworkResponse(200, "response body")
+    end function
+
+    worker = _adb_EdgeRequestWorker()
+    networkResponse = worker._processRequest({ xdm: { key: "value" }, config: { "datastreamConfigOverride": {"test" : {"key": "value"}} } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact", invalid)
+
+    UTF_assertEqual(200, networkResponse.getResponseCode())
+    UTF_assertEqual("response body", networkResponse.getResponseString())
+
+    _adb_serviceProvider().networkService.syncPostRequest = cachedFuntion
+end sub
+
+' target: _processRequest()
+' @Test
+sub TC_adb_EdgeRequestWorker_processRequest_datastreamIdAndConfigOverride_valid_response()
+    cachedFuntion = _adb_serviceProvider().networkService.syncPostRequest
+    _adb_serviceProvider().networkService.syncPostRequest = function(url as string, jsonObj as object, headers = [] as object) as object
+        UTF_assertEqual(0, headers.Count(), "Expected != Actual (Number of headers)")
+        UTF_assertEqual("https://edge.adobedc.net/ee/v1/interact?configId=datastreamIdOverride&requestId=request_id", url)
+        UTF_assertEqual(3, jsonObj.Count(), "Expected != Actual (Request json body size)")
+        UTF_assertNotInvalid(jsonObj.xdm)
+        expectedXdmObj = {
+            identitymap: {
+                ecid: [
+                    {
+                        authenticatedstate: "ambiguous",
+                        id: "ecid_test",
+                        primary: false
+                    }
+                ]
+            },
+            implementationdetails: {
+                environment: "app",
+                name: "https://ns.adobe.com/experience/mobilesdk/roku",
+                version: "1.1.0"
+            }
+        }
+        UTF_assertEqual(expectedXdmObj, jsonObj.xdm, "Expected != actual (Top level XDM object in the request)")
+
+        ''' Assert configOverrides in under meta
+        UTF_assertNotInvalid(jsonObj.meta)
+        expectedMetaObj = {
+            "sdkConfig": {
+                "datastream": {
+                    "original": "config_id"
+                }
+            },
+            "configOverrides": {
+                "test": {
+                    "key": "value"
+                }
+            }
+        }
+        UTF_assertEqual(expectedMetaObj, jsonObj.meta, "Expected != actual (Meta object in the request)")
+
+        UTF_assertNotInvalid(jsonObj.events)
+        expectedEventsArray = [
+            {
+                xdm: {
+                    key: "value"
+                }
+            }
+        ]
+        UTF_assertEqual(expectedEventsArray, jsonObj.events, "Expected != actual (Events payload in the request)")
+        return _adb_NetworkResponse(200, "response body")
+    end function
+
+    worker = _adb_EdgeRequestWorker()
+    networkResponse = worker._processRequest({ xdm: { key: "value" }, config: { "datastreamIdOverride": "datastreamIdOverride", "datastreamConfigOverride": {"test" : {"key": "value"}} } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact", invalid)
+
+    UTF_assertEqual(200, networkResponse.getResponseCode())
+    UTF_assertEqual("response body", networkResponse.getResponseString())
+
+    _adb_serviceProvider().networkService.syncPostRequest = cachedFuntion
+end sub
+
+
+' target: _processRequest()
+' @Test
+sub TC_adb_EdgeRequestWorker_processRequest_datastreamIdOverride_valid_response()
+    cachedFuntion = _adb_serviceProvider().networkService.syncPostRequest
+    _adb_serviceProvider().networkService.syncPostRequest = function(url as string, jsonObj as object, headers = [] as object) as object
+        UTF_assertEqual(0, headers.Count(), "Expected != Actual (Number of headers)")
+        UTF_assertEqual("https://edge.adobedc.net/ee/v1/interact?configId=datastreamIdOverride&requestId=request_id", url)
+        UTF_assertEqual(3, jsonObj.Count(), "Expected != Actual (Request json body size)")
+        UTF_assertNotInvalid(jsonObj.xdm)
+        expectedXdmObj = {
+            identitymap: {
+                ecid: [
+                    {
+                        authenticatedstate: "ambiguous",
+                        id: "ecid_test",
+                        primary: false
+                    }
+                ]
+            },
+            implementationdetails: {
+                environment: "app",
+                name: "https://ns.adobe.com/experience/mobilesdk/roku",
+                version: "1.1.0"
+            }
+        }
+        UTF_assertEqual(expectedXdmObj, jsonObj.xdm, "Expected != actual (Top level XDM object in the request)")
+
+        ''' Assert sdkConfig in under meta
+        UTF_assertNotInvalid(jsonObj.meta)
+        expectedMetaObj = {
+            sdkConfig: {
+                datastream: {
+                    "original": "config_id"
+                }
+            }
+        }
+
+        UTF_assertEqual(expectedMetaObj, jsonObj.meta, "Expected != actual (Meta object in the request)")
+
+
+        UTF_assertNotInvalid(jsonObj.events)
+        expectedEventsArray = [
+            {
+                xdm: {
+                    key: "value"
+                }
+            }
+        ]
+        UTF_assertEqual(expectedEventsArray, jsonObj.events, "Expected != actual (Events payload in the request)")
+        return _adb_NetworkResponse(200, "response body")
+    end function
+
+    worker = _adb_EdgeRequestWorker()
+    networkResponse = worker._processRequest({ xdm: { key: "value" }, config: { "datastreamIdOverride": "datastreamIdOverride" } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact", invalid)
+
+    UTF_assertEqual(200, networkResponse.getResponseCode())
+    UTF_assertEqual("response body", networkResponse.getResponseString())
+
+    _adb_serviceProvider().networkService.syncPostRequest = cachedFuntion
+end sub
+
+
+' target: _processRequest()
+' @Test
 sub TC_adb_EdgeRequestWorker_processRequest_invalid_response()
     cachedFuntion = _adb_serviceProvider().networkService.syncPostRequest
     _adb_serviceProvider().networkService.syncPostRequest = function(url as string, jsonObj as object, headers = [] as object) as object
@@ -233,7 +419,7 @@ sub TC_adb_EdgeRequestWorker_processRequests_recoverableError_retriesAfterWaitTi
     responseArray = worker.processRequests("config_id", "ecid_test")
 
     UTF_assertEqual(1, responseArray.Count())
-    ' queued reqeust shoudl be processed in order
+    ' queued reqeust should be processed in order
     UTF_assertTrue(_adb_isEdgeResponse(responseArray[0]))
     UTF_assertEqual("request_id_1", responseArray[0].getRequestId())
 
@@ -302,7 +488,7 @@ sub TC_adb_EdgeRequestWorker_queue_newRequest_after_RecoverableError_retriesImme
     responseArray = worker.processRequests("config_id", "ecid_test")
 
     UTF_assertEqual(1, responseArray.Count())
-    ' queued reqeust shoudl be processed in order
+    ' queued reqeust should be processed in order
     UTF_assertTrue(_adb_isEdgeResponse(responseArray[0]))
     UTF_assertEqual("request_id_1", responseArray[0].getRequestId())
 
