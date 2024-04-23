@@ -132,16 +132,41 @@ function _adb_EdgeRequestWorker() as object
             return responseArray
         end function,
 
-        _processRequest: function(eventData as object, ecid as string, configId as string, requestId as string, path as string, edgeDomain = invalid as dynamic) as object
-            requestBody = m._createEdgeRequestBody(eventData, ecid)
+        _processRequest: function(eventData as object, ecid as string, datastreamId as string, requestId as string, path as string, edgeDomain = invalid as dynamic) as object
+            meta = invalid
 
-            url = _adb_buildEdgeRequestURL(configId, requestId, path, edgeDomain)
+            if not _adb_isEmptyOrInvalidMap(eventData.config)
+                config = eventData.config
+                sdkConfig = invalid
+                configOverrides = invalid
+
+                if not _adb_isEmptyOrInvalidString(config.datastreamIdOverride)
+                    ''' Genrate sdkConfig payload with original datastreamId
+                    sdkConfig = m._getSdkConfigPayload(datastreamId)
+
+                    ''' Override the datastreamId
+                    datastreamId = config.datastreamIdOverride
+                end if
+
+                if not _adb_isEmptyOrInvalidMap(config.datastreamConfigOverride)
+                    configOverrides = config.datastreamConfigOverride
+                end if
+
+                meta = m._getMetaPayload(sdkConfig, configOverrides)
+
+                ''' Remove config from eventData
+                eventData.Delete("config")
+            end if
+
+            requestBody = m._createEdgeRequestBody(eventData, ecid, meta)
+
+            url = _adb_buildEdgeRequestURL(datastreamId, requestId, path, edgeDomain)
             _adb_logVerbose("EdgeRequestWorker::_processRequest() - Processing Request with url:(" + chr(10) + FormatJson(url) + chr(10) + ") with payload:(" + chr(10) + FormatJson(requestBody) + chr(10) + ")")
             networkResponse = _adb_serviceProvider().networkService.syncPostRequest(url, requestBody)
             return networkResponse
         end function
 
-        _createEdgeRequestBody: function(eventData as object, ecid as string) as object
+        _createEdgeRequestBody: function(eventData as object, ecid as string, meta = invalid as object) as object
             requestBody = {
                 "xdm": {
                     "identityMap": m._getIdentityMap(ecid),
@@ -153,7 +178,32 @@ function _adb_EdgeRequestWorker() as object
             ''' Add eventData under events key as an array
             requestBody.events = [eventData]
 
+            if not _adb_isEmptyOrInvalidMap(meta)
+                requestBody.meta = meta
+            end if
+
             return requestBody
+        end function,
+
+        _getMetaPayload: function(sdkConfigPayload as object, configOverridesPayload as object) as object
+            meta = {}
+
+            if not _adb_isEmptyOrInvalidMap(sdkConfigPayload)
+                meta["sdkConfig"] = sdkConfigPayload
+            end if
+
+            if not _adb_isEmptyOrInvalidMap(configOverridesPayload)
+                meta["configOverrides"] = configOverridesPayload
+            end if
+
+            return meta
+        end function,
+
+        _getSdkConfigPayload: function(originalDatastreamId as string) as object
+            sdkConfig = {}
+            sdkConfig.datastream = {}
+            sdkConfig.datastream.original = originalDatastreamId
+        return sdkConfig
         end function,
 
         _getIdentityMap: function(ecid as string) as object
