@@ -101,9 +101,10 @@ function _adb_EdgeRequestWorker() as object
 
                 eventData = requestEntity.eventData
                 requestId = requestEntity.requestId
+                meta = requestEntity.meta
                 path = requestEntity.path
 
-                networkResponse = m._processRequest(eventData, ecid, configId, requestId, path, edgeDomain)
+                networkResponse = m._processRequest(eventData, ecid, configId, requestId, path, meta, edgeDomain)
                 if not _adb_isNetworkResponse(networkResponse)
                     _adb_logError("EdgeRequestWorker::processRequests() - Edge request dropped. Response is invalid.")
                     ' drop the request
@@ -132,27 +133,28 @@ function _adb_EdgeRequestWorker() as object
             return responseArray
         end function,
 
-        _processRequest: function(eventData as object, ecid as string, datastreamId as string, requestId as string, path as string, edgeDomain = invalid as dynamic) as object
-            meta = invalid
-
+        _processRequest: function(eventData as object, ecid as string, datastreamId as string, requestId as string, path as string, meta = {} as object, edgeDomain = invalid as dynamic) as object
             if not _adb_isEmptyOrInvalidMap(eventData.config)
                 config = eventData.config
                 sdkConfig = invalid
                 configOverrides = invalid
 
+                if meta = invalid
+                    meta = {}
+                end if
+
                 if not _adb_isEmptyOrInvalidString(config.datastreamIdOverride)
                     ''' Genrate sdkConfig payload with original datastreamId
                     sdkConfig = m._getSdkConfigPayload(datastreamId)
+                    meta["sdkConfig"] = sdkConfig
 
                     ''' Override the datastreamId
                     datastreamId = config.datastreamIdOverride
                 end if
 
                 if not _adb_isEmptyOrInvalidMap(config.datastreamConfigOverride)
-                    configOverrides = config.datastreamConfigOverride
+                    meta["configOverrides"] = config.datastreamConfigOverride
                 end if
-
-                meta = m._getMetaPayload(sdkConfig, configOverrides)
 
                 ''' Remove config from eventData
                 eventData.Delete("config")
@@ -183,20 +185,6 @@ function _adb_EdgeRequestWorker() as object
             end if
 
             return requestBody
-        end function,
-
-        _getMetaPayload: function(sdkConfigPayload as object, configOverridesPayload as object) as object
-            meta = {}
-
-            if not _adb_isEmptyOrInvalidMap(sdkConfigPayload)
-                meta["sdkConfig"] = sdkConfigPayload
-            end if
-
-            if not _adb_isEmptyOrInvalidMap(configOverridesPayload)
-                meta["configOverrides"] = configOverridesPayload
-            end if
-
-            return meta
         end function,
 
         _getSdkConfigPayload: function(originalDatastreamId as string) as object

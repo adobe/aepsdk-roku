@@ -127,7 +127,108 @@ sub TC_adb_EdgeRequestWorker_processRequest_valid_response()
     end function
 
     worker = _adb_EdgeRequestWorker()
-    networkResponse = worker._processRequest({ xdm: { key: "value" } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact", invalid)
+    networkResponse = worker._processRequest({ xdm: { key: "value" } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact")
+
+    UTF_assertEqual(200, networkResponse.getResponseCode())
+    UTF_assertEqual("response body", networkResponse.getResponseString())
+
+    _adb_serviceProvider().networkService.syncPostRequest = cachedFuntion
+end sub
+
+' target: _processRequest()
+' @Test
+sub TC_adb_EdgeRequestWorker_processRequest_customMeta_valid_response()
+    cachedFuntion = _adb_serviceProvider().networkService.syncPostRequest
+    _adb_serviceProvider().networkService.syncPostRequest = function(url as string, jsonObj as object, headers = [] as object) as object
+        UTF_assertEqual(0, headers.Count(), "Expected != Actual (Number of headers)")
+        UTF_assertEqual("https://edge.adobedc.net/ee/v1/interact?configId=config_id&requestId=request_id", url)
+        UTF_assertEqual(3, jsonObj.Count(), "Expected != Actual (Request json body size)")
+        UTF_assertNotInvalid(jsonObj.xdm)
+        expectedXdmObj = {
+            identitymap: {
+                ecid: [
+                    {
+                        authenticatedstate: "ambiguous",
+                        id: "ecid_test",
+                        primary: false
+                    }
+                ]
+            },
+            implementationdetails: {
+                environment: "app",
+                name: "https://ns.adobe.com/experience/mobilesdk/roku",
+                version: "1.1.0"
+            }
+        }
+        UTF_assertEqual(expectedXdmObj, jsonObj.xdm, "Expected != actual (Top level XDM object in the request)")
+        UTF_assertNotInvalid(jsonObj.events)
+        expectedEventsArray = [
+            {
+                xdm: {
+                    key: "value"
+                }
+            }
+        ]
+        UTF_assertEqual(expectedEventsArray, jsonObj.events, "Expected != actual (Events payload in the request)")
+
+        UTF_assertNotInvalid(jsonObj.meta)
+        expectedMetaObj = {
+               "konductorTestConfig": "testValue"
+            }
+
+        UTF_assertEqual(expectedMetaObj, jsonObj.meta, "Expected != actual (Events payload in the request)")
+        return _adb_NetworkResponse(200, "response body")
+    end function
+
+    worker = _adb_EdgeRequestWorker()
+    networkResponse = worker._processRequest({ xdm: { key: "value" } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact", { "konductorTestConfig" : "testValue"})
+
+    UTF_assertEqual(200, networkResponse.getResponseCode())
+    UTF_assertEqual("response body", networkResponse.getResponseString())
+
+    _adb_serviceProvider().networkService.syncPostRequest = cachedFuntion
+end sub
+
+' target: _processRequest()
+' @Test
+sub TC_adb_EdgeRequestWorker_processRequest_customDomain_valid_response()
+    cachedFuntion = _adb_serviceProvider().networkService.syncPostRequest
+    _adb_serviceProvider().networkService.syncPostRequest = function(url as string, jsonObj as object, headers = [] as object) as object
+        UTF_assertEqual(0, headers.Count(), "Expected != Actual (Number of headers)")
+        UTF_assertEqual("https://testDomain/ee/v1/interact?configId=config_id&requestId=request_id", url)
+        UTF_assertEqual(2, jsonObj.Count(), "Expected != Actual (Request json body size)")
+        UTF_assertNotInvalid(jsonObj.xdm)
+        expectedXdmObj = {
+            identitymap: {
+                ecid: [
+                    {
+                        authenticatedstate: "ambiguous",
+                        id: "ecid_test",
+                        primary: false
+                    }
+                ]
+            },
+            implementationdetails: {
+                environment: "app",
+                name: "https://ns.adobe.com/experience/mobilesdk/roku",
+                version: "1.1.0"
+            }
+        }
+        UTF_assertEqual(expectedXdmObj, jsonObj.xdm, "Expected != actual (Top level XDM object in the request)")
+        UTF_assertNotInvalid(jsonObj.events)
+        expectedEventsArray = [
+            {
+                xdm: {
+                    key: "value"
+                }
+            }
+        ]
+        UTF_assertEqual(expectedEventsArray, jsonObj.events, "Expected != actual (Events payload in the request)")
+        return _adb_NetworkResponse(200, "response body")
+    end function
+
+    worker = _adb_EdgeRequestWorker()
+    networkResponse = worker._processRequest({ xdm: { key: "value" } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact", invalid, "testDomain")
 
     UTF_assertEqual(200, networkResponse.getResponseCode())
     UTF_assertEqual("response body", networkResponse.getResponseString())
@@ -186,7 +287,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_datastreamConfigOverride_valid_respo
     end function
 
     worker = _adb_EdgeRequestWorker()
-    networkResponse = worker._processRequest({ xdm: { key: "value" }, config: { "datastreamConfigOverride": {"test" : {"key": "value"}} } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact", invalid)
+    networkResponse = worker._processRequest({ xdm: { key: "value" }, config: { "datastreamConfigOverride": {"test" : {"key": "value"}} } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact")
 
     UTF_assertEqual(200, networkResponse.getResponseCode())
     UTF_assertEqual("response body", networkResponse.getResponseString())
@@ -250,7 +351,74 @@ sub TC_adb_EdgeRequestWorker_processRequest_datastreamIdAndConfigOverride_valid_
     end function
 
     worker = _adb_EdgeRequestWorker()
-    networkResponse = worker._processRequest({ xdm: { key: "value" }, config: { "datastreamIdOverride": "datastreamIdOverride", "datastreamConfigOverride": {"test" : {"key": "value"}} } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact", invalid)
+    networkResponse = worker._processRequest({ xdm: { key: "value" }, config: { "datastreamIdOverride": "datastreamIdOverride", "datastreamConfigOverride": {"test" : {"key": "value"}} } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact")
+
+    UTF_assertEqual(200, networkResponse.getResponseCode())
+    UTF_assertEqual("response body", networkResponse.getResponseString())
+
+    _adb_serviceProvider().networkService.syncPostRequest = cachedFuntion
+end sub
+
+' target: _processRequest()
+' @Test
+sub TC_adb_EdgeRequestWorker_processRequest_overridesWithCustomMeta_valid_response()
+    cachedFuntion = _adb_serviceProvider().networkService.syncPostRequest
+    _adb_serviceProvider().networkService.syncPostRequest = function(url as string, jsonObj as object, headers = [] as object) as object
+        UTF_assertEqual(0, headers.Count(), "Expected != Actual (Number of headers)")
+        UTF_assertEqual("https://edge.adobedc.net/ee/v1/interact?configId=datastreamIdOverride&requestId=request_id", url)
+        UTF_assertEqual(3, jsonObj.Count(), "Expected != Actual (Request json body size)")
+        UTF_assertNotInvalid(jsonObj.xdm)
+        expectedXdmObj = {
+            identitymap: {
+                ecid: [
+                    {
+                        authenticatedstate: "ambiguous",
+                        id: "ecid_test",
+                        primary: false
+                    }
+                ]
+            },
+            implementationdetails: {
+                environment: "app",
+                name: "https://ns.adobe.com/experience/mobilesdk/roku",
+                version: "1.1.0"
+            }
+        }
+        UTF_assertEqual(expectedXdmObj, jsonObj.xdm, "Expected != actual (Top level XDM object in the request)")
+
+        ''' Assert configOverrides in under meta
+        UTF_assertNotInvalid(jsonObj.meta)
+        expectedMetaObj = {
+            "konductorTestConfig": {
+                "key": "value"
+            },
+            "sdkConfig": {
+                "datastream": {
+                    "original": "config_id"
+                }
+            },
+            "configOverrides": {
+                "test": {
+                    "key": "value"
+                }
+            }
+        }
+        UTF_assertEqual(expectedMetaObj, jsonObj.meta, "Expected != actual (Meta object in the request)")
+
+        UTF_assertNotInvalid(jsonObj.events)
+        expectedEventsArray = [
+            {
+                xdm: {
+                    key: "value"
+                }
+            }
+        ]
+        UTF_assertEqual(expectedEventsArray, jsonObj.events, "Expected != actual (Events payload in the request)")
+        return _adb_NetworkResponse(200, "response body")
+    end function
+
+    worker = _adb_EdgeRequestWorker()
+    networkResponse = worker._processRequest({ xdm: { key: "value" }, config: { "datastreamIdOverride": "datastreamIdOverride", "datastreamConfigOverride": {"test" : {"key": "value"}} } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact", { "konductorTestConfig" : {"key": "value"} })
 
     UTF_assertEqual(200, networkResponse.getResponseCode())
     UTF_assertEqual("response body", networkResponse.getResponseString())
@@ -312,7 +480,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_datastreamIdOverride_valid_response(
     end function
 
     worker = _adb_EdgeRequestWorker()
-    networkResponse = worker._processRequest({ xdm: { key: "value" }, config: { "datastreamIdOverride": "datastreamIdOverride" } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact", invalid)
+    networkResponse = worker._processRequest({ xdm: { key: "value" }, config: { "datastreamIdOverride": "datastreamIdOverride" } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact")
 
     UTF_assertEqual(200, networkResponse.getResponseCode())
     UTF_assertEqual("response body", networkResponse.getResponseString())
@@ -335,7 +503,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_invalid_response()
     end function
 
     worker = _adb_EdgeRequestWorker()
-    result = worker._processRequest({ xdm: { key: "value" } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact", invalid)
+    result = worker._processRequest({ xdm: { key: "value" } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact")
 
     UTF_assertInvalid(result)
 
