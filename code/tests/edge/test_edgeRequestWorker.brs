@@ -127,7 +127,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_valid_response()
     end function
 
     worker = _adb_EdgeRequestWorker()
-    networkResponse = worker._processRequest({ xdm: { key: "value" } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact")
+    networkResponse = worker._processRequest({ xdm: { key: "value" } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact", invalid, invalid)
 
     UTF_assertEqual(200, networkResponse.getResponseCode())
     UTF_assertEqual("response body", networkResponse.getResponseString())
@@ -181,7 +181,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_customMeta_valid_response()
     end function
 
     worker = _adb_EdgeRequestWorker()
-    networkResponse = worker._processRequest({ xdm: { key: "value" } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact", { "konductorTestConfig" : "testValue"})
+    networkResponse = worker._processRequest({ xdm: { key: "value" } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact", { "konductorTestConfig" : "testValue"}, invalid)
 
     UTF_assertEqual(200, networkResponse.getResponseCode())
     UTF_assertEqual("response body", networkResponse.getResponseString())
@@ -287,7 +287,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_datastreamConfigOverride_valid_respo
     end function
 
     worker = _adb_EdgeRequestWorker()
-    networkResponse = worker._processRequest({ xdm: { key: "value" }, config: { "datastreamConfigOverride": {"test" : {"key": "value"}} } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact")
+    networkResponse = worker._processRequest({ xdm: { key: "value" }, config: { "datastreamConfigOverride": {"test" : {"key": "value"}} } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact", invalid, invalid)
 
     UTF_assertEqual(200, networkResponse.getResponseCode())
     UTF_assertEqual("response body", networkResponse.getResponseString())
@@ -351,7 +351,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_datastreamIdAndConfigOverride_valid_
     end function
 
     worker = _adb_EdgeRequestWorker()
-    networkResponse = worker._processRequest({ xdm: { key: "value" }, config: { "datastreamIdOverride": "datastreamIdOverride", "datastreamConfigOverride": {"test" : {"key": "value"}} } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact")
+    networkResponse = worker._processRequest({ xdm: { key: "value" }, config: { "datastreamIdOverride": "datastreamIdOverride", "datastreamConfigOverride": {"test" : {"key": "value"}} } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact", invalid, invalid)
 
     UTF_assertEqual(200, networkResponse.getResponseCode())
     UTF_assertEqual("response body", networkResponse.getResponseString())
@@ -418,7 +418,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_overridesWithCustomMeta_valid_respon
     end function
 
     worker = _adb_EdgeRequestWorker()
-    networkResponse = worker._processRequest({ xdm: { key: "value" }, config: { "datastreamIdOverride": "datastreamIdOverride", "datastreamConfigOverride": {"test" : {"key": "value"}} } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact", { "konductorTestConfig" : {"key": "value"} })
+    networkResponse = worker._processRequest({ xdm: { key: "value" }, config: { "datastreamIdOverride": "datastreamIdOverride", "datastreamConfigOverride": {"test" : {"key": "value"}} } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact", { "konductorTestConfig" : {"key": "value"} }, invalid)
 
     UTF_assertEqual(200, networkResponse.getResponseCode())
     UTF_assertEqual("response body", networkResponse.getResponseString())
@@ -480,7 +480,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_datastreamIdOverride_valid_response(
     end function
 
     worker = _adb_EdgeRequestWorker()
-    networkResponse = worker._processRequest({ xdm: { key: "value" }, config: { "datastreamIdOverride": "datastreamIdOverride" } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact")
+    networkResponse = worker._processRequest({ xdm: { key: "value" }, config: { "datastreamIdOverride": "datastreamIdOverride" } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact", invalid, invalid)
 
     UTF_assertEqual(200, networkResponse.getResponseCode())
     UTF_assertEqual("response body", networkResponse.getResponseString())
@@ -503,7 +503,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_invalid_response()
     end function
 
     worker = _adb_EdgeRequestWorker()
-    result = worker._processRequest({ xdm: { key: "value" } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact")
+    result = worker._processRequest({ xdm: { key: "value" } }, "ecid_test", "config_id", "request_id", "/ee/v1/interact", invalid, invalid)
 
     UTF_assertInvalid(result)
 

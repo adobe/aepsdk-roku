@@ -133,13 +133,13 @@ function _adb_EdgeRequestWorker() as object
             return responseArray
         end function,
 
-        _processRequest: function(eventData as object, ecid as string, datastreamId as string, requestId as string, path as string, meta = {} as object, edgeDomain = invalid as dynamic) as object
+        _processRequest: function(eventData as object, ecid as string, datastreamId as string, requestId as string, path as string, meta as object, edgeDomain as dynamic) as object
             if not _adb_isEmptyOrInvalidMap(eventData.config)
                 config = eventData.config
                 sdkConfig = invalid
                 configOverrides = invalid
 
-                if meta = invalid
+                if _adb_isEmptyOrInvalidMap(meta)
                     meta = {}
                 end if
 
@@ -168,7 +168,7 @@ function _adb_EdgeRequestWorker() as object
             return networkResponse
         end function
 
-        _createEdgeRequestBody: function(eventData as object, ecid as string, meta = invalid as object) as object
+        _createEdgeRequestBody: function(eventData as object, ecid as string, meta as object) as object
             requestBody = {
                 "xdm": {
                     "identityMap": m._getIdentityMap(ecid),
