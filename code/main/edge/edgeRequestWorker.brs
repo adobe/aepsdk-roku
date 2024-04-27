@@ -134,31 +134,14 @@ function _adb_EdgeRequestWorker() as object
         end function,
 
         _processRequest: function(eventData as object, ecid as string, datastreamId as string, requestId as string, path as string, meta as object, edgeDomain as dynamic) as object
-            if not _adb_isEmptyOrInvalidMap(eventData.config)
-                config = eventData.config
-                sdkConfig = invalid
-                configOverrides = invalid
+            ''' Append config overrides to meta if set in eventData.config
+            meta = m._appendConfigOverridesToMeta(meta, eventData.config, datastreamId)
 
-                if _adb_isEmptyOrInvalidMap(meta)
-                    meta = {}
-                end if
+            ''' Override the datastreamId if set in eventData.config
+            datastreamId = m._getDatastreamId(eventData.config, datastreamId)
 
-                if not _adb_isEmptyOrInvalidString(config.datastreamIdOverride)
-                    ''' Genrate sdkConfig payload with original datastreamId
-                    sdkConfig = m._getSdkConfigPayload(datastreamId)
-                    meta["sdkConfig"] = sdkConfig
-
-                    ''' Override the datastreamId
-                    datastreamId = config.datastreamIdOverride
-                end if
-
-                if not _adb_isEmptyOrInvalidMap(config.datastreamConfigOverride)
-                    meta["configOverrides"] = config.datastreamConfigOverride
-                end if
-
-                ''' Remove config from eventData
-                eventData.Delete("config")
-            end if
+            ''' Remove config from eventData
+            eventData.Delete("config")
 
             requestBody = m._createEdgeRequestBody(eventData, ecid, meta)
 
@@ -167,6 +150,39 @@ function _adb_EdgeRequestWorker() as object
             networkResponse = _adb_serviceProvider().networkService.syncPostRequest(url, requestBody)
             return networkResponse
         end function
+
+        _getDatastreamId: function(config as object, originalDatastreamId as String) as string
+            if _adb_isEmptyOrInvalidMap(config)
+                return originalDatastreamId
+            end if
+
+            if not _adb_isEmptyOrInvalidString(config.datastreamIdOverride)
+                return config.datastreamIdOverride
+            end if
+
+            return originalDatastreamId
+        end function,
+
+        _appendConfigOverridesToMeta: function(meta as object, config as object, originalDatastreamId) as object
+            if _adb_isEmptyOrInvalidMap(meta)
+                meta = {}
+            end if
+
+            if _adb_isEmptyOrInvalidMap(config)
+                return meta
+            end if
+
+            if not _adb_isEmptyOrInvalidMap(config.datastreamConfigOverride)
+                meta["configOverrides"] = config.datastreamConfigOverride
+            end if
+
+            if not _adb_isEmptyOrInvalidString(config.datastreamIdOverride)
+                ''' Genrate sdkConfig payload with original datastreamId
+                meta["sdkConfig"] = m._getSdkConfigPayload(originalDatastreamId)
+            end if
+
+            return meta
+        end function,
 
         _createEdgeRequestBody: function(eventData as object, ecid as string, meta as object) as object
             requestBody = {
