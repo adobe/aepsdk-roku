@@ -488,6 +488,57 @@ sub TC_adb_EdgeRequestWorker_processRequest_datastreamIdOverride_valid_response(
     _adb_serviceProvider().networkService.syncPostRequest = cachedFuntion
 end sub
 
+' target: _processRequest()
+' @Test
+sub TC_adb_EdgeRequestWorker_processRequest_invalidEventConfig_valid_response()
+    cachedFuntion = _adb_serviceProvider().networkService.syncPostRequest
+    _adb_serviceProvider().networkService.syncPostRequest = function(url as string, jsonObj as object, headers = [] as object) as object
+        UTF_assertEqual(0, headers.Count(), "Expected != Actual (Number of headers)")
+        UTF_assertEqual("https://edge.adobedc.net/ee/v1/interact?configId=config_id&requestId=request_id", url)
+        UTF_assertEqual(2, jsonObj.Count(), "Expected != Actual (Request json body size)")
+        UTF_assertNotInvalid(jsonObj.xdm)
+        expectedXdmObj = {
+            identitymap: {
+                ecid: [
+                    {
+                        authenticatedstate: "ambiguous",
+                        id: "ecid_test",
+                        primary: false
+                    }
+                ]
+            },
+            implementationdetails: {
+                environment: "app",
+                name: "https://ns.adobe.com/experience/mobilesdk/roku",
+                version: "1.1.0"
+            }
+        }
+        UTF_assertEqual(expectedXdmObj, jsonObj.xdm, "Expected != actual (Top level XDM object in the request)")
+
+        ''' Assert meta is not present
+        UTF_assertInvalid(jsonObj.meta, "Meta object should be invalid")
+
+        UTF_assertNotInvalid(jsonObj.events)
+        expectedEventsArray = [
+            {
+                xdm: {
+                    key: "value"
+                }
+            }
+        ]
+        UTF_assertEqual(expectedEventsArray, jsonObj.events, "Expected != actual (Events payload in the request)")
+        return _adb_NetworkResponse(200, "response body")
+    end function
+
+    worker = _adb_EdgeRequestWorker()
+    networkResponse = worker._processRequest({ xdm: { key: "value" }, config: { key: "value"} }, "ecid_test", "config_id", "request_id", "/ee/v1/interact", invalid, invalid)
+
+    UTF_assertEqual(200, networkResponse.getResponseCode())
+    UTF_assertEqual("response body", networkResponse.getResponseString())
+
+    _adb_serviceProvider().networkService.syncPostRequest = cachedFuntion
+end sub
+
 
 ' target: _processRequest()
 ' @Test
