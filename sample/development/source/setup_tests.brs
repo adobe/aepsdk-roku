@@ -114,6 +114,15 @@ function _adb_test_functions() as dynamic
         TC_adb_EdgeRequestWorker_queue_limit
         TC_adb_EdgeRequestWorker_clear
         TC_adb_EdgeRequestWorker_processRequest_valid_response
+        TC_adb_EdgeRequestWorker_processRequest_customMeta_valid_response
+        TC_adb_EdgeRequestWorker_processRequest_customDomain_valid_response
+        TC_adb_EdgeRequestWorker_processRequest_datastreamIdOverride_valid_response
+        TC_adb_EdgeRequestWorker_processRequest_datastreamConfigOverride_valid_response
+        TC_adb_EdgeRequestWorker_processRequest_datastreamIdAndConfigOverride_valid_response
+        TC_adb_EdgeRequestWorker_processRequest_invalidEventConfig_valid_response
+        TC_adb_EdgeRequestWorker_processRequest_invalidDatastreamIdOverrideValue_valid_response
+        TC_adb_EdgeRequestWorker_processRequest_invalidConfigOverrideValue_valid_response
+        TC_adb_EdgeRequestWorker_processRequest_overridesWithCustomMeta_valid_response
         TC_adb_EdgeRequestWorker_processRequest_invalid_response
         TC_adb_EdgeRequestWorker_processRequests
         TC_adb_EdgeRequestWorker_processRequests_empty_queue

@@ -971,15 +971,15 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigAndSessio
     ''' mock edgeRequestQueue.add()
     GetGlobalAA()._test_edgeRequestQueue_add_called = false
     GetGlobalAA()._test_edgeRequestQueue_add_requestId = ""
-    GetGlobalAA()._test_edgeRequestQueue_add_xdmEvents = []
+    GetGlobalAA()._test_edgeRequestQueue_add_eventdata = invalid
     GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis = -1
     GetGlobalAA()._test_edgeRequestQueue_add_meta = invalid
     GetGlobalAA()._test_edgeRequestQueue_add_path = ""
 
-    edgeRequestQueue.add = function(requestId as string, xdmEvents as object, timestampInMillis as longinteger, meta as object, path as string) as void
+    edgeRequestQueue.add = function(requestId as string, eventData as object, timestampInMillis as longinteger, meta as object, path as string) as void
         GetGlobalAA()._test_edgeRequestQueue_add_called = true
         GetGlobalAA()._test_edgeRequestQueue_add_requestId = requestId
-        GetGlobalAA()._test_edgeRequestQueue_add_xdmEvents = xdmEvents
+        GetGlobalAA()._test_edgeRequestQueue_add_eventdata = eventData
         GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis = timestampInMillis
         GetGlobalAA()._test_edgeRequestQueue_add_meta = meta
         GetGlobalAA()._test_edgeRequestQueue_add_path = path
@@ -1011,9 +1011,9 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigAndSessio
     mediaSession.tryDispatchMediaEvents()
 
     ''' verify
-    actualXdmEvents = GetGlobalAA()._test_edgeRequestQueue_add_xdmEvents
-    UTF_assertEqual(1, actualXdmEvents.count())
-    actualXdmData = actualXdmEvents[0]
+    actualEventData = GetGlobalAA()._test_edgeRequestQueue_add_eventdata
+    UTF_assertNotInvalid(actualEventData, "eventData should not be invalid")
+    actualXdmData = actualEventData
 
     UTF_assertTrue(GetGlobalAA()._test_edgeRequestQueue_add_called)
     UTF_assertEqual("sessionStartRequestId", GetGlobalAA()._test_edgeRequestQueue_add_requestId)
@@ -1069,15 +1069,15 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigNoSession
     ''' mock edgeRequestQueue.add()
     GetGlobalAA()._test_edgeRequestQueue_add_called = false
     GetGlobalAA()._test_edgeRequestQueue_add_requestId = ""
-    GetGlobalAA()._test_edgeRequestQueue_add_xdmEvents = []
+    GetGlobalAA()._test_edgeRequestQueue_add_eventData = invalid
     GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis = -1
     GetGlobalAA()._test_edgeRequestQueue_add_meta = invalid
     GetGlobalAA()._test_edgeRequestQueue_add_path = ""
 
-    edgeRequestQueue.add = function(requestId as string, xdmEvents as object, timestampInMillis as longinteger, meta as object, path as string) as void
+    edgeRequestQueue.add = function(requestId as string, eventData as object, timestampInMillis as longinteger, meta as object, path as string) as void
         GetGlobalAA()._test_edgeRequestQueue_add_called = true
         GetGlobalAA()._test_edgeRequestQueue_add_requestId = requestId
-        GetGlobalAA()._test_edgeRequestQueue_add_xdmEvents = xdmEvents
+        GetGlobalAA()._test_edgeRequestQueue_add_eventData = eventData
         GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis = timestampInMillis
         GetGlobalAA()._test_edgeRequestQueue_add_meta = meta
         GetGlobalAA()._test_edgeRequestQueue_add_path = path
@@ -1108,9 +1108,9 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigNoSession
     mediaSession.tryDispatchMediaEvents()
 
     ''' verify
-    actualXdmEvents = GetGlobalAA()._test_edgeRequestQueue_add_xdmEvents
-    UTF_assertEqual(1, actualXdmEvents.count())
-    actualXdmData = actualXdmEvents[0]
+    actualEventData = GetGlobalAA()._test_edgeRequestQueue_add_eventData
+    UTF_assertNotInvalid(actualEventData, "eventData should not be invalid")
+    actualXdmData = actualEventData
 
     UTF_assertTrue(GetGlobalAA()._test_edgeRequestQueue_add_called)
     UTF_assertEqual("sessionStartRequestId", GetGlobalAA()._test_edgeRequestQueue_add_requestId)
@@ -1158,15 +1158,15 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_NoValidConfigNoSessi
     ''' mock edgeRequestQueue.add()
     GetGlobalAA()._test_edgeRequestQueue_add_called = false
     GetGlobalAA()._test_edgeRequestQueue_add_requestId = ""
-    GetGlobalAA()._test_edgeRequestQueue_add_xdmEvents = []
+    GetGlobalAA()._test_edgeRequestQueue_add_eventData = invalid
     GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis = -1
     GetGlobalAA()._test_edgeRequestQueue_add_meta = invalid
     GetGlobalAA()._test_edgeRequestQueue_add_path = ""
 
-    edgeRequestQueue.add = function(requestId as string, xdmEvents as object, timestampInMillis as longinteger, meta as object, path as string) as void
+    edgeRequestQueue.add = function(requestId as string, eventData as object, timestampInMillis as longinteger, meta as object, path as string) as void
         GetGlobalAA()._test_edgeRequestQueue_add_called = true
         GetGlobalAA()._test_edgeRequestQueue_add_requestId = requestId
-        GetGlobalAA()._test_edgeRequestQueue_add_xdmEvents = xdmEvents
+        GetGlobalAA()._test_edgeRequestQueue_add_eventdata = eventData
         GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis = timestampInMillis
         GetGlobalAA()._test_edgeRequestQueue_add_meta = meta
         GetGlobalAA()._test_edgeRequestQueue_add_path = path
@@ -1194,9 +1194,9 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_NoValidConfigNoSessi
     mediaSession.tryDispatchMediaEvents()
 
     ''' verify
-    actualXdmEvents = GetGlobalAA()._test_edgeRequestQueue_add_xdmEvents
-    UTF_assertEqual(1, actualXdmEvents.count())
-    actualXdmData = actualXdmEvents[0]
+    actualEventData = GetGlobalAA()._test_edgeRequestQueue_add_eventdata
+    UTF_assertNotInvalid(actualEventData, "eventData should not be invalid")
+    actualXdmData = actualEventData
 
     UTF_assertTrue(GetGlobalAA()._test_edgeRequestQueue_add_called)
     UTF_assertEqual("sessionStartRequestId", GetGlobalAA()._test_edgeRequestQueue_add_requestId)
@@ -1238,15 +1238,15 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_notSessionStart_validBackendId()
     ''' mock edgeRequestQueue.add()
     GetGlobalAA()._test_edgeRequestQueue_add_called = false
     GetGlobalAA()._test_edgeRequestQueue_add_requestId = ""
-    GetGlobalAA()._test_edgeRequestQueue_add_xdmEvents = []
+    GetGlobalAA()._test_edgeRequestQueue_add_eventdata = invalid
     GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis = -1
     GetGlobalAA()._test_edgeRequestQueue_add_meta = invalid
     GetGlobalAA()._test_edgeRequestQueue_add_path = ""
 
-    edgeRequestQueue.add = function(requestId as string, xdmEvents as object, timestampInMillis as longinteger, meta as object, path as string) as void
+    edgeRequestQueue.add = function(requestId as string, eventData as object, timestampInMillis as longinteger, meta as object, path as string) as void
         GetGlobalAA()._test_edgeRequestQueue_add_called = true
         GetGlobalAA()._test_edgeRequestQueue_add_requestId = requestId
-        GetGlobalAA()._test_edgeRequestQueue_add_xdmEvents = xdmEvents
+        GetGlobalAA()._test_edgeRequestQueue_add_eventdata = eventData
         GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis = timestampInMillis
         GetGlobalAA()._test_edgeRequestQueue_add_meta = meta
         GetGlobalAA()._test_edgeRequestQueue_add_path = path
@@ -1274,9 +1274,9 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_notSessionStart_validBackendId()
     mediaSession.tryDispatchMediaEvents()
 
     ''' verify
-    actualXdmEvents = GetGlobalAA()._test_edgeRequestQueue_add_xdmEvents
-    UTF_assertEqual(1, actualXdmEvents.count())
-    actualXdmData = actualXdmEvents[0]
+    actualEventData = GetGlobalAA()._test_edgeRequestQueue_add_eventdata
+    UTF_assertNotInvalid(actualEventData, "eventData should not be invalid")
+    actualXdmData = actualEventData
 
     UTF_assertTrue(GetGlobalAA()._test_edgeRequestQueue_add_called)
     UTF_assertEqual("playRequestId", GetGlobalAA()._test_edgeRequestQueue_add_requestId)
@@ -1318,7 +1318,7 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_notSessionStart_invalidBackendId(
     ''' mock edgeRequestQueue.add()
     GetGlobalAA()._test_edgeRequestQueue_add_called = false
 
-    edgeRequestQueue.add = function(_requestId as string, _xdmEvents as object, _timestampInMillis as longinteger, _meta as object, _path as string) as void
+    edgeRequestQueue.add = function(_requestId as string, _eventData as object, _timestampInMillis as longinteger, _meta as object, _path as string) as void
         GetGlobalAA()._test_edgeRequestQueue_add_called = true
     end function
 
@@ -1330,8 +1330,6 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_notSessionStart_invalidBackendId(
     mediaSession.tryDispatchMediaEvents()
 
     ''' verify
-    actualXdmEvents = GetGlobalAA()._test_edgeRequestQueue_add_xdmEvents
-    UTF_assertEqual(1, actualXdmEvents.count())
     UTF_assertFalse(GetGlobalAA()._test_edgeRequestQueue_add_called)
 end sub
 

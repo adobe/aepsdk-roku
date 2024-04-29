@@ -129,16 +129,16 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
 
                 requestId = hit.requestId
                 tsInMillis = hit.tsObject.tsInMillis
-                xdmData = hit.xdmData
+                eventData = hit.xdmData
                 eventType = hit.eventType
 
                 ' attach _id and timestamp in ISO format
-                xdmData.xdm["_id"] = _adb_generate_UUID()
-                xdmData.xdm["timestamp"] = hit.tsObject.tsInISO8601
+                eventData.xdm["_id"] = _adb_generate_UUID()
+                eventData.xdm["timestamp"] = hit.tsObject.tsInISO8601
 
                 ' attach sessionId to events other than sessionStart
                 if eventType = m._MEDIA_EVENT_TYPE.SESSION_START
-                    xdmData = m._attachMediaConfig(xdmData)
+                    eventData = m._attachMediaConfig(eventData)
                 else
                     ''' Cannot send hit of type other than sessionStart if backendSessionId is not set.
                     if m._backendSessionId = invalid then
@@ -147,16 +147,14 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
                     end if
 
                     ' attach sessionId to events other than sessionStart
-                    xdmData.xdm["mediaCollection"]["sessionID"] = m._backendSessionId
+                    eventData.xdm["mediaCollection"]["sessionID"] = m._backendSessionId
                 end if
 
-
-                xdm = [xdmData]
                 eventNameTokens = eventType.tokenize(".") ''' ex: eventType =  media.sessionStart
                 path = m._MEDIA_PATH_PREFIX + eventNameTokens[1] ''' ex: eventNameTokens[1] = sessionStart
                 meta = {}
 
-                m._edgeRequestQueue.add(requestId, xdm, tsInMillis, meta, path)
+                m._edgeRequestQueue.add(requestId, eventData, tsInMillis, meta, path)
                 m._processEdgeRequestQueue()
             end while
         end function,
