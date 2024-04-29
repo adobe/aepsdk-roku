@@ -120,6 +120,8 @@ function _adb_test_functions() as dynamic
         TC_adb_EdgeRequestWorker_processRequest_datastreamConfigOverride_valid_response
         TC_adb_EdgeRequestWorker_processRequest_datastreamIdAndConfigOverride_valid_response
         TC_adb_EdgeRequestWorker_processRequest_invalidEventConfig_valid_response
+        TC_adb_EdgeRequestWorker_processRequest_invalidDatastreamIdOverrideValue_valid_response
+        TC_adb_EdgeRequestWorker_processRequest_invalidConfigOverrideValue_valid_response
         TC_adb_EdgeRequestWorker_processRequest_overridesWithCustomMeta_valid_response
         TC_adb_EdgeRequestWorker_processRequest_invalid_response
         TC_adb_EdgeRequestWorker_processRequests

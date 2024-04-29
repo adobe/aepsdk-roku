@@ -25,7 +25,7 @@ function _adb_EdgeRequestWorker() as object
         ' Queue the Edge request.
         '
         ' @param requestId          - the request id
-        ' @param xdmEvents          - an array of the XDM events
+        ' @param eventData          - the data object containing xdm, non-xdm and config data
         ' @param timestampInMillis  - the timestamp in millis used to compute when to retry failed requets
         ' @param meta               - the meta data
         ' @param path               - if it's not empty, overwrite the Edge path with the given value
@@ -137,7 +137,7 @@ function _adb_EdgeRequestWorker() as object
             ''' Append config overrides to meta if set in eventData.config
             meta = m._appendConfigOverridesToMeta(meta, eventData.config, datastreamId)
 
-            ''' Override the datastreamId if set in eventData.config
+            ''' Get datastreamId to be used in the request. If datastreamIdOverride is set in eventData.config, use it. Otherwise, use the original datastreamId.
             datastreamId = m._getDatastreamId(eventData.config, datastreamId)
 
             ''' Remove config from eventData
@@ -207,7 +207,8 @@ function _adb_EdgeRequestWorker() as object
             sdkConfig = {}
             sdkConfig.datastream = {}
             sdkConfig.datastream.original = originalDatastreamId
-        return sdkConfig
+
+            return sdkConfig
         end function,
 
         _getIdentityMap: function(ecid as string) as object
