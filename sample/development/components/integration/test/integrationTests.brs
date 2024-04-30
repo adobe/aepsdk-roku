@@ -138,6 +138,105 @@ function TS_SDK_integration() as object
             return validator
         end function,
 
+        TC_SDK_getECID: function() as dynamic
+
+            aepSdk = ADB_retrieveSDKInstance()
+
+            ADB_CONSTANTS = AdobeAEPSDKConstants()
+
+            configuration = {}
+            configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = m.configId
+
+            aepSdk.updateConfiguration(configuration)
+            eventIdForUpdateConfiguration = aepSdk._private.lastEventId
+
+            ecidInRegistry = ADB_getPersistedECID()
+            ADB_assertTrue((ecidInRegistry = invalid), LINE_NUM, "assert ecid is not persisted in Registry")
+
+            GetGlobalAA()._adb_integration_test_callback_result_ecid = invalid
+            aepSdk.getExperienceCloudId(sub(context, ecid)
+                GetGlobalAA()._adb_integration_test_callback_result_ecid = ecid
+            end sub, m)
+
+            eventIdForGetECID = aepSdk._private.lastEventId
+
+            validator = {}
+            validator[eventIdForGetECID] = sub(debugInfo)
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+                ecid = debugInfo.identity.ecid
+                eventid = debugInfo.eventid
+
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "getExperienceCloudId"), LINE_NUM, "assert debugInfo.apiName = getExperienceCloudId")
+
+                eventData = debugInfo.eventData
+                ADB_assertTrue((eventData = invalid), LINE_NUM, "Event Data should be invalid")
+
+                ' Verify fetch ECID request since no ECID in persistence
+                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 1), LINE_NUM, "assert networkRequests = 1")
+                ADB_assertTrue((debugInfo.networkRequests[0].jsonObj.events[0].query.identity.fetch[0] = "ECID"), LINE_NUM, "assert networkRequests(1) is to fetch ECID")
+                ADB_assertTrue((debugInfo.networkRequests[0].response.code = 200), LINE_NUM, "assert response (1) returns 200")
+                firstResponseJson = ParseJson(debugInfo.networkRequests[0].response.body)
+                ADB_assertTrue((firstResponseJson.handle[0].payload[0].id <> invalid), LINE_NUM, "ECID should not be invalid")
+                ADB_assertTrue((firstResponseJson.handle[0].payload[0].id = ecid), LINE_NUM, "Expected: (" + ecid + ") != Actual: (" + firstResponseJson.handle[0].payload[0].id + ")")
+                ADB_assertTrue((firstResponseJson.requestId <> eventid), LINE_NUM, "assert response (1) verify request ID")
+
+                ecidInRegistry = ADB_getPersistedECID()
+                ADB_assertTrue((ecidInRegistry = ecid), LINE_NUM, "assert ecid is persisted in Registry")
+
+                actualEcidFromAPI = GetGlobalAA()._adb_integration_test_callback_result_ecid
+                ADB_assertTrue((actualEcidFromAPI = ecid), LINE_NUM, "assert ecid returned by getExperienceCloudId is same as persisted ecid")
+
+            end sub
+
+            return validator
+        end function,
+
+        TC_SDK_getECID_ecidInPersistence: function() as dynamic
+
+            aepSdk = ADB_retrieveSDKInstance()
+
+            ADB_CONSTANTS = AdobeAEPSDKConstants()
+
+            configuration = {}
+            configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = m.configId
+
+            aepSdk.updateConfiguration(configuration)
+            eventIdForUpdateConfiguration = aepSdk._private.lastEventId
+
+            ''' Mock ECID in persistence
+            ADB_persistECIDInRegistry("AlreadyPresentECID")
+
+            GetGlobalAA()._adb_integration_test_callback_result_ecid = invalid
+            aepSdk.getExperienceCloudId(sub(context, ecid)
+                GetGlobalAA()._adb_integration_test_callback_result_ecid = ecid
+            end sub, m)
+
+            eventIdForGetECID = aepSdk._private.lastEventId
+
+            validator = {}
+            validator[eventIdForGetECID] = sub(debugInfo)
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+                ecid = debugInfo.identity.ecid
+                eventid = debugInfo.eventid
+
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "getExperienceCloudId"), LINE_NUM, "assert debugInfo.apiName = getExperienceCloudId")
+
+                eventData = debugInfo.eventData
+                ADB_assertTrue((eventData = invalid), LINE_NUM, "Event Data should be invalid")
+
+                ' Verify fetch ECID request since no ECID in persistence
+                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 0), LINE_NUM, "assert networkRequests = 0")
+
+                ecidInRegistry = ADB_getPersistedECID()
+                ADB_assertTrue((ecidInRegistry = ecid), LINE_NUM, "assert ecid is persisted in Registry")
+
+                actualEcidFromAPI = GetGlobalAA()._adb_integration_test_callback_result_ecid
+                ADB_assertTrue((actualEcidFromAPI = "AlreadyPresentECID"), LINE_NUM, "assert ecid returned by getExperienceCloudId is same as persisted ecid")
+            end sub
+
+            return validator
+        end function,
+
         TC_SDK_sendEvent: function() as dynamic
 
             aepSdk = ADB_retrieveSDKInstance()
@@ -833,7 +932,7 @@ function TS_SDK_integration() as object
 
         TC_SDK_ecid_consistence: function() as dynamic
 
-            ADB_persisteECIDInRegistry(m._testECID)
+            ADB_persistECIDInRegistry(m._testECID)
 
             aepSdk = ADB_retrieveSDKInstance()
 
