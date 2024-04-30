@@ -18,6 +18,7 @@ function _adb_InternalConstants() as object
         PUBLIC_API: {
             SET_CONFIGURATION: "setConfiguration",
             SET_EXPERIENCE_CLOUD_ID: "setExperienceCloudId",
+            GET_EXPERIENCE_CLOUD_ID: "getExperienceCloudId",
             RESET_IDENTITIES: "resetIdentities",
             SEND_EDGE_EVENT: "sendEvent",
             SET_LOG_LEVEL: "setLogLevel",
