@@ -351,6 +351,76 @@ sub TC_APIs_setExperienceCloudId()
     UTF_AssertNotInvalid(event.timestamp)
 end sub
 
+' target: getExperienceCloudId()
+' @Test
+sub TC_APIs_getExperienceCloudId()
+    _internal_const = _adb_InternalConstants()
+    sdkInstance = AdobeAEPSDKInit()
+
+    context = {
+        content: "test"
+    }
+    callback_result = "testECID"
+
+    sdkInstance.getExperienceCloudId(sub(ctx, result)
+        UTF_assertEqual({
+            content: "test"
+        }, ctx)
+        UTF_assertEqual(result, "testECID")
+    end sub, context)
+
+    event = GetGlobalAA()._adb_main_task_node["requestEvent"]
+    callbackInfo = sdkInstance._private.cachedCallbackInfo[event.uuid]
+
+    UTF_assertEqual(event.apiName, _internal_const.PUBLIC_API.GET_EXPERIENCE_CLOUD_ID)
+    UTF_assertInvalid(event.data)
+    UTF_AssertNotInvalid(event.uuid)
+    UTF_AssertNotInvalid(event.timestamp)
+    UTF_assertEqual(callbackInfo.context, context)
+    UTF_AssertNotInvalid(callbackInfo.timestampInMillis)
+    callbackInfo.cb(context, callback_result)
+end sub
+
+' target: getExperienceCloudId()
+' @Test
+sub TC_APIs_getExperienceCloudId_callbackTimeout()
+    _internal_const = _adb_InternalConstants()
+    sdkInstance = AdobeAEPSDKInit()
+
+    context = {
+        content: "test"
+    }
+    callback_result = "testECID"
+
+    sdkInstance.getExperienceCloudId(sub(ctx, result)
+        throw "should not be called"
+    end sub, context)
+
+    sleep(5001)
+
+    event = GetGlobalAA()._adb_main_task_node["requestEvent"]
+    callbackInfo = sdkInstance._private.cachedCallbackInfo[event.uuid]
+
+    UTF_assertEqual(event.apiName, _internal_const.PUBLIC_API.GET_EXPERIENCE_CLOUD_ID)
+    UTF_assertInvalid(event.data)
+    UTF_AssertNotInvalid(event.uuid)
+    UTF_AssertNotInvalid(event.timestamp)
+    UTF_assertEqual(callbackInfo.context, context)
+    UTF_AssertNotInvalid(callbackInfo.timestampInMillis)
+
+    sleep(5001)
+
+    responseEvent = _adb_ResponseEvent(event.uuid, "testECID")
+    GetGlobalAA()._adb_main_task_node["responseEvent"] = responseEvent
+    try
+        _adb_handleResponseEvent()
+        UTF_assertFalse(sdkInstance._private.cachedCallbackInfo.DoesExist(event.uuid))
+    catch e
+        UTF_fail(e.message)
+    end try
+
+end sub
+
 ' target: createMediaSession()
 ' @Test
 sub TC_APIs_createMediaSession()
