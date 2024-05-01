@@ -198,7 +198,7 @@ function _adb_EventProcessor(task as object) as object
         _getECID: function(event as object) as void
             ecid = m._identityModule.getECID()
 
-            _adb_logDebug("EventProcessor::_getECID() - Dispatching getECID response event with ECID: (" + ecid + ")")
+            _adb_logDebug("EventProcessor::_getECID() - Dispatching getECID response event with ECID: (" + FormatJson(ecid) + ")")
             ecidResponseEvent = _adb_ResponseEvent(event.uuid, ecid)
 
             m._sendResponseEvent(ecidResponseEvent)

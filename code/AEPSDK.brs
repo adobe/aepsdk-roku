@@ -285,31 +285,23 @@ function AdobeAEPSDKInit(taskNode = invalid as dynamic) as object
         '
         ' ****************************************************************************************************
 
-        getExperienceCloudId: function(callback = _adb_defaultCallback as function, context = invalid as dynamic) as void
+        getExperienceCloudId: function(callback as function, context = invalid as dynamic) as void
             _adb_logDebug("API: getExperienceCloudId()")
             if callback = invalid
                 _adb_logError("setExperienceCloudId() - Cannot get ECID, invalid callback passed.")
                 return
             end if
 
-            if context = invalid
-                _adb_logError("setExperienceCloudId() - Cannot get ECID, invalid context passed.")
-                return
-            end if
-
             event = _adb_RequestEvent(m._private.cons.PUBLIC_API.GET_EXPERIENCE_CLOUD_ID, invalid)
 
             ' store callback function
-            if callback <> _adb_defaultCallback then
-                ' store callback function
-                callbackInfo = {
-                    cb: callback,
-                    context: context,
-                    timestampInMillis: event.timestampInMillis
-                }
-                m._private.cachedCallbackInfo[event.uuid] = callbackInfo
-                _adb_logDebug("getExperienceCloudId() - Cached callback function for event with uuid: " + FormatJson(event.uuid))
-            end if
+            callbackInfo = {
+                cb: callback,
+                context: context,
+                timestampInMillis: event.timestampInMillis
+            }
+            m._private.cachedCallbackInfo[event.uuid] = callbackInfo
+            _adb_logDebug("getExperienceCloudId() - Cached callback function for event with uuid: " + FormatJson(event.uuid))
 
             m._private.dispatchEvent(event)
         end function,
