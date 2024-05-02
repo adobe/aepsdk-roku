@@ -278,7 +278,9 @@ function AdobeAEPSDKInit(taskNode = invalid as dynamic) as object
         ' ****************************************************************************************************
         '
         ' Returns the callback with data as ECID (Experience Cloud ID) persisted by the Edge SDK.
-        ' NOTE: This API will generate a new ECID if no existing ECID is found in persistent storage.
+        ' NOTE: This API will fetch a new ECID if no existing ECID is found in persistent storage.
+        ' NOTE: This API might return invalid if the SDK does not have a valid configuration or
+        '      the network request to fetch new ECID fails.
         '
         ' @param callback as function(context, ecid) : handle ECID response
         ' @param context as dynamic : context to be passed to the callback function
