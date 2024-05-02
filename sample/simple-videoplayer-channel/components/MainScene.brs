@@ -15,7 +15,7 @@ sub init()
   m.dialog = m.top.findNode("messageDialog")
 
   m.ButtonGroup = m.top.findNode("ButtonGroup")
-  m.ButtonGroup.buttons = ["SendEventWithCallback", "NewScreen(API)", "MediaTracking"]
+  m.ButtonGroup.buttons = ["GetExperienceCloudId", "SendEventWithCallback", "ResetIdentities", "NewScreen(API)", "MediaTracking", "Shutdown", "ReInitSDK"]
   m.ButtonGroup.observeField("buttonSelected", "onButtonSelected")
 
   m.videoTimer = m.top.findNode("VideoTimer")
@@ -50,7 +50,7 @@ sub _initSDK()
 
   configuration = {}
 
-  configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = ""
+  configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = "<YOUR_EDGE_CONFIG_ID>"
   ' Note: the below Edge domain configuration is optional
   ' configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = ""
   configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL] = "channel_test_roku"
@@ -62,37 +62,94 @@ sub _initSDK()
 
 end sub
 
+sub _getECID()
+  '----------------------------------------
+  ' Get the Adobe Experience Cloud Id
+  '----------------------------------------
+  adbEcidCallback = sub(context, ecid)
+    print "getECID(): " + FormatJson(ecid)
+        ' show result in dialog
+    context.dialog.visible = "true"
+    context.dialog.message = FormatJson(ecid)
+  end sub
+
+m.aepSdk.getExperienceCloudId(adbEcidCallback, m)
+end sub
+
+
+sub _resetIdentities()
+  '----------------------------------------
+  ' Reset Identities persisted in the SDK
+  '----------------------------------------
+  m.aepSdk.resetIdentities()
+
+end sub
+
 sub _sendEventWithCallback()
   '----------------------------------------
   ' Send an Experience Event with callback
   '----------------------------------------
 
-  m.aepSdk.sendEvent({
-    "xdm": {
-      "eventType": "commerce.orderPlaced",
-      "commerce": {
-        "key3": "value3"
-      },
-      "identityMap": {
-        "RIDA": [
-          {
-            "id": "SampleAdId",
-            "authenticatedState": "ambiguous",
-            "primary": false
-          }
-        ]
+  data = {}
+  data["xdm"] = {
+    "eventType": "page.view",
+    "_obumobile5": {
+      "page" : {
+        "name": "RokuSampleApp.MainScreen.sendEventWithCallback"
       }
     },
-    "data": {
-      "key": "value"
+    "identityMap": {
+      "RIDA": [
+        {
+          "id": "SampleAdId",
+          "authenticatedState": "ambiguous",
+          "primary": false
+        }
+      ]
     }
-  }, sub(context, result)
+  }
+
+  data["data"] = {
+    "key": "value"
+  }
+
+  ''' Adding datastreamIdOverride and datastreamConfigOverride to the event data
+  'data["config"] = {
+  '  "datastreamIdOverride": "<YOUR_DATASTREAM_ID>",
+  '  "datastreamConfigOverride" : {
+  '    "com_adobe_experience_platform": {
+  '      "datasets": {
+  '        "event": {
+  '          "datasetId": "<YOUR_DATASET_ID>"
+  '        }
+  '      }
+  '    }
+  '  }
+  '}
+
+  adbSendEventCallback = sub(context, result)
     jsonObj = ParseJson(result.message)
     message = _extractLocationHint(jsonObj, "Not found locationHint")
     ' show result in dialog
     context.dialog.visible = "true"
     context.dialog.message = message
-  end sub, m)
+  end sub
+
+  m.aepSdk.sendEvent(data, adbSendEventCallback, m)
+end sub
+
+sub _shutdown()
+  '----------------------------------------
+  ' Shut down the SDK
+  '----------------------------------------
+  m.aepSdk.shutdown()
+end sub
+
+sub _reInitSdk()
+  '----------------------------------------
+  ' Re-initialize the SDK
+  '----------------------------------------
+  _initSDK()
 end sub
 
 function _extractLocationHint(jsonObj as object, defaultMessage as string) as string
@@ -110,14 +167,21 @@ function _extractLocationHint(jsonObj as object, defaultMessage as string) as st
 end function
 
 sub onButtonSelected()
-  ' 0: "SendEventWithCallback",  1: "NewScreen(API)", 2: "MediaTracking"
+  ' 0: "GetExperienceCloudId", 1: "SendEventWithCallback", 2: "ResetIdentities"  3: "NewScreen(API)", 4: "MediaTracking", 5: "Shutdown", 6: "ReInitSDK
   if m.ButtonGroup.buttonSelected = 0
-    _sendEventWithCallback()
+    _getECID()
   else if m.ButtonGroup.buttonSelected = 1
-    _createAndShowNewScreen()
+    _sendEventWithCallback()
   else if m.ButtonGroup.buttonSelected = 2
+    _resetIdentities()
+  else if m.ButtonGroup.buttonSelected = 3
+    _createAndShowNewScreen()
+  else if m.ButtonGroup.buttonSelected = 4
     _showVideoScreen()
-  else
+  else if m.ButtonGroup.buttonSelected = 5
+    _shutdown()
+  else if m.ButtonGroup.buttonSelected = 6
+    _reInitSdk()
   end if
 end sub
 
