@@ -232,6 +232,8 @@ function _adb_test_functions() as dynamic
         TC_APIs_sendEventWithCallback
         TC_APIs_sendEventWithCallback_timeout
         TC_APIs_setExperienceCloudId
+        TC_APIs_getExperienceCloudId
+        TC_APIs_getExperienceCloudId_callbackTimeout
         TC_APIs_createMediaSession
         TC_APIs_createMediaSession_withConfiguration
         TC_APIs_createMediaSession_invalidXDMData
@@ -249,6 +251,7 @@ function _adb_test_functions() as dynamic
         TC_adb_eventProcessor_handleEvent_resetIdentities
         TC_adb_eventProcessor_handleEvent_setConfiguration
         TC_adb_eventProcessor_handleEvent_setECID
+        TC_adb_eventProcessor_handleEvent_getECID
         TC_adb_eventProcessor_handleEvent_handleMediaEvents
         TC_adb_eventProcessor_handleEvent_handleMediaEvents_invalid
         TC_adb_eventProcessor_handleCreateMediaSession

@@ -112,6 +112,23 @@ sub TC_adb_eventProcessor_handleEvent_setECID()
     UTF_assertTrue(GetGlobalAA().updateECID_is_called)
 end sub
 
+' target: _getECID()
+' @Test
+sub TC_adb_eventProcessor_handleEvent_getECID()
+    GetGlobalAA().getECID_is_called = false
+
+    eventProcessor = _createMockedEventProcessor()
+    eventProcessor._identityModule.getECID = function() as string
+        GetGlobalAA().getECID_is_called = true
+        return "ecid_test"
+    end function
+
+    event = _adb_RequestEvent("getExperienceCloudId")
+
+    eventProcessor.handleEvent(event)
+    UTF_assertTrue(GetGlobalAA().getECID_is_called)
+end sub
+
 ' target: _handleMediaEvents()
 ' @Test
 sub TC_adb_eventProcessor_handleEvent_handleMediaEvents()
