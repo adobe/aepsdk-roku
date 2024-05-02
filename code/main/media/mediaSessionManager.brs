@@ -54,7 +54,7 @@ function _adb_MediaSessionManager() as object
 
         getActiveClientSessionId: function() as string
             if m._activeSession = invalid then
-                _adb_logDebug("MediaSessionManager::getActiveClientSessionId() - . Returning empty string as there is no active session.")
+                _adb_logDebug("MediaSessionManager::getActiveClientSessionId() - Returning empty string as there is no active session.")
                 return ""
             end if
 
