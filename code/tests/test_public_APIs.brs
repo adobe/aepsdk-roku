@@ -396,8 +396,6 @@ sub TC_APIs_getExperienceCloudId_callbackTimeout()
         throw "should not be called"
     end sub, context)
 
-    sleep(5001)
-
     event = GetGlobalAA()._adb_main_task_node["requestEvent"]
     callbackInfo = sdkInstance._private.cachedCallbackInfo[event.uuid]
 
