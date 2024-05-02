@@ -191,6 +191,51 @@ function TS_SDK_integration() as object
             return validator
         end function,
 
+        TC_SDK_getECID_afterSetECID: function() as dynamic
+
+            aepSdk = ADB_retrieveSDKInstance()
+
+            ADB_CONSTANTS = AdobeAEPSDKConstants()
+
+            configuration = {}
+            configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = m.configId
+
+            aepSdk.updateConfiguration(configuration)
+            eventIdForUpdateConfiguration = aepSdk._private.lastEventId
+
+            aepSdk.setExperienceCloudId("ECIDFromSetECIDAPI")
+
+            GetGlobalAA()._adb_integration_test_callback_result_ecid = invalid
+            aepSdk.getExperienceCloudId(sub(context, ecid)
+                GetGlobalAA()._adb_integration_test_callback_result_ecid = ecid
+            end sub, m)
+
+            eventIdForGetECID = aepSdk._private.lastEventId
+
+            validator = {}
+            validator[eventIdForGetECID] = sub(debugInfo)
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+                ecid = debugInfo.identity.ecid
+                eventid = debugInfo.eventid
+
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "getExperienceCloudId"), LINE_NUM, "assert debugInfo.apiName = getExperienceCloudId")
+
+                eventData = debugInfo.eventData
+                ADB_assertTrue((eventData = invalid), LINE_NUM, "Event Data should be invalid")
+
+                ' Verify fetch ECID request since no ECID in persistence
+                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 0), LINE_NUM, "assert networkRequests = 0")
+
+                ecidInRegistry = ADB_getPersistedECID()
+                ADB_assertTrue((ecidInRegistry = ecid), LINE_NUM, "assert ecid is persisted in Registry")
+
+                actualEcidFromAPI = GetGlobalAA()._adb_integration_test_callback_result_ecid
+                ADB_assertTrue((actualEcidFromAPI = "ECIDFromSetECIDAPI"), LINE_NUM, "assert ecid returned by getExperienceCloudId is same as the one set by setExperienceCloudId")
+            end sub
+
+            return validator
+        end function,
+
         TC_SDK_getECID_ecidInPersistence: function() as dynamic
 
             aepSdk = ADB_retrieveSDKInstance()
