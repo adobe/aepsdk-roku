@@ -151,7 +151,7 @@ sendEvent: function(data as object, callback = _adb_default_callback as function
 - `@param [optional] context as dynamic : context to be passed to the callback function`
 
 > **Note**
-> SendEvent now supports datasream overrides. To Learn more about how to override datastream Id and/or datastream configuration refer [Sending Datastream overrides using sendEvent](Tutorials/send-overrides-sendevent.md)
+> SendEvent now supports datasream overrides. To Learn more about how to override datastream Id and/or datastream configuration refer [Sending Datastream overrides using sendEvent API](Tutorials/send-overrides-sendevent.md)
 
 > **Note**
 > The `sendEvent` API automatically attaches the following information with each Experience Event:
