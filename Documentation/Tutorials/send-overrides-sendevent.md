@@ -56,13 +56,13 @@ data["data"] = {
 ' Adding datastreamConfigOverride to the event data
 data["config"] = {
     "datastreamConfigOverride" : {
-    "com_adobe_experience_platform": {
-        "datasets": {
-        "event": {
-            "datasetId": "<YOUR_DATASET_ID>"
+        "com_adobe_experience_platform": {
+            "datasets": {
+                "event": {
+                    "datasetId": "<YOUR_DATASET_ID>"
+                }
+            }
         }
-        }
-    }
     }
 
 }
@@ -141,7 +141,7 @@ data["config"] = {
         },
 
         "com_adobe_target": {
-        "enabled": false
+            "enabled": false
         },
 
         "com_adobe_audiencemanager": {
