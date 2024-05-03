@@ -19,10 +19,14 @@ function TS_SDK_integration() as object
         mediaChannel: invalid,
         mediaPlayerName: invalid,
         mediaAppVersion: invalid,
+        datastreamIdOverride: invalid,
+        datasetIdOverride: invalid,
 
         init: sub()
             test_config = ParseJson(ReadAsciiFile("pkg:/source/test_config.json"))
             m.configId = test_config.config_id
+            m.datastreamIdOverride = test_config.datastream_id_override
+            m.datasetIdOverride = test_config.dataset_id_override
             m.mediaChannel = "channel_test"
             m.mediaPlayerName = "player_test"
             m.mediaAppVersion = "1.0.0"
@@ -129,6 +133,239 @@ function TS_SDK_integration() as object
                 ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "setConfiguration"), LINE_NUM, "assert debugInfo.apiName = setConfiguration")
                 ADB_assertTrue((debugInfo.configuration.edge_configid = "test_configId_2"), LINE_NUM, "assert edge_configid is test_configId_2")
                 ADB_assertTrue((debugInfo.configuration.edge_domain = "edge.com"), LINE_NUM, "Expected: (edge.com) != Actual: (" + debugInfo.configuration.edge_domain + ")")
+            end sub
+
+            return validator
+        end function,
+
+        TC_SDK_getECID_validConfig_returnsECID: function() as dynamic
+
+            aepSdk = ADB_retrieveSDKInstance()
+
+            ADB_CONSTANTS = AdobeAEPSDKConstants()
+
+            configuration = {}
+            configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = m.configId
+
+            aepSdk.updateConfiguration(configuration)
+            eventIdForUpdateConfiguration = aepSdk._private.lastEventId
+
+            ecidInRegistry = ADB_getPersistedECID()
+            ADB_assertTrue((ecidInRegistry = invalid), LINE_NUM, "assert ecid is not persisted in Registry")
+
+            GetGlobalAA()._adb_integration_test_callback_result_ecid = invalid
+            aepSdk.getExperienceCloudId(sub(context, ecid)
+                GetGlobalAA()._adb_integration_test_callback_result_ecid = ecid
+            end sub, m)
+
+            eventIdForGetECID = aepSdk._private.lastEventId
+
+            validator = {}
+            validator[eventIdForGetECID] = sub(debugInfo)
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+                ecid = debugInfo.identity.ecid
+                eventid = debugInfo.eventid
+
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "getExperienceCloudId"), LINE_NUM, "assert debugInfo.apiName = getExperienceCloudId")
+
+                eventData = debugInfo.eventData
+                ADB_assertTrue((eventData = invalid), LINE_NUM, "Event Data should be invalid")
+
+                ' Verify fetch ECID request since no ECID in persistence
+                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 1), LINE_NUM, "assert networkRequests = 1")
+                ADB_assertTrue((debugInfo.networkRequests[0].jsonObj.events[0].query.identity.fetch[0] = "ECID"), LINE_NUM, "assert networkRequests(1) is to fetch ECID")
+                ADB_assertTrue((debugInfo.networkRequests[0].response.code = 200), LINE_NUM, "assert response (1) returns 200")
+                firstResponseJson = ParseJson(debugInfo.networkRequests[0].response.body)
+                ADB_assertTrue((firstResponseJson.handle[0].payload[0].id <> invalid), LINE_NUM, "ECID should not be invalid")
+                ADB_assertTrue((firstResponseJson.handle[0].payload[0].id = ecid), LINE_NUM, "Expected: (" + ecid + ") != Actual: (" + firstResponseJson.handle[0].payload[0].id + ")")
+                ADB_assertTrue((firstResponseJson.requestId <> eventid), LINE_NUM, "assert response (1) verify request ID")
+
+                ecidInRegistry = ADB_getPersistedECID()
+                ADB_assertTrue((ecidInRegistry = ecid), LINE_NUM, "assert ecid is persisted in Registry")
+
+                actualEcidFromAPI = GetGlobalAA()._adb_integration_test_callback_result_ecid
+                ADB_assertTrue((actualEcidFromAPI = ecid), LINE_NUM, "assert ecid returned by getExperienceCloudId is same as persisted ecid")
+
+            end sub
+
+            return validator
+        end function,
+
+        TC_SDK_getECID_configNotSet_returnsInvalid: function() as dynamic
+
+            aepSdk = ADB_retrieveSDKInstance()
+
+            ADB_CONSTANTS = AdobeAEPSDKConstants()
+
+            ecidInRegistry = ADB_getPersistedECID()
+            ADB_assertTrue((ecidInRegistry = invalid), LINE_NUM, "assert ecid is not persisted in Registry")
+
+            GetGlobalAA()._adb_integration_test_callback_result_ecid = invalid
+            aepSdk.getExperienceCloudId(sub(context, ecid)
+                GetGlobalAA()._adb_integration_test_callback_result_ecid = ecid
+            end sub, m)
+
+            eventIdForGetECID = aepSdk._private.lastEventId
+
+            validator = {}
+            validator[eventIdForGetECID] = sub(debugInfo)
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+                ecid = debugInfo.identity.ecid
+                eventid = debugInfo.eventid
+
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "getExperienceCloudId"), LINE_NUM, "assert debugInfo.apiName = getExperienceCloudId")
+
+                eventData = debugInfo.eventData
+                ADB_assertTrue((eventData = invalid), LINE_NUM, "Event Data should be invalid")
+
+                ' Verify fetch ECID request is not called as missing required configuration
+                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 0), LINE_NUM, "assert networkRequests = 0")
+
+                ecidInRegistry = ADB_getPersistedECID()
+                ADB_assertTrue((ecidInRegistry = invalid), LINE_NUM, "assert valid ecid is not persisted in Registry")
+
+                actualEcidFromAPI = GetGlobalAA()._adb_integration_test_callback_result_ecid
+                ADB_assertTrue((actualEcidFromAPI = invalid), LINE_NUM, "assert ecid returned by getExperienceCloudId is invalid")
+            end sub
+
+            return validator
+        end function,
+
+        TC_SDK_getECID_invalidConfig_returnsInvalid: function() as dynamic
+
+            aepSdk = ADB_retrieveSDKInstance()
+
+            ADB_CONSTANTS = AdobeAEPSDKConstants()
+
+            configuration = {}
+            configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = "DummyDatastreamId"
+
+            aepSdk.updateConfiguration(configuration)
+
+            ecidInRegistry = ADB_getPersistedECID()
+            ADB_assertTrue((ecidInRegistry = invalid), LINE_NUM, "assert ecid is not persisted in Registry")
+
+            GetGlobalAA()._adb_integration_test_callback_result_ecid = invalid
+            aepSdk.getExperienceCloudId(sub(context, ecid)
+                GetGlobalAA()._adb_integration_test_callback_result_ecid = ecid
+            end sub, m)
+
+            eventIdForGetECID = aepSdk._private.lastEventId
+
+            validator = {}
+            validator[eventIdForGetECID] = sub(debugInfo)
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+                ecid = debugInfo.identity.ecid
+                eventid = debugInfo.eventid
+
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "getExperienceCloudId"), LINE_NUM, "assert debugInfo.apiName = getExperienceCloudId")
+
+                eventData = debugInfo.eventData
+                ADB_assertTrue((eventData = invalid), LINE_NUM, "Event Data should be invalid")
+
+                ' Verify fetch ECID request since no ECID in persistence
+                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 1), LINE_NUM, "assert networkRequests = 1")
+                ADB_assertTrue((debugInfo.networkRequests[0].jsonObj.events[0].query.identity.fetch[0] = "ECID"), LINE_NUM, "assert networkRequests(1) is to fetch ECID")
+                ADB_assertTrue((debugInfo.networkRequests[0].response.code = 400), LINE_NUM, "assert response (1) returns 200")
+                firstResponseJson = ParseJson(debugInfo.networkRequests[0].response.body)
+                ADB_assertTrue((firstResponseJson = invalid), LINE_NUM, "Response body is invalid")
+
+                ecidInRegistry = ADB_getPersistedECID()
+                ADB_assertTrue((ecidInRegistry = invalid), LINE_NUM, "assert valid ecid is not persisted in Registry")
+
+                actualEcidFromAPI = GetGlobalAA()._adb_integration_test_callback_result_ecid
+                ADB_assertTrue((actualEcidFromAPI = invalid), LINE_NUM, "assert ecid returned by getExperienceCloudId is invalid")
+            end sub
+
+            return validator
+        end function,
+
+        TC_SDK_getECID_afterSetECID: function() as dynamic
+
+            aepSdk = ADB_retrieveSDKInstance()
+
+            ADB_CONSTANTS = AdobeAEPSDKConstants()
+
+            configuration = {}
+            configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = m.configId
+
+            aepSdk.updateConfiguration(configuration)
+            eventIdForUpdateConfiguration = aepSdk._private.lastEventId
+
+            aepSdk.setExperienceCloudId("ECIDFromSetECIDAPI")
+
+            GetGlobalAA()._adb_integration_test_callback_result_ecid = invalid
+            aepSdk.getExperienceCloudId(sub(context, ecid)
+                GetGlobalAA()._adb_integration_test_callback_result_ecid = ecid
+            end sub, m)
+
+            eventIdForGetECID = aepSdk._private.lastEventId
+
+            validator = {}
+            validator[eventIdForGetECID] = sub(debugInfo)
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+                ecid = debugInfo.identity.ecid
+                eventid = debugInfo.eventid
+
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "getExperienceCloudId"), LINE_NUM, "assert debugInfo.apiName = getExperienceCloudId")
+
+                eventData = debugInfo.eventData
+                ADB_assertTrue((eventData = invalid), LINE_NUM, "Event Data should be invalid")
+
+                ' Verify fetch ECID request since no ECID in persistence
+                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 0), LINE_NUM, "assert networkRequests = 0")
+
+                ecidInRegistry = ADB_getPersistedECID()
+                ADB_assertTrue((ecidInRegistry = ecid), LINE_NUM, "assert ecid is persisted in Registry")
+
+                actualEcidFromAPI = GetGlobalAA()._adb_integration_test_callback_result_ecid
+                ADB_assertTrue((actualEcidFromAPI = "ECIDFromSetECIDAPI"), LINE_NUM, "assert ecid returned by getExperienceCloudId is same as the one set by setExperienceCloudId")
+            end sub
+
+            return validator
+        end function,
+
+        TC_SDK_getECID_ecidInPersistence: function() as dynamic
+
+            aepSdk = ADB_retrieveSDKInstance()
+
+            ADB_CONSTANTS = AdobeAEPSDKConstants()
+
+            configuration = {}
+            configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = m.configId
+
+            aepSdk.updateConfiguration(configuration)
+            eventIdForUpdateConfiguration = aepSdk._private.lastEventId
+
+            ''' Mock ECID in persistence
+            ADB_persistECIDInRegistry("AlreadyPresentECID")
+
+            GetGlobalAA()._adb_integration_test_callback_result_ecid = invalid
+            aepSdk.getExperienceCloudId(sub(context, ecid)
+                GetGlobalAA()._adb_integration_test_callback_result_ecid = ecid
+            end sub, m)
+
+            eventIdForGetECID = aepSdk._private.lastEventId
+
+            validator = {}
+            validator[eventIdForGetECID] = sub(debugInfo)
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+                ecid = debugInfo.identity.ecid
+                eventid = debugInfo.eventid
+
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "getExperienceCloudId"), LINE_NUM, "assert debugInfo.apiName = getExperienceCloudId")
+
+                eventData = debugInfo.eventData
+                ADB_assertTrue((eventData = invalid), LINE_NUM, "Event Data should be invalid")
+
+                ' Verify fetch ECID request since no ECID in persistence
+                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 0), LINE_NUM, "assert networkRequests = 0")
+
+                ecidInRegistry = ADB_getPersistedECID()
+                ADB_assertTrue((ecidInRegistry = ecid), LINE_NUM, "assert ecid is persisted in Registry")
+
+                actualEcidFromAPI = GetGlobalAA()._adb_integration_test_callback_result_ecid
+                ADB_assertTrue((actualEcidFromAPI = "AlreadyPresentECID"), LINE_NUM, "assert ecid returned by getExperienceCloudId is same as persisted ecid")
             end sub
 
             return validator
@@ -424,6 +661,354 @@ function TS_SDK_integration() as object
             return validator
         end function,
 
+        TC_SDK_sendEventWithDatastreamIdOverride: function() as dynamic
+
+            aepSdk = ADB_retrieveSDKInstance()
+
+            ADB_CONSTANTS = AdobeAEPSDKConstants()
+
+            configuration = {}
+
+            configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = m.configId
+
+            aepSdk.updateConfiguration(configuration)
+            eventIdForUpdateConfiguration = aepSdk._private.lastEventId
+
+            data = {
+                "xdm": {
+                    "eventType": "integrationTest.run",
+                    "_obumobile5": {
+                      "page" : {
+                        "name": "RokuIntegrationTest(TC_SDK_sendEventWithDatastreamIdOverride)"
+                      }
+                    }
+                },
+                "data": {
+                    "testKey": "testValue"
+                },
+                "config": {
+                    "datastreamIdOverride": m.datastreamIdOverride
+                }
+            }
+            aepSdk.sendEvent(data)
+
+            eventIdForSendEvent = aepSdk._private.lastEventId
+
+            validator = {}
+            validator[eventIdForUpdateConfiguration] = sub(debugInfo)
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "setConfiguration"), LINE_NUM, "assert debugInfo.apiName = setConfiguration")
+                ADB_assertTrue((debugInfo.configuration.edge_configid <> invalid and Len(debugInfo.configuration.edge_configid) > 10), LINE_NUM, "assert edge_configid is valid")
+            end sub
+
+            validator[eventIdForSendEvent] = sub(debugInfo)
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+                ecid = debugInfo.identity.ecid
+                eventid = debugInfo.eventid
+
+                test_config = ParseJson(ReadAsciiFile("pkg:/source/test_config.json"))
+                configId = test_config.config_id
+                datastreamIdOverride = test_config.datastream_id_override
+
+
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "sendEvent"), LINE_NUM, "assert debugInfo.apiName = sendEvent")
+
+                ' Verify URL contains datastreamIdOverride
+                ADB_assertTrue((debugInfo.networkRequests[1].url.Instr("configId="+datastreamIdOverride) > 0), LINE_NUM, "assert networkRequests(2) is to send Edge event with datastreamIdOverride")
+
+                ' Verify fetch ECID request
+                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 2), LINE_NUM, "assert networkRequests = 2")
+                ADB_assertTrue((debugInfo.networkRequests[0].jsonObj.events[0].query.identity.fetch[0] = "ECID"), LINE_NUM, "assert networkRequests(1) is to fetch ECID")
+                ADB_assertTrue((debugInfo.networkRequests[0].response.code = 200), LINE_NUM, "assert response (1) returns 200")
+                firstResponseJson = ParseJson(debugInfo.networkRequests[0].response.body)
+                ADB_assertTrue((firstResponseJson.handle[0].payload[0].id <> invalid), LINE_NUM, "ECID should not be invalid")
+                ADB_assertTrue((firstResponseJson.handle[0].payload[0].id = ecid), LINE_NUM, "Expected: (" + ecid + ") != Actual: (" + firstResponseJson.handle[0].payload[0].id + ")")
+                ADB_assertTrue((firstResponseJson.requestId <> eventid), LINE_NUM, "assert response (1) verify request ID")
+
+                ecidInRegistry = ADB_getPersistedECID()
+                ADB_assertTrue((ecidInRegistry = ecid), LINE_NUM, "assert ecid is persisted in Registry")
+
+                ' Verify XDM data
+                actualEventType = debugInfo.networkRequests[1].jsonObj.events[0].xdm.eventType
+                ADB_assertTrue((actualEventType = "integrationTest.run"), LINE_NUM, "Actual XDM page data(" + actualEventType + ") != Expected XDM page data(" + "integrationTest.run" + ") ")
+
+                expectedPageDataXDM = {
+                    "page" : {
+                        "name": "RokuIntegrationTest(TC_SDK_sendEventWithDatastreamIdOverride)"
+                    }
+                }
+                expectedPageDataXDMJson = FormatJson(expectedPageDataXDM)
+                actualPageDataXDMJson = FormatJson(debugInfo.networkRequests[1].jsonObj.events[0].xdm["_obumobile5"])
+                ADB_assertTrue((actualPageDataXDMJson = expectedPageDataXDMJson), LINE_NUM, "Actual XDM page data(" + actualPageDataXDMJson + ") != Expected XDM page data(" + expectedPageDataXDMJson + ") ")
+
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].data["testKey"] = "testValue"), LINE_NUM, "assert networkRequests(2) is to send Edge event with non-xdm data")
+
+                ADB_assertTrue((Len(debugInfo.networkRequests[1].jsonObj.events[0].xdm.timestamp) > 10), LINE_NUM, "assert networkRequests(2) is to send Edge event with timestamp")
+
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.xdm.identityMap.ECID <> invalid), LINE_NUM, "assert networkRequests(2) is to send Edge event with ecid")
+
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.xdm.implementationDetails.name = "https://ns.adobe.com/experience/mobilesdk/roku"), LINE_NUM, "assert networkRequests(2) is to send Edge event with implementationDetails")
+                secondResponseJson = ParseJson(debugInfo.networkRequests[1].response.body)
+                ADB_assertTrue((secondResponseJson.requestId = eventid), LINE_NUM, "assert response (2) verify request ID")
+                ADB_assertTrue((debugInfo.networkRequests[1].response.code = 200), LINE_NUM, "assert response (2) returns 200")
+
+                ' Verify meta map
+                expectedMeta = {
+                    "sdkConfig": {
+                        "datastream": {
+                            "original": configId
+                        }
+                    }
+                }
+
+                expectedMetaJson = FormatJson(expectedMeta)
+                actualMetaJson = FormatJson(debugInfo.networkRequests[1].jsonObj.meta)
+                ADB_assertTrue((actualMetaJson = actualMetaJson), LINE_NUM, "Actual meta data(" + actualMetaJson + ") != Expected meta data(" + expectedMetaJson + ") ")
+            end sub
+
+            return validator
+        end function,
+
+        TC_SDK_sendEventWithDatastreamConfigOverride: function() as dynamic
+
+            aepSdk = ADB_retrieveSDKInstance()
+
+            ADB_CONSTANTS = AdobeAEPSDKConstants()
+
+            configuration = {}
+
+            configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = m.configId
+
+            aepSdk.updateConfiguration(configuration)
+            eventIdForUpdateConfiguration = aepSdk._private.lastEventId
+
+            data = {
+                "xdm": {
+                    "eventType": "integrationTest.run",
+                    "_obumobile5": {
+                      "page" : {
+                        "name": "RokuIntegrationTest(TC_SDK_sendEventWithDatastreamConfigOverride)"
+                      }
+                    }
+                },
+                "data": {
+                    "testKey": "testValue"
+                },
+                "config": {
+                    "datastreamConfigOverride" : {
+                        "com_adobe_experience_platform": {
+                          "datasets": {
+                            "event": {
+                              "datasetId": m.datasetIdOverride
+                            }
+                          }
+                        }
+                      }
+                }
+            }
+            aepSdk.sendEvent(data)
+
+            eventIdForSendEvent = aepSdk._private.lastEventId
+
+            validator = {}
+            validator[eventIdForUpdateConfiguration] = sub(debugInfo)
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "setConfiguration"), LINE_NUM, "assert debugInfo.apiName = setConfiguration")
+                ADB_assertTrue((debugInfo.configuration.edge_configid <> invalid and Len(debugInfo.configuration.edge_configid) > 10), LINE_NUM, "assert edge_configid is valid")
+            end sub
+
+            validator[eventIdForSendEvent] = sub(debugInfo)
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+                ecid = debugInfo.identity.ecid
+                eventid = debugInfo.eventid
+
+                test_config = ParseJson(ReadAsciiFile("pkg:/source/test_config.json"))
+                configId = test_config.config_id
+                datasetIdOverride = test_config.dataset_id_override
+
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "sendEvent"), LINE_NUM, "assert debugInfo.apiName = sendEvent")
+
+                ' Verify fetch ECID request
+                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 2), LINE_NUM, "assert networkRequests = 2")
+                ADB_assertTrue((debugInfo.networkRequests[0].jsonObj.events[0].query.identity.fetch[0] = "ECID"), LINE_NUM, "assert networkRequests(1) is to fetch ECID")
+                ADB_assertTrue((debugInfo.networkRequests[0].response.code = 200), LINE_NUM, "assert response (1) returns 200")
+                firstResponseJson = ParseJson(debugInfo.networkRequests[0].response.body)
+                ADB_assertTrue((firstResponseJson.handle[0].payload[0].id <> invalid), LINE_NUM, "ECID should not be invalid")
+                ADB_assertTrue((firstResponseJson.handle[0].payload[0].id = ecid), LINE_NUM, "Expected: (" + ecid + ") != Actual: (" + firstResponseJson.handle[0].payload[0].id + ")")
+                ADB_assertTrue((firstResponseJson.requestId <> eventid), LINE_NUM, "assert response (1) verify request ID")
+
+                ' Verify URL contains datastreamIdOverride
+                ADB_assertTrue((debugInfo.networkRequests[1].url.Instr("configId=" + configId) > 0), LINE_NUM, "assert networkRequests(2) is to send Edge event with datastreamIdOverride")
+
+                ' Verify XDM data
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm["eventType"] = "integrationTest.run"), LINE_NUM, "Actual XDM event type(" + debugInfo.networkRequests[1].jsonObj.events[0].xdm["eventType"] + ") != Expected XDM event type(" + "integrationTest.run" + ") ")
+
+                expectedPageDataXDM = {
+                    "page" : {
+                        "name": "RokuIntegrationTest(TC_SDK_sendEventWithDatastreamConfigOverride)"
+                    }
+                }
+                actualPageDataXDMJson = FormatJson(debugInfo.networkRequests[1].jsonObj.events[0].xdm["_obumobile5"])
+                expectedPageDataXDMJson = FormatJson(expectedPageDataXDM)
+                ADB_assertTrue((actualPageDataXDMJson = expectedPageDataXDMJson), LINE_NUM, "Actual XDM page data(" + actualPageDataXDMJson + ") != Expected XDM page data(" + expectedPageDataXDMJson + ") ")
+
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].data["testKey"] = "testValue"), LINE_NUM, "assert networkRequests(2) is to send Edge event with non-xdm data")
+                ADB_assertTrue((Len(debugInfo.networkRequests[1].jsonObj.events[0].xdm.timestamp) > 10), LINE_NUM, "assert networkRequests(2) is to send Edge event with timestamp")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.xdm.identityMap.ECID <> invalid), LINE_NUM, "assert networkRequests(2) is to send Edge event with ecid")
+
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.xdm.implementationDetails.name = "https://ns.adobe.com/experience/mobilesdk/roku"), LINE_NUM, "assert networkRequests(2) is to send Edge event with implementationDetails")
+                secondResponseJson = ParseJson(debugInfo.networkRequests[1].response.body)
+                ADB_assertTrue((secondResponseJson.requestId = eventid), LINE_NUM, "assert response (2) verify request ID")
+                ADB_assertTrue((debugInfo.networkRequests[1].response.code = 200), LINE_NUM, "assert response (2) returns 200")
+
+                ecidInRegistry = ADB_getPersistedECID()
+                ADB_assertTrue((ecidInRegistry = ecid), LINE_NUM, "assert ecid is persisted in Registry")
+
+                ' Verify meta map
+                expecctedMeta = {
+                    "configOverrides":{
+                        "com_adobe_experience_platform": {
+                            "datasets": {
+                                "event": {
+                                    "datasetId": datasetIdOverride
+                                }
+                            }
+                        }
+                    }
+                }
+
+                actualMetaJson = FormatJson(debugInfo.networkRequests[1].jsonObj.meta)
+                expectedMetaJson = FormatJson(expecctedMeta)
+                ADB_assertTrue((actualMetaJson = expectedMetaJson), LINE_NUM, "Actual meta(" + actualMetaJson + ") != Expected meta(" + expectedMetaJson + ") ")
+            end sub
+
+            return validator
+        end function,
+
+        TC_SDK_sendEventWithDatastreamIdAndConfigOverride: function() as dynamic
+
+            aepSdk = ADB_retrieveSDKInstance()
+
+            ADB_CONSTANTS = AdobeAEPSDKConstants()
+
+            configuration = {}
+
+            configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = m.configId
+
+            aepSdk.updateConfiguration(configuration)
+            eventIdForUpdateConfiguration = aepSdk._private.lastEventId
+
+            data = {
+                "xdm": {
+                    "eventType": "integrationTest.run",
+                    "_obumobile5": {
+                      "page" : {
+                        "name": "RokuIntegrationTest(TC_SDK_sendEventWithDatastreamIdAndConfigOverride)"
+                      }
+                    }
+                },
+                "data": {
+                    "testKey": "testValue"
+                },
+                "config": {
+                    "datastreamIdOverride": m.datastreamIdOverride,
+                    "datastreamConfigOverride" : {
+                        "com_adobe_experience_platform": {
+                          "datasets": {
+                            "event": {
+                              "datasetId": m.datasetIdOverride
+                            }
+                          }
+                        }
+                      }
+                }
+            }
+            aepSdk.sendEvent(data)
+
+            eventIdForSendEvent = aepSdk._private.lastEventId
+
+            validator = {}
+            validator[eventIdForUpdateConfiguration] = sub(debugInfo)
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "setConfiguration"), LINE_NUM, "assert debugInfo.apiName = setConfiguration")
+                ADB_assertTrue((debugInfo.configuration.edge_configid <> invalid and Len(debugInfo.configuration.edge_configid) > 10), LINE_NUM, "assert edge_configid is valid")
+            end sub
+
+            validator[eventIdForSendEvent] = sub(debugInfo)
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+                ecid = debugInfo.identity.ecid
+                eventid = debugInfo.eventid
+
+                test_config = ParseJson(ReadAsciiFile("pkg:/source/test_config.json"))
+                configId = test_config.config_id
+                datastreamIdOverride = test_config.datastream_id_override
+                datasetIdOverride = test_config.dataset_id_override
+
+                ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "sendEvent"), LINE_NUM, "assert debugInfo.apiName = sendEvent")
+
+                ' Verify URL contains datastreamIdOverride
+                ADB_assertTrue((debugInfo.networkRequests[1].url.Instr("configId="+datastreamIdOverride) > 0), LINE_NUM, "assert networkRequests(2) is to send Edge event with datastreamIdOverride")
+
+                ' Verify fetch ECID request
+                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 2), LINE_NUM, "assert networkRequests = 2")
+                ADB_assertTrue((debugInfo.networkRequests[0].jsonObj.events[0].query.identity.fetch[0] = "ECID"), LINE_NUM, "assert networkRequests(1) is to fetch ECID")
+                ADB_assertTrue((debugInfo.networkRequests[0].response.code = 200), LINE_NUM, "assert response (1) returns 200")
+                firstResponseJson = ParseJson(debugInfo.networkRequests[0].response.body)
+                ADB_assertTrue((firstResponseJson.handle[0].payload[0].id <> invalid), LINE_NUM, "ECID should not be invalid")
+                ADB_assertTrue((firstResponseJson.handle[0].payload[0].id = ecid), LINE_NUM, "Expected: (" + ecid + ") != Actual: (" + firstResponseJson.handle[0].payload[0].id + ")")
+                ADB_assertTrue((firstResponseJson.requestId <> eventid), LINE_NUM, "assert response (1) verify request ID")
+
+                ' Verify XDM data
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].xdm["eventType"] = "integrationTest.run"), LINE_NUM, "Actual XDM page data(" + debugInfo.networkRequests[1].jsonObj.events[0].xdm["eventType"] + ") != Expected XDM page data(" + "integrationTest.run" + ") ")
+
+                expectedPageDataXDM = {
+                    "page" : {
+                        "name": "RokuIntegrationTest(TC_SDK_sendEventWithDatastreamIdAndConfigOverride)"
+                    }
+                }
+
+                actualPageDataXDMJson = FormatJson(debugInfo.networkRequests[1].jsonObj.events[0].xdm["_obumobile5"])
+                expectedPageDataXDMJson = FormatJson(expectedPageDataXDM)
+                ADB_assertTrue((actualPageDataXDMJson = expectedPageDataXDMJson), LINE_NUM, "Actual XDM page data(" + actualPageDataXDMJson + ") != Expected XDM page data(" + expectedPageDataXDMJson + ") ")
+
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.events[0].data["testKey"] = "testValue"), LINE_NUM, "assert networkRequests(2) is to send Edge event with non-xdm data")
+                ADB_assertTrue((Len(debugInfo.networkRequests[1].jsonObj.events[0].xdm.timestamp) > 10), LINE_NUM, "assert networkRequests(2) is to send Edge event with timestamp")
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.xdm.identityMap.ECID <> invalid), LINE_NUM, "assert networkRequests(2) is to send Edge event with ecid")
+
+                ADB_assertTrue((debugInfo.networkRequests[1].jsonObj.xdm.implementationDetails.name = "https://ns.adobe.com/experience/mobilesdk/roku"), LINE_NUM, "assert networkRequests(2) is to send Edge event with implementationDetails")
+                secondResponseJson = ParseJson(debugInfo.networkRequests[1].response.body)
+                ADB_assertTrue((secondResponseJson.requestId = eventid), LINE_NUM, "assert response (2) verify request ID")
+                ADB_assertTrue((debugInfo.networkRequests[1].response.code = 200), LINE_NUM, "assert response (2) returns 200")
+
+                ecidInRegistry = ADB_getPersistedECID()
+                ADB_assertTrue((ecidInRegistry = ecid), LINE_NUM, "assert ecid is persisted in Registry")
+
+                ' Verify meta map
+                expectedMeta = {
+                    "configOverrides":{
+                        "com_adobe_experience_platform": {
+                            "datasets": {
+                                "event": {
+                                    "datasetId": datasetIdOverride
+                                }
+                            }
+                        }
+                    }
+                    "sdkConfig": {
+                        "datastream": {
+                            "original": configId
+                        }
+                    }
+                }
+
+                expectedMetaJson = FormatJson(expectedMeta)
+                actualMetaJson = FormatJson(debugInfo.networkRequests[1].jsonObj.meta)
+                ADB_assertTrue((actualMetaJson = expectedMetaJson), LINE_NUM, "Actual meta(" + actualMetaJson + ") != Expected meta(" + expectedMetaJson + ") ")
+            end sub
+
+            return validator
+        end function,
+
         TC_SDK_setExperienceCloudId: function() as dynamic
 
             aepSdk = ADB_retrieveSDKInstance()
@@ -481,7 +1066,7 @@ function TS_SDK_integration() as object
 
         TC_SDK_ecid_consistence: function() as dynamic
 
-            ADB_persisteECIDInRegistry(m._testECID)
+            ADB_persistECIDInRegistry(m._testECID)
 
             aepSdk = ADB_retrieveSDKInstance()
 

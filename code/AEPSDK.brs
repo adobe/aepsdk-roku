@@ -277,6 +277,39 @@ function AdobeAEPSDKInit(taskNode = invalid as dynamic) as object
 
         ' ****************************************************************************************************
         '
+        ' Returns the callback with data as ECID (Experience Cloud ID) persisted by the Edge SDK.
+        ' NOTE: This API will fetch a new ECID if no existing ECID is found in persistent storage.
+        ' NOTE: This API might return invalid if the SDK does not have a valid configuration or
+        '      the network request to fetch new ECID fails.
+        '
+        ' @param callback as function(context, ecid) : handle ECID response
+        ' @param context as dynamic : context to be passed to the callback function
+        '
+        ' ****************************************************************************************************
+
+        getExperienceCloudId: function(callback as function, context = invalid as dynamic) as void
+            _adb_logDebug("API: getExperienceCloudId()")
+            if callback = invalid
+                _adb_logError("setExperienceCloudId() - Cannot get ECID, invalid callback passed.")
+                return
+            end if
+
+            event = _adb_RequestEvent(m._private.cons.PUBLIC_API.GET_EXPERIENCE_CLOUD_ID, invalid)
+
+            ' store callback function
+            callbackInfo = {
+                cb: callback,
+                context: context,
+                timestampInMillis: event.timestampInMillis
+            }
+            m._private.cachedCallbackInfo[event.uuid] = callbackInfo
+            _adb_logDebug("getExperienceCloudId() - Cached callback function for event with uuid: " + FormatJson(event.uuid))
+
+            m._private.dispatchEvent(event)
+        end function,
+
+        ' ****************************************************************************************************
+        '
         ' Call this function to start a new Media session with the given XDM data. The XDM data must be the type
         ' of "media.sessionStart".
         ' If the "playerName", "channel", and "appVersion" are not provided in the XDM data, the SDK will use
