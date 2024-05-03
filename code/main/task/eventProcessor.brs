@@ -30,8 +30,7 @@ function _adb_EventProcessor(task as object) as object
 
             ' enable debug mode if needed
             if m._isInDebugMode()
-                networkService = _adb_serviceProvider().networkService
-                networkService._debugMode = true
+                _adb_serviceProvider().networkService._debugMode = true
             end if
         end function,
 
@@ -88,6 +87,8 @@ function _adb_EventProcessor(task as object) as object
                 m._setLogLevel(event)
             else if event.apiName = m._CONSTANTS.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID
                 m._setECID(event)
+            else if event.apiName = m._CONSTANTS.PUBLIC_API.GET_EXPERIENCE_CLOUD_ID
+                m._getECID(event)
             else if event.apiName = m._CONSTANTS.PUBLIC_API.RESET_IDENTITIES
                 m._resetIdentities(event)
             else if event.apiName = m._CONSTANTS.PUBLIC_API.RESET_SDK
@@ -194,6 +195,16 @@ function _adb_EventProcessor(task as object) as object
             end if
         end function,
 
+        _getECID: function(event as object) as void
+            ecid = m._identityModule.getECID()
+
+            _adb_logDebug("EventProcessor::_getECID() - Dispatching getECID response event with ECID: (" + FormatJson(ecid) + ")")
+            ecidResponseEvent = _adb_ResponseEvent(event.uuid, ecid)
+
+            m._sendResponseEvent(ecidResponseEvent)
+
+        end function,
+
         _hasXDMData: function(event as object) as boolean
             return event <> invalid and event.DoesExist("data") and event.data.DoesExist("xdm") and event.data.xdm.Count() > 0
         end function,
@@ -207,9 +218,9 @@ function _adb_EventProcessor(task as object) as object
             end if
 
             requestId = event.uuid
-            xdmData = event.data
+            eventData = event.data
             timestampInMillis = event.timestampInMillis
-            responseEvents = m._edgeModule.processEvent(requestId, xdmData, timestampInMillis)
+            responseEvents = m._edgeModule.processEvent(requestId, eventData, timestampInMillis)
 
             for each responseEvent in responseEvents
                 m._sendResponseEvent(responseEvent)

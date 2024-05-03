@@ -11,6 +11,11 @@
 
 ' *****************************************************************************************
 
+' ************************ Version Helpers ************************
+function getTestSDKVersion() as string
+    return "1.2.0"
+end function
+
 ' ************************ Registry Helpers ************************
 function clearPersistedECID() as void
     removeValue("ecid")
