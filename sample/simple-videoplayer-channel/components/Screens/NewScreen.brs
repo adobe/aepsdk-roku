@@ -35,28 +35,34 @@ sub _initSDK()
 end sub
 
 sub onButtonSelected()
-    orderPlacedData = {
-        "xdm": {
-            "eventType": "commerce.orderPlaced",
-            "commerce": {
-                "key3": "value3"
-            },
-            "identityMap": {
-                "RIDA": [
-                    {
-                        "id": "SampleAdId",
-                        "authenticatedState": "ambiguous",
-                        "primary": false
-                    }
-                ]
+    data = {}
+    data["xdm"] = {
+        "eventType": "page.view",
+        "_obumobile5": {
+            "page" : {
+                "name": "RokuSampleApp.NewScreen.sendEventWithCallback"
             }
+        },
+        "identityMap": {
+            "RIDA": [
+                {
+                "id": "SampleAdId",
+                "authenticatedState": "ambiguous",
+                "primary": false
+                }
+            ]
         }
     }
-    m.aepSdk.sendEvent(orderPlacedData, sub(_context, _result)
-        ' print "callback result: "
-        ' print result
-        ' print context
-    end sub, m)
+
+    data["data"] = {
+        "key": "value"
+    }
+
+    adbSendEventCallback = sub(context, result)
+        print("NewScreen::sendEventCallback called with result: " + FormatJson(result.message))
+    end sub
+
+    m.aepSdk.sendEvent(data, adbSendEventCallback, m)
 end sub
 
 function onKeyEvent(key as string, press as boolean) as boolean
