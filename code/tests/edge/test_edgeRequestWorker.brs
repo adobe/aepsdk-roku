@@ -110,7 +110,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_valid_response()
             implementationdetails: {
                 environment: "app",
                 name: "https://ns.adobe.com/experience/mobilesdk/roku",
-                version: "1.1.0"
+                version: getTestSDKVersion()
             }
         }
         UTF_assertEqual(expectedXdmObj, jsonObj.xdm, "Expected != actual (Top level XDM object in the request)")
@@ -157,7 +157,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_customMeta_valid_response()
             implementationdetails: {
                 environment: "app",
                 name: "https://ns.adobe.com/experience/mobilesdk/roku",
-                version: "1.1.0"
+                version: getTestSDKVersion()
             }
         }
         UTF_assertEqual(expectedXdmObj, jsonObj.xdm, "Expected != actual (Top level XDM object in the request)")
@@ -211,7 +211,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_customDomain_valid_response()
             implementationdetails: {
                 environment: "app",
                 name: "https://ns.adobe.com/experience/mobilesdk/roku",
-                version: "1.1.0"
+                version: getTestSDKVersion()
             }
         }
         UTF_assertEqual(expectedXdmObj, jsonObj.xdm, "Expected != actual (Top level XDM object in the request)")
@@ -258,7 +258,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_datastreamConfigOverride_valid_respo
             implementationdetails: {
                 environment: "app",
                 name: "https://ns.adobe.com/experience/mobilesdk/roku",
-                version: "1.1.0"
+                version: getTestSDKVersion()
             }
         }
         UTF_assertEqual(expectedXdmObj, jsonObj.xdm, "Expected != actual (Top level XDM object in the request)")
@@ -317,7 +317,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_datastreamIdAndConfigOverride_valid_
             implementationdetails: {
                 environment: "app",
                 name: "https://ns.adobe.com/experience/mobilesdk/roku",
-                version: "1.1.0"
+                version: getTestSDKVersion()
             }
         }
         UTF_assertEqual(expectedXdmObj, jsonObj.xdm, "Expected != actual (Top level XDM object in the request)")
@@ -381,7 +381,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_overridesWithCustomMeta_valid_respon
             implementationdetails: {
                 environment: "app",
                 name: "https://ns.adobe.com/experience/mobilesdk/roku",
-                version: "1.1.0"
+                version: getTestSDKVersion()
             }
         }
         UTF_assertEqual(expectedXdmObj, jsonObj.xdm, "Expected != actual (Top level XDM object in the request)")
@@ -449,7 +449,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_datastreamIdOverride_valid_response(
             implementationdetails: {
                 environment: "app",
                 name: "https://ns.adobe.com/experience/mobilesdk/roku",
-                version: "1.1.0"
+                version: getTestSDKVersion()
             }
         }
         UTF_assertEqual(expectedXdmObj, jsonObj.xdm, "Expected != actual (Top level XDM object in the request)")
@@ -510,7 +510,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_invalidEventConfig_valid_response()
             implementationdetails: {
                 environment: "app",
                 name: "https://ns.adobe.com/experience/mobilesdk/roku",
-                version: "1.1.0"
+                version: getTestSDKVersion()
             }
         }
         UTF_assertEqual(expectedXdmObj, jsonObj.xdm, "Expected != actual (Top level XDM object in the request)")
@@ -561,7 +561,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_invalidDatastreamIdOverrideValue_val
             implementationdetails: {
                 environment: "app",
                 name: "https://ns.adobe.com/experience/mobilesdk/roku",
-                version: "1.1.0"
+                version: getTestSDKVersion()
             }
         }
         UTF_assertEqual(expectedXdmObj, jsonObj.xdm, "Expected != actual (Top level XDM object in the request)")
@@ -612,7 +612,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_invalidConfigOverrideValue_valid_res
             implementationdetails: {
                 environment: "app",
                 name: "https://ns.adobe.com/experience/mobilesdk/roku",
-                version: "1.1.0"
+                version: getTestSDKVersion()
             }
         }
         UTF_assertEqual(expectedXdmObj, jsonObj.xdm, "Expected != actual (Top level XDM object in the request)")

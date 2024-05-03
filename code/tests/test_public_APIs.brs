@@ -33,7 +33,7 @@ end sub
 ' @Test
 sub TC_APIs_getVersion()
     sdkInstance = AdobeAEPSDKInit()
-    UTF_assertEqual(sdkInstance.getVersion(), "1.1.0")
+    UTF_assertEqual(sdkInstance.getVersion(), getTestSDKVersion())
 end sub
 
 ' target: setLogLevel()

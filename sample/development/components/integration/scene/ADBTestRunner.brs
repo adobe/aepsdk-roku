@@ -281,3 +281,7 @@ function ADB_persistECIDInRegistry(value as string) as dynamic
     _registry.Write("ecid", value)
     return invalid
 end function
+
+sub ADB_testSDKVersion() as string
+    return "1.2.0"
+end sub
