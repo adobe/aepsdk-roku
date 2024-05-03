@@ -70,24 +70,27 @@ m.aepSdk = AdobeAEPSDKInit()
 
 ### getExperienceCloudId
 
-> **Note**
-> The `getExperienceCloudId` API will fetch a new ECID if no ECID is found in persistence. API might return invalid value if network request to fetch new ECID fails.
-
-> **Note**
-> If the AEP Roku SDK fails to receive the Edge response within 5 seconds, the callback function will not be executed.
-
 ##### Syntax
 
 ```brightscript
 getExperienceCloudId: function(callback as function, context = invalid as dynamic) as void
 ```
+- `@param  callback as function(context, result): callback which will be called with provided context and ecid value`
+- `@param [optional] context as dynamic : context to be passed to the callback function`
+
 - `@return callback containing ECID string`
+
+> **Note**
+> The `getExperienceCloudId` API will fetch a new ECID if no ECID is found in persistence.
+
+> **Note**
+> If the AEP Roku SDK fails to receive the Edge response within 5 seconds, the callback function will not be executed. If the network request to fetch a new ECID fails, the callback will be called with an invalid value for the ECID.
 
 ##### Example
 
 ```brightscript
 adbEcidCallback = sub(context, ecid)
-  ' Handle ECID returned
+  ' Handle the returned ECID value
   print "getECID(): " + FormatJson(ecid)
 end sub
 

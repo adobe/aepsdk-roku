@@ -1,4 +1,4 @@
-# Sending Datastream overrides using sendEvent
+# Sending Datastream overrides using sendEvent API
 
 Datastream overrides let you define additional configuration settings for your datastreams, allowing you to trigger different datastream behaviors on a per event basis.
 
