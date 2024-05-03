@@ -5,10 +5,11 @@ This document lists the APIs provided by AEP Roku SDK, along with code samples f
 
 - Edge APIs
     - [AdobeAEPSDKInit](#AdobeAEPSDKInit)
+    - [getExperienceCloudId](#getExperienceCloudId)
     - [getVersion](#getVersion)
     - [resetIdentities](#resetIdentities)
-    - [(optional) setExperienceCloudId](#setExperienceCloudId)
     - [sendEvent](#sendEvent)
+    - [(optional) setExperienceCloudId](#setExperienceCloudId)
     - [setLogLevel](#setLogLevel)
     - [shutdown](#shutdown)
     - [updateConfiguration](#updateConfiguration)
@@ -65,7 +66,36 @@ function AdobeAEPSDKInit(taskNode = invalid as dynamic) as object
 ```brightscript
 m.aepSdk = AdobeAEPSDKInit()
 ```
+---
 
+### getExperienceCloudId
+
+##### Syntax
+
+```brightscript
+getExperienceCloudId: function(callback as function, context = invalid as dynamic) as void
+```
+- `@param  callback as function(context, result): callback which will be called with provided context and ecid value`
+- `@param [optional] context as dynamic : context to be passed to the callback function`
+
+- `@return callback containing ECID string`
+
+> **Note**
+> The `getExperienceCloudId` API will fetch a new ECID if no ECID is found in persistence.
+
+> **Note**
+> If the AEP Roku SDK fails to receive the Edge response within 5 seconds, the callback function will not be executed. If the network request to fetch a new ECID fails, the callback will be called with an invalid value for the ECID.
+
+##### Example
+
+```brightscript
+adbEcidCallback = sub(context, ecid)
+  ' Handle the returned ECID value
+  print "getECID(): " + FormatJson(ecid)
+end sub
+
+m.aepSdk.getExperienceCloudId(adbEcidCallback, m)
+```
 ---
 
 ### getVersion
@@ -120,6 +150,8 @@ sendEvent: function(data as object, callback = _adb_default_callback as function
 - `@param [optional] callback as function(context, result) : handle Edge response`
 - `@param [optional] context as dynamic : context to be passed to the callback function`
 
+> **Note**
+> SendEvent now supports datasream overrides. To Learn more about how to override datastream Id and/or datastream configuration refer [Sending Datastream overrides using sendEvent API](Tutorials/send-overrides-sendevent.md)
 
 > **Note**
 > The `sendEvent` API automatically attaches the following information with each Experience Event:
@@ -128,7 +160,6 @@ sendEvent: function(data as object, callback = _adb_default_callback as function
 
 > **Note**
 > If the AEP Roku SDK fails to receive the Edge response within 5 seconds, the callback function will not be executed.
-
 
 > **Note**
 > Variables are not case sensitive in [BrightScript](https://developer.roku.com/docs/references/brightscript/language/expressions-variables-types.md), so always use the `String literals` to present the XDM data **keys**.

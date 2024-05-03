@@ -276,8 +276,12 @@ function ADB_readRegistryValue(key as string) as dynamic
     return invalid
 end function
 
-function ADB_persisteECIDInRegistry(value as string) as dynamic
+function ADB_persistECIDInRegistry(value as string) as dynamic
     _registry = CreateObject("roRegistrySection", "adb_aep_roku_sdk")
     _registry.Write("ecid", value)
     return invalid
 end function
+
+sub ADB_testSDKVersion() as string
+    return "1.2.0"
+end sub
