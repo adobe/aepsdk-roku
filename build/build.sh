@@ -36,12 +36,13 @@ cat ./code/AEPSDK.brs > ./output/AEPSDK.brs
 
 core_array=(`find ./code/main/core -maxdepth 2 -name "*.brs"`)
 edge_array=(`find ./code/main/edge -maxdepth 2 -name "*.brs"`)
+consent_array=(`find ./code/main/consent -maxdepth 2 -name "*.brs"`)
 task_array=(`find ./code/main/task -maxdepth 2 -name "*.brs"`)
 services_array=(`find ./code/main/services -maxdepth 2 -name "*.brs"`)
 common_array=(`find ./code/main/common -maxdepth 2 -name "*.brs"`)
 media_array=(`find ./code/main/media -maxdepth 2 -name "*.brs"`)
 
-brs_array=("${core_array[@]}" "${edge_array[@]}" "${task_array[@]}" "${services_array[@]}" "${common_array[@]}" "${media_array[@]}")
+brs_array=("${core_array[@]}" "${edge_array[@]}" "${consent_array[@]}" "${task_array[@]}" "${services_array[@]}" "${common_array[@]}" "${media_array[@]}")
 
 unordered_brs_array=(`find ./code/main -maxdepth 2 -name "*.brs"`)
 

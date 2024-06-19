@@ -133,6 +133,13 @@ function _adb_test_functions() as dynamic
         TC_adb_EdgeModule_processEvent
         TC_adb_EdgeModule_processQueuedRequests
     ]
+    consent = [
+        'test_consentModule.brs
+        TC_adb_ConsentModule_init
+        TC_adb_ConsentModule_extractConsentFromConfiguration_valid
+        TC_adb_ConsentModule_extractConsentFromConfiguration_invalid
+
+    ]
     media = [
         'test_mediaUtils.brs
         TC_adb_extractPlayheadFromMediaXDMData
@@ -268,6 +275,7 @@ function _adb_test_functions() as dynamic
     functionList.Append(common)
     functionList.Append(services)
     functionList.Append(core)
+    functionList.Append(consent)
     functionList.Append(edge)
     functionList.Append(media)
     functionList.Append(initSDK)
