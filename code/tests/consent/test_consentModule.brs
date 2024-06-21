@@ -25,26 +25,20 @@ end sub
 ' target: _extractConsentFromConfiguration
 ' @Test
 sub TC_adb_ConsentModule_extractConsentFromConfiguration_valid()
-
     configurationModule = _adb_ConfigurationModule()
     consentModule = _adb_ConsentModule(configurationModule)
 
-    ADB_CONSTANTS = AdobeAEPSDKConstants()
-
-    configuration = {}
-    configuration[ADB_CONSTANTS.CONFIGURATION.CONSENT_DEFAULT] = {
+    consentMap = {
         "consents": {
             "collect": {
                 "val": "y"
             }
         }
     }
-
-    configurationModule.updateConfiguration(configuration)
-    actualCollectConsent = consentModule._extractCollectConsentValue(configurationModule.getDefaultConsent())
+    actualCollectConsent = consentModule._extractCollectConsentValue(consentMap)
     UTF_assertEqual("y", actualCollectConsent, "expected: y, actual: " + FormatJson(actualCollectConsent))
 
-    configuration[ADB_CONSTANTS.CONFIGURATION.CONSENT_DEFAULT] = {
+    consentMap = {
         "consents": {
             "collect": {
                 "val": "n"
@@ -52,12 +46,11 @@ sub TC_adb_ConsentModule_extractConsentFromConfiguration_valid()
         }
     }
 
-    configurationModule.updateConfiguration(configuration)
-    actualCollectConsent = consentModule._extractCollectConsentValue(configurationModule.getDefaultConsent())
+    actualCollectConsent = consentModule._extractCollectConsentValue(consentMap)
     UTF_assertEqual("n", actualCollectConsent, "expected: n, actual: " + FormatJson(actualCollectConsent))
 
 
-    configuration[ADB_CONSTANTS.CONFIGURATION.CONSENT_DEFAULT] = {
+    consentMap = {
         "consents": {
             "collect": {
                 "val": "p"
@@ -65,8 +58,7 @@ sub TC_adb_ConsentModule_extractConsentFromConfiguration_valid()
         }
     }
 
-    configurationModule.updateConfiguration(configuration)
-    actualCollectConsent = consentModule._extractCollectConsentValue(configurationModule.getDefaultConsent())
+    actualCollectConsent = consentModule._extractCollectConsentValue(consentMap)
     UTF_assertEqual("p", actualCollectConsent, "expected: p, actual: " + FormatJson(actualCollectConsent))
 end sub
 
@@ -80,53 +72,51 @@ sub TC_adb_ConsentModule_extractConsentFromConfiguration_invalid()
 
     ADB_CONSTANTS = AdobeAEPSDKConstants()
 
-    configuration = {}
 
     ''' case 1 default consent is not present
-    configurationModule.updateConfiguration(configuration)
-    actualCollectConsent = consentModule._extractCollectConsentValue(configurationModule.getDefaultConsent())
+    consentMap = invalid
+    actualCollectConsent = consentModule._extractCollectConsentValue(consentMap)
     UTF_assertInvalid(actualCollectConsent, "expected: Invalid, actual: " + FormatJson(actualCollectConsent))
 
     ''' case 2 default consent is empty
-    configuration[ADB_CONSTANTS.CONFIGURATION.CONSENT_DEFAULT] = {}
-    configurationModule.updateConfiguration(configuration)
-    actualCollectConsent = consentModule._extractCollectConsentValue(configurationModule.getDefaultConsent())
+    consentMap = {}
+    actualCollectConsent = consentModule._extractCollectConsentValue(consentMap)
     UTF_assertInvalid(actualCollectConsent, "expected: Invalid, actual: " + FormatJson(actualCollectConsent))
 
     ''' case 3 default consent does not have collect key
-    configuration[ADB_CONSTANTS.CONFIGURATION.CONSENT_DEFAULT] = {
+    consentMap = {
         "consents": {
         }
     }
-    configurationModule.updateConfiguration(configuration)
-    actualCollectConsent = consentModule._extractCollectConsentValue(configurationModule.getDefaultConsent())
+
+    actualCollectConsent = consentModule._extractCollectConsentValue(consentMap)
     UTF_assertInvalid(actualCollectConsent, "expected: Invalid, actual: " + FormatJson(actualCollectConsent))
 
     ''' case 4 collect consent does not have val key
-    configuration[ADB_CONSTANTS.CONFIGURATION.CONSENT_DEFAULT] = {
+    consentMap = {
         "consents": {
             "collect": {
             }
         }
     }
-    configurationModule.updateConfiguration(configuration)
-    actualCollectConsent = consentModule._extractCollectConsentValue(configurationModule.getDefaultConsent())
+
+    actualCollectConsent = consentModule._extractCollectConsentValue(consentMap)
     UTF_assertInvalid(actualCollectConsent, "expected: Invalid, actual: " + FormatJson(actualCollectConsent))
 
     ''' case 5 collect consent does not have val key
-    configuration[ADB_CONSTANTS.CONFIGURATION.CONSENT_DEFAULT] = {
+    consentMap = {
         "consents": {
             "collect": {
                 "notVal": "y"
             }
         }
     }
-    configurationModule.updateConfiguration(configuration)
-    actualCollectConsent = consentModule._extractCollectConsentValue(configurationModule.getDefaultConsent())
+
+    actualCollectConsent = consentModule._extractCollectConsentValue(consentMap)
     UTF_assertInvalid(actualCollectConsent, "expected: Invalid, actual: " + FormatJson(actualCollectConsent))
 
     ''' case 6 collect consent val is not valid
-    configuration[ADB_CONSTANTS.CONFIGURATION.CONSENT_DEFAULT] = {
+    consentMap = {
         "consents": {
             "collect": {
                 "val": "pending"
@@ -134,7 +124,48 @@ sub TC_adb_ConsentModule_extractConsentFromConfiguration_invalid()
         }
     }
 
-    configurationModule.updateConfiguration(configuration)
-    actualCollectConsent = consentModule._extractCollectConsentValue(configurationModule.getDefaultConsent())
+    actualCollectConsent = consentModule._extractCollectConsentValue(consentMap)
     UTF_assertInvalid(actualCollectConsent, "expected: Invalid, actual: " + FormatJson(actualCollectConsent))
+end sub
+
+' target: _isValidConsentValue
+' @Test
+sub TC_adb_ConsentModule_isValidConsentValue_valid()
+    configurationModule = _adb_ConfigurationModule()
+    consentModule = _adb_ConsentModule(configurationModule)
+
+    validValues = [
+        "y",
+        "n",
+        "p"
+    ]
+
+    for each value in validValues
+        UTF_assertTrue(consentModule._isValidConsentValue(value), FormatJson(value) + " should be a valid consent value")
+    end for
+end sub
+
+' target: _isValidConsentValue
+' @Test
+sub TC_adb_ConsentModule_isValidConsentValue_invalid()
+    configurationModule = _adb_ConfigurationModule()
+
+    consentModule = _adb_ConsentModule(configurationModule)
+
+    invalidValues = [
+        0,
+        true,
+        false,
+        "yes",
+        "pending",
+        "invalid",
+        "y1",
+        "n1",
+        "p1"
+    ]
+
+    for each value in invalidValues
+        UTF_assertFalse(consentModule._isValidConsentValue(value), FormatJson(value) + " should not a valid consent value")
+    end for
+
 end sub

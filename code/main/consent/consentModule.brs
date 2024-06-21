@@ -49,18 +49,16 @@ function _adb_ConsentModule(configurationModule as object) as object
 
         ''' usage: collectConsent = m._extractCollectConsentValue(m._configurationModule.getConsent())
         _extractCollectConsentValue: function(consentMap as object) as dynamic
-            consentConfig = m._configurationModule.getDefaultConsent()
-
-            if _adb_isEmptyOrInvalidMap(consentConfig) then
+            if _adb_isEmptyOrInvalidMap(consentMap) then
                 return invalid
             end if
 
-            consentList = consentConfig["consents"]
-            if _adb_isEmptyOrInvalidMap(consentList) then
+            consents = consentMap["consents"]
+            if _adb_isEmptyOrInvalidMap(consents) then
                 return invalid
             end if
 
-            collectConsent = consentList["collect"]
+            collectConsent = consents["collect"]
             if _adb_isEmptyOrInvalidMap(collectConsent) then
                 return invalid
             end if
