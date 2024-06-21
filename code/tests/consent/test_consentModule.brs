@@ -41,7 +41,7 @@ sub TC_adb_ConsentModule_extractConsentFromConfiguration_valid()
     }
 
     configurationModule.updateConfiguration(configuration)
-    actualCollectConsent = consentModule._extractConsentFromConfiguration()
+    actualCollectConsent = consentModule._extractCollectConsentValue(configurationModule.getDefaultConsent())
     UTF_assertEqual("y", actualCollectConsent, "expected: y, actual: " + FormatJson(actualCollectConsent))
 
     configuration[ADB_CONSTANTS.CONFIGURATION.CONSENT_DEFAULT] = {
@@ -53,7 +53,7 @@ sub TC_adb_ConsentModule_extractConsentFromConfiguration_valid()
     }
 
     configurationModule.updateConfiguration(configuration)
-    actualCollectConsent = consentModule._extractConsentFromConfiguration()
+    actualCollectConsent = consentModule._extractCollectConsentValue(configurationModule.getDefaultConsent())
     UTF_assertEqual("n", actualCollectConsent, "expected: n, actual: " + FormatJson(actualCollectConsent))
 
 
@@ -66,7 +66,7 @@ sub TC_adb_ConsentModule_extractConsentFromConfiguration_valid()
     }
 
     configurationModule.updateConfiguration(configuration)
-    actualCollectConsent = consentModule._extractConsentFromConfiguration()
+    actualCollectConsent = consentModule._extractCollectConsentValue(configurationModule.getDefaultConsent())
     UTF_assertEqual("p", actualCollectConsent, "expected: p, actual: " + FormatJson(actualCollectConsent))
 end sub
 
@@ -84,13 +84,13 @@ sub TC_adb_ConsentModule_extractConsentFromConfiguration_invalid()
 
     ''' case 1 default consent is not present
     configurationModule.updateConfiguration(configuration)
-    actualCollectConsent = consentModule._extractConsentFromConfiguration()
+    actualCollectConsent = consentModule._extractCollectConsentValue(configurationModule.getDefaultConsent())
     UTF_assertInvalid(actualCollectConsent, "expected: Invalid, actual: " + FormatJson(actualCollectConsent))
 
     ''' case 2 default consent is empty
     configuration[ADB_CONSTANTS.CONFIGURATION.CONSENT_DEFAULT] = {}
     configurationModule.updateConfiguration(configuration)
-    actualCollectConsent = consentModule._extractConsentFromConfiguration()
+    actualCollectConsent = consentModule._extractCollectConsentValue(configurationModule.getDefaultConsent())
     UTF_assertInvalid(actualCollectConsent, "expected: Invalid, actual: " + FormatJson(actualCollectConsent))
 
     ''' case 3 default consent does not have collect key
@@ -99,7 +99,7 @@ sub TC_adb_ConsentModule_extractConsentFromConfiguration_invalid()
         }
     }
     configurationModule.updateConfiguration(configuration)
-    actualCollectConsent = consentModule._extractConsentFromConfiguration()
+    actualCollectConsent = consentModule._extractCollectConsentValue(configurationModule.getDefaultConsent())
     UTF_assertInvalid(actualCollectConsent, "expected: Invalid, actual: " + FormatJson(actualCollectConsent))
 
     ''' case 4 collect consent does not have val key
@@ -110,7 +110,7 @@ sub TC_adb_ConsentModule_extractConsentFromConfiguration_invalid()
         }
     }
     configurationModule.updateConfiguration(configuration)
-    actualCollectConsent = consentModule._extractConsentFromConfiguration()
+    actualCollectConsent = consentModule._extractCollectConsentValue(configurationModule.getDefaultConsent())
     UTF_assertInvalid(actualCollectConsent, "expected: Invalid, actual: " + FormatJson(actualCollectConsent))
 
     ''' case 5 collect consent does not have val key
@@ -122,7 +122,7 @@ sub TC_adb_ConsentModule_extractConsentFromConfiguration_invalid()
         }
     }
     configurationModule.updateConfiguration(configuration)
-    actualCollectConsent = consentModule._extractConsentFromConfiguration()
+    actualCollectConsent = consentModule._extractCollectConsentValue(configurationModule.getDefaultConsent())
     UTF_assertInvalid(actualCollectConsent, "expected: Invalid, actual: " + FormatJson(actualCollectConsent))
 
     ''' case 6 collect consent val is not valid
@@ -135,6 +135,6 @@ sub TC_adb_ConsentModule_extractConsentFromConfiguration_invalid()
     }
 
     configurationModule.updateConfiguration(configuration)
-    actualCollectConsent = consentModule._extractConsentFromConfiguration()
+    actualCollectConsent = consentModule._extractCollectConsentValue(configurationModule.getDefaultConsent())
     UTF_assertInvalid(actualCollectConsent, "expected: Invalid, actual: " + FormatJson(actualCollectConsent))
 end sub

@@ -47,7 +47,8 @@ function _adb_ConsentModule(configurationModule as object) as object
             return "y"
         end function,
 
-        _extractConsentFromConfiguration: function() as dynamic
+        ''' usage: collectConsent = m._extractCollectConsentValue(m._configurationModule.getConsent())
+        _extractCollectConsentValue: function(consentMap as object) as dynamic
             consentConfig = m._configurationModule.getDefaultConsent()
 
             if _adb_isEmptyOrInvalidMap(consentConfig) then
@@ -106,4 +107,3 @@ function _adb_ConsentModule(configurationModule as object) as object
     })
     return module
 end function
-
