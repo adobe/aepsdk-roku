@@ -254,6 +254,11 @@ function _adb_test_functions() as dynamic
         TC_APIs_sendMediaEvent_invalidSession
         TC_APIs_sendMediaEvent_sessionEnd
         TC_adb_ClientMediaSession
+        TC_APIs_setConsent
+        TC_APIs_setConsent_invalid
+        TC_APIs_setConsent_emptyConsentList
+        TC_APIs_setConsentWithCallback
+        TC_APIs_setConsentWithCallback_timeout
     ]
     task = [
         'test_eventProcessor.brs
