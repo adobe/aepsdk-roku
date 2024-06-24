@@ -21,6 +21,7 @@ function _adb_InternalConstants() as object
             GET_EXPERIENCE_CLOUD_ID: "getExperienceCloudId",
             RESET_IDENTITIES: "resetIdentities",
             SEND_EDGE_EVENT: "sendEvent",
+            SET_CONSENT: "setConsent",
             SET_LOG_LEVEL: "setLogLevel",
             RESET_SDK: "resetSDK",
             CREATE_MEDIA_SESSION: "createMediaSession",
