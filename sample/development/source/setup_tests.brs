@@ -85,6 +85,9 @@ function _adb_test_functions() as dynamic
         TC_adb_ConfigurationModule_overwrittingMediaConfig
         TC_adb_ConfigurationModule_emptyMediaConfig
         TC_adb_ConfigurationModule_invalidMediaConfig
+        TC_adb_ConfigurationModule_validConsentConfig
+        TC_adb_ConfigurationModule_invalidConsentConfig
+
         ' test_identityModule.brs
         TS_identityModule_BeforeEach
         TC_adb_IdentityModule_bad_init
@@ -132,6 +135,14 @@ function _adb_test_functions() as dynamic
         TC_adb_EdgeModule_init
         TC_adb_EdgeModule_processEvent
         TC_adb_EdgeModule_processQueuedRequests
+    ]
+    consent = [
+        'test_consentModule.brs
+        TC_adb_ConsentModule_init
+        TC_adb_ConsentModule_extractConsentFromConfiguration_valid
+        TC_adb_ConsentModule_extractConsentFromConfiguration_invalid
+        TC_adb_ConsentModule_isValidConsentValue_valid
+        TC_adb_ConsentModule_isValidConsentValue_invalid
     ]
     media = [
         'test_mediaUtils.brs
@@ -268,6 +279,7 @@ function _adb_test_functions() as dynamic
     functionList.Append(common)
     functionList.Append(services)
     functionList.Append(core)
+    functionList.Append(consent)
     functionList.Append(edge)
     functionList.Append(media)
     functionList.Append(initSDK)

@@ -20,12 +20,14 @@ function _adb_EventProcessor(task as object) as object
         _configurationModule: invalid,
         _identityModule: invalid,
         _edgeModule: invalid,
+        _consentModule: invalid,
         _mediaModule: invalid,
 
         init: function() as void
             m._configurationModule = _adb_ConfigurationModule()
             m._identityModule = _adb_IdentityModule(m._configurationModule)
             m._edgeModule = _adb_EdgeModule(m._configurationModule, m._identityModule)
+            m._consentModule = _adb_ConsentModule(m._configurationModule)
             m._mediaModule = _adb_MediaModule(m._configurationModule, m._edgeModule.createEdgeRequestQueue("MediaRequestQueue"))
 
             ' enable debug mode if needed
@@ -72,6 +74,7 @@ function _adb_EventProcessor(task as object) as object
             debugInfo["configuration"] = m._configurationModule.dump()
             debugInfo["identity"] = m._identityModule.dump()
             debugInfo["edge"] = m._edgeModule.dump()
+            debugInfo["consent"] = m._consentModule.dump()
             debugInfo["media"] = m._mediaModule.dump()
             debugInfo["networkRequests"] = networkService.dump()
 
