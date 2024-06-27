@@ -18,12 +18,12 @@ function _adb_isEdgeModule(module as object) as boolean
 end function
 
 function _adb_EdgeModule(configurationModule as object, identityModule as object) as object
-    if _adb_isConfigurationModule(configurationModule) = false then
+    if not _adb_isConfigurationModule(configurationModule) then
         _adb_logError("EdgeModule::_adb_EdgeModule() - configurationModule is not valid.")
         return invalid
     end if
 
-    if _adb_isIdentityModule(identityModule) = false then
+    if not _adb_isIdentityModule(identityModule) then
         _adb_logError("EdgeModule::_adb_EdgeModule() - identityModule is not valid.")
         return invalid
     end if
@@ -35,31 +35,27 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
         _identityModule: identityModule,
         _edgeRequestWorker: _adb_EdgeRequestWorker(),
 
-        processEvent: function(requestId as string, eventData as object, timestampInMillis as longinteger) as dynamic
+        ''' sendEvent API triggers this API to queue edge requests
+        ''' requestId: unique id for the request
+        ''' eventData: data to be sent to edge
+        ''' timestampInMillis: timestamp of the event
+        processEvent: function(requestId as string, eventData as object, timestampInMillis as longinteger) as void
             m._edgeRequestWorker.queue(requestId, eventData, timestampInMillis, {}, m._EDGE_REQUEST_PATH)
-            return m.processQueuedRequests()
+            'return m.processQueuedRequests()
         end function,
 
-        createEdgeRequestQueue: function(name as string) as object
-            return _adb_edgeRequestQueue(name, m)
+        ''' modules call this API to queue edge requests
+        ''' requestId: unique id for the request
+        ''' eventData: data to be sent to edge
+        ''' timestampInMillis: timestamp of the event
+        ''' meta: meta data for the edge request
+        ''' path: path to send the edge request to
+        queueEdgeRequest: function(requestId as string, eventData as object, timestampInMillis as longinteger, meta as object, path as string) as void
+            m._edgeRequestWorker.queue(requestId, eventData, timestampInMillis, meta, path)
         end function,
 
-        _getEdgeConfig: function() as object
-            configId = m._configurationModule.getConfigId()
-            if _adb_isEmptyOrInvalidString(configId)
-                return invalid
-            end if
-            ecid = m._identityModule.getECID()
-            if _adb_isEmptyOrInvalidString(ecid)
-                return invalid
-            end if
-            return {
-                configId: configId,
-                ecid: ecid,
-                edgeDomain: m._configurationModule.getEdgeDomain()
-            }
-        end function,
-
+        ''' Sends queued edge requests to edge
+        ''' Returns list of edge responses for the requests
         processQueuedRequests: function() as object
             responseEvents = []
 
@@ -77,7 +73,7 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
 
             for each edgeResponse in responses
                 if _adb_isEdgeResponse(edgeResponse) then
-                    responseEvent = _adb_ResponseEvent(edgeResponse.getRequestId(), {
+                    responseEvent = _adb_EdgeResponseEvent(edgeResponse.getRequestId(), {
                         code: edgeResponse.getResponseCode(),
                         message: edgeResponse.getResponseString()
                     })
@@ -87,6 +83,22 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
 
 
             return responseEvents
+        end function,
+
+        _getEdgeConfig: function() as object
+            configId = m._configurationModule.getConfigId()
+            if _adb_isEmptyOrInvalidString(configId)
+                return invalid
+            end if
+            ecid = m._identityModule.getECID()
+            if _adb_isEmptyOrInvalidString(ecid)
+                return invalid
+            end if
+            return {
+                configId: configId,
+                ecid: ecid,
+                edgeDomain: m._configurationModule.getEdgeDomain()
+            }
         end function,
 
         dump: function() as object
