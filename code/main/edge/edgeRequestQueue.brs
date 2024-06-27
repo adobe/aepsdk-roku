@@ -13,6 +13,7 @@
 
 ' ****************************** MODULE: EdgeRequestQueue *********************************
 
+''' TODO remove this file
 function _adb_isEdgeRequestQueue(obj as object) as boolean
     return (obj <> invalid and obj.type = "com.adobe.module.edge.requestQueue")
 end function
