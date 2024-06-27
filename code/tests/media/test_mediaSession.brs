@@ -18,7 +18,6 @@ sub TC_adb_MediaSession_init()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
     edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
 
     configuration = {}
     ADB_CONSTANTS = AdobeAEPSDKConstants()
@@ -30,14 +29,14 @@ sub TC_adb_MediaSession_init()
 
     ''' test
     sessionConfig = { "config.channel": "test_channel_session" }
-    mediaSession = _adb_MediaSession("testId", configurationModule, sessionConfig, edgeRequestQueue)
+    mediaSession = _adb_MediaSession("testId", configurationModule, sessionConfig, edgeModule)
 
     ''' verify
     UTF_assertNotInvalid(mediaSession)
     UTF_assertTrue(mediaSession._isActive)
     UTF_assertEqual("testId", mediaSession._clientSessionId)
     UTF_assertNotInvalid(mediaSession._configurationModule)
-    UTF_assertNotInvalid(mediaSession._edgeRequestQueue)
+    UTF_assertNotInvalid(mediaSession._edgeModule)
     UTF_assertEqual("test_channel_session", mediaSession._sessionChannelName)
     UTF_assertEqual("test_appVersion", mediaSession._getAppVersion())
     UTF_assertEqual("test_playerName", mediaSession._getPlayerName())
@@ -56,7 +55,6 @@ sub TC_adb_MediaSession_init_withoutSessionConfig()
 
     identityModule = _adb_IdentityModule(configurationModule)
     edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
 
     configuration = {}
     ADB_CONSTANTS = AdobeAEPSDKConstants()
@@ -68,14 +66,14 @@ sub TC_adb_MediaSession_init_withoutSessionConfig()
 
     ''' test
     sessionConfig = {}
-    mediaSession = _adb_MediaSession("testId", configurationModule, sessionConfig, edgeRequestQueue)
+    mediaSession = _adb_MediaSession("testId", configurationModule, sessionConfig, edgeModule)
 
     ''' verify
     UTF_assertNotInvalid(mediaSession)
     UTF_assertTrue(mediaSession._isActive)
     UTF_assertEqual("testId", mediaSession._clientSessionId)
     UTF_assertNotInvalid(mediaSession._configurationModule)
-    UTF_assertNotInvalid(mediaSession._edgeRequestQueue)
+    UTF_assertNotInvalid(mediaSession._edgeModule)
     UTF_assertInvalid(mediaSession._sessionChannelName)
     UTF_assertEqual("test_appVersion", mediaSession._getAppVersion())
     UTF_assertEqual("test_playerName", mediaSession._getPlayerName())
@@ -93,7 +91,6 @@ sub TC_adb_MediaSession_init_withFullSessionConfig()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
     edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
 
     configuration = {}
     ADB_CONSTANTS = AdobeAEPSDKConstants()
@@ -110,14 +107,14 @@ sub TC_adb_MediaSession_init_withFullSessionConfig()
     }
 
     ''' test
-    mediaSession = _adb_MediaSession("testId", configurationModule, sessionConfig, edgeRequestQueue)
+    mediaSession = _adb_MediaSession("testId", configurationModule, sessionConfig, edgeModule)
 
     ''' verify
     UTF_assertNotInvalid(mediaSession)
     UTF_assertTrue(mediaSession._isActive)
     UTF_assertEqual("testId", mediaSession._clientSessionId)
     UTF_assertNotInvalid(mediaSession._configurationModule)
-    UTF_assertNotInvalid(mediaSession._edgeRequestQueue)
+    UTF_assertNotInvalid(mediaSession._edgeModule)
     UTF_assertEqual("test_channel_session", mediaSession._sessionChannelName)
     UTF_assertEqual("test_appVersion", mediaSession._getAppVersion())
     UTF_assertEqual("test_playerName", mediaSession._getPlayerName())
@@ -154,10 +151,9 @@ sub TC_adb_MediaSession_process_notActiveSession()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
     edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
 
     ''' create media session
-    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeRequestQueue)
+    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeModule)
     mediaSession._isActive = false
 
     ''' mock session functions
@@ -248,10 +244,9 @@ sub TC_adb_MediaSession_process_activeSession_sessionStartHit_queued()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
     edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
 
     ''' create media session
-    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeRequestQueue)
+    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeModule)
 
     ''' mock _queue()
     GetGlobalAA()._test_media_session_hits = []
@@ -361,10 +356,9 @@ sub TC_adb_MediaSession_process_activeSession_playbackHits_queued()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
     edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
 
     ''' create media session
-    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeRequestQueue)
+    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeModule)
 
     ''' mock _tryDispatchMediaEvents()
     GetGlobalAA()._test_media_session_tryDispatchMediaEvents_called_count = 0
@@ -501,10 +495,9 @@ sub TC_adb_MediaSession_process_activeSession_adHits_queued()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
     edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
 
     ''' create media session
-    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeRequestQueue)
+    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeModule)
 
     ''' mock _tryDispatchMediaEvents()
     GetGlobalAA()._test_media_session_tryDispatchMediaEvents_called_count = 0
@@ -685,10 +678,9 @@ sub TC_adb_MediaSession_process_activeSession_idleTimeout_queued()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
     edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
 
     ''' create media session
-    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeRequestQueue)
+    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeModule)
 
     ''' mock _tryDispatchMediaEvents()
     GetGlobalAA()._test_media_session_tryDispatchMediaEvents_called_count = 0
@@ -869,10 +861,9 @@ sub TC_adb_MediaSession_process_activeSession_longRunningSession_queued()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
     edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
 
     ''' create media session
-    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeRequestQueue)
+    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeModule)
 
     ''' mock _tryDispatchMediaEvents()
     GetGlobalAA()._test_media_session_tryDispatchMediaEvents_called_count = 0
@@ -957,7 +948,6 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigAndSessio
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
     edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
 
     ''' mock configuration
     MEDIA_CONFIG_CONSTANTS = AdobeAEPSDKConstants().CONFIGURATION
@@ -968,26 +958,26 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigAndSessio
 
     configurationModule.updateConfiguration(configuration)
 
-    ''' mock edgeRequestQueue.add()
-    GetGlobalAA()._test_edgeRequestQueue_add_called = false
-    GetGlobalAA()._test_edgeRequestQueue_add_requestId = ""
-    GetGlobalAA()._test_edgeRequestQueue_add_eventdata = invalid
-    GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis = -1
-    GetGlobalAA()._test_edgeRequestQueue_add_meta = invalid
-    GetGlobalAA()._test_edgeRequestQueue_add_path = ""
+    ''' mock edgeModule.queueEdgeRequest()
+    GetGlobalAA()._test_edgeModule_queueEdgeRequest_called = false
+    GetGlobalAA()._test_edgeModule_queueEdgeRequest_requestId = ""
+    GetGlobalAA()._test_edgeModule_queueEdgeRequest_eventdata = invalid
+    GetGlobalAA()._test_edgeModule_queueEdgeRequest_timestampInMillis = -1
+    GetGlobalAA()._test_edgeModule_queueEdgeRequest_meta = invalid
+    GetGlobalAA()._test_edgeModule_queueEdgeRequest_path = ""
 
-    edgeRequestQueue.add = function(requestId as string, eventData as object, timestampInMillis as longinteger, meta as object, path as string) as void
-        GetGlobalAA()._test_edgeRequestQueue_add_called = true
-        GetGlobalAA()._test_edgeRequestQueue_add_requestId = requestId
-        GetGlobalAA()._test_edgeRequestQueue_add_eventdata = eventData
-        GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis = timestampInMillis
-        GetGlobalAA()._test_edgeRequestQueue_add_meta = meta
-        GetGlobalAA()._test_edgeRequestQueue_add_path = path
+    edgeModule.queueEdgeRequest = function(requestId as string, eventData as object, timestampInMillis as longinteger, meta as object, path as string) as void
+        GetGlobalAA()._test_edgeModule_queueEdgeRequest_called = true
+        GetGlobalAA()._test_edgeModule_queueEdgeRequest_requestId = requestId
+        GetGlobalAA()._test_edgeModule_queueEdgeRequest_eventdata = eventData
+        GetGlobalAA()._test_edgeModule_queueEdgeRequest_timestampInMillis = timestampInMillis
+        GetGlobalAA()._test_edgeModule_queueEdgeRequest_meta = meta
+        GetGlobalAA()._test_edgeModule_queueEdgeRequest_path = path
     end function
 
     ''' create media session
     sessionConfig = { "config.channel": "channelFromSessionConfig", "config.adpinginterval": 1, "config.mainpinginterval": 30 }
-    mediaSession = _adb_MediaSession("testId", configurationModule, sessionConfig, edgeRequestQueue)
+    mediaSession = _adb_MediaSession("testId", configurationModule, sessionConfig, edgeModule)
     mediaSession._hitQueue.push(sessionStartHit)
 
     expectedSessionStartXdm = {
@@ -1011,16 +1001,16 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigAndSessio
     mediaSession.tryDispatchMediaEvents()
 
     ''' verify
-    actualEventData = GetGlobalAA()._test_edgeRequestQueue_add_eventdata
+    actualEventData = GetGlobalAA()._test_edgeModule_queueEdgeRequest_eventdata
     UTF_assertNotInvalid(actualEventData, "eventData should not be invalid")
     actualXdmData = actualEventData
 
-    UTF_assertTrue(GetGlobalAA()._test_edgeRequestQueue_add_called)
-    UTF_assertEqual("sessionStartRequestId", GetGlobalAA()._test_edgeRequestQueue_add_requestId)
+    UTF_assertTrue(GetGlobalAA()._test_edgeModule_queueEdgeRequest_called)
+    UTF_assertEqual("sessionStartRequestId", GetGlobalAA()._test_edgeModule_queueEdgeRequest_requestId)
     ''' & prefix since timestamp is LongInteger
-    UTF_assertEqual(1000&, GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis)
-    UTF_assertEqual({}, GetGlobalAA()._test_edgeRequestQueue_add_meta)
-    UTF_assertEqual("/ee/va/v1/sessionStart", GetGlobalAA()._test_edgeRequestQueue_add_path)
+    UTF_assertEqual(1000&, GetGlobalAA()._test_edgeModule_queueEdgeRequest_timestampInMillis)
+    UTF_assertEqual({}, GetGlobalAA()._test_edgeModule_queueEdgeRequest_meta)
+    UTF_assertEqual("/ee/va/v1/sessionStart", GetGlobalAA()._test_edgeModule_queueEdgeRequest_path)
     UTF_assertFalse(_adb_isEmptyOrInvalidString(actualXdmData.xdm._id))
     UTF_assertEqual(expectedSessionStartXdm.xdm.mediaCollection, actualXdmData.xdm.mediaCollection)
     UTF_assertEqual(expectedSessionStartXdm.xdm.timestamp, actualXdmData.xdm.timestamp)
@@ -1055,7 +1045,6 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigNoSession
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
     edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
 
     ''' mock configuration
     MEDIA_CONFIG_CONSTANTS = AdobeAEPSDKConstants().CONFIGURATION
@@ -1066,25 +1055,25 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigNoSession
 
     configurationModule.updateConfiguration(configuration)
 
-    ''' mock edgeRequestQueue.add()
-    GetGlobalAA()._test_edgeRequestQueue_add_called = false
-    GetGlobalAA()._test_edgeRequestQueue_add_requestId = ""
-    GetGlobalAA()._test_edgeRequestQueue_add_eventData = invalid
-    GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis = -1
-    GetGlobalAA()._test_edgeRequestQueue_add_meta = invalid
-    GetGlobalAA()._test_edgeRequestQueue_add_path = ""
+    ''' mock edgeModule.queueEdgeRequest()
+    GetGlobalAA()._test_edgeModule_queueEdgeRequest_called = false
+    GetGlobalAA()._test_edgeModule_queueEdgeRequest_requestId = ""
+    GetGlobalAA()._test_edgeModule_queueEdgeRequest_eventData = invalid
+    GetGlobalAA()._test_edgeModule_queueEdgeRequest_timestampInMillis = -1
+    GetGlobalAA()._test_edgeModule_queueEdgeRequest_meta = invalid
+    GetGlobalAA()._test_edgeModule_queueEdgeRequest_path = ""
 
-    edgeRequestQueue.add = function(requestId as string, eventData as object, timestampInMillis as longinteger, meta as object, path as string) as void
-        GetGlobalAA()._test_edgeRequestQueue_add_called = true
-        GetGlobalAA()._test_edgeRequestQueue_add_requestId = requestId
-        GetGlobalAA()._test_edgeRequestQueue_add_eventData = eventData
-        GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis = timestampInMillis
-        GetGlobalAA()._test_edgeRequestQueue_add_meta = meta
-        GetGlobalAA()._test_edgeRequestQueue_add_path = path
+    edgeModule.queueEdgeRequest = function(requestId as string, eventData as object, timestampInMillis as longinteger, meta as object, path as string) as void
+        GetGlobalAA()._test_edgeModule_queueEdgeRequest_called = true
+        GetGlobalAA()._test_edgeModule_queueEdgeRequest_requestId = requestId
+        GetGlobalAA()._test_edgeModule_queueEdgeRequest_eventData = eventData
+        GetGlobalAA()._test_edgeModule_queueEdgeRequest_timestampInMillis = timestampInMillis
+        GetGlobalAA()._test_edgeModule_queueEdgeRequest_meta = meta
+        GetGlobalAA()._test_edgeModule_queueEdgeRequest_path = path
     end function
 
     ''' create media session
-    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeRequestQueue)
+    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeModule)
     mediaSession._hitQueue.push(sessionStartHit)
 
     expectedSessionStartXdm = {
@@ -1108,16 +1097,16 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigNoSession
     mediaSession.tryDispatchMediaEvents()
 
     ''' verify
-    actualEventData = GetGlobalAA()._test_edgeRequestQueue_add_eventData
+    actualEventData = GetGlobalAA()._test_edgeModule_queueEdgeRequest_eventData
     UTF_assertNotInvalid(actualEventData, "eventData should not be invalid")
     actualXdmData = actualEventData
 
-    UTF_assertTrue(GetGlobalAA()._test_edgeRequestQueue_add_called)
-    UTF_assertEqual("sessionStartRequestId", GetGlobalAA()._test_edgeRequestQueue_add_requestId)
+    UTF_assertTrue(GetGlobalAA()._test_edgeModule_queueEdgeRequest_called)
+    UTF_assertEqual("sessionStartRequestId", GetGlobalAA()._test_edgeModule_queueEdgeRequest_requestId)
     ''' & prefix since timestamp is LongInteger
-    UTF_assertEqual(1000&, GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis)
-    UTF_assertEqual({}, GetGlobalAA()._test_edgeRequestQueue_add_meta)
-    UTF_assertEqual("/ee/va/v1/sessionStart", GetGlobalAA()._test_edgeRequestQueue_add_path)
+    UTF_assertEqual(1000&, GetGlobalAA()._test_edgeModule_queueEdgeRequest_timestampInMillis)
+    UTF_assertEqual({}, GetGlobalAA()._test_edgeModule_queueEdgeRequest_meta)
+    UTF_assertEqual("/ee/va/v1/sessionStart", GetGlobalAA()._test_edgeModule_queueEdgeRequest_path)
     UTF_assertFalse(_adb_isEmptyOrInvalidString(actualXdmData.xdm._id))
     UTF_assertEqual(expectedSessionStartXdm.xdm.mediaCollection, actualXdmData.xdm.mediaCollection)
     UTF_assertEqual(expectedSessionStartXdm.xdm.timestamp, actualXdmData.xdm.timestamp)
@@ -1153,27 +1142,26 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_NoValidConfigNoSessi
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
     edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
 
-    ''' mock edgeRequestQueue.add()
-    GetGlobalAA()._test_edgeRequestQueue_add_called = false
-    GetGlobalAA()._test_edgeRequestQueue_add_requestId = ""
-    GetGlobalAA()._test_edgeRequestQueue_add_eventData = invalid
-    GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis = -1
-    GetGlobalAA()._test_edgeRequestQueue_add_meta = invalid
-    GetGlobalAA()._test_edgeRequestQueue_add_path = ""
+    ''' mock edgeModule.queueEdgeRequest()
+    GetGlobalAA()._test_edgeModule_queueEdgeRequest_called = false
+    GetGlobalAA()._test_edgeModule_queueEdgeRequest_requestId = ""
+    GetGlobalAA()._test_edgeModule_queueEdgeRequest_eventData = invalid
+    GetGlobalAA()._test_edgeModule_queueEdgeRequest_timestampInMillis = -1
+    GetGlobalAA()._test_edgeModule_queueEdgeRequest_meta = invalid
+    GetGlobalAA()._test_edgeModule_queueEdgeRequest_path = ""
 
-    edgeRequestQueue.add = function(requestId as string, eventData as object, timestampInMillis as longinteger, meta as object, path as string) as void
-        GetGlobalAA()._test_edgeRequestQueue_add_called = true
-        GetGlobalAA()._test_edgeRequestQueue_add_requestId = requestId
-        GetGlobalAA()._test_edgeRequestQueue_add_eventdata = eventData
-        GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis = timestampInMillis
-        GetGlobalAA()._test_edgeRequestQueue_add_meta = meta
-        GetGlobalAA()._test_edgeRequestQueue_add_path = path
+    edgeModule.queueEdgeRequest = function(requestId as string, eventData as object, timestampInMillis as longinteger, meta as object, path as string) as void
+        GetGlobalAA()._test_edgeModule_queueEdgeRequest_called = true
+        GetGlobalAA()._test_edgeModule_queueEdgeRequest_requestId = requestId
+        GetGlobalAA()._test_edgeModule_queueEdgeRequest_eventdata = eventData
+        GetGlobalAA()._test_edgeModule_queueEdgeRequest_timestampInMillis = timestampInMillis
+        GetGlobalAA()._test_edgeModule_queueEdgeRequest_meta = meta
+        GetGlobalAA()._test_edgeModule_queueEdgeRequest_path = path
     end function
 
     ''' create media session
-    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeRequestQueue)
+    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeModule)
     mediaSession._hitQueue.push(sessionStartHit)
 
     expectedSessionStartXdm = {
@@ -1194,16 +1182,16 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_NoValidConfigNoSessi
     mediaSession.tryDispatchMediaEvents()
 
     ''' verify
-    actualEventData = GetGlobalAA()._test_edgeRequestQueue_add_eventdata
+    actualEventData = GetGlobalAA()._test_edgeModule_queueEdgeRequest_eventdata
     UTF_assertNotInvalid(actualEventData, "eventData should not be invalid")
     actualXdmData = actualEventData
 
-    UTF_assertTrue(GetGlobalAA()._test_edgeRequestQueue_add_called)
-    UTF_assertEqual("sessionStartRequestId", GetGlobalAA()._test_edgeRequestQueue_add_requestId)
+    UTF_assertTrue(GetGlobalAA()._test_edgeModule_queueEdgeRequest_called)
+    UTF_assertEqual("sessionStartRequestId", GetGlobalAA()._test_edgeModule_queueEdgeRequest_requestId)
     ''' & prefix since timestamp is LongInteger
-    UTF_assertEqual(1000&, GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis)
-    UTF_assertEqual({}, GetGlobalAA()._test_edgeRequestQueue_add_meta)
-    UTF_assertEqual("/ee/va/v1/sessionStart", GetGlobalAA()._test_edgeRequestQueue_add_path)
+    UTF_assertEqual(1000&, GetGlobalAA()._test_edgeModule_queueEdgeRequest_timestampInMillis)
+    UTF_assertEqual({}, GetGlobalAA()._test_edgeModule_queueEdgeRequest_meta)
+    UTF_assertEqual("/ee/va/v1/sessionStart", GetGlobalAA()._test_edgeModule_queueEdgeRequest_path)
     UTF_assertFalse(_adb_isEmptyOrInvalidString(actualXdmData.xdm._id))
     UTF_assertEqual(expectedSessionStartXdm.xdm.mediaCollection, actualXdmData.xdm.mediaCollection, "xdm mediaCollection does not match")
     UTF_assertEqual(expectedSessionStartXdm.xdm.timestamp, actualXdmData.xdm.timestamp)
@@ -1233,27 +1221,26 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_notSessionStart_validBackendId()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
     edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
 
-    ''' mock edgeRequestQueue.add()
-    GetGlobalAA()._test_edgeRequestQueue_add_called = false
-    GetGlobalAA()._test_edgeRequestQueue_add_requestId = ""
-    GetGlobalAA()._test_edgeRequestQueue_add_eventdata = invalid
-    GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis = -1
-    GetGlobalAA()._test_edgeRequestQueue_add_meta = invalid
-    GetGlobalAA()._test_edgeRequestQueue_add_path = ""
+    ''' mock edgeModule.queueEdgeRequest()
+    GetGlobalAA()._test_edgeModule_queueEdgeRequest_called = false
+    GetGlobalAA()._test_edgeModule_queueEdgeRequest_requestId = ""
+    GetGlobalAA()._test_edgeModule_queueEdgeRequest_eventdata = invalid
+    GetGlobalAA()._test_edgeModule_queueEdgeRequest_timestampInMillis = -1
+    GetGlobalAA()._test_edgeModule_queueEdgeRequest_meta = invalid
+    GetGlobalAA()._test_edgeModule_queueEdgeRequest_path = ""
 
-    edgeRequestQueue.add = function(requestId as string, eventData as object, timestampInMillis as longinteger, meta as object, path as string) as void
-        GetGlobalAA()._test_edgeRequestQueue_add_called = true
-        GetGlobalAA()._test_edgeRequestQueue_add_requestId = requestId
-        GetGlobalAA()._test_edgeRequestQueue_add_eventdata = eventData
-        GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis = timestampInMillis
-        GetGlobalAA()._test_edgeRequestQueue_add_meta = meta
-        GetGlobalAA()._test_edgeRequestQueue_add_path = path
+    edgeModule.queueEdgeRequest = function(requestId as string, eventData as object, timestampInMillis as longinteger, meta as object, path as string) as void
+        GetGlobalAA()._test_edgeModule_queueEdgeRequest_called = true
+        GetGlobalAA()._test_edgeModule_queueEdgeRequest_requestId = requestId
+        GetGlobalAA()._test_edgeModule_queueEdgeRequest_eventdata = eventData
+        GetGlobalAA()._test_edgeModule_queueEdgeRequest_timestampInMillis = timestampInMillis
+        GetGlobalAA()._test_edgeModule_queueEdgeRequest_meta = meta
+        GetGlobalAA()._test_edgeModule_queueEdgeRequest_path = path
     end function
 
     ''' create media session
-    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeRequestQueue)
+    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeModule)
     mediaSession._hitQueue.push(playHit)
 
     ''' mock backendSessionId
@@ -1274,16 +1261,16 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_notSessionStart_validBackendId()
     mediaSession.tryDispatchMediaEvents()
 
     ''' verify
-    actualEventData = GetGlobalAA()._test_edgeRequestQueue_add_eventdata
+    actualEventData = GetGlobalAA()._test_edgeModule_queueEdgeRequest_eventdata
     UTF_assertNotInvalid(actualEventData, "eventData should not be invalid")
     actualXdmData = actualEventData
 
-    UTF_assertTrue(GetGlobalAA()._test_edgeRequestQueue_add_called)
-    UTF_assertEqual("playRequestId", GetGlobalAA()._test_edgeRequestQueue_add_requestId)
+    UTF_assertTrue(GetGlobalAA()._test_edgeModule_queueEdgeRequest_called)
+    UTF_assertEqual("playRequestId", GetGlobalAA()._test_edgeModule_queueEdgeRequest_requestId)
     ''' & prefix since timestamp is LongInteger
-    UTF_assertEqual(1000&, GetGlobalAA()._test_edgeRequestQueue_add_timestampInMillis)
-    UTF_assertEqual({}, GetGlobalAA()._test_edgeRequestQueue_add_meta)
-    UTF_assertEqual("/ee/va/v1/play", GetGlobalAA()._test_edgeRequestQueue_add_path)
+    UTF_assertEqual(1000&, GetGlobalAA()._test_edgeModule_queueEdgeRequest_timestampInMillis)
+    UTF_assertEqual({}, GetGlobalAA()._test_edgeModule_queueEdgeRequest_meta)
+    UTF_assertEqual("/ee/va/v1/play", GetGlobalAA()._test_edgeModule_queueEdgeRequest_path)
     UTF_assertFalse(_adb_isEmptyOrInvalidString(actualXdmData.xdm._id))
     UTF_assertEqual(expectedPlayXdm.xdm.mediaCollection, actualXdmData.xdm.mediaCollection)
     UTF_assertEqual(expectedPlayXdm.xdm.timestamp, actualXdmData.xdm.timestamp)
@@ -1313,24 +1300,23 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_notSessionStart_invalidBackendId(
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
     edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
 
-    ''' mock edgeRequestQueue.add()
-    GetGlobalAA()._test_edgeRequestQueue_add_called = false
+    ''' mock edgeModule.queueEdgeRequest()
+    GetGlobalAA()._test_edgeModule_queueEdgeRequest_called = false
 
-    edgeRequestQueue.add = function(_requestId as string, _eventData as object, _timestampInMillis as longinteger, _meta as object, _path as string) as void
-        GetGlobalAA()._test_edgeRequestQueue_add_called = true
+    edgeModule.queueEdgeRequest = function(_requestId as string, _eventData as object, _timestampInMillis as longinteger, _meta as object, _path as string) as void
+        GetGlobalAA()._test_edgeModule_queueEdgeRequest_called = true
     end function
 
     ''' create media session
-    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeRequestQueue)
+    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeModule)
     mediaSession._hitQueue.push(playHit)
 
     ''' test
     mediaSession.tryDispatchMediaEvents()
 
     ''' verify
-    UTF_assertFalse(GetGlobalAA()._test_edgeRequestQueue_add_called)
+    UTF_assertFalse(GetGlobalAA()._test_edgeModule_queueEdgeRequest_called)
 end sub
 
 ' target: close()
@@ -1494,10 +1480,9 @@ sub TC_adb_MediaSession_attachMediaConfig()
     configurationModule.updateConfiguration(configuration)
     identityModule = _adb_IdentityModule(configurationModule)
     edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
 
     ''' test
-    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeRequestQueue)
+    mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeModule)
     updatedXDMData = mediaSession._attachMediaConfig({
         "xdm": {
             "eventType": "media.sessionStart",
@@ -2676,19 +2661,19 @@ sub TC_adb_MediaSession_processEdgeRequestQueue_sessionStart_200_storesBackendSe
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
     edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
 
-    mediaSession = _adb_MediaSession("testId", {}, {}, edgeRequestQueue)
+    mediaSession = _adb_MediaSession("testId", {}, {}, edgeModule)
 
     ''' mock sessionStart requestID
     mediaSession._sessionStartHit = {}
     mediaSession._sessionStartHit.requestId = "sessionStartRequestId"
 
-    ''' mock _processEdgeRequestQueue()
-    edgeRequestQueue = mediaSession._edgeRequestQueue
-    edgeRequestQueue.processRequests = function() as object
-        responses = []
-        responses.push(_adb_EdgeResponse("sessionStartRequestId", 200, FormatJson({
+    ''' TODO update logic
+
+    ''' mock dispatchEdgeResponse event
+    edgeResponse = {
+        "code": 200,
+        "message": FormatJson({
             "requestId": "sessionStartRequestId",
             "handle": [
                 {
@@ -2699,7 +2684,8 @@ sub TC_adb_MediaSession_processEdgeRequestQueue_sessionStart_200_storesBackendSe
                     ],
                     "type": "media-analytics:new-session",
                     "eventIndex": 0
-                }, {
+                },
+                {
                     "payload": [
                         {
                             "scope": "Target",
@@ -2718,7 +2704,8 @@ sub TC_adb_MediaSession_processEdgeRequestQueue_sessionStart_200_storesBackendSe
                         }
                     ],
                     "type": "locationHint:result"
-                }, {
+                },
+                {
                     "payload": [
                         {
                             "key": "kndctr_EA0C49475E8AE1870A494023_AdobeOrg_cluster",
@@ -2734,12 +2721,13 @@ sub TC_adb_MediaSession_processEdgeRequestQueue_sessionStart_200_storesBackendSe
                     "type": "state:store"
                 }
             ]
-        })))
-        return responses
-    end function
+        })
+    }
+
+    edgeResponseEvent = _adb_EdgeResponseEvent("sessionStartRequestId", edgeResponse)
 
     ''' test
-    mediaSession._processEdgeRequestQueue()
+    mediaSession.processEdgeResponse(edgeResponseEvent)
 
     ''' verify
     UTF_assertEqual("bfba9a5f2986d69a9a9424f6a99702562512eb244f2b65c4f1c1553e7fe9997f", mediaSession._backendSessionId, "Backend sessionn IDs must match")
@@ -2752,19 +2740,17 @@ sub TC_adb_MediaSession_processEdgeRequestQueue_sessionStart_207_vaError400_clos
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
     edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    edgeRequestQueue = _adb_edgeRequestQueue("media_queue", edgeModule)
 
-    mediaSession = _adb_MediaSession("testId", {}, {}, edgeRequestQueue)
+    mediaSession = _adb_MediaSession("testId", {}, {}, edgeModule)
 
     ''' mock sessionStart requestID
     mediaSession._sessionStartHit = {}
     mediaSession._sessionStartHit.requestId = "sessionStartRequestId"
 
-    ''' mock _processEdgeRequestQueue()
-    edgeRequestQueue = mediaSession._edgeRequestQueue
-    edgeRequestQueue.processRequests = function() as object
-        responses = []
-        responses.push(_adb_EdgeResponse("sessionStartRequestId", 207, FormatJson({
+    ''' mock dispatchEdgeErrorResponse event
+    edgeResponse = {
+        "code": 207,
+        "message": FormatJson({
             "requestId": "sessionStartRequestId",
             "errors": [
                 {
@@ -2783,12 +2769,13 @@ sub TC_adb_MediaSession_processEdgeRequestQueue_sessionStart_207_vaError400_clos
                 }
 
             ]
-        })))
-        return responses
-    end function
+        })
+    }
+
+    edgeErrorResponseEvent = _adb_EdgeResponseEvent("sessionStartRequestId", edgeResponse)
 
     ''' test
-    mediaSession._processEdgeRequestQueue()
+    mediaSession.processEdgeResponse(edgeErrorResponseEvent)
 
     ''' verify
     UTF_assertInvalid(mediaSession._backendSessionId, "Backend sessionn IDs must match")

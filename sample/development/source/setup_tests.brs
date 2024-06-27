@@ -102,6 +102,10 @@ function _adb_test_functions() as dynamic
         TC_adb_RequestEvent_empty_data
         TC_adb_ResponseEvent
         TC_adb_ResponseEvent_empty_data
+        TC_adb_IdentityResponseEvent
+        TC_adb_IdentityResponseEvent_empty_data
+        TC_adb_EdgeResponseEvent
+        TC_adb_EdgeResponseEvent_empty_data
     ]
     edge = [
         'test_buildEdgeRequestURL.brs
@@ -274,6 +278,8 @@ function _adb_test_functions() as dynamic
         TC_adb_eventProcessor_processQueuedRequests_multiple
         TC_adb_eventProcessor_processQueuedRequests_bad_request
         TC_adb_eventProcessor_init
+        TC_adb_eventProcessor_dispatchResponseEventToRegisteredModules
+        TC_adb_eventProcessor_processQueuedRequests_dispatchesResponses
     ]
     functionList = []
     functionList.Append(common)

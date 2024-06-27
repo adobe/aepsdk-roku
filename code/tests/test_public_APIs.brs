@@ -146,11 +146,11 @@ sub TC_APIs_sendEvent()
         }
     }
 
-    UTF_assertEqual(event.apiName, _internal_const.PUBLIC_API.SEND_EDGE_EVENT)
-    UTF_assertEqual(sdkInstance._private.cachedCallbackInfo.Count(), 0)
-    UTF_assertEqual(event.data, expectedData)
-    UTF_AssertNotInvalid(event.uuid)
-    UTF_AssertNotInvalid(event.timestamp)
+    UTF_assertEqual(event.apiName, _internal_const.PUBLIC_API.SEND_EDGE_EVENT, "Api name expected= sendEvent" + "actual= " + FormatJson(event.apiName))
+    UTF_assertEqual(sdkInstance._private.cachedCallbackInfo.Count(), 0, "cachedCallbackInfo expected= 0" + "actual= " + FormatJson(sdkInstance._private.cachedCallbackInfo.Count()))
+    UTF_assertEqual(event.data, expectedData, "event.data expected= " + FormatJson(expectedData) + "actual= " + FormatJson(event.data))
+    UTF_AssertNotInvalid(event.uuid, "event.uuid expected= not invalid" + "actual= " + FormatJson(event.uuid))
+    UTF_AssertNotInvalid(event.timestamp, "event.timestamp expected= not invalid" + "actual= " + FormatJson(event.timestamp))
 end sub
 
 ' target: sendEvent()
@@ -326,7 +326,7 @@ sub TC_APIs_sendEventWithCallback_timeout()
 
     sleep(5001)
 
-    responseEvent = _adb_ResponseEvent(requestId, {})
+    responseEvent = _adb_EdgeResponseEvent(requestId, {})
     GetGlobalAA()._adb_main_task_node["responseEvent"] = responseEvent
     try
         _adb_handleResponseEvent()
@@ -408,7 +408,7 @@ sub TC_APIs_getExperienceCloudId_callbackTimeout()
 
     sleep(5001)
 
-    responseEvent = _adb_ResponseEvent(event.uuid, "testECID")
+    responseEvent = _adb_IdentityResponseEvent(event.uuid, "testECID")
     GetGlobalAA()._adb_main_task_node["responseEvent"] = responseEvent
     try
         _adb_handleResponseEvent()

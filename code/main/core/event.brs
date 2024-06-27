@@ -42,3 +42,27 @@ function _adb_ResponseEvent(parentId as string, data = {} as object) as object
     })
     return event
 end function
+
+function _adb_isIdentityResponseEvent(event as object) as boolean
+    return event <> invalid and event.owner = "adobe" and event.type = "com.adobe.event.response" and event.source = "com.adobe.module.identity"
+end function
+
+function _adb_IdentityResponseEvent(parentId as string, data = {} as object) as object
+    event = _adb_ResponseEvent(parentId, data)
+    event.Append({
+        source: "com.adobe.module.identity",
+    })
+    return event
+end function
+
+function _adb_isEdgeResponseEvent(event as object) as boolean
+    return event <> invalid and event.owner = "adobe" and event.type = "com.adobe.event.response" and event.source = "com.adobe.module.edge"
+end function
+
+function _adb_EdgeResponseEvent(parentId as string, data = {} as object) as object
+    event = _adb_ResponseEvent(parentId, data)
+    event.Append({
+        source: "com.adobe.module.edge",
+    })
+    return event
+end function

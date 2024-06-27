@@ -31,6 +31,21 @@ function _adb_ConsentModule(configurationModule as object) as object
         _collectConsent: invalid,
 
         ''' TODO
+        processEvent: function(event as object) as void
+            ''' Process the event and update the collect consent
+            ''' Update the collect consent in persistence
+            ''' Send the consent update request to Edge
+            ''' Update the collect consent in persistence based on the edge request response
+        end function,
+
+        ''' TODO
+        processResponseEvent: function(event as object) as void
+            _adb_logInfo("ConsentModule::processResponseEvent() - Received response event:(" + chr(10) + FormatJson(event) + chr(10) + ")")
+            ''' Process the edge response event and update the collect consent from konductor response
+            ''' Update the collect consent in persistence
+        end function,
+
+        ''' TODO
         setConsent: function(consent as object) as void
             ''' Send the consent update request to Edge
             ''' Update the collect consent in persistence based on the edge request response

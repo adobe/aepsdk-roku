@@ -1186,7 +1186,7 @@ function TS_SDK_integration() as object
 
                 ADB_assertTrue((debugInfo.networkRequests[1].url.StartsWith("https://edge.adobedc.net/ee/va/v1/sessionStart?configId=")), LINE_NUM, "assert url")
 
-                ADB_assertTrue((debugInfo.networkRequests[1].response.body.Instr(debugInfo.media.backendSessionId) > 0), LINE_NUM, "assert backendSerssionId is extracted correctly")
+                ADB_assertTrue((debugInfo.networkRequests[1].response.body.Instr(debugInfo.media.backendSessionId) > 0), LINE_NUM, "assert backendSessionId is extracted correctly")
             end sub
 
             return validator
