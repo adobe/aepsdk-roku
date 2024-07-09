@@ -35,32 +35,31 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
         _identityModule: identityModule,
         _edgeRequestWorker: _adb_EdgeRequestWorker(),
 
-        ''' sendEvent API triggers this API to queue edge requests
-        ''' requestId: unique id for the request
-        ''' eventData: data to be sent to edge
-        ''' timestampInMillis: timestamp of the event
+        ' sendEvent API triggers this API to queue edge requests
+        ' requestId: unique id for the request
+        ' eventData: data to be sent to edge
+        ' timestampInMillis: timestamp of the event
         processEvent: function(requestId as string, eventData as object, timestampInMillis as longinteger) as void
             m._edgeRequestWorker.queue(requestId, eventData, timestampInMillis, {}, m._EDGE_REQUEST_PATH)
-            'return m.processQueuedRequests()
         end function,
 
-        ''' modules call this API to queue edge requests
-        ''' requestId: unique id for the request
-        ''' eventData: data to be sent to edge
-        ''' timestampInMillis: timestamp of the event
-        ''' meta: meta data for the edge request
-        ''' path: path to send the edge request to
+        ' Queues edge requests to be sent to Edge server
+        ' requestId: unique id for the request
+        ' eventData: data to be sent to edge
+        ' timestampInMillis: timestamp of the event
+        ' meta: meta data for the edge request
+        ' path: path to send the edge request to
         queueEdgeRequest: function(requestId as string, eventData as object, timestampInMillis as longinteger, meta as object, path as string) as void
             m._edgeRequestWorker.queue(requestId, eventData, timestampInMillis, meta, path)
         end function,
 
-        ''' Sends queued edge requests to edge
-        ''' Returns list of edge responses for the requests
+        ' Sends queued edge requests to edge
+        ' Returns list of edge responses for the requests
         processQueuedRequests: function() as object
             responseEvents = []
 
             if not m._edgeRequestWorker.hasQueuedEvent()
-                ''' no requests to process
+                ' no requests to process
                 return responseEvents
             end if
 

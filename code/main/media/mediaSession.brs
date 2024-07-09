@@ -237,8 +237,8 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
                         end if
 
                     end if
-                catch ex
-                    _adb_logError("MediaSession::processEdgeResponse() - Failed to process the edge media response, the exception message: " + ex.Message)
+                catch exception
+                    _adb_logError("MediaSession::processEdgeResponse() - Failed to process the edge media response, the exception message: " + exception.Message)
                 end try
             end if
         end function
