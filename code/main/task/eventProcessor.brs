@@ -195,7 +195,7 @@ function _adb_EventProcessor(task as object) as object
                 m._dispatchResponseEventToTask(event)
 
                 ''' for modules response events, we need to call handleResponseEvent
-                m._dispatchResponseEventToRegisteredModules(m.__modulesRegisteredForResponseEvents, event)
+                m._dispatchResponseEventToRegisteredModules(m._modulesRegisteredForResponseEvents, event)
             else
                 _adb_logError("EventProcessor::_sendResponseEvent() - Cannot send response event, invalid event:(" + chr(10) + FormatJson(event) + chr(10) + ")")
             end if
