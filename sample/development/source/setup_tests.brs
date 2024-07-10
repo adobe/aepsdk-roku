@@ -227,6 +227,7 @@ function _adb_test_functions() as dynamic
     ]
     api = [
         'test_public_APIs.brs
+        TS_public_APIs_BeforeAll
         TS_public_APIs_BeforeEach
         TS_public_APIs_TearDown
         TC_APIs_getVersion

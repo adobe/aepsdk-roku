@@ -255,12 +255,10 @@ function AdobeAEPSDKInit(taskNode = invalid as dynamic) as object
         '
         '
         ' @param data as object : containing consent XDM data following Adobe 2.0 standard
-        ' @param [optional] callback as function(context, result) : handle Edge consent response
-        ' @param [optional] context as dynamic : context to be passed to the callback function
         '
         ' *************************************************************************************
 
-        setConsent: function(data as object, callback = _adb_defaultCallback as function, context = invalid as dynamic) as void
+        setConsent: function(data as object) as void
             _adb_logDebug("API: setConsent()")
 
             if _adb_isEmptyOrInvalidMap(data) then
@@ -269,23 +267,13 @@ function AdobeAEPSDKInit(taskNode = invalid as dynamic) as object
             end if
 
             if _adb_isEmptyOrInvalidArray(data.consent) then
-                _adb_logError("sendEvent() - Invalid event data, consent data is required.")
+                _adb_logError("setConset() - Invalid event data, consent data is required.")
                 return
             end if
 
             ' event data: { "consent": [ { "standard": "Adobe", "version": "2.0", "value": { "collect": { "val": "y" }, "metadata": { "time": "YYYY-03-17T15:48:42-07:00" } } } ] }
             event = _adb_RequestEvent(m._private.cons.PUBLIC_API.SET_CONSENT, data)
 
-            if callback <> _adb_defaultCallback then
-                ' store callback function
-                callbackInfo = {
-                    cb: callback,
-                    context: context,
-                    timestampInMillis: event.timestampInMillis
-                }
-                m._private.cachedCallbackInfo[event.uuid] = callbackInfo
-                _adb_logDebug("setConsent() - Cached callback function for event with uuid: " + FormatJson(event.uuid))
-            end if
             m._private.dispatchEvent(event)
         end function,
 
