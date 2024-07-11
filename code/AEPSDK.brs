@@ -247,6 +247,36 @@ function AdobeAEPSDKInit(taskNode = invalid as dynamic) as object
             m._private.dispatchEvent(event)
         end function,
 
+        ' *************************************************************************************
+        '
+        ' set consent.
+        '
+        ' This function will send the consent data in XDM format following Adobe 2.0 standard to the Edge network.
+        '
+        '
+        ' @param data as object : containing consent XDM data following Adobe 2.0 standard
+        '
+        ' *************************************************************************************
+
+        setConsent: function(data as object) as void
+            _adb_logDebug("API: setConsent()")
+
+            if _adb_isEmptyOrInvalidMap(data) then
+                _adb_logError("setConsent() - Invalid event data, must be an associative array")
+                return
+            end if
+
+            if _adb_isEmptyOrInvalidArray(data.consent) then
+                _adb_logError("setConsent() - Invalid event data, consent data is required.")
+                return
+            end if
+
+            ' event data: { "consent": [ { "standard": "Adobe", "version": "2.0", "value": { "collect": { "val": "y" }, "metadata": { "time": "YYYY-03-17T15:48:42-07:00" } } } ] }
+            event = _adb_RequestEvent(m._private.cons.PUBLIC_API.SET_CONSENT, data)
+
+            m._private.dispatchEvent(event)
+        end function,
+
         ' ****************************************************************************************************
         '
         ' Note: Please do not call this API if you do not have both the Adobe Media SDK and the Edge SDK

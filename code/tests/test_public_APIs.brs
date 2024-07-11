@@ -11,6 +11,11 @@
 
 ' *****************************************************************************************
 
+'@BeforeAll
+sub TS_public_APIs_BeforeAll()
+    GetGlobalAA().TIMEOUT_MS = 101
+end sub
+
 ' @BeforeEach
 sub TS_public_APIs_BeforeEach()
     GetGlobalAA()._adb_public_api = invalid
@@ -21,6 +26,9 @@ sub TS_public_APIs_BeforeEach()
     sdkInstance = AdobeAEPSDKInit()
     GetGlobalAA()._adb_main_task_node["requestEvent"] = {}
     sdkInstance._private.cachedCallbackInfo = {}
+    api = GetGlobalAA()._adb_public_api
+    ' set callback timeout to 100ms for testing
+    api._private.cons.CALLBACK_TIMEOUT_MS = 100
 end sub
 
 ' @AfterAll
@@ -324,7 +332,7 @@ sub TC_APIs_sendEventWithCallback_timeout()
     UTF_AssertNotInvalid(event.timestamp)
     requestId = event.uuid
 
-    sleep(5001)
+    sleep(GetGlobalAA().TIMEOUT_MS)
 
     responseEvent = _adb_ResponseEvent(requestId, {})
     GetGlobalAA()._adb_main_task_node["responseEvent"] = responseEvent
@@ -406,7 +414,7 @@ sub TC_APIs_getExperienceCloudId_callbackTimeout()
     UTF_assertEqual(callbackInfo.context, context)
     UTF_AssertNotInvalid(callbackInfo.timestampInMillis)
 
-    sleep(5001)
+    sleep(GetGlobalAA().TIMEOUT_MS)
 
     responseEvent = _adb_ResponseEvent(event.uuid, "testECID")
     GetGlobalAA()._adb_main_task_node["responseEvent"] = responseEvent
@@ -788,4 +796,83 @@ sub TC_adb_ClientMediaSession()
     'session end
     session.endSession()
     UTF_assertTrue(_adb_isEmptyOrInvalidString(session.getClientSessionId()))
+end sub
+
+' target: setConsent()
+' @Test
+sub TC_APIs_setConsent()
+    _internal_const = _adb_InternalConstants()
+    sdkInstance = AdobeAEPSDKInit()
+
+    data = {
+        "consent": [
+            {
+                "standard": "Adobe",
+                "version": "2.0",
+                "value": {
+                    "collect": {
+                        "val": "y"
+                    },
+                    "metadata": {
+                        "time": "YYYY-03-17T15:48:42-07:00"
+                    }
+                }
+            }
+        ]
+    }
+
+    sdkInstance.setConsent(data)
+
+    event = GetGlobalAA()._adb_main_task_node["requestEvent"]
+    expectedData = {
+       "consent": [
+            {
+                "standard": "Adobe",
+                "version": "2.0",
+                "value": {
+                    "collect": {
+                        "val": "y"
+                    },
+                    "metadata": {
+                        "time": "YYYY-03-17T15:48:42-07:00"
+                    }
+                }
+            }
+        ]
+    }
+
+    UTF_assertEqual(event.apiName, "setConsent", generateErrorMessage("Api name", "setConsent", FormatJson(event.apiName)))
+    UTF_assertEqual(sdkInstance._private.cachedCallbackInfo.Count(), 0, generateErrorMessage("Cached callback count", "0", FormatJson(sdkInstance._private.cachedCallbackInfo.Count())))
+    UTF_assertEqual(event.data, expectedData, generateErrorMessage("event.data", FormatJson(expectedData), FormatJson(event.data)))
+    UTF_AssertNotInvalid(event.uuid, generateErrorMessage("event.uuid", "not invalid", FormatJson(event.uuid)))
+    UTF_AssertNotInvalid(event.timestamp, generateErrorMessage("event.timestamp", "not invalid", FormatJson(event.timestamp)))
+end sub
+
+' target: setConsent()
+' @Test
+sub TC_APIs_setConsent_invalid()
+    sdkInstance = AdobeAEPSDKInit()
+    sdkInstance.setConsent("invalid event data")
+    event = GetGlobalAA()._adb_main_task_node["requestEvent"]
+
+    UTF_assertEqual(0, event.Count(), generateErrorMessage("Event count", "0", FormatJson(event.Count())))
+
+    UTF_assertEqual(sdkInstance._private.cachedCallbackInfo.Count(), 0, generateErrorMessage("CachedCallback count", "0", FormatJson(sdkInstance._private.cachedCallbackInfo.Count())))
+end sub
+
+' target: setConsent()
+' @Test
+sub TC_APIs_setConsent_emptyConsentList()
+    sdkInstance = AdobeAEPSDKInit()
+    data = {
+        "consents": []
+    }
+
+    sdkInstance.setConsent(data)
+
+    event = GetGlobalAA()._adb_main_task_node["requestEvent"]
+
+    UTF_assertEqual(0, event.Count(), generateErrorMessage("Event count", "0", FormatJson(event.Count())))
+
+    UTF_assertEqual(sdkInstance._private.cachedCallbackInfo.Count(), 0, generateErrorMessage("CachedCallback count", "0", FormatJson(sdkInstance._private.cachedCallbackInfo.Count())))
 end sub

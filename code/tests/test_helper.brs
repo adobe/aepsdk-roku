@@ -41,6 +41,11 @@ function readValueFromRegistry(key as string) as dynamic
     return invalid
 end function
 
+' ************************ Error Message Helper ************************
+function generateErrorMessage(message as string, expected as string, actual as string) as string
+    return message + " Expected: " + expected + " Actual: " + actual
+end function
+
 ' ************************ String Helper ************************
 function isEmptyOrInvalidString(str as dynamic) as boolean
     if str = invalid or (type(str) <> "roString" and type(str) <> "String")
