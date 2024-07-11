@@ -43,8 +43,15 @@ function _adb_EventProcessor(task as object) as object
                 _adb_logVerbose("EventProcessor::handleEvent() - Received request event:(" + chr(10) + FormatJson(event) + chr(10) + ")")
 
                 try
+                    ' processAdbRequest processes API events and queues edge requests for specific APIs, such as sendEvent, createMediaSession, sendMediaEvent etc.
                     m._processAdbRequestEvent(event)
+
+                    ' processQueuedRequests sends the queued edge requests and processes the corresponding response events.
+                    ' It also dispatches the received response events to the registered modules.
+                    ' If the API does not generate edge requests, processQueuedRequests will exit early if no requests were queued.
+                    ' Alternatively, it will send previously unsent queued requests (e.g., due to missing required configuration) and dispatch the response events.
                     m.processQueuedRequests()
+
                 catch exception
                     _adb_logError("EventProcessor::handleEvent() - Failed to process the request event, the exception message: " + exception.Message)
                 end try
