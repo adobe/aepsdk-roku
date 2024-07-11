@@ -79,6 +79,8 @@ function _adb_EventProcessor(task as object) as object
                 m._handleMediaEvents(event)
             else if event.apiName = m._CONSTANTS.PUBLIC_API.CREATE_MEDIA_SESSION
                 m._handleCreateMediaSession(event)
+            else if event.apiName = m._CONSTANTS.PUBLIC_API.SET_CONSENT
+               m._setConsent(event)
             else
                 _adb_logWarning("EventProcessor::handleEvent() - Cannot handle event, invalid event: " + FormatJson(event))
             end if
@@ -180,6 +182,12 @@ function _adb_EventProcessor(task as object) as object
 
             m._edgeModule.processEvent(requestId, eventData, timestampInMillis)
             m.processQueuedRequests()
+        end function,
+
+        _setConsent: function(event as object) as void
+            _adb_logInfo("EventProcessor::_setConsent() - Received set consent event with uuid:(" + FormatJson(event.uuid) + ").")
+
+            m._consentModule.processEvent(event)
         end function,
 
         processQueuedRequests: function() as void
