@@ -203,6 +203,11 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
                         return
                     end if
 
+                    ''' only handle the response for sessionStart event
+                    if m._sessionStartHit.requestId <> requestId
+                        return
+                    end if
+
                     eventData = responseEvent.data
                     if eventData = invalid then
                         _adb_logWarning("MediaSession::processEdgeResponse() - Invalid eventData in the edge response.")
@@ -212,30 +217,25 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
                     responseCode = eventData.code
                     responseString = eventData.message
 
-                    ''' only handle the response for sessionStart event
-                    if m._sessionStartHit.requestId = requestId then
-                        ''' Use constants
-                        if responseCode >= m._RESPONSE_CODE_200 and responseCode < m._RESPONSE_CODE_300
+                    ''' Use constants
+                    if responseCode >= m._RESPONSE_CODE_200 and responseCode < m._RESPONSE_CODE_300
+                        responseObj = ParseJson(responseString)
 
-                            responseObj = ParseJson(responseString)
-
-                            ''' process the response handles
-                            if not _adb_isEmptyOrInvalidArray(responseObj.handle) then
-                                m._processEdgeResponseHandles(responseObj.handle)
-                            end if
-
-                            ''' process the error responses
-                            if not _adb_isEmptyOrInvalidArray(responseObj.errors) then
-                                m._processEdgeResponseErrors(responseObj.errors)
-                            end if
-                        else
-                            ''' Should execute this code when there is a non-recoverable error for sessionStart request
-                            ''' Abort the session
-                            m.close(true)
-                            _adb_logWarning("MediaSession::processEdgeResponse() - SessionStart request failed with unrecoverable error.")
-                    return
+                        ''' process the response handles
+                        if not _adb_isEmptyOrInvalidArray(responseObj.handle) then
+                            m._processEdgeResponseHandles(responseObj.handle)
                         end if
 
+                        ''' process the error responses
+                        if not _adb_isEmptyOrInvalidArray(responseObj.errors) then
+                            m._processEdgeResponseErrors(responseObj.errors)
+                        end if
+                    else
+                        ''' Should execute this code when there is a non-recoverable error for sessionStart request
+                        ''' Abort the session
+                        m.close(true)
+                        _adb_logWarning("MediaSession::processEdgeResponse() - SessionStart request failed with unrecoverable error.")
+                        return
                     end if
                 catch exception
                     _adb_logError("MediaSession::processEdgeResponse() - Failed to process the edge media response, the exception message: " + exception.Message)
