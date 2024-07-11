@@ -44,6 +44,7 @@ function _adb_EventProcessor(task as object) as object
 
                 try
                     m._processAdbRequestEvent(event)
+                    m.processQueuedRequests()
                 catch exception
                     _adb_logError("EventProcessor::handleEvent() - Failed to process the request event, the exception message: " + exception.Message)
                 end try
@@ -97,8 +98,6 @@ function _adb_EventProcessor(task as object) as object
             end if
 
             m._mediaModule.processEvent(requestId, data)
-            m.processQueuedRequests()
-
         end function,
 
         _handleMediaEvents: function(event as object) as void
@@ -112,7 +111,6 @@ function _adb_EventProcessor(task as object) as object
             end if
 
             m._mediaModule.processEvent(requestId, data)
-            m.processQueuedRequests()
         end function,
 
         _setLogLevel: function(event as object) as void
@@ -181,7 +179,6 @@ function _adb_EventProcessor(task as object) as object
             timestampInMillis = event.timestampInMillis
 
             m._edgeModule.processEvent(requestId, eventData, timestampInMillis)
-            m.processQueuedRequests()
         end function,
 
         _setConsent: function(event as object) as void

@@ -546,6 +546,7 @@ function TS_SDK_integration() as object
             configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = m.configId
 
             aepSdk.updateConfiguration(configuration)
+            eventIdForUpdateConfiguration = aepSdk._private.lastEventId
 
             data3 = {
                 "xdm": {
@@ -577,12 +578,11 @@ function TS_SDK_integration() as object
                 ADB_assertTrue((debugInfo.edge.requestQueue[1].requestId = eventid), LINE_NUM, "assert request ID is correct")
             end sub
 
-            validator[eventIdForThirdSendEvent] = sub(debugInfo)
-                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
-
+            ' updateConfiguration will also trigger processQueuedRequests so we will see network requests for all queued events
+            validator[eventIdForUpdateConfiguration] = sub(debugInfo)
                 ecid = debugInfo.identity.ecid
                 eventid = debugInfo.eventid
-                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 4), LINE_NUM, "assert networkRequests = 4")
+                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 3), LINE_NUM, "Network request count" + "Expected 3"+ " Actual " + FormatJson(debugInfo.networkRequests.count()))
 
                 ' Fetch ECID
                 ADB_assertTrue((debugInfo.networkRequests[0].jsonObj.events[0].query.identity.fetch[0] = "ECID"), LINE_NUM, "assert networkRequests(1) is to fetch ECID")
@@ -602,12 +602,19 @@ function TS_SDK_integration() as object
                 ADB_assertTrue((debugInfo.networkRequests[2].jsonObj.xdm.identityMap.ECID[0].id = ecid), LINE_NUM, "assert networkRequests(3) is to send Edge event with ecid")
                 _thirdResponseJson = ParseJson(debugInfo.networkRequests[2].response.body)
                 ADB_assertTrue((debugInfo.networkRequests[2].response.code = 200), LINE_NUM, "assert response (3) returns 200")
+            end sub
+
+            validator[eventIdForThirdSendEvent] = sub(debugInfo)
+                ' _adb_logInfo("start to validate setLogLevel operation with debugInfo: " + FormatJson(debugInfo))
+                ecid = debugInfo.identity.ecid
+                eventid = debugInfo.eventid
+                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 1), LINE_NUM, "Network request count" + "Expected 1"+ " Actual " + FormatJson(debugInfo.networkRequests.count()))
 
                 ' Send event 3
-                ADB_assertTrue((debugInfo.networkRequests[3].jsonObj.events[0].xdm.key = "value3"), LINE_NUM, "assert networkRequests(4) is to send Edge event")
-                ADB_assertTrue((debugInfo.networkRequests[3].jsonObj.xdm.identityMap.ECID[0].id = ecid), LINE_NUM, "assert networkRequests(4) is to send Edge event with ecid")
-                _fourthResponseJson = ParseJson(debugInfo.networkRequests[3].response.body)
-                ADB_assertTrue((debugInfo.networkRequests[3].response.code = 200), LINE_NUM, "assert response (4) returns 200")
+                ADB_assertTrue((debugInfo.networkRequests[0].jsonObj.events[0].xdm.key = "value3"), LINE_NUM, "assert networkRequests(4) is to send Edge event")
+                ADB_assertTrue((debugInfo.networkRequests[0].jsonObj.xdm.identityMap.ECID[0].id = ecid), LINE_NUM, "assert networkRequests(4) is to send Edge event with ecid")
+                _fourthResponseJson = ParseJson(debugInfo.networkRequests[0].response.body)
+                ADB_assertTrue((debugInfo.networkRequests[0].response.code = 200), LINE_NUM, "assert response (4) returns 200")
 
                 ecidInRegistry = ADB_getPersistedECID()
                 ADB_assertTrue((ecidInRegistry = ecid), LINE_NUM, "assert ecid is persisted in Registry")
