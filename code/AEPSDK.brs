@@ -267,7 +267,7 @@ function AdobeAEPSDKInit(taskNode = invalid as dynamic) as object
             end if
 
             if _adb_isEmptyOrInvalidArray(data.consent) then
-                _adb_logError("setConset() - Invalid event data, consent data is required.")
+                _adb_logError("setConsent() - Invalid event data, consent data is required.")
                 return
             end if
 
