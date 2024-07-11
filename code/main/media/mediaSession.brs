@@ -204,7 +204,7 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
                     end if
 
                     ''' only handle the response for sessionStart event
-                    if m._sessionStartHit.requestId <> requestId
+                    if m._sessionStartHit = invalid or m._sessionStartHit.requestId <> requestId
                         return
                     end if
 
