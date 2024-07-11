@@ -18,12 +18,12 @@ function _adb_isEdgeModule(module as object) as boolean
 end function
 
 function _adb_EdgeModule(configurationModule as object, identityModule as object) as object
-    if _adb_isConfigurationModule(configurationModule) = false then
+    if not _adb_isConfigurationModule(configurationModule) then
         _adb_logError("EdgeModule::_adb_EdgeModule() - configurationModule is not valid.")
         return invalid
     end if
 
-    if _adb_isIdentityModule(identityModule) = false then
+    if not _adb_isIdentityModule(identityModule) then
         _adb_logError("EdgeModule::_adb_EdgeModule() - identityModule is not valid.")
         return invalid
     end if
@@ -35,13 +35,53 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
         _identityModule: identityModule,
         _edgeRequestWorker: _adb_EdgeRequestWorker(),
 
-        processEvent: function(requestId as string, eventData as object, timestampInMillis as longinteger) as dynamic
+        ' sendEvent API triggers this API to queue edge requests
+        ' requestId: unique id for the request
+        ' eventData: data to be sent to edge
+        ' timestampInMillis: timestamp of the event
+        processEvent: function(requestId as string, eventData as object, timestampInMillis as longinteger) as void
             m._edgeRequestWorker.queue(requestId, eventData, timestampInMillis, {}, m._EDGE_REQUEST_PATH)
-            return m.processQueuedRequests()
         end function,
 
-        createEdgeRequestQueue: function(name as string) as object
-            return _adb_edgeRequestQueue(name, m)
+        ' Queues edge requests to be sent to Edge server
+        ' requestId: unique id for the request
+        ' eventData: data to be sent to edge
+        ' timestampInMillis: timestamp of the event
+        ' meta: meta data for the edge request
+        ' path: path to send the edge request to
+        queueEdgeRequest: function(requestId as string, eventData as object, timestampInMillis as longinteger, meta as object, path as string) as void
+            m._edgeRequestWorker.queue(requestId, eventData, timestampInMillis, meta, path)
+        end function,
+
+        ' Sends queued edge requests to edge
+        ' Returns list of edge responses for the requests
+        processQueuedRequests: function() as object
+            responseEvents = []
+
+            if not m._edgeRequestWorker.hasQueuedEvent()
+                ' no requests to process
+                return responseEvents
+            end if
+
+            edgeConfig = m._getEdgeConfig()
+            if edgeConfig = invalid
+                return responseEvents
+            end if
+
+            responses = m._edgeRequestWorker.processRequests(edgeConfig.configId, edgeConfig.ecid, edgeConfig.edgeDomain)
+
+            for each edgeResponse in responses
+                if _adb_isEdgeResponse(edgeResponse) then
+                    responseEvent = _adb_EdgeResponseEvent(edgeResponse.getRequestId(), {
+                        code: edgeResponse.getResponseCode(),
+                        message: edgeResponse.getResponseString()
+                    })
+                    responseEvents.Push(responseEvent)
+                end if
+            end for
+
+
+            return responseEvents
         end function,
 
         _getEdgeConfig: function() as object
@@ -58,35 +98,6 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
                 ecid: ecid,
                 edgeDomain: m._configurationModule.getEdgeDomain()
             }
-        end function,
-
-        processQueuedRequests: function() as object
-            responseEvents = []
-
-            if not m._edgeRequestWorker.hasQueuedEvent()
-                ''' no requests to process
-                return responseEvents
-            end if
-
-            edgeConfig = m._getEdgeConfig()
-            if edgeConfig = invalid
-                return responseEvents
-            end if
-
-            responses = m._edgeRequestWorker.processRequests(edgeConfig.configId, edgeConfig.ecid, edgeConfig.edgeDomain)
-
-            for each edgeResponse in responses
-                if _adb_isEdgeResponse(edgeResponse) then
-                    responseEvent = _adb_ResponseEvent(edgeResponse.getRequestId(), {
-                        code: edgeResponse.getResponseCode(),
-                        message: edgeResponse.getResponseString()
-                    })
-                    responseEvents.Push(responseEvent)
-                end if
-            end for
-
-
-            return responseEvents
         end function,
 
         dump: function() as object

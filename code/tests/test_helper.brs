@@ -43,8 +43,9 @@ end function
 
 ' ************************ Error Message Helper ************************
 function generateErrorMessage(message as string, expected as string, actual as string) as string
-    return message + " Expected: " + expected + " Actual: " + actual
+    return message + " Expected: (" + chr(10) + expected + chr(10) + ") Actual: ("+ chr(10) + actual + chr(10) +")"
 end function
+
 
 ' ************************ String Helper ************************
 function isEmptyOrInvalidString(str as dynamic) as boolean
