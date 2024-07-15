@@ -841,11 +841,11 @@ sub TC_APIs_setConsent()
         ]
     }
 
-    UTF_assertEqual(event.apiName, "setConsent", generateErrorMessage("Api name", "setConsent", FormatJson(event.apiName)))
-    UTF_assertEqual(sdkInstance._private.cachedCallbackInfo.Count(), 0, generateErrorMessage("Cached callback count", "0", FormatJson(sdkInstance._private.cachedCallbackInfo.Count())))
-    UTF_assertEqual(event.data, expectedData, generateErrorMessage("event.data", FormatJson(expectedData), FormatJson(event.data)))
-    UTF_AssertNotInvalid(event.uuid, generateErrorMessage("event.uuid", "not invalid", FormatJson(event.uuid)))
-    UTF_AssertNotInvalid(event.timestamp, generateErrorMessage("event.timestamp", "not invalid", FormatJson(event.timestamp)))
+    UTF_assertEqual(event.apiName, "setConsent", generateErrorMessage("Api name", "setConsent", event.apiName))
+    UTF_assertEqual(sdkInstance._private.cachedCallbackInfo.Count(), 0, generateErrorMessage("Cached callback count", 0, sdkInstance._private.cachedCallbackInfo.Count()))
+    UTF_assertEqual(event.data, expectedData, generateErrorMessage("event.data", expectedData, event.data))
+    UTF_AssertNotInvalid(event.uuid, generateErrorMessage("event.uuid", "not invalid", event.uuid))
+    UTF_AssertNotInvalid(event.timestamp, generateErrorMessage("event.timestamp", "not invalid", event.timestamp))
 end sub
 
 ' target: setConsent()
@@ -855,9 +855,9 @@ sub TC_APIs_setConsent_invalid()
     sdkInstance.setConsent("invalid event data")
     event = GetGlobalAA()._adb_main_task_node["requestEvent"]
 
-    UTF_assertEqual(0, event.Count(), generateErrorMessage("Event count", "0", FormatJson(event.Count())))
+    UTF_assertEqual(0, event.Count(), generateErrorMessage("Event count", 0, event.Count()))
 
-    UTF_assertEqual(sdkInstance._private.cachedCallbackInfo.Count(), 0, generateErrorMessage("CachedCallback count", "0", FormatJson(sdkInstance._private.cachedCallbackInfo.Count())))
+    UTF_assertEqual(sdkInstance._private.cachedCallbackInfo.Count(), 0, generateErrorMessage("CachedCallback count", 0, sdkInstance._private.cachedCallbackInfo.Count()))
 end sub
 
 ' target: setConsent()
@@ -872,7 +872,7 @@ sub TC_APIs_setConsent_emptyConsentList()
 
     event = GetGlobalAA()._adb_main_task_node["requestEvent"]
 
-    UTF_assertEqual(0, event.Count(), generateErrorMessage("Event count", "0", FormatJson(event.Count())))
+    UTF_assertEqual(0, event.Count(), generateErrorMessage("Event count", 0, event.Count()))
 
-    UTF_assertEqual(sdkInstance._private.cachedCallbackInfo.Count(), 0, generateErrorMessage("CachedCallback count", "0", FormatJson(sdkInstance._private.cachedCallbackInfo.Count())))
+    UTF_assertEqual(sdkInstance._private.cachedCallbackInfo.Count(), 0, generateErrorMessage("CachedCallback count", 0, sdkInstance._private.cachedCallbackInfo.Count()))
 end sub
