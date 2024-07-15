@@ -1010,7 +1010,7 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigAndSessio
     ''' & prefix since timestamp is LongInteger
     UTF_assertEqual(1000&, GetGlobalAA()._test_edgeModule_queueEdgeRequest_timestampInMillis)
     UTF_assertEqual({}, GetGlobalAA()._test_edgeModule_queueEdgeRequest_meta)
-    UTF_assertEqual("/ee/va/v1/sessionStart", GetGlobalAA()._test_edgeModule_queueEdgeRequest_path)
+    UTF_assertEqual("/va/v1/sessionStart", GetGlobalAA()._test_edgeModule_queueEdgeRequest_path)
     UTF_assertFalse(_adb_isEmptyOrInvalidString(actualXdmData.xdm._id))
     UTF_assertEqual(expectedSessionStartXdm.xdm.mediaCollection, actualXdmData.xdm.mediaCollection)
     UTF_assertEqual(expectedSessionStartXdm.xdm.timestamp, actualXdmData.xdm.timestamp)
@@ -1106,7 +1106,7 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigNoSession
     ''' & prefix since timestamp is LongInteger
     UTF_assertEqual(1000&, GetGlobalAA()._test_edgeModule_queueEdgeRequest_timestampInMillis)
     UTF_assertEqual({}, GetGlobalAA()._test_edgeModule_queueEdgeRequest_meta)
-    UTF_assertEqual("/ee/va/v1/sessionStart", GetGlobalAA()._test_edgeModule_queueEdgeRequest_path)
+    UTF_assertEqual("/va/v1/sessionStart", GetGlobalAA()._test_edgeModule_queueEdgeRequest_path)
     UTF_assertFalse(_adb_isEmptyOrInvalidString(actualXdmData.xdm._id))
     UTF_assertEqual(expectedSessionStartXdm.xdm.mediaCollection, actualXdmData.xdm.mediaCollection)
     UTF_assertEqual(expectedSessionStartXdm.xdm.timestamp, actualXdmData.xdm.timestamp)
@@ -1191,7 +1191,7 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_NoValidConfigNoSessi
     ''' & prefix since timestamp is LongInteger
     UTF_assertEqual(1000&, GetGlobalAA()._test_edgeModule_queueEdgeRequest_timestampInMillis)
     UTF_assertEqual({}, GetGlobalAA()._test_edgeModule_queueEdgeRequest_meta)
-    UTF_assertEqual("/ee/va/v1/sessionStart", GetGlobalAA()._test_edgeModule_queueEdgeRequest_path)
+    UTF_assertEqual("/va/v1/sessionStart", GetGlobalAA()._test_edgeModule_queueEdgeRequest_path)
     UTF_assertFalse(_adb_isEmptyOrInvalidString(actualXdmData.xdm._id))
     UTF_assertEqual(expectedSessionStartXdm.xdm.mediaCollection, actualXdmData.xdm.mediaCollection, "xdm mediaCollection does not match")
     UTF_assertEqual(expectedSessionStartXdm.xdm.timestamp, actualXdmData.xdm.timestamp)
@@ -1270,7 +1270,7 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_notSessionStart_validBackendId()
     ''' & prefix since timestamp is LongInteger
     UTF_assertEqual(1000&, GetGlobalAA()._test_edgeModule_queueEdgeRequest_timestampInMillis)
     UTF_assertEqual({}, GetGlobalAA()._test_edgeModule_queueEdgeRequest_meta)
-    UTF_assertEqual("/ee/va/v1/play", GetGlobalAA()._test_edgeModule_queueEdgeRequest_path)
+    UTF_assertEqual("/va/v1/play", GetGlobalAA()._test_edgeModule_queueEdgeRequest_path)
     UTF_assertFalse(_adb_isEmptyOrInvalidString(actualXdmData.xdm._id))
     UTF_assertEqual(expectedPlayXdm.xdm.mediaCollection, actualXdmData.xdm.mediaCollection)
     UTF_assertEqual(expectedPlayXdm.xdm.timestamp, actualXdmData.xdm.timestamp)
