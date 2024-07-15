@@ -28,12 +28,15 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
         return invalid
     end if
 
+    konductorConfig = _adb_KonductorConfig()
+
     module = _adb_AdobeObject("com.adobe.module.edge")
     module.Append({
-        _EDGE_REQUEST_PATH: "/ee/v1/interact",
+        _EDGE_REQUEST_PATH: "/v1/interact",
         _configurationModule: configurationModule,
         _identityModule: identityModule,
-        _edgeRequestWorker: _adb_EdgeRequestWorker(),
+        _konductorConfig: konductorConfig,
+        _edgeRequestWorker: _adb_EdgeRequestWorker(konductorConfig),
 
         ' sendEvent API triggers this API to queue edge requests
         ' requestId: unique id for the request
