@@ -191,11 +191,11 @@ sub TC_APIs_sendEventWithData()
         }
     }
 
-    UTF_assertEqual(event.apiName, _internal_const.PUBLIC_API.SEND_EDGE_EVENT)
-    UTF_assertEqual(sdkInstance._private.cachedCallbackInfo.Count(), 0)
-    UTF_assertEqual(event.data, expectedData)
-    UTF_AssertNotInvalid(event.uuid)
-    UTF_AssertNotInvalid(event.timestamp)
+    UTF_assertEqual(event.apiName, _internal_const.PUBLIC_API.SEND_EDGE_EVENT, generateErrorMessage("Api name", "sendEvent", event.apiName))
+    UTF_assertEqual(sdkInstance._private.cachedCallbackInfo.Count(), 0, generateErrorMessage("cachedCallbackInfo count", 0, sdkInstance._private.cachedCallbackInfo.Count()))
+    UTF_assertEqual(event.data, expectedData, generateErrorMessage("event.data", expectedData, event.data))
+    UTF_AssertNotInvalid(event.uuid, generateErrorMessage("event.uuid", "not invalid", event.uuid))
+    UTF_AssertNotInvalid(event.timestamp, generateErrorMessage("event.timestamp", "not invalid", event.timestamp))
 end sub
 
 ' target: sendEvent()

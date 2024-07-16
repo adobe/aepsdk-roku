@@ -299,7 +299,7 @@ function _adb_EdgeRequestWorker(konductorConfig as object) as object
                     continue for
                 end if
 
-                if payload.scope = "EdgeNetwork"
+                if not _adb_isEmptyOrInvalidString(payload.scope) and LCase(payload.scope) = "edgenetwork"
                     m._konductorConfig.setLocationHint(payload.hint)
                 end if
             end for
