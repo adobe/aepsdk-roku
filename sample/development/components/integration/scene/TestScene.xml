@@ -43,7 +43,7 @@ governing permissions and limitations under the License.-->
   <script type="text/brightscript" uri="pkg:/source/adobe/edge/buildEdgeRequestURL.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/edge/edgeRequestWorker.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/edge/implementationDetails.brs"/>
-  <script type="text/brightscript" uri="pkg:/source/adobe/edge/konductorConfig.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/edge/edgeResponseManager.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/consent/consentModule.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/media/mediaModule.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/media/mediaUtils.brs"/>

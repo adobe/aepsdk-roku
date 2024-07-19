@@ -13,14 +13,14 @@
 
 ' ******************************* MODULE: EdgeRequestWorker *******************************
 
-function _adb_EdgeRequestWorker(konductorConfig as object) as object
+function _adb_EdgeRequestWorker(edgeResponseManager as object) as object
     instance = {
         _RETRY_WAIT_TIME_MS: 30000, ' 30 seconds
         _INVALID_WAIT_TIME: -1,
         _lastFailedRequestTS: -1,
         _queue: [],
         _queue_size_max: 50,
-        _konductorConfig: konductorConfig,
+        _edgeResponseManager: edgeResponseManager,
 
         ' ------------------------------------------------------------------------------------------------
         ' Queue the Edge request.
@@ -140,7 +140,7 @@ function _adb_EdgeRequestWorker(konductorConfig as object) as object
             ''' Append config overrides to meta if set in eventData.config
             meta = m._appendConfigOverridesToMeta(meta, eventData.config, datastreamId)
 
-            meta = m._appendStateToMeta(meta, m._konductorConfig.getStateStore())
+            meta = m._appendStateToMeta(meta, m._edgeResponseManager.getStateStore())
 
             ''' Get datastreamId to be used in the request. If datastreamIdOverride is set in eventData.config, use it. Otherwise, use the original datastreamId.
             datastreamId = m._getDatastreamId(eventData.config, datastreamId)
@@ -150,7 +150,8 @@ function _adb_EdgeRequestWorker(konductorConfig as object) as object
 
             requestBody = m._createEdgeRequestBody(eventData, ecid, meta)
 
-            url = _adb_buildEdgeRequestURL(datastreamId, requestId, path, m._konductorConfig.getLocationHint(), edgeDomain)
+            locationHint = m._edgeResponseManager.getLocationHint()
+            url = _adb_buildEdgeRequestURL(datastreamId, requestId, path, locationHint, edgeDomain)
             _adb_logVerbose("EdgeRequestWorker::_processRequest() - Processing Request with url:(" + chr(10) + FormatJson(url) + chr(10) + ") with payload:(" + chr(10) + FormatJson(requestBody) + chr(10) + ")")
             networkResponse = _adb_serviceProvider().networkService.syncPostRequest(url, requestBody)
             return networkResponse
@@ -247,62 +248,7 @@ function _adb_EdgeRequestWorker(konductorConfig as object) as object
         end function,
 
         _processResponseOnSuccess: function(edgeResponse as object) as void
-            try
-                responseString = edgeResponse.getResponseString()
-                responseJson = ParseJson(responseString)
-                if _adb_isEmptyOrInvalidMap(responseJson)
-                    _adb_logError("EdgeRequestWorker::_processResponseOnSuccess() - Failed to parse response: (" + FormatJson(responseString) + ")")
-                    return
-                end if
-
-                handles = responseJson.handle
-                if _adb_isEmptyOrInvalidArray(handles)
-                    _adb_logVerbose("EdgeRequestWorker::_processResponseOnSuccess() - Empty handles in the response.")
-                    return
-                end if
-
-                for each handle in handles
-                    if _adb_isEmptyOrInvalidMap(handle)
-                        continue for
-                    end if
-
-                    if handle.type = "locationHint:result"
-                        m._extractAndCacheLocationHint(handle)
-                    else if handle.type = "state:store"
-                        m._extractAndCacheStateStore(handle)
-                    end if
-                end for
-            catch exception
-                _adb_logError("EdgeRequestWorker::_processResponseOnSuccess() - Failed to handle edge response: (" + FormatJson(responseString) + ")")
-            end try
-        end function,
-
-        _extractAndCacheStateStore: function(handle as object) as void
-            _adb_logVerbose("EdgeRequestWorker::_extractStateStore() - Extracting state store from the response handle(" + FormatJson(handle) + ")" )
-
-            if _adb_isEmptyOrInvalidMap(handle) or _adb_isEmptyOrInvalidArray(handle.payload)
-                return
-            end if
-
-            m._konductorConfig.setStateStore(handle.payload)
-        end function,
-
-        _extractAndCacheLocationHint: function(handle as object) as void
-            _adb_logVerbose("EdgeRequestWorker::_extractLocationHint() - Extracting location hint from the response handle (" + FormatJson(handle) + ")" )
-
-            if _adb_isEmptyOrInvalidMap(handle) or _adb_isEmptyOrInvalidArray(handle.payload)
-                return
-            end if
-
-            for each payload in handle.payload
-                if _adb_isEmptyOrInvalidMap(payload)
-                    continue for
-                end if
-
-                if not _adb_isEmptyOrInvalidString(payload.scope) and LCase(payload.scope) = "edgenetwork"
-                    m._konductorConfig.setLocationHint(payload.hint)
-                end if
-            end for
+            m._edgeResponseManager.processResponse(edgeResponse)
         end function,
 
         clear: function() as void

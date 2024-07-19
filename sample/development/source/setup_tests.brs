@@ -142,12 +142,12 @@ function _adb_test_functions() as dynamic
         TC_adb_EdgeModule_init
         TC_adb_EdgeModule_processEvent
         TC_adb_EdgeModule_processQueuedRequests
-        'test_konductorConfig.brs
-        TC_adb_KonductorConfig_Init
-        TC_adb_KonductorConfig_stateStore_valid
-        TC_adb_KonductorConfig_stateStore_invalid
-        TC_adb_KonductorConfig_locationHint_valid
-        TC_adb_KonductorConfig_locationHint_invalid
+        'test_EdgeResponseManager.brs
+        TC_adb_EdgeResponseManager_Init
+        TC_adb_EdgeResponseManager_stateStore_valid
+        TC_adb_EdgeResponseManager_stateStore_invalid
+        TC_adb_EdgeResponseManager_locationHint_valid
+        TC_adb_EdgeResponseManager_locationHint_invalid
     ]
     consent = [
         'test_consentModule.brs
