@@ -27,7 +27,7 @@ function _adb_StateStoreManager() as object
             end if
 
             m._state = state
-            _adb_logDebug("_adb_StateStoreManager::setStateStore() - stateStore set to: (" + FormatJson(m._stateStore) + ").")
+            _adb_logDebug("_adb_StateStoreManager::setStateStore() - stateStore set to: (" + FormatJson(m._state) + ").")
         end function,
 
         processStateStoreHandle: function(handle as object) as void

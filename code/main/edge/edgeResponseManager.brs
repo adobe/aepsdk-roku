@@ -15,6 +15,8 @@
 
 function _adb_EdgeResponseManager() as object
     return {
+        _LOCATION_HINT_HANDLE_TYPE: "locationHint:result",
+        _STATE_STORE_HANDLE_TYPE: "state:store",
         _locationHintManager: _adb_LocationHintManager(),
         _stateStoreManager: _adb_StateStoreManager(),
 
@@ -48,9 +50,9 @@ function _adb_EdgeResponseManager() as object
                         continue for
                     end if
 
-                    if handle.type = "locationHint:result"
+                    if handle.type = m._LOCATION_HINT_HANDLE_TYPE
                         m._locationHintManager.processLocationHintHandle(handle)
-                    else if handle.type = "state:store"
+                    else if handle.type = m._STATE_STORE_HANDLE_TYPE
                         m._stateStoreManager.processStateStoreHandle(handle)
                     end if
                 end for

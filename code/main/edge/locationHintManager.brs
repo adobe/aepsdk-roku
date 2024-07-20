@@ -14,7 +14,9 @@
 function _adb_LocationHintManager() as object
 
     return {
-        _DEAFULT_LOCATION_HINT_TTL_SEC: 1800,
+        _DEFAULT_LOCATION_HINT_TTL_SEC: 1800,
+        _EDGE_NETWORK_SCOPE: "edgenetwork",
+
         _locationHint: invalid,
         _locationHintExpiryTSInMillis: invalid,
 
@@ -40,8 +42,8 @@ function _adb_LocationHintManager() as object
             _adb_logDebug("_adb_LocationHintManager::setLocationHint() - locationHint set to: (" + m._locationHint + ").")
 
             if _adb_isInvalidInt(ttlSeconds)
-                _adb_logDebug("_adb_LocationHintManager::setLocationHint() - ttlSeconds is not found, using default ttl (" + FormatJson(m._DEAFULT_LOCATION_HINT_TTL_SEC) + ") seconds.")
-                ttlSeconds = m._DEAFULT_LOCATION_HINT_TTL_SEC
+                _adb_logDebug("_adb_LocationHintManager::setLocationHint() - ttlSeconds is not found, using default ttl (" + FormatJson(m._DEFAULT_LOCATION_HINT_TTL_SEC) + ") seconds.")
+                ttlSeconds = m._DEFAULT_LOCATION_HINT_TTL_SEC
             end if
 
             currentTimeInMillis = _adb_timestampInMillis()
@@ -62,7 +64,7 @@ function _adb_LocationHintManager() as object
                     continue for
                 end if
 
-                if not _adb_isEmptyOrInvalidString(payload.scope) and LCase(payload.scope) = "edgenetwork"
+                if not _adb_isEmptyOrInvalidString(payload.scope) and LCase(payload.scope) = m._EDGE_NETWORK_SCOPE
                     m.setLocationHint(payload.hint, payload.ttlSeconds)
                 end if
 
