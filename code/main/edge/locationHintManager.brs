@@ -26,7 +26,7 @@ function _adb_LocationHintManager() as object
                 return invalid
             end if
 
-            _adb_logDebug("_adb_LocationHintManager::getLocationHint() - Get location hint.")
+            _adb_logDebug("_adb_LocationHintManager::getLocationHint() - Returning locationHint: (" + FormatJson(m._locationHint) + ").")
             return m._locationHint
         end function,
 
