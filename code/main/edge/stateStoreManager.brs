@@ -16,7 +16,7 @@ function _adb_StateStoreManager() as object
     return {
         _state: invalid,
 
-        getState: function() as object
+        getStateStore: function() as object
             return m._state
         end function,
 

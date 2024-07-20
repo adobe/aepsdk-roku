@@ -16,61 +16,132 @@
 sub TC_adb_EdgeResponseManager_Init()
     edgeResponseManager = _adb_edgeResponseManager()
 
-    actualStateStore = edgeResponseManager.getStateStore()
-    actualLocationHint = edgeResponseManager.getLocationHint()
-    UTF_assertInvalid(actualStateStore, generateErrorMessage("State store", "invalid", actualStateStore))
-    UTF_assertInvalid(actualLocationHint, generateErrorMessage("Location hint", "invalid", actualLocationHint))
+    UTF_assertNotInvalid(edgeResponseManager._locationHintManager)
+    UTF_assertNotInvalid(edgeResponseManager._stateStoreManager)
 end sub
 
-' target: _adb_EdgeResponseManager_stateStore()
+' target: _adb_edgeResponseManager_processResponse()
 ' @Test
-sub TC_adb_EdgeResponseManager_stateStore_valid()
+sub TC_adb_EdgeResponseManager_processResponse_validLocationHintResponse()
     edgeResponseManager = _adb_edgeResponseManager()
 
-    stateStore = [{ key: "value" }]
-    edgeResponseManager._stateStoreManager.setStateStore(stateStore)
-    UTF_assertEqual(stateStore, edgeResponseManager.getStateStore())
+
+
+    GetGlobalAA().locationHintManager_processLocationHintHandle_called = true
+    GetGlobalAA().locationHintManager_processLocationHintHandle_actualHandle = invalid
+
+    mockLocationHintManager = {
+        processLocationHintHandle: function(handle as object) as void
+            GetGlobalAA().locationHintManager_processLocationHintHandle_called = true
+            GetGlobalAA().locationHintManager_processLocationHintHandle_actualHandle = handle
+        end function
+    }
+    ' set the mock location hint manager
+    edgeResponseManager._locationHintManager = mockLocationHintManager
+
+    GetGlobalAA().locationHandle = {
+        payload: [
+            {
+                scope: "edgenetwork",
+                hint: "locationHint",
+                ttlSeconds: 1800
+            }
+        ],
+        type : "locationHint:result"
+    }
+
+
+    fakeEdgeResponse = {
+        getResponseString: function() as dynamic
+            return FormatJson({ "handle": [GetGlobalAA().locationHandle] })
+        end function
+    }
+
+    edgeResponseManager.processResponse(fakeEdgeResponse)
+
+    expectedHandle = GetGlobalAA().locationHandle
+    actualHandle = GetGlobalAA().locationHintManager_processLocationHintHandle_actualHandle
+
+    UTF_assertTrue(GetGlobalAA().locationHintManager_processLocationHintHandle_called, "locationHintManager.processLocationHintHandle() was not called.")
+    UTF_assertEqual(expectedHandle, GetGlobalAA().locationHintManager_processLocationHintHandle_actualHandle, generateErrorMessage("locationHintManager.processLocationHintHandle() handle", expectedHandle, actualHandle))
 end sub
 
-' target: _adb_EdgeResponseManager_stateStore()
+
+' target: _adb_edgeResponseManager_processResponse()
 ' @Test
-sub TC_adb_EdgeResponseManager_stateStore_invalid()
+sub TC_adb_EdgeResponseManager_processResponse_validStateStoreResponse()
     edgeResponseManager = _adb_edgeResponseManager()
 
-    edgeResponseManager._stateStoreManager.setStateStore(invalid)
-    actualStateStore = edgeResponseManager.getStateStore()
-    UTF_assertInvalid(actualStateStore, generateErrorMessage("State store", "invalid", actualStateStore))
+    GetGlobalAA().stateStoreManager_processStateStoreHandle_called = true
+    GetGlobalAA().stateStoreManager_processStateStoreHandle_actualHandle = invalid
 
-    edgeResponseManager._stateStoreManager.setStateStore({})
-    actualStateStore = edgeResponseManager.getStateStore()
-    UTF_assertInvalid(actualStateStore, generateErrorMessage("State store", "invalid",actualStateStore))
+    mockStateStoreManager = {
+        processStateStoreHandle: function(handle as object) as void
+            GetGlobalAA().stateStoreManager_processStateStoreHandle_called = true
+            GetGlobalAA().stateStoreManager_processStateStoreHandle_actualHandle = handle
+        end function
+    }
+    ' set the mock state store manager
+    edgeResponseManager._stateStoreManager = mockStateStoreManager
 
-    edgeResponseManager._stateStoreManager.setStateStore([])
-    actualStateStore = edgeResponseManager.getStateStore()
-    UTF_assertInvalid(actualStateStore, generateErrorMessage("State store", "invalid", actualStateStore))
+    GetGlobalAA().stateStoreHandle = {
+        payload: [
+            {
+                key: "kndctr_1234_AdobeOrg_cluster",
+                value: "or2",
+                maxAge: 1800
+            }
+        ],
+        type: "state:store"
+
+    }
+
+    fakeEdgeResponse = {
+        getResponseString: function() as dynamic
+            return FormatJson({ "handle": [GetGlobalAA().stateStoreHandle] })
+        end function
+    }
+
+    edgeResponseManager.processResponse(fakeEdgeResponse)
+
+    expectedHandle = GetGlobalAA().stateStoreHandle
+    actualHandle = GetGlobalAA().stateStoreManager_processStateStoreHandle_actualHandle
+
+    UTF_assertTrue(GetGlobalAA().stateStoreManager_processStateStoreHandle_called, "stateStoreManager.processStateStoreHandle() was not called.")
+    UTF_assertEqual(expectedHandle, GetGlobalAA().stateStoreManager_processStateStoreHandle_actualHandle, generateErrorMessage("stateStoreManager.processStateStoreHandle() handle", expectedHandle, actualHandle))
 end sub
 
-' target: _adb_EdgeResponseManager_locationHint()
+' target: _adb_edgeResponseManager_processResponse()
 ' @Test
-sub TC_adb_EdgeResponseManager_locationHint_valid()
+sub TC_adb_EdgeResponseManager_processResponse_responseWithTypeNotHandled()
     edgeResponseManager = _adb_edgeResponseManager()
 
-    locationHint = "locationHint"
-    edgeResponseManager._locationHintManager.setLocationHint(locationHint)
-    actualLocationHint = edgeResponseManager.getLocationHint()
-    UTF_assertEqual(locationHint, edgeResponseManager.getLocationHint(), generateErrorMessage("Location hint", locationHint, actualLocationHint))
-end sub
+    GetGlobalAA().stateStoreManager_processStateStoreHandle_called = false
+    GetGlobalAA().locationHintManager_processLocationHintHandle_called = false
 
-' target: _adb_EdgeResponseManager_locationHint()
-' @Test
-sub TC_adb_EdgeResponseManager_locationHint_invalid()
-    edgeResponseManager = _adb_edgeResponseManager()
+    ' mock state store manager
+    mockStateStoreManager = {
+        processStateStoreHandle: function(handle as object) as void
+            GetGlobalAA().stateStoreManager_processStateStoreHandle_called = true
+        end function
+    }
+    edgeResponseManager._stateStoreManager = mockStateStoreManager
 
-    edgeResponseManager._locationHintManager.setLocationHint(invalid)
-    actualLocationHint = edgeResponseManager.getLocationHint()
-    UTF_assertInvalid(actualLocationHint, generateErrorMessage("Location hint", "invalid", actualLocationHint))
+    ' mock location hint manager
+    mockLocationHintManager = {
+        processLocationHintHandle: function(handle as object) as void
+            GetGlobalAA().locationHintManager_processLocationHintHandle_called = true
+        end function
+    }
 
-    edgeResponseManager._locationHintManager.setLocationHint("")
-    actualLocationHint = edgeResponseManager.getLocationHint()
-    UTF_assertInvalid(actualLocationHint, generateErrorMessage("Location hint", "invalid", actualLocationHint))
+    fakeEdgeResponse = {
+        getResponseString: function() as dynamic
+            return FormatJson({ "handle": [{ type: "notHandled" }] })
+        end function
+    }
+
+    edgeResponseManager.processResponse(fakeEdgeResponse)
+
+    UTF_assertFalse(GetGlobalAA().stateStoreManager_processStateStoreHandle_called, "stateStoreManager.processStateStoreHandle() was called.")
+    UTF_assertFalse(GetGlobalAA().locationHintManager_processLocationHintHandle_called, "locationHintManager.processLocationHintHandle() was called.")
 end sub

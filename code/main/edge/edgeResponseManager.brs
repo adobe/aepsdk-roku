@@ -25,7 +25,7 @@ function _adb_EdgeResponseManager() as object
         end function,
 
         getStateStore: function() as object
-            return m._stateStoreManager.getState()
+            return m._stateStoreManager.getStateStore()
         end function,
 
         processResponse: function(edgeResponse as object) as void

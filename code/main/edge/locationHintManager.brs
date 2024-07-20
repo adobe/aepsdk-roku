@@ -71,12 +71,11 @@ function _adb_LocationHintManager() as object
             end for
         end function,
 
-        _isLocationHintExpired: function() as boolean
+        _isLocationHintExpired: function(currentTimeInMillis = _adb_timestampInMillis() as longinteger) as boolean
             if m._locationHintExpiryTSInMillis = invalid
                 return true
             end if
 
-            currentTimeInMillis = _adb_timestampInMillis()
             if currentTimeInMillis > m._locationHintExpiryTSInMillis
                 return true
             end if
