@@ -25,8 +25,6 @@ end sub
 sub TC_adb_EdgeResponseManager_processResponse_validLocationHintResponse()
     edgeResponseManager = _adb_edgeResponseManager()
 
-
-
     GetGlobalAA().locationHintManager_processLocationHintHandle_called = true
     GetGlobalAA().locationHintManager_processLocationHintHandle_actualHandle = invalid
 
@@ -50,12 +48,7 @@ sub TC_adb_EdgeResponseManager_processResponse_validLocationHintResponse()
         type : "locationHint:result"
     }
 
-
-    fakeEdgeResponse = {
-        getResponseString: function() as dynamic
-            return FormatJson({ "handle": [GetGlobalAA().locationHandle] })
-        end function
-    }
+    fakeEdgeResponse = _adb_EdgeResponse("fakeRequestID", 200, FormatJson({ "handle": [GetGlobalAA().locationHandle] }))
 
     edgeResponseManager.processResponse(fakeEdgeResponse)
 
@@ -65,7 +58,6 @@ sub TC_adb_EdgeResponseManager_processResponse_validLocationHintResponse()
     UTF_assertTrue(GetGlobalAA().locationHintManager_processLocationHintHandle_called, "locationHintManager.processLocationHintHandle() was not called.")
     UTF_assertEqual(expectedHandle, GetGlobalAA().locationHintManager_processLocationHintHandle_actualHandle, generateErrorMessage("locationHintManager.processLocationHintHandle() handle", expectedHandle, actualHandle))
 end sub
-
 
 ' target: _adb_edgeResponseManager_processResponse()
 ' @Test
@@ -96,11 +88,7 @@ sub TC_adb_EdgeResponseManager_processResponse_validStateStoreResponse()
 
     }
 
-    fakeEdgeResponse = {
-        getResponseString: function() as dynamic
-            return FormatJson({ "handle": [GetGlobalAA().stateStoreHandle] })
-        end function
-    }
+    fakeEdgeResponse = _adb_EdgeResponse("fakeRequestID", 200, FormatJson({ "handle": [GetGlobalAA().stateStoreHandle] }))
 
     edgeResponseManager.processResponse(fakeEdgeResponse)
 
@@ -134,11 +122,7 @@ sub TC_adb_EdgeResponseManager_processResponse_responseWithTypeNotHandled()
         end function
     }
 
-    fakeEdgeResponse = {
-        getResponseString: function() as dynamic
-            return FormatJson({ "handle": [{ type: "notHandled" }] })
-        end function
-    }
+    fakeEdgeResponse = _adb_EdgeResponse("fakeRequestID", 200, FormatJson({ "handle": [{ type: "notHandled" }] }))
 
     edgeResponseManager.processResponse(fakeEdgeResponse)
 
