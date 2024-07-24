@@ -83,7 +83,7 @@ function _adb_MediaModule(configurationModule as object, edgeModule as object) a
 
         ''' Handles responses dispatched by the event processor
         processResponseEvent: function(event as object) as void
-            _adb_logInfo("MediaModule::processResponseEvent() - Received response event:(" + chr(10) + FormatJson(event) + chr(10) + ")")
+            _adb_logVerbose("MediaModule::processResponseEvent() - Received response event:(" + chr(10) + FormatJson(event) + chr(10) + ")")
 
             m._sessionManager.handleResponseEvent(event)
         end function,

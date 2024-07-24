@@ -17,6 +17,7 @@ function _adb_StateStoreManager() as object
         _state: invalid,
 
         getStateStore: function() as object
+            _adb_logDebug("_adb_StateStoreManager::getStateStore() - returning stateStore: (" + FormatJson(m._state) + ").")
             return m._state
         end function,
 
