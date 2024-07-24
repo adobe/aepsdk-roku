@@ -29,7 +29,12 @@ function _adb_EdgeResponseManager() as object
         end function,
 
         processResponse: function(edgeResponse as object) as void
-            _adb_logVerbose("EdgeResponseManager::processResponse() - Processing response: (" + FormatJson(edgeResponse) + ").")
+            if not _adb_isEdgeResponse(edgeResponse)
+                _adb_logWarning("EdgeResponseManager::processResponse() - Invalid Edge response.")
+                return
+            end if
+
+            _adb_logVerbose("EdgeResponseManager::processResponse() - Processing Edge response: (" + FormatJson(edgeResponse.getResponseString()) + ").")
 
             try
                 responseString = edgeResponse.getResponseString()
