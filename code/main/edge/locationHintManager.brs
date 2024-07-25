@@ -18,11 +18,13 @@ function _adb_LocationHintManager() as object
         _EDGE_NETWORK_SCOPE: "edgenetwork",
 
         _locationHint: invalid,
-        _locationHintExpiryTSInMillis: invalid,
+        _expiryTSInMillis: invalid,
+        _initTSInMillis: invalid,
 
         getLocationHint: function() as dynamic
             if m._isLocationHintExpired()
                 _adb_logVerbose("_adb_LocationHintManager::getLocationHint() - Location hint expired, returning invalid.")
+                m._delete()
                 return invalid
             end if
 
@@ -41,13 +43,7 @@ function _adb_LocationHintManager() as object
             m._locationHint = locationHint
             _adb_logDebug("_adb_LocationHintManager::setLocationHint() - locationHint set to: (" + m._locationHint + ").")
 
-            if _adb_isInvalidInt(ttlSeconds)
-                _adb_logDebug("_adb_LocationHintManager::setLocationHint() - ttlSeconds is not found, using default ttl (" + FormatJson(m._DEFAULT_LOCATION_HINT_TTL_SEC) + ") seconds.")
-                ttlSeconds = m._DEFAULT_LOCATION_HINT_TTL_SEC
-            end if
-
-            currentTimeInMillis = _adb_timestampInMillis()
-            m._locationHintExpiryTSInMillis = currentTimeInMillis + (ttlSeconds * 1000)
+            m._setExpiryTime(ttlSeconds)
 
             return locationHintChanged
         end function
@@ -64,24 +60,40 @@ function _adb_LocationHintManager() as object
                     continue for
                 end if
 
-                if not _adb_isEmptyOrInvalidString(payload.scope) and LCase(payload.scope) = m._EDGE_NETWORK_SCOPE
+                if _adb_stringEqualsIgnoreCase(payload.scope, m._EDGE_NETWORK_SCOPE)
                     m.setLocationHint(payload.hint, payload.ttlSeconds)
                 end if
 
             end for
         end function,
 
+        _setExpiryTime: function(ttlSeconds as dynamic) as void
+            if _adb_isInvalidInt(ttlSeconds)
+                _adb_logDebug("_adb_LocationHintManager::_setExpiryTime() - ttlSeconds is not found, using default ttl (" + FormatJson(m._DEFAULT_LOCATION_HINT_TTL_SEC) + ") seconds.")
+                ttlSeconds = m._DEFAULT_LOCATION_HINT_TTL_SEC
+            end if
+
+            m._initTSInMillis = _adb_timestampInMillis()
+            m._expiryTSInMillis = m._initTSInMillis + (ttlSeconds * 1000)
+        end function,
+
         _isLocationHintExpired: function(currentTimeInMillis = _adb_timestampInMillis() as longinteger) as boolean
-            if m._locationHintExpiryTSInMillis = invalid
+            if m._expiryTSInMillis = invalid
                 return true
             end if
 
-            if currentTimeInMillis > m._locationHintExpiryTSInMillis
+            if currentTimeInMillis > m._expiryTSInMillis
                 return true
             end if
 
             return false
         end function
+
+        _delete: function() as void
+            m._locationHint = invalid
+            m._expiryTSInMillis = invalid
+            m._initTSInMillis = invalid
+        end function,
     }
 
 end function
