@@ -137,82 +137,82 @@ sub TC_adb_StateStoreManager_deleteStateStore()
     UTF_assertEqual(expectedStateStore, actualStateStore, generateErrorMessage("State store", expectedStateStore, actualStateStore))
 end sub
 
-' target: _adb_StateStore()
+' target: _adb_StateStoreEntry()
 ' @Test
-sub TC_adb_StateStore_init()
+sub TC_adb_StateStoreEntry_init()
     payload = {
         key: "kndctr_1234_AdobeOrg_cluster",
         value: "or2",
         maxAge: 1800
     }
-    stateStore = _adb_StateStore(payload)
+    stateStoreEntry = _adb_StateStoreEntry(payload)
 
-    actualStateStore = stateStore.getPayload()
+    actualStateStoreEntry = stateStoreEntry.getPayload()
 
-    UTF_assertEqual(payload, actualStateStore, generateErrorMessage("State store", payload, actualStateStore))
+    UTF_assertEqual(payload, actualStateStoreEntry, generateErrorMessage("State store", payload, actualStateStoreEntry))
 end sub
 
-' target: _adb_StateStore()
+' target: _adb_StateStoreEntry()
 ' @Test
-sub TC_adb_StateStore_invalidPayload()
+sub TC_adb_StateStoreEntry_invalidPayload()
     payload = {}
-    stateStore = _adb_StateStore(payload)
+    stateStoreEntry = _adb_StateStoreEntry(payload)
 
-    UTF_assertInvalid(stateStore.getPayload(), generateErrorMessage("State store", invalid, stateStore))
+    UTF_assertInvalid(stateStoreEntry.getPayload(), generateErrorMessage("State store", invalid, stateStoreEntry.getPayload()))
 end sub
 
-' target: _adb_StateStore()
+' target: _adb_StateStoreEntry()
 ' @Test
-sub TC_adb_StateStore_invalidKey()
+sub TC_adb_StateStoreEntry_invalidKey()
     payload = {
         key: invalid,
         value: "or2",
         maxAge: 1800
     }
-    stateStore = _adb_StateStore(payload)
+    stateStoreEntry = _adb_StateStoreEntry(payload)
 
-    UTF_assertEqual(payload, stateStore.getPayload(), generateErrorMessage("State store", payload, stateStore))
+    UTF_assertEqual(payload, stateStoreEntry.getPayload(), generateErrorMessage("State store", payload, stateStoreEntry.getPayload()))
 end sub
 
-' target: _adb_StateStore()
+' target: _adb_StateStoreEntry()
 ' @Test
-sub TC_adb_StateStore_isExpired_notExpired()
+sub TC_adb_StateStoreEntry_isExpired_notExpired()
     payload = {
         key: "kndctr_1234_AdobeOrg_cluster",
         value: "or2",
         maxAge: 1800
     }
 
-    stateStore = _adb_StateStore(payload)
+    stateStoreEntry = _adb_StateStoreEntry(payload)
 
-    UTF_assertFalse(stateStore.isExpired(), "State store is expired.")
+    UTF_assertFalse(stateStoreEntry.isExpired(), "State store is expired.")
 end sub
 
-' target: _adb_StateStore()
+' target: _adb_StateStoreEntry()
 ' @Test
-sub TC_adb_StateStore_isExpired_expired()
+sub TC_adb_StateStoreEntry_isExpired_expired()
     payload = {
         key: "kndctr_1234_AdobeOrg_cluster",
         value: "or2",
         maxAge: 10
     }
 
-    stateStore = _adb_StateStore(payload)
-    expectedExpiryTS = stateStore._expiryTimer.expiryTSInMillis + (10 * 1000)
+    stateStoreEntry = _adb_StateStoreEntry(payload)
+    expectedExpiryTS = stateStoreEntry._expiryTimer.expiryTSInMillis + (10 * 1000)
 
-    UTF_assertTrue(stateStore.isExpired(expectedExpiryTS+1), "State store is not expired.")
+    UTF_assertTrue(stateStoreEntry.isExpired(expectedExpiryTS+1), "State store is not expired.")
 end sub
 
 ' @Test
-sub TC_adb_StateStore_noMaxAge()
+sub TC_adb_StateStoreEntry_noMaxAge()
     payload = {
         key: "kndctr_1234_AdobeOrg_cluster",
         value: "or2"
     }
 
-    stateStore = _adb_StateStore(payload)
-    expectedExpiryTS = stateStore._expiryTimer.expiryTSInMillis + (0 * 1000) ' default maxAge is 0
+    stateStoreEntry = _adb_StateStoreEntry(payload)
+    expectedExpiryTS = stateStoreEntry._expiryTimer.initTSInMillis + (0 * 1000) ' default maxAge is 0
 
-    actualExpiryTS = stateStore._expiryTimer.expiryTSInMillis
+    actualExpiryTS = stateStoreEntry._expiryTimer.expiryTSInMillis
     UTF_assertEqual(expectedExpiryTS ,actualExpiryTS, generateErrorMessage("State store expiry timestamp", expectedExpiryTS, actualExpiryTS))
 end sub

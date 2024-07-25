@@ -14,28 +14,28 @@
 function _adb_StateStoreManager() as object
 
     return {
-        _states: {},
+        _stateStoreMap: {},
 
         getStateStore: function() as object
-            payload = []
-            expiredStateStores = []
+            stateStorePayload = []
+            expiredStateStoreEntries = []
 
-            for each stateName in m._states
-                state = m._states[stateName]
+            for each stateName in m._stateStoreMap
+                stateStoreEntry = m._stateStoreMap[stateName]
 
-                if state.isExpired()
+                if stateStoreEntry.isExpired()
                     _adb_logVerbose("_adb_StateStoreManager::getStateStore() - stateStore with key:(" + FormatJson(state.key) + ") is expired and will be deleted.")
-                    expiredStateStores.push(stateName)
+                    expiredStateStoreEntries.push(stateName)
                     continue for
                 end if
 
-                payload.push(state.getPayload())
+                stateStorePayload.push(stateStoreEntry.getPayload())
             end for
 
-            m._deleteStateStore(expiredStateStores)
+            m._deleteStateStoreEntries(expiredStateStoreEntries)
 
-            _adb_logDebug("_adb_StateStoreManager::getStateStore() - returning active stateStores: (" + FormatJson(payload) + ").")
-            return payload
+            _adb_logDebug("_adb_StateStoreManager::getStateStore() - returning active stateStores: (" + FormatJson(stateStorePayload) + ").")
+            return stateStorePayload
         end function,
 
         processStateStoreHandle: function(handle as object) as void
@@ -62,26 +62,26 @@ function _adb_StateStoreManager() as object
                 return
             end if
 
-            m._states[payload.key] = _adb_StateStore(payload)
-            _adb_logDebug("_adb_StateStoreManager::setStateStore() - stateStore updated to: (" + FormatJson(m._states) + ").")
+            m._stateStoreMap[payload.key] = _adb_StateStoreEntry(payload)
+            _adb_logDebug("_adb_StateStoreManager::setStateStore() - stateStore updated to: (" + FormatJson(m._stateStoreMap) + ").")
 
         end function,
 
-        _deleteStateStore: function(stateNames as object) as void
-            for each state in stateNames
-                m._states.delete(state)
-                _adb_logVerbose("_adb_StateStoreManager::_deleteStateStore() - stateStore with key:(" + FormatJson(state) + ") deleted.")
+        _deleteStateStoreEntries: function(stateNames as object) as void
+            for each stateName in stateNames
+                m._stateStoreMap.delete(stateName)
+                _adb_logVerbose("_adb_StateStoreManager::_deleteStateStoreEntries() - stateStore with key:(" + FormatJson(stateName) + ") deleted.")
             end for
 
-            _adb_logVerbose("_adb_StateStoreManager::_deleteStateStore() - stateStore updated to: (" + FormatJson(m._states) + ").")
+            _adb_logVerbose("_adb_StateStoreManager::_deleteStateStoreEntries() - stateStore updated to: (" + FormatJson(m._stateStoreMap) + ").")
         end function
     }
 
 end function
 
-function _adb_StateStore(payload as object) as object
+function _adb_StateStoreEntry(payload as object) as object
 
-    stateStore = {
+    stateStoreEntry = {
         _payload: invalid,
         _expiryTimer: invalid,
 
@@ -122,7 +122,7 @@ function _adb_StateStore(payload as object) as object
         end function
     }
 
-    stateStore._init(payload)
+    stateStoreEntry._init(payload)
 
-    return stateStore
+    return stateStoreEntry
 end function

@@ -161,12 +161,12 @@ function _adb_test_functions() as dynamic
         TC_adb_StateStoreManager_processStateStoreHandle_validHandle
         TC_adb_StateStoreManager_processStateStoreHandle_invalidHandle
         TC_adb_StateStoreManager_deleteStateStore
-        TC_adb_StateStore_init
-        TC_adb_StateStore_invalidPayload
-        TC_adb_StateStore_invalidKey
-        TC_adb_StateStore_isExpired_notExpired
-        TC_adb_StateStore_isExpired_expired
-        TC_adb_StateStore_noMaxAge
+        TC_adb_StateStoreEntry_init
+        TC_adb_StateStoreEntry_invalidPayload
+        TC_adb_StateStoreEntry_invalidKey
+        TC_adb_StateStoreEntry_isExpired_notExpired
+        TC_adb_StateStoreEntry_isExpired_expired
+        TC_adb_StateStoreEntry_noMaxAge
 
         'test_locationHintManager.brs
         TC_adb_LocationHintManager_init
