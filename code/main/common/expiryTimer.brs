@@ -11,6 +11,8 @@
 ' *
 ' *****************************************************************************************
 
+' ************************************ MODULE: ExpiryTimer ***************************************
+
 function _adb_ExpiryTimer(durationInMillis as longinteger, startTimeMillis = _adb_timestampInMillis() as longinteger) as object
     expiryTimer = {
         initTSInMillis: invalid,
