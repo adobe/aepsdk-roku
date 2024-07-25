@@ -40,9 +40,15 @@ function _adb_test_functions() as dynamic
         TC_adb_optStringFromMap
         TC_adb_optIntFromMap
         'test_string.brs
+        TC_adb_isInvalidString
         TC_adb_isEmptyOrInvalidString
         TC_adb_isStringEndsWith
         TC_adb_isStringInArray
+        TC_adb_stringEqualsIgnoreCase
+        TC_adb_stringEquals
+        'test_int.brs
+        TC_adb_isInvalidInt_invalidInt
+        TC_adb_isInvalidInt_validInt
         'test_datetime.brs
         TC_adb_timestampInMillis
         TC_adb_ISO8601_timestamp
@@ -149,10 +155,16 @@ function _adb_test_functions() as dynamic
         TC_adb_EdgeResponseManager_processResponse_responseWithTypeNotHandled
         'test_stateStoreManager.brs
         TC_adb_StateStoreManager_Init
-        TC_adb_EdgeResponseManager_stateStore_valid
-        TC_adb_StateStoreManager_stateStore_invalid
         TC_adb_StateStoreManager_processStateStoreHandle_validHandle
         TC_adb_StateStoreManager_processStateStoreHandle_invalidHandle
+        TC_adb_StateStoreManager_deleteStateStore
+        TC_adb_StateStore_init
+        TC_adb_StateStore_invalidPayload
+        TC_adb_StateStore_invalidKey
+        TC_adb_StateStore_isExpired_notExpired
+        TC_adb_StateStore_isExpired_expired
+        TC_adb_StateStore_noMaxAge
+
         'test_locationHintManager.brs
         TC_adb_LocationHintManager_init
         TC_adb_LocationHintManager_setLocationHint_validHintNoTTL
@@ -161,10 +173,10 @@ function _adb_test_functions() as dynamic
         TC_adb_LocationHintManager_islocationHintExpired
         TC_adb_LocationHintManager_setLocationHint_validHintWithTTL
         TC_adb_LocationHintManager_getLocationHint_withoutSet
-        TC_adb_LocationHintManager_getLocationHint_expiredTTL
+        TC_adb_LocationHintManager_getLocationHint_expiredTTL_callsDelete
         TC_adb_LocationHintManager_processLocationHintHandle_invalidHandle
         TC_adb_LocationHintManager_processLocationHintHandle_validHandle
-
+        TC_adb_LocationHintManager_delete
     ]
     consent = [
         'test_consentModule.brs
