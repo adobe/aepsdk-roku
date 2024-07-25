@@ -56,8 +56,8 @@ function _adb_stringEqualsIgnoreCase(s1 as dynamic, s2 as dynamic) as boolean
         return false
     end if
 
-    s1 = LCase(s1)
-    s2 = LCase(s2)
+    s1 = LCase(s1.Trim())
+    s2 = LCase(s2.Trim())
 
     return s1 = s2
 end function
@@ -67,5 +67,5 @@ function _adb_stringEquals(s1 as dynamic, s2 as dynamic) as boolean
         return false
     end if
 
-    return s1 = s2
+    return s1.Trim() = s2.Trim()
 end function
