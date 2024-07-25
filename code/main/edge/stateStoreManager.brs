@@ -82,26 +82,26 @@ end function
 function _adb_StateStore(payload as object) as object
 
     stateStore = {
-        _payload: payload,
-        _expiryTSInMillis: invalid,
-        _initTSInMillis: invalid,
+        _payload: invalid,
+        _expiryTimer: invalid,
 
-        init: function()
+        _init: function(payload as object) as void
             _adb_logVerbose("_adb_StateStore::init() - Intializing stateStore with payload: (" + FormatJson(m._payload) + ").")
 
-            if _adb_isEmptyOrInvalidMap(m._payload)
+            if _adb_isEmptyOrInvalidMap(payload)
                 _adb_logDebug("_adb_StateStore::init() - stateStore payload is empty or invalid.")
-                return invalid
+                return
             end if
+
+            m._payload = payload
 
             maxAge = m._payload.maxAge
             if _adb_isInvalidInt(maxAge)
-                _adb_logDebug("_adb_StateStore::init() - payload.maxAge is invalid, using 0 as default value.")
+                _adb_logDebug("_adb_StateStore::init() - Invalid payload.maxAge value:(" + FormatJson(maxAge) + "), using 0 as default value.")
                 maxAge = 0
             end if
 
-            m._initTSInMillis = _adb_timestampInMillis()
-            m._expiryTSInMillis = m._initTSInMillis + (maxAge * 1000)
+            m._expiryTimer = _adb_ExpiryTimer(maxAge * 1000)
         end function,
 
         getPayload: function() as dynamic
@@ -113,24 +113,16 @@ function _adb_StateStore(payload as object) as object
             return m._payload
         end function,
 
-        isExpired: function(currentTimeInMillis = m._getCurrentTimeInMillis() as longinteger) as boolean
-            if m._expiryTSInMillis = invalid
+        isExpired: function(currentTimeInMillis = _adb_timestampInMillis() as longinteger) as boolean
+            if m._expiryTimer = invalid
                 return true
             end if
 
-            if currentTimeInMillis > m._expiryTSInMillis
-                return true
-            end if
-
-            return false
-        end function
-
-        _getCurrentTimeInMillis: function() as longinteger
-            return _adb_timestampInMillis()
+            return m._expiryTimer.isExpired(currentTimeInMillis)
         end function
     }
 
-    stateStore.init()
+    stateStore._init(payload)
 
     return stateStore
 end function

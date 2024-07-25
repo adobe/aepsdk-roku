@@ -18,8 +18,7 @@ function _adb_LocationHintManager() as object
         _EDGE_NETWORK_SCOPE: "edgenetwork",
 
         _locationHint: invalid,
-        _expiryTSInMillis: invalid,
-        _initTSInMillis: invalid,
+        _expiryTimer: invalid,
 
         getLocationHint: function() as dynamic
             if m._isLocationHintExpired()
@@ -69,31 +68,25 @@ function _adb_LocationHintManager() as object
 
         _setExpiryTime: function(ttlSeconds as dynamic) as void
             if _adb_isInvalidInt(ttlSeconds)
-                _adb_logDebug("_adb_LocationHintManager::_setExpiryTime() - ttlSeconds is not found, using default ttl (" + FormatJson(m._DEFAULT_LOCATION_HINT_TTL_SEC) + ") seconds.")
+                _adb_logDebug("_adb_LocationHintManager::_setExpiryTime() - invalid ttlSeconds:(" + FormatJson(ttlSeconds) + "), using default ttl (" + FormatJson(m._DEFAULT_LOCATION_HINT_TTL_SEC) + ") seconds.")
                 ttlSeconds = m._DEFAULT_LOCATION_HINT_TTL_SEC
             end if
 
-            m._initTSInMillis = _adb_timestampInMillis()
-            m._expiryTSInMillis = m._initTSInMillis + (ttlSeconds * 1000)
+            m._expiryTimer = _adb_ExpiryTimer(ttlSeconds * 1000)
         end function,
 
         _isLocationHintExpired: function(currentTimeInMillis = _adb_timestampInMillis() as longinteger) as boolean
-            if m._expiryTSInMillis = invalid
+            if m._expiryTimer = invalid
                 return true
             end if
 
-            if currentTimeInMillis > m._expiryTSInMillis
-                return true
-            end if
-
-            return false
-        end function
+            return m._expiryTimer.isExpired(currentTimeInMillis)
+        end function,
 
         _delete: function() as void
             m._locationHint = invalid
-            m._expiryTSInMillis = invalid
-            m._initTSInMillis = invalid
-        end function,
+            m._expiryTimer = invalid
+        end function
     }
 
 end function

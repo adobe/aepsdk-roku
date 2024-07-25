@@ -668,7 +668,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_validLocationHint_appendsLocationHin
         }
         UTF_assertEqual(expectedXdmObj, jsonObj.xdm, "Expected != actual (Top level XDM object in the request)")
 
-        ''' Assert meta is not present
+        ' Assert meta is not present
         UTF_assertInvalid(jsonObj.meta, "Meta object should be invalid")
 
         UTF_assertNotInvalid(jsonObj.events)
