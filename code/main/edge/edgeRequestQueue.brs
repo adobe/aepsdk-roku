@@ -26,7 +26,7 @@ function _adb_edgeRequestQueue(name as string, edgeModule as object) as object
     requestQueue = _adb_AdobeObject("com.adobe.module.edge.requestQueue")
     requestQueue.Append({
         _name: name,
-        _edgeRequestWorker: _adb_EdgeRequestWorker(),
+        _edgeRequestWorker: _adb_EdgeRequestWorker(_adb_edgeResponseManager()),
         _edgeModule: edgeModule,
 
         add: sub(requestId as string, xdmEvents as object, timestampInMillis as longinteger, meta as object, path as string)

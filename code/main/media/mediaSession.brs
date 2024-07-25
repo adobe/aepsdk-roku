@@ -38,7 +38,7 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
         _lastHit: invalid, ''' to track last event, ts, playhead, etc.
         _sessionStartHit: invalid, ''' used for idle restart and long session restart
 
-        _MEDIA_PATH_PREFIX: "/ee/va/v1/",
+        _MEDIA_PATH_PREFIX: "/va/v1/",
         _SESSION_IDLE_THRESHOLD_SEC: 30 * 60, ' 30 minutes in pause state
         _LONG_SESSION_THRESHOLD_SEC: 24 * 60 * 60, ' 24 hours
 

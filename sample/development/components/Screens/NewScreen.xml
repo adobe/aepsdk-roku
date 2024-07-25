@@ -15,35 +15,35 @@ governing permissions and limitations under the License.-->
   <children >
     <Group >
       <layoutGroup
-        id = "topLayoutGroup" 
-        translation = "[0,0]" 
-        itemSpacings = "[20]" 
+        id = "topLayoutGroup"
+        translation = "[0,0]"
+        itemSpacings = "[20]"
         layoutDirection = "horiz">
-        
+
         <Label
             id="testLabel"
             height="88"
             font="font:MediumBoldSystemFont"
             text = "SDK instance (1) in the parent node: "/>
 
-        <Button 
-          id="sendEventButton" 
-          text="Send Event" 
-          showFocusFootprint="true" 
+        <Button
+          id="sendEventButton"
+          text="Send Event"
+          showFocusFootprint="true"
           minWidth="240" />
 
       </layoutGroup>
       <layoutGroup
-        id = "bottomLayoutGroup" 
-        translation = "[0,200]" 
-        itemSpacings = "[20]" 
+        id = "bottomLayoutGroup"
+        translation = "[0,200]"
+        itemSpacings = "[20]"
         layoutDirection = "horiz">
-        
+
         <BottomGroup/>
 
       </layoutGroup>
-      
-        
+
+
     </Group>
 
 
@@ -57,6 +57,7 @@ governing permissions and limitations under the License.-->
   <script type="text/brightscript" uri="pkg:/source/adobe/common/log.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/common/map.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/common/string.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/common/int.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/common/version.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/common/utils.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/core/event.brs"/>
@@ -67,6 +68,9 @@ governing permissions and limitations under the License.-->
   <script type="text/brightscript" uri="pkg:/source/adobe/edge/buildEdgeRequestURL.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/edge/edgeRequestWorker.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/edge/implementationDetails.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/edge/edgeResponseManager.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/edge/locationHintManager.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/edge/stateStoreManager.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/services/localDataStoreService.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/services/loggingService.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/services/networkService.brs"/>

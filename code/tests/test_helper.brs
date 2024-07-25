@@ -42,7 +42,15 @@ function readValueFromRegistry(key as string) as dynamic
 end function
 
 ' ************************ Error Message Helper ************************
-function generateErrorMessage(message as string, expected as string, actual as string) as string
+function generateErrorMessage(message as string, expected as dynamic, actual as dynamic) as string
+    if (type(expected) <> "roString" and type(expected) <> "String")
+        expected = FormatJson(expected)
+    end if
+
+    if (type(actual) <> "roString" and type(actual) <> "String")
+        actual = FormatJson(actual)
+    end if
+
     return message + " Expected: (" + chr(10) + expected + chr(10) + ") Actual: ("+ chr(10) + actual + chr(10) +")"
 end function
 

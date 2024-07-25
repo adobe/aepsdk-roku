@@ -13,13 +13,14 @@
 
 ' ******************************* MODULE: EdgeRequestWorker *******************************
 
-function _adb_EdgeRequestWorker() as object
+function _adb_EdgeRequestWorker(edgeResponseManager as object) as object
     instance = {
         _RETRY_WAIT_TIME_MS: 30000, ' 30 seconds
         _INVALID_WAIT_TIME: -1,
         _lastFailedRequestTS: -1,
         _queue: [],
         _queue_size_max: 50,
+        _edgeResponseManager: edgeResponseManager,
 
         ' ------------------------------------------------------------------------------------------------
         ' Queue the Edge request.
@@ -116,9 +117,11 @@ function _adb_EdgeRequestWorker() as object
                 if networkResponse.isSuccessful()
                     edgeResponse = _adb_EdgeResponse(requestId, networkResponse.getResponseCode(), networkResponse.getResponseString())
                     responseArray.Push(edgeResponse)
+                    m._processResponseOnSuccess(edgeResponse)
                     ' Request sent out successfully
                     m._lastFailedRequestTS = m._INVALID_WAIT_TIME
                     _adb_logVerbose("EdgeRequestWorker::processRequests() - Edge request with id (" + FormatJson(requestId) + ") was sent successfully code (" + FormatJson(networkResponse.getResponseCode()) + ").")
+
                 else if networkResponse.isRecoverable()
                     m._lastFailedRequestTS = _adb_timestampInMillis()
                     _adb_logWarning("EdgeRequestWorker::processRequests() - Edge request with id (" + FormatJson(requestId) + ") failed with recoverable error code (" + FormatJson(networkResponse.getResponseCode()) + "). Request will be retried after (" + FormatJson(m._RETRY_WAIT_TIME_MS) + ") ms.")
@@ -137,6 +140,8 @@ function _adb_EdgeRequestWorker() as object
             ''' Append config overrides to meta if set in eventData.config
             meta = m._appendConfigOverridesToMeta(meta, eventData.config, datastreamId)
 
+            meta = m._appendStateToMeta(meta, m._edgeResponseManager.getStateStore())
+
             ''' Get datastreamId to be used in the request. If datastreamIdOverride is set in eventData.config, use it. Otherwise, use the original datastreamId.
             datastreamId = m._getDatastreamId(eventData.config, datastreamId)
 
@@ -145,7 +150,8 @@ function _adb_EdgeRequestWorker() as object
 
             requestBody = m._createEdgeRequestBody(eventData, ecid, meta)
 
-            url = _adb_buildEdgeRequestURL(datastreamId, requestId, path, edgeDomain)
+            locationHint = m._edgeResponseManager.getLocationHint()
+            url = _adb_buildEdgeRequestURL(datastreamId, requestId, path, locationHint, edgeDomain)
             _adb_logVerbose("EdgeRequestWorker::_processRequest() - Processing Request with url:(" + chr(10) + FormatJson(url) + chr(10) + ") with payload:(" + chr(10) + FormatJson(requestBody) + chr(10) + ")")
             networkResponse = _adb_serviceProvider().networkService.syncPostRequest(url, requestBody)
             return networkResponse
@@ -179,6 +185,23 @@ function _adb_EdgeRequestWorker() as object
             if not _adb_isEmptyOrInvalidString(config.datastreamIdOverride)
                 ''' Genrate sdkConfig payload with original datastreamId
                 meta["sdkConfig"] = m._getSdkConfigPayload(originalDatastreamId)
+            end if
+
+            return meta
+        end function,
+
+        _appendStateToMeta: function(meta as object, state as object) as object
+            if _adb_isEmptyOrInvalidMap(meta)
+                meta = {}
+            end if
+
+            stateMetadata = {}
+            if not _adb_isEmptyOrInvalidArray(state)
+                stateMetadata["entries"] = state
+            end if
+
+            if not _adb_isEmptyOrInvalidMap(stateMetadata)
+                meta["state"] = stateMetadata
             end if
 
             return meta
@@ -222,6 +245,10 @@ function _adb_EdgeRequestWorker() as object
                 ]
             }
             return identityMap
+        end function,
+
+        _processResponseOnSuccess: function(edgeResponse as object) as void
+            m._edgeResponseManager.processResponse(edgeResponse)
         end function,
 
         clear: function() as void

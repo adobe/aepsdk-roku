@@ -111,6 +111,7 @@ function _adb_test_functions() as dynamic
         'test_buildEdgeRequestURL.brs
         TC_adb_buildEdgeRequestURL_validDomain
         TC_adb_buildEdgeRequestURL_validPathOverwriting
+        TC_adb_buildEdgeRequestURL_validLocationHint
         'test_implementationDetails.brs
         TC_adb_ImplementationDetails
         ' test_edgeRequestWorker.brs
@@ -129,6 +130,8 @@ function _adb_test_functions() as dynamic
         TC_adb_EdgeRequestWorker_processRequest_invalidEventConfig_valid_response
         TC_adb_EdgeRequestWorker_processRequest_invalidDatastreamIdOverrideValue_valid_response
         TC_adb_EdgeRequestWorker_processRequest_invalidConfigOverrideValue_valid_response
+        TC_adb_EdgeRequestWorker_processRequest_validLocationHint_appendsLocationHintToRequestURL
+        TC_adb_EdgeRequestWorker_processRequest_validStateStore_appendsStateStoreToMeta
         TC_adb_EdgeRequestWorker_processRequest_overridesWithCustomMeta_valid_response
         TC_adb_EdgeRequestWorker_processRequest_invalid_response
         TC_adb_EdgeRequestWorker_processRequests
@@ -139,6 +142,29 @@ function _adb_test_functions() as dynamic
         TC_adb_EdgeModule_init
         TC_adb_EdgeModule_processEvent
         TC_adb_EdgeModule_processQueuedRequests
+        'test_EdgeResponseManager.brs
+        TC_adb_EdgeResponseManager_Init
+        TC_adb_EdgeResponseManager_processResponse_validLocationHintResponse
+        TC_adb_EdgeResponseManager_processResponse_validStateStoreResponse
+        TC_adb_EdgeResponseManager_processResponse_responseWithTypeNotHandled
+        'test_stateStoreManager.brs
+        TC_adb_StateStoreManager_Init
+        TC_adb_EdgeResponseManager_stateStore_valid
+        TC_adb_StateStoreManager_stateStore_invalid
+        TC_adb_StateStoreManager_processStateStoreHandle_validHandle
+        TC_adb_StateStoreManager_processStateStoreHandle_invalidHandle
+        'test_locationHintManager.brs
+        TC_adb_LocationHintManager_init
+        TC_adb_LocationHintManager_setLocationHint_validHintNoTTL
+        TC_adb_LocationHintManager_setLocationHint_validHintWithTTL
+        TC_adb_LocationHintManager_setLocationHint_invalid
+        TC_adb_LocationHintManager_islocationHintExpired
+        TC_adb_LocationHintManager_setLocationHint_validHintWithTTL
+        TC_adb_LocationHintManager_getLocationHint_withoutSet
+        TC_adb_LocationHintManager_getLocationHint_expiredTTL
+        TC_adb_LocationHintManager_processLocationHintHandle_invalidHandle
+        TC_adb_LocationHintManager_processLocationHintHandle_validHandle
+
     ]
     consent = [
         'test_consentModule.brs
