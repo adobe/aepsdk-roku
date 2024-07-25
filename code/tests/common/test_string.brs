@@ -11,6 +11,17 @@
 
 ' *****************************************************************************************
 
+' target: _adb_isInvalidString()
+' @Test
+sub TC_adb_isInvalidString()
+    UTF_assertTrue(_adb_isInvalidString(invalid))
+    UTF_assertTrue(_adb_isInvalidString(123))
+    UTF_assertTrue(_adb_isInvalidString({}))
+    UTF_assertTrue(_adb_isInvalidString([]))
+    UTF_assertTrue(_adb_isInvalidString(true))
+    UTF_assertTrue(_adb_isInvalidString(false))
+end sub
+
 ' target: _adb_isEmptyOrInvalidString()
 ' @Test
 sub TC_adb_isEmptyOrInvalidString()
@@ -44,4 +55,38 @@ sub TC_adb_isStringInArray()
     UTF_assertFalse(_adb_isStringInArray("xyz", [1, 2, "3"]))
     UTF_assertFalse(_adb_isStringInArray("xyz", invalid))
     UTF_assertFalse(_adb_isStringInArray("xyz", { x: "xyz", y: "abc" }))
+end sub
+
+' target: _adb_stringEqualsIgnoreCase()
+' @Test
+sub TC_adb_stringEqualsIgnoreCase()
+    UTF_assertTrue(_adb_stringEqualsIgnoreCase("", ""), generateErrorMessage(Chr(34) + Chr(34) + " = " + Chr(34) + Chr(34), true, false))
+    UTF_assertTrue(_adb_stringEqualsIgnoreCase("xyz", "xyz"), generateErrorMessage("xyz = xyz", true, false))
+    UTF_assertTrue(_adb_stringEqualsIgnoreCase("XYZ", "xyz"), generateErrorMessage("XYZ = xyz", true, false))
+    UTF_assertTrue(_adb_stringEqualsIgnoreCase("xyz", "XYZ"), generateErrorMessage("xyz = XYZ", true, false))
+    UTF_assertTrue(_adb_stringEqualsIgnoreCase("xYz", "XyZ"), generateErrorMessage("xYz = XyZ", true, false))
+    UTF_assertFalse(_adb_stringEqualsIgnoreCase("xyz", "xy"), generateErrorMessage("xyz = xy", false, true))
+    UTF_assertFalse(_adb_stringEqualsIgnoreCase("xyz", "xy"), generateErrorMessage("xyz = xy", false, true))
+    UTF_assertFalse(_adb_stringEqualsIgnoreCase("xyz", ""), generateErrorMessage("xyz = ''", false, true))
+    UTF_assertFalse(_adb_stringEqualsIgnoreCase("", "xyz"), generateErrorMessage(Chr(34) + Chr(34) + " = " + "xyz", false, true))
+    UTF_assertFalse(_adb_stringEqualsIgnoreCase("xyz", invalid), generateErrorMessage("xyz = invalid", false, true))
+    UTF_assertFalse(_adb_stringEqualsIgnoreCase(invalid, "xyz"), generateErrorMessage("invalid = xyz", false, true))
+    UTF_assertFalse(_adb_stringEqualsIgnoreCase(invalid, invalid), generateErrorMessage("invalid = invalid", false, true))
+    UTF_assertFalse(_adb_stringEqualsIgnoreCase("123", 123), generateErrorMessage("123 (string) = 123 (int)", false, true))
+end sub
+
+' target: _adb_stringEquals()
+' @Test
+sub TC_adb_stringEquals()
+    UTF_assertTrue(_adb_stringEquals("", ""), generateErrorMessage(Chr(34) + Chr(34) + " = " + Chr(34) + Chr(34), true, false))
+    UTF_assertTrue(_adb_stringEquals("xyz", "xyz"), generateErrorMessage("xyz = xyz", true, false))
+    UTF_assertFalse(_adb_stringEquals("xyz", "XYZ"), generateErrorMessage("xyz = XYZ", false, true))
+    UTF_assertFalse(_adb_stringEquals("xyz", "XyZ"), generateErrorMessage("xyz = XyZ", false, true))
+    UTF_assertFalse(_adb_stringEquals("xyz", "xy"), generateErrorMessage("xyz = xy", false, true))
+    UTF_assertFalse(_adb_stringEquals("xyz", ""), generateErrorMessage("xyz = ''", false, true))
+    UTF_assertFalse(_adb_stringEquals("", "xyz"), generateErrorMessage(Chr(34) + Chr(34) + " = " + "xyz", false, true))
+    UTF_assertFalse(_adb_stringEquals("xyz", invalid), generateErrorMessage("xyz = invalid", false, true))
+    UTF_assertFalse(_adb_stringEquals(invalid, "xyz"), generateErrorMessage("invalid = xyz", false, true))
+    UTF_assertFalse(_adb_stringEquals(invalid, invalid), generateErrorMessage("invalid = invalid", false, true))
+    UTF_assertFalse(_adb_stringEquals("123", 123), generateErrorMessage("123 (string) = 123 (int)", false, true))
 end sub

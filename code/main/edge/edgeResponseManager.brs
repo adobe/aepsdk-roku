@@ -55,10 +55,12 @@ function _adb_EdgeResponseManager() as object
                         continue for
                     end if
 
-                    if handle.type = m._LOCATION_HINT_HANDLE_TYPE
+                    if _adb_stringEqualsIgnoreCase(handle.type, m._LOCATION_HINT_HANDLE_TYPE)
                         m._locationHintManager.processLocationHintHandle(handle)
-                    else if handle.type = m._STATE_STORE_HANDLE_TYPE
+                    else if _adb_stringEqualsIgnoreCase(handle.type, m._STATE_STORE_HANDLE_TYPE)
                         m._stateStoreManager.processStateStoreHandle(handle)
+                    else
+                        _adb_logVerbose("EdgeResponseManager::_processResponseOnSuccess() - Handle type: (" + FormatJson(handle) + ") not used.")
                     end if
                 end for
             catch exception
