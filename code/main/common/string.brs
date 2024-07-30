@@ -14,11 +14,19 @@
 ' ********************************** MODULE: string utils *********************************
 
 function _adb_isEmptyOrInvalidString(str as dynamic) as boolean
-    if str = invalid or (type(str) <> "roString" and type(str) <> "String")
+    if _adb_isInvalidString(str)
         return true
     end if
 
     if Len(str) = 0
+        return true
+    end if
+
+    return false
+end function
+
+function _adb_isInvalidString(str as dynamic) as boolean
+    if str = invalid or (type(str) <> "roString" and type(str) <> "String")
         return true
     end if
 
@@ -41,4 +49,23 @@ function _adb_isStringInArray(str as string, array as object) as boolean
     end for
 
     return false
+end function
+
+function _adb_stringEqualsIgnoreCase(s1 as dynamic, s2 as dynamic) as boolean
+    if _adb_isInvalidString(s1) or _adb_isInvalidString(s2)
+        return false
+    end if
+
+    s1 = LCase(s1.Trim())
+    s2 = LCase(s2.Trim())
+
+    return s1 = s2
+end function
+
+function _adb_stringEquals(s1 as dynamic, s2 as dynamic) as boolean
+    if _adb_isInvalidString(s1) or _adb_isInvalidString(s2)
+        return false
+    end if
+
+    return s1.Trim() = s2.Trim()
 end function

@@ -668,7 +668,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_validLocationHint_appendsLocationHin
         }
         UTF_assertEqual(expectedXdmObj, jsonObj.xdm, "Expected != actual (Top level XDM object in the request)")
 
-        ''' Assert meta is not present
+        ' Assert meta is not present
         UTF_assertInvalid(jsonObj.meta, "Meta object should be invalid")
 
         UTF_assertNotInvalid(jsonObj.events)
@@ -729,13 +729,15 @@ sub TC_adb_EdgeRequestWorker_processRequest_validStateStore_appendsStateStoreToM
                "state": {
                     "entries" : [
                         {
-                            "StateKey" : "StateValue"
+                            "key" : "StateName",
+                            "value" : "StateValue",
+                            "maxAge" : 1000
                         }
                     ]
                }
             }
 
-        UTF_assertEqual(expectedMetaObj, jsonObj.meta, "Expected != actual (Events payload in the request)")
+        UTF_assertEqual(expectedMetaObj, jsonObj.meta, generateErrorMessage("Meta object in the request", expectedMetaObj, jsonObj.meta))
 
         UTF_assertNotInvalid(jsonObj.events)
         expectedEventsArray = [
@@ -750,7 +752,8 @@ sub TC_adb_EdgeRequestWorker_processRequest_validStateStore_appendsStateStoreToM
     end function
 
     edgeResponseManager = _adb_edgeResponseManager()
-    edgeResponseManager._stateStoreManager.setStateStore([{"StateKey" : "StateValue"}])
+    edgeResponseManager._stateStoreManager._addToStateStore({"key": "StateName", "maxAge" : 1000, "value": "StateValue"})
+
     worker = _adb_EdgeRequestWorker(edgeResponseManager)
     networkResponse = worker._processRequest({ xdm: { key: "value" }}, "ecid_test", "config_id", "request_id", "/v1/interact", invalid, invalid)
 

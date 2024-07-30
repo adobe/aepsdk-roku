@@ -11,6 +11,8 @@
 ' *
 ' *****************************************************************************************
 
+' ************************************ MODULE: LocationHintManager ***************************************
+
 function _adb_LocationHintManager() as object
 
     return {
@@ -18,11 +20,12 @@ function _adb_LocationHintManager() as object
         _EDGE_NETWORK_SCOPE: "edgenetwork",
 
         _locationHint: invalid,
-        _locationHintExpiryTSInMillis: invalid,
+        _timer: invalid,
 
         getLocationHint: function() as dynamic
             if m._isLocationHintExpired()
                 _adb_logVerbose("_adb_LocationHintManager::getLocationHint() - Location hint expired, returning invalid.")
+                m._delete()
                 return invalid
             end if
 
@@ -41,13 +44,7 @@ function _adb_LocationHintManager() as object
             m._locationHint = locationHint
             _adb_logDebug("_adb_LocationHintManager::setLocationHint() - locationHint set to: (" + m._locationHint + ").")
 
-            if _adb_isInvalidInt(ttlSeconds)
-                _adb_logDebug("_adb_LocationHintManager::setLocationHint() - ttlSeconds is not found, using default ttl (" + FormatJson(m._DEFAULT_LOCATION_HINT_TTL_SEC) + ") seconds.")
-                ttlSeconds = m._DEFAULT_LOCATION_HINT_TTL_SEC
-            end if
-
-            currentTimeInMillis = _adb_timestampInMillis()
-            m._locationHintExpiryTSInMillis = currentTimeInMillis + (ttlSeconds * 1000)
+            m._setExpiryTime(ttlSeconds)
 
             return locationHintChanged
         end function
@@ -64,23 +61,33 @@ function _adb_LocationHintManager() as object
                     continue for
                 end if
 
-                if not _adb_isEmptyOrInvalidString(payload.scope) and LCase(payload.scope) = m._EDGE_NETWORK_SCOPE
+                if _adb_stringEqualsIgnoreCase(payload.scope, m._EDGE_NETWORK_SCOPE)
                     m.setLocationHint(payload.hint, payload.ttlSeconds)
                 end if
 
             end for
         end function,
 
+        _setExpiryTime: function(ttlSeconds as dynamic) as void
+            if _adb_isInvalidInt(ttlSeconds)
+                _adb_logDebug("_adb_LocationHintManager::_setExpiryTime() - invalid ttlSeconds:(" + FormatJson(ttlSeconds) + "), using default ttl (" + FormatJson(m._DEFAULT_LOCATION_HINT_TTL_SEC) + ") seconds.")
+                ttlSeconds = m._DEFAULT_LOCATION_HINT_TTL_SEC
+            end if
+
+            m._timer = _adb_Timer(ttlSeconds * 1000)
+        end function,
+
         _isLocationHintExpired: function(currentTimeInMillis = _adb_timestampInMillis() as longinteger) as boolean
-            if m._locationHintExpiryTSInMillis = invalid
+            if m._timer = invalid
                 return true
             end if
 
-            if currentTimeInMillis > m._locationHintExpiryTSInMillis
-                return true
-            end if
+            return m._timer.isExpired(currentTimeInMillis)
+        end function,
 
-            return false
+        _delete: function() as void
+            m._locationHint = invalid
+            m._timer = invalid
         end function
     }
 
