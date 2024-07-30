@@ -85,7 +85,7 @@ function _adb_StateStoreEntry(payload as object) as object
 
     stateStoreEntry = {
         _payload: invalid,
-        _expiryTimer: invalid,
+        _timer: invalid,
 
         _init: function(payload as object) as void
             _adb_logVerbose("_adb_StateStore::init() - Intializing stateStore with payload: (" + FormatJson(m._payload) + ").")
@@ -103,7 +103,7 @@ function _adb_StateStoreEntry(payload as object) as object
                 maxAge = 0
             end if
 
-            m._expiryTimer = _adb_ExpiryTimer(maxAge * 1000)
+            m._timer = _adb_Timer(maxAge * 1000)
         end function,
 
         getPayload: function() as dynamic
@@ -116,11 +116,11 @@ function _adb_StateStoreEntry(payload as object) as object
         end function,
 
         isExpired: function(currentTimeInMillis = _adb_timestampInMillis() as longinteger) as boolean
-            if m._expiryTimer = invalid
+            if m._timer = invalid
                 return true
             end if
 
-            return m._expiryTimer.isExpired(currentTimeInMillis)
+            return m._timer.isExpired(currentTimeInMillis)
         end function
     }
 

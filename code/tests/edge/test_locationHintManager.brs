@@ -17,9 +17,9 @@ sub TC_adb_LocationHintManager_Init()
     locationHintManager = _adb_LocationHintManager()
 
     actualLocationHint = locationHintManager.getLocationHint()
-    actualExpiryTimer = locationHintManager._expiryTimer
+    actualtimer = locationHintManager._timer
     UTF_assertInvalid(actualLocationHint, generateErrorMessage("Location hint", "invalid", actualLocationHint))
-    UTF_assertInvalid(actualExpiryTimer, generateErrorMessage("Location hint expiry timer", "invalid", actualExpiryTimer))
+    UTF_assertInvalid(actualtimer, generateErrorMessage("Location hint expiry timer", "invalid", actualtimer))
 end sub
 
 ' target: _adb_LocationHintManager_setLocationHint()
@@ -29,10 +29,10 @@ sub TC_adb_LocationHintManager_setLocationHint_validHintNoTTL()
     locationHint = "locationHint"
 
     locationHintManager.setLocationHint(locationHint)
-    expectedExpiryTS = locationHintManager._expiryTimer.initTSInMillis + (locationHintManager._DEFAULT_LOCATION_HINT_TTL_SEC * 1000)
+    expectedExpiryTS = locationHintManager._timer.initTSInMillis + (locationHintManager._DEFAULT_LOCATION_HINT_TTL_SEC * 1000)
 
     actualLocationHint = locationHintManager.getLocationHint()
-    actualExpiryTS = locationHintManager._expiryTimer.expiryTSInMillis
+    actualExpiryTS = locationHintManager._timer.expiryTSInMillis
     UTF_assertEqual(locationHint, actualLocationHint, generateErrorMessage("Location hint", locationHint, actualLocationHint))
     UTF_assertEqual(expectedExpiryTS, actualExpiryTS, generateErrorMessage("Location hint expiry timestamp", expectedExpiryTS, actualExpiryTS))
 end sub
@@ -45,10 +45,10 @@ sub TC_adb_LocationHintManager_setLocationHint_validHintWithTTL()
 
     locationHintManager.setLocationHint(locationHint, 100)
 
-    expectedExpiryTS = locationHintManager._expiryTimer.initTSInMillis + (100 * 1000) ' TTL is 100 seconds
+    expectedExpiryTS = locationHintManager._timer.initTSInMillis + (100 * 1000) ' TTL is 100 seconds
 
     actualLocationHint = locationHintManager.getLocationHint()
-    actualExpiryTS = locationHintManager._expiryTimer.expiryTSInMillis
+    actualExpiryTS = locationHintManager._timer.expiryTSInMillis
     UTF_assertEqual(locationHint, actualLocationHint, generateErrorMessage("Location hint", locationHint, actualLocationHint))
     UTF_assertEqual(expectedExpiryTS, actualExpiryTS, generateErrorMessage("Location hint expiry timestamp", expectedExpiryTS, actualExpiryTS))
 end sub
@@ -60,17 +60,17 @@ sub TC_adb_LocationHintManager_setLocationHint_invalid()
 
     locationHintManager.setLocationHint(invalid)
     actualLocationHint = locationHintManager.getLocationHint()
-    actualExpiryTimer = locationHintManager._expiryTimer
+    actualtimer = locationHintManager._timer
 
     UTF_assertInvalid(actualLocationHint, generateErrorMessage("Location hint", "invalid", actualLocationHint))
-    UTF_assertInvalid(actualExpiryTimer, generateErrorMessage("Location hint expiry timer", "invalid", actualExpiryTimer))
+    UTF_assertInvalid(actualtimer, generateErrorMessage("Location hint expiry timer", "invalid", actualtimer))
 
     locationHintManager.setLocationHint("")
     actualLocationHint = locationHintManager.getLocationHint()
 
-    actualExpiryTimer = locationHintManager._expiryTimer
+    actualtimer = locationHintManager._timer
     UTF_assertInvalid(actualLocationHint, generateErrorMessage("Location hint", "invalid", actualLocationHint))
-    UTF_assertInvalid(actualExpiryTimer, generateErrorMessage("Location hint expiry timer", "invalid", actualExpiryTimer))
+    UTF_assertInvalid(actualtimer, generateErrorMessage("Location hint expiry timer", "invalid", actualtimer))
 end sub
 
 ' target: _adb_LocationHintManager_isLocationHintExpired()
@@ -79,8 +79,8 @@ sub TC_adb_LocationHintManager_islocationHintExpired()
     locationHintManager = _adb_LocationHintManager()
     locationHint = "locationHint"
 
-    expiryTimer = _adb_ExpiryTimer(100, 0)
-    locationHintManager._expiryTimer = expiryTimer
+    timer = _adb_timer(100, 0)
+    locationHintManager._timer = timer
 
     UTF_assertFalse(locationHintManager._isLocationHintExpired(99), generateErrorMessage("Location hint expiry", "false", "true"))
     UTF_assertFalse(locationHintManager._isLocationHintExpired(100), generateErrorMessage("Location hint expiry", "false", "true"))
@@ -107,7 +107,7 @@ sub TC_adb_LocationHintManager_getLocationHint_expiredTTL_callsDelete()
 
     actualLocationHint = locationHintManager.getLocationHint()
     UTF_assertEqual(locationHint, actualLocationHint, generateErrorMessage("Location hint", locationHint, actualLocationHint))
-    UTF_assertNotInvalid(locationHintManager._expiryTimer, generateErrorMessage("Location hint expiry timer", "not invalid", locationHintManager._expiryTimer))
+    UTF_assertNotInvalid(locationHintManager._timer, generateErrorMessage("Location hint expiry timer", "not invalid", locationHintManager._timer))
 
     ' mock location hint expiry
     locationHintManager._isLocationHintExpired = function(currentTimeInMillis = _adb_timestampInMillis() as longinteger) as boolean
@@ -117,7 +117,7 @@ sub TC_adb_LocationHintManager_getLocationHint_expiredTTL_callsDelete()
     actualLocationHint = locationHintManager.getLocationHint()
     UTF_assertInvalid(actualLocationHint, generateErrorMessage("Location hint expiry timestamp", "invalid", actualLocationHint))
     UTF_assertInvalid(locationHintManager._locationHint, generateErrorMessage("Location hint", "invalid", locationHintManager._locationHint))
-    UTF_assertInvalid(locationHintManager._expiryTimer, generateErrorMessage("Location hint expiry timer", "invalid", locationHintManager._expiryTimer))
+    UTF_assertInvalid(locationHintManager._timer, generateErrorMessage("Location hint expiry timer", "invalid", locationHintManager._timer))
 end sub
 
 ' target: _adb_LocationHintManager_processLocationHintHandle_invalid()
@@ -246,13 +246,13 @@ sub TC_adb_LocationHintManager_delete()
 
     actualLocationHint = locationHintManager.getLocationHint()
     UTF_assertEqual(locationHint, actualLocationHint, generateErrorMessage("Location hint", locationHint, actualLocationHint))
-    UTF_assertNotInvalid(locationHintManager._expiryTimer, generateErrorMessage("Location hint expiry timer", "not invalid", locationHintManager._expiryTimer))
+    UTF_assertNotInvalid(locationHintManager._timer, generateErrorMessage("Location hint expiry timer", "not invalid", locationHintManager._timer))
 
     locationHintManager._delete()
 
     actualLocationHint = locationHintManager.getLocationHint()
     UTF_assertInvalid(actualLocationHint, generateErrorMessage("Location hint", "invalid", actualLocationHint))
-    UTF_assertInvalid(locationHintManager._expiryTimer, generateErrorMessage("Location hint expiry timer", "invalid", locationHintManager._expiryTimer))
+    UTF_assertInvalid(locationHintManager._timer, generateErrorMessage("Location hint expiry timer", "invalid", locationHintManager._timer))
 end sub
 
 

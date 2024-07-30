@@ -198,7 +198,7 @@ sub TC_adb_StateStoreEntry_isExpired_expired()
     }
 
     stateStoreEntry = _adb_StateStoreEntry(payload)
-    expectedExpiryTS = stateStoreEntry._expiryTimer.expiryTSInMillis + (10 * 1000)
+    expectedExpiryTS = stateStoreEntry._timer.expiryTSInMillis + (10 * 1000)
 
     UTF_assertTrue(stateStoreEntry.isExpired(expectedExpiryTS+1), "State store is not expired.")
 end sub
@@ -211,8 +211,8 @@ sub TC_adb_StateStoreEntry_noMaxAge()
     }
 
     stateStoreEntry = _adb_StateStoreEntry(payload)
-    expectedExpiryTS = stateStoreEntry._expiryTimer.initTSInMillis + (0 * 1000) ' default maxAge is 0
+    expectedExpiryTS = stateStoreEntry._timer.initTSInMillis + (0 * 1000) ' default maxAge is 0
 
-    actualExpiryTS = stateStoreEntry._expiryTimer.expiryTSInMillis
+    actualExpiryTS = stateStoreEntry._timer.expiryTSInMillis
     UTF_assertEqual(expectedExpiryTS ,actualExpiryTS, generateErrorMessage("State store expiry timestamp", expectedExpiryTS, actualExpiryTS))
 end sub

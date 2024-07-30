@@ -20,7 +20,7 @@ function _adb_LocationHintManager() as object
         _EDGE_NETWORK_SCOPE: "edgenetwork",
 
         _locationHint: invalid,
-        _expiryTimer: invalid,
+        _timer: invalid,
 
         getLocationHint: function() as dynamic
             if m._isLocationHintExpired()
@@ -74,20 +74,20 @@ function _adb_LocationHintManager() as object
                 ttlSeconds = m._DEFAULT_LOCATION_HINT_TTL_SEC
             end if
 
-            m._expiryTimer = _adb_ExpiryTimer(ttlSeconds * 1000)
+            m._timer = _adb_Timer(ttlSeconds * 1000)
         end function,
 
         _isLocationHintExpired: function(currentTimeInMillis = _adb_timestampInMillis() as longinteger) as boolean
-            if m._expiryTimer = invalid
+            if m._timer = invalid
                 return true
             end if
 
-            return m._expiryTimer.isExpired(currentTimeInMillis)
+            return m._timer.isExpired(currentTimeInMillis)
         end function,
 
         _delete: function() as void
             m._locationHint = invalid
-            m._expiryTimer = invalid
+            m._timer = invalid
         end function
     }
 

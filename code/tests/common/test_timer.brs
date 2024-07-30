@@ -11,27 +11,27 @@
 
 ' *****************************************************************************************
 
-' target: _adb_ExpiryTimer()
+' target: _adb_timer()
 ' @Test
-sub TC_adb_ExpiryTimer_init()
-    expiryTimer = _adb_ExpiryTimer(1800, 0)
-    UTF_assertEqual(expiryTimer.initTSInMillis, 0&)
-    UTF_assertEqual(expiryTimer.expiryTSInMillis, 1800&)
-    UTF_assertFalse(expiryTimer.isExpired(0), "expiryTimer.isExpired() should return false")
-    UTF_assertTrue(expiryTimer.isExpired(1801), "expiryTimer.isExpired(1800001) should return true")
+sub TC_adb_timer_init()
+    timer = _adb_timer(1800, 0)
+    UTF_assertEqual(timer.initTSInMillis, 0&)
+    UTF_assertEqual(timer.expiryTSInMillis, 1800&)
+    UTF_assertFalse(timer.isExpired(0), "timer.isExpired() should return false")
+    UTF_assertTrue(timer.isExpired(1801), "timer.isExpired(1800001) should return true")
 end sub
 
-' target: _adb_ExpiryTimer()
+' target: _adb_timer()
 ' @Test
-sub TC_adb_ExpiryTimer_initWithoutStartTime()
-    expiryTimer = _adb_ExpiryTimer(1800)
+sub TC_adb_timer_initWithoutStartTime()
+    timer = _adb_timer(1800)
 
-    UTF_assertNotInvalid(expiryTimer.initTSInMillis)
+    UTF_assertNotInvalid(timer.initTSInMillis)
 
-    initTSInMillis = expiryTimer.initTSInMillis
+    initTSInMillis = timer.initTSInMillis
     expectedExpiryTSInMillis = initTSInMillis + 1800
 
-    UTF_assertEqual(expiryTimer.expiryTSInMillis, expectedExpiryTSInMillis)
-    UTF_assertFalse(expiryTimer.isExpired())
-    UTF_assertTrue(expiryTimer.isExpired(expectedExpiryTSInMillis + 1))
+    UTF_assertEqual(timer.expiryTSInMillis, expectedExpiryTSInMillis)
+    UTF_assertFalse(timer.isExpired())
+    UTF_assertTrue(timer.isExpired(expectedExpiryTSInMillis + 1))
 end sub

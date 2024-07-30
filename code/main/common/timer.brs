@@ -11,10 +11,10 @@
 ' *
 ' *****************************************************************************************
 
-' ************************************ MODULE: ExpiryTimer ***************************************
+' ************************************ MODULE: Timer ***************************************
 
-function _adb_ExpiryTimer(durationInMillis as longinteger, startTimeMillis = _adb_timestampInMillis() as longinteger) as object
-    expiryTimer = {
+function _adb_Timer(durationInMillis as longinteger, startTimeMillis = _adb_timestampInMillis() as longinteger) as object
+    timer = {
         initTSInMillis: invalid,
         expiryTSInMillis: invalid,
 
@@ -36,7 +36,7 @@ function _adb_ExpiryTimer(durationInMillis as longinteger, startTimeMillis = _ad
         end function
     }
 
-    expiryTimer._init(durationInMillis, startTimeMillis)
+    timer._init(durationInMillis, startTimeMillis)
 
-    return expiryTimer
+    return timer
 end function

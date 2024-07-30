@@ -33,9 +33,9 @@ function _adb_test_functions() as dynamic
     common = [
         'test_datetime.brs
         TC_adb_sdkVersion
-        'test_expiryTimer.brs
-        TC_adb_ExpiryTimer_init
-        TC_adb_ExpiryTimer_initWithoutStartTime
+        'test_timer.brs
+        TC_adb_timer_init
+        TC_adb_timer_initWithoutStartTime
         'test_constants.brs
         TC_AdobeAEPSDKConstants
         'test_map.brs
