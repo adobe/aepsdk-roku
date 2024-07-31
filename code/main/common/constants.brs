@@ -33,6 +33,7 @@ function _adb_InternalConstants() as object
         },
         LOCAL_DATA_STORE_KEYS: {
             ECID: "ecid"
+            CONSENT_COLLECT: "consent.collect"
         },
         TASK: {
             REQUEST_EVENT: "requestEvent",
