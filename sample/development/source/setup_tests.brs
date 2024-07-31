@@ -184,10 +184,28 @@ function _adb_test_functions() as dynamic
     consent = [
         'test_consentModule.brs
         TC_adb_ConsentModule_init
-        TC_adb_ConsentModule_extractConsentFromConfiguration_valid
-        TC_adb_ConsentModule_extractConsentFromConfiguration_invalid
-        TC_adb_ConsentModule_isValidConsentValue_valid
-        TC_adb_ConsentModule_isValidConsentValue_invalid
+        TC_adb_ConsentModule_processEvent_withCollectConsent_queuesEdgeRequest
+        TC_adb_ConsentModule_processEvent_withoutCollectConsent_queuesEdgeRequest
+        TC_adb_ConsentModule_processEvent_collectConsentPending_doesNotQueueEdgeRequest
+        TC_adb_ConsentModule_processResponseEvent_validConsentHandle
+        TC_adb_ConsentModule_processResponseEvent_missingConsentPreferencesHandle
+        TC_adb_ConsentModule_processResponseEvent_invalidHandle
+        'test_consentState.brs
+        TS_consentState_SetUp
+        TS_consentState_BeforeEach
+        TS_consentState_TearDown
+        TC_adb_ConsentState_init
+        TC_adb_ConsentState_extractConsentFromConfiguration_valid
+        TC_adb_ConsentState_extractConsentFromConfiguration_invalid
+        TC_adb_ConsentState_isValidConsentValue_valid
+        TC_adb_ConsentState_isValidConsentValue_invalid
+        TC_adb_ConsentState_setCollectConsent_validValue_cachesAndPersists
+        TC_adb_ConsentState_setCollectConsent_invalidValue_doesNotCacheOrPersist
+        TC_adb_ConsentState_setCollectConsent_validValue_invalidValue_retainsOldValidValue
+        TC_adb_ConsentState_getCollectConsent_cached_returnsCachedValue
+        TC_adb_ConsentState_getCollectConsent_notCached_returnsPersistedValue
+        TC_adb_ConsentState_getCollectConsent_notPersisted_fetchesFromConfig
+        TC_adb_ConsentState_getCollectConsent_notPersisted_notInConfig_returnsInvalid
     ]
     media = [
         'test_mediaUtils.brs

@@ -26,6 +26,25 @@ function getPersistedECID() as dynamic
     return persistedECID
 end function
 
+function getPersistedCollectConsent() as dynamic
+    persistedCollectConsent = readValueFromRegistry("consent.collect")
+    return persistedCollectConsent
+end function
+
+function clearPersistedCollectConsent() as void
+    removeValue("consent.collect")
+end function
+
+function persistCollectConsent(collectConsent as dynamic) as void
+    writeValue("consent.collect", collectConsent)
+end function
+
+function writeValue(key as string, value as dynamic) as void
+    _registry = CreateObject("roRegistrySection", "adb_aep_roku_sdk")
+    _registry.Write(key, value)
+    _registry.Flush()
+end function
+
 function removeValue(key) as void
     _registry = CreateObject("roRegistrySection", "adb_aep_roku_sdk")
     _registry.Delete(key)
