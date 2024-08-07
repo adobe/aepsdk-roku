@@ -139,142 +139,34 @@ sub TC_adb_ConsentState_extractConsentFromConfiguration_invalid()
 
     actualCollectConsent = consentState._extractCollectConsentValueFromConfig(consentMap)
     UTF_assertInvalid(actualCollectConsent, "expected: Invalid, actual: " + FormatJson(actualCollectConsent))
-
-    ''' case 6 collect consent val is not valid
-    consentMap = {
-        "consents": {
-            "collect": {
-                "val": "pending"
-            }
-        }
-    }
-
-    actualCollectConsent = consentState._extractCollectConsentValueFromConfig(consentMap)
-    UTF_assertInvalid(actualCollectConsent, "expected: Invalid, actual: " + FormatJson(actualCollectConsent))
 end sub
 
-' target: _isValidConsentValue
+
+' target: _adb_ConsentState()
 ' @Test
-sub TC_adb_ConsentState_isValidConsentValue_valid()
+sub TC_adb_ConsentState_setCollectConsent_cachesAndPersists()
     configurationModule = _adb_ConfigurationModule()
     consentState = _adb_ConsentState(configurationModule)
 
-    validValues = [
+    consentValues = [
         "y",
         "n",
-        "p"
+        "p",
+        "pending"
+        "yes"
     ]
 
-    for each value in validValues
-        UTF_assertTrue(consentState._isValidConsentValue(value), FormatJson(value) + " should be a valid consent value")
-    end for
-end sub
+    for each consentValue in consentValues
+        consentState.setCollectConsent(consentValue)
 
-' target: _isValidConsentValue
-' @Test
-sub TC_adb_ConsentState_isValidConsentValue_invalid()
-    configurationModule = _adb_ConfigurationModule()
-
-    consentState = _adb_ConsentState(configurationModule)
-
-    invalidValues = [
-        0,
-        true,
-        false,
-        "yes",
-        "pending",
-        "invalid",
-        "y1",
-        "n1",
-        "p1"
-    ]
-
-    for each value in invalidValues
-        UTF_assertFalse(consentState._isValidConsentValue(value), FormatJson(value) + " should not a valid consent value")
+        consentValueFromAPI = consentState.getCollectConsent()
+        persistedConsent = getPersistedCollectConsent()
+        cachedConsent = consentState._collectConsent
+        UTF_assertEqual(consentValue, consentValueFromAPI, generateErrorMessage("Collect consent value using getCollectConsent", consentValue, consentValueFromAPI))
+        UTF_assertEqual(consentValue, cachedConsent, generateErrorMessage("Collect consent value in memory", consentValue, cachedConsent))
+        UTF_assertEqual(consentValue, persistedConsent, generateErrorMessage("Collect consent value in persistence", consentValue, persistedConsent))
     end for
 
-end sub
-
-
-' target: _adb_ConsentState()
-' @Test
-sub TC_adb_ConsentState_setCollectConsent_validValue_cachesAndPersists()
-    configurationModule = _adb_ConfigurationModule()
-    consentState = _adb_ConsentState(configurationModule)
-
-    consentYes = "y"
-    consentState.setCollectConsent(consentYes)
-
-    consentValueFromAPI = consentState.getCollectConsent()
-    persistedConsent = getPersistedCollectConsent()
-    cachedConsent = consentState._collectConsent
-    UTF_assertEqual(consentYes, consentValueFromAPI, generateErrorMessage("Collect consent value using getCollectConsent", consentYes, consentValueFromAPI))
-    UTF_assertEqual(consentYes, cachedConsent, generateErrorMessage("Collect consent value in memory", consentYes, cachedConsent))
-    UTF_assertEqual(consentYes, persistedConsent, generateErrorMessage("Collect consent value in persistence", consentYes, persistedConsent))
-
-    consentNo = "n"
-    consentState.setCollectConsent(consentNo)
-
-    consentValueFromAPI = consentState.getCollectConsent()
-    persistedConsent = getPersistedCollectConsent()
-    cachedConsent = consentState._collectConsent
-    UTF_assertEqual(consentNo, consentValueFromAPI, generateErrorMessage("Collect consent value using getCollectConsent", consentNo, consentValueFromAPI))
-    UTF_assertEqual(consentNo, cachedConsent, generateErrorMessage("Collect consent value in memory", consentNo, cachedConsent))
-
-
-    consentPending = "p"
-    consentState.setCollectConsent(consentPending)
-
-    consentValueFromAPI = consentState.getCollectConsent()
-    persistedConsent = getPersistedCollectConsent()
-    cachedConsent = consentState._collectConsent
-    UTF_assertEqual(consentPending, consentValueFromAPI, generateErrorMessage("Collect consent value using getCollectConsent", consentPending, consentValueFromAPI))
-    UTF_assertEqual(consentPending, cachedConsent, generateErrorMessage("Collect consent value in memory", consentPending, cachedConsent))
-    UTF_assertEqual(consentPending, persistedConsent, generateErrorMessage("Collect consent value in persistence", consentPending, persistedConsent))
-end sub
-
-' target: _adb_ConsentState()
-' @Test
-sub TC_adb_ConsentState_setCollectConsent_invalidValue_doesNotCacheOrPersist()
-    configurationModule = _adb_ConfigurationModule()
-    consentState = _adb_ConsentState(configurationModule)
-
-    consentInvalid = "invalid"
-    consentState.setCollectConsent(consentInvalid)
-
-    consentValueFromAPI = consentState.getCollectConsent()
-    persistedConsent = getPersistedCollectConsent()
-    cachedConsent = consentState._collectConsent
-    UTF_assertEqual(invalid, consentValueFromAPI, generateErrorMessage("Collect consent value using getCollectConsent", invalid, consentValueFromAPI))
-    UTF_assertEqual(invalid, cachedConsent, generateErrorMessage("Collect consent value in memory", invalid, cachedConsent))
-    UTF_assertEqual(invalid, persistedConsent, generateErrorMessage("Collect consent value in persistence", invalid, persistedConsent))
-end sub
-
-' target: _adb_ConsentState()
-' @Test
-sub TC_adb_ConsentState_setCollectConsent_validValue_invalidValue_retainsOldValidValue()
-    configurationModule = _adb_ConfigurationModule()
-    consentState = _adb_ConsentState(configurationModule)
-
-    consentYes = "y"
-    consentState.setCollectConsent(consentYes)
-
-    consentValueFromAPI = consentState.getCollectConsent()
-    persistedConsent = getPersistedCollectConsent()
-    cachedConsent = consentState._collectConsent
-    UTF_assertEqual(consentYes, consentValueFromAPI, generateErrorMessage("Collect consent value using getCollectConsent", consentYes, consentValueFromAPI))
-    UTF_assertEqual(consentYes, cachedConsent, generateErrorMessage("Collect consent value in memory", consentYes, cachedConsent))
-    UTF_assertEqual(consentYes, persistedConsent, generateErrorMessage("Collect consent value in persistence", consentYes, persistedConsent))
-
-    consentState.setCollectConsent("invalid")
-
-    consentValueFromAPI = consentState.getCollectConsent()
-    persistedConsent = getPersistedCollectConsent()
-    cachedConsent = consentState._collectConsent
-
-    UTF_assertEqual(consentYes, consentValueFromAPI, generateErrorMessage("Collect consent value using getCollectConsent", consentYes, consentValueFromAPI))
-    UTF_assertEqual(consentYes, cachedConsent, generateErrorMessage("Collect consent value in memory", consentYes, cachedConsent))
-    UTF_assertEqual(consentYes, persistedConsent, generateErrorMessage("Collect consent value in persistence", consentYes, persistedConsent))
 end sub
 
 ' target: _adb_ConsentState()

@@ -16,9 +16,8 @@
 sub TC_adb_ConsentModule_init()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-
     consentState = _adb_ConsentState(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
 
     consentModule = _adb_ConsentModule(consentState, edgeModule)
     UTF_assertTrue(_adb_isConsentModule(consentModule), generateErrorMessage("Consent module is valid", "yes", "no"))
@@ -35,9 +34,8 @@ end sub
 sub TC_adb_ConsentModule_processEvent_withCollectConsent_queuesEdgeRequest()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
     consentState = _adb_ConsentState(configurationModule)
-
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
     consentModule = _adb_ConsentModule(consentState, edgeModule)
 
     GetGlobalAA().setConsentEvent = {
@@ -62,7 +60,7 @@ sub TC_adb_ConsentModule_processEvent_withCollectConsent_queuesEdgeRequest()
     }
 
     GetGlobalAA().queueEdgeRequestCalled = false
-    edgeModule.queueEdgeRequest = function(requestId as string, eventData as object, timestampInMillis as longinteger, options as object, path as string)
+    edgeModule.queueEdgeRequest = function(requestId as string, eventData as object, timestampInMillis as longinteger, options as object, path as string, requestType as string)
         GetGlobalAA().queueEdgeRequestCalled = true
         expectedConsentPayload = GetGlobalAA().setConsentEvent.data
         UTF_assertEqual( "test-event", requestId, generateErrorMessage("Request ID", "test-event", requestId))
@@ -70,6 +68,7 @@ sub TC_adb_ConsentModule_processEvent_withCollectConsent_queuesEdgeRequest()
         UTF_assertEqual(0&, timestampInMillis, generateErrorMessage("Timestamp in millis", "0", timestampInMillis))
         UTF_assertEqual({}, options, generateErrorMessage("Options", "{}", options))
         UTF_assertEqual("/v1/privacy/set-consent", path, generateErrorMessage("Path", "/v1/privacy/set-consent", path))
+        UTF_assertEqual("consent", requestType, generateErrorMessage("Request type", "consent", requestType))
     end function
 
     consentModule.processEvent(GetGlobalAA().setConsentEvent)
@@ -82,9 +81,8 @@ end sub
 sub TC_adb_ConsentModule_processEvent_withoutCollectConsent_queuesEdgeRequest()
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
     consentState = _adb_ConsentState(configurationModule)
-
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
     consentModule = _adb_ConsentModule(consentState, edgeModule)
 
     GetGlobalAA().setConsentEvent = {
@@ -109,7 +107,7 @@ sub TC_adb_ConsentModule_processEvent_withoutCollectConsent_queuesEdgeRequest()
     }
 
     GetGlobalAA().queueEdgeRequestCalled = false
-    edgeModule.queueEdgeRequest = function(requestId as string, eventData as object, timestampInMillis as longinteger, options as object, path as string)
+    edgeModule.queueEdgeRequest = function(requestId as string, eventData as object, timestampInMillis as longinteger, options as object, path as string, requestType as string)
         GetGlobalAA().queueEdgeRequestCalled = true
         expectedConsentPayload = GetGlobalAA().setConsentEvent.data
         UTF_assertEqual( "test-event", requestId, generateErrorMessage("Request ID", "test-event", requestId))
@@ -117,6 +115,7 @@ sub TC_adb_ConsentModule_processEvent_withoutCollectConsent_queuesEdgeRequest()
         UTF_assertEqual(0&, timestampInMillis, generateErrorMessage("Timestamp in millis", "0", timestampInMillis))
         UTF_assertEqual({}, options, generateErrorMessage("Options", "{}", options))
         UTF_assertEqual("/v1/privacy/set-consent", path, generateErrorMessage("Path", "/v1/privacy/set-consent", path))
+        UTF_assertEqual("consent", requestType, generateErrorMessage("Request type", "consent", requestType))
     end function
 
     consentModule.processEvent(GetGlobalAA().setConsentEvent)
@@ -126,54 +125,12 @@ end sub
 
 ' target: _adb_ConsentModule()
 ' @Test
-sub TC_adb_ConsentModule_processEvent_collectConsentPending_doesNotQueueEdgeRequest()
-    configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
-    consentState = _adb_ConsentState(configurationModule)
-
-    consentModule = _adb_ConsentModule(consentState, edgeModule)
-
-    GetGlobalAA().setConsentEvent = {
-        "uuid": "test-event",
-        "data": {
-            "consent": [
-                {
-                    "standard": "Adobe",
-                    "version": "2.0",
-                    "value": {
-                        "collect": {
-                            "val": "p"
-                        },
-                        "metadata": {
-                            "time": "2021-03-17T15:48:42-07:00"
-                        }
-                    }
-                }
-            ]
-        },
-        "timestampInMillis": 0
-    }
-
-    GetGlobalAA().queueEdgeRequestCalled = false
-    edgeModule.queueEdgeRequest = function(requestId as string, eventData as object, timestampInMillis as longinteger, options as object, path as string)
-        GetGlobalAA().queueEdgeRequestCalled = true
-    end function
-
-    consentModule.processEvent(GetGlobalAA().setConsentEvent)
-    UTF_assertNotInvalid(GetGlobalAA().setConsentEvent, generateErrorMessage("Consent event", "valid", "invalid"))
-    UTF_assertFalse(GetGlobalAA().queueEdgeRequestCalled, generateErrorMessage("processEvent calls queueEdgeRequest", "false", "true"))
-end sub
-
-
-' target: _adb_ConsentModule()
-' @Test
 sub TC_adb_ConsentModule_processResponseEvent_validConsentHandle()
 
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
     consentState = _adb_ConsentState(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
 
     GetGlobalAA().setCollectConsentCalled = false
     GetGlobalAA().setCollectConsentValue = invalid
@@ -226,8 +183,8 @@ sub TC_adb_ConsentModule_processResponseEvent_missingConsentPreferencesHandle()
 
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
     consentState = _adb_ConsentState(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
 
     GetGlobalAA().setCollectConsentCalled = false
     GetGlobalAA().setCollectConsentValue = invalid
@@ -271,8 +228,9 @@ sub TC_adb_ConsentModule_processResponseEvent_invalidHandle()
 
     configurationModule = _adb_ConfigurationModule()
     identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
     consentState = _adb_ConsentState(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
+
 
     GetGlobalAA().setCollectConsentCalled = false
     GetGlobalAA().setCollectConsentValue = invalid
@@ -343,5 +301,4 @@ sub TC_adb_ConsentModule_processResponseEvent_invalidHandle()
 
     UTF_assertFalse(GetGlobalAA().setCollectConsentCalled, generateErrorMessage("setCollectConsent is called", "false", "true"))
     UTF_assertInvalid(GetGlobalAA().setCollectConsentValue, generateErrorMessage("Collect consent value", "invalid", GetGlobalAA().setCollectConsentValue))
-
 end sub

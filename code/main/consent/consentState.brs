@@ -37,11 +37,6 @@ function _adb_ConsentState(configurationModule as object) as object
         setCollectConsent: sub(collectConsent as dynamic)
             _adb_logVerbose("ConsentState::setCollectConsent() - Setting collect consent value to (" + FormatJson(collectConsent) + ").")
 
-            if not m._isValidConsentValue(collectConsent) then
-                _adb_logError("ConsentState::setCollectConsent() - Failed to set collect consent value, invalid collect consent value: (" + FormatJson(collectConsent) + ") passed.")
-                return
-            end if
-
             m._saveCollectConsent(collectConsent)
         end sub,
 
@@ -70,11 +65,6 @@ function _adb_ConsentState(configurationModule as object) as object
         end function,
 
         _saveCollectConsent: function(collectConsentValue as dynamic) as void
-            if not m._isValidConsentValue(collectConsentValue) then
-                _adb_logError("ConsentState::_saveCollectConsent() - Invalid collect consent value: (" + FormatJson(collectConsentValue) + ").")
-                return
-            end if
-
             ''' cache the collect consent value
             m._collectConsent = collectConsentValue
 
@@ -101,14 +91,6 @@ function _adb_ConsentState(configurationModule as object) as object
             return collectConsentValue
         end function,
 
-        _isValidConsentValue: function(consentValue as dynamic) as boolean
-            if _adb_isEmptyOrInvalidString(consentValue) then
-                return false
-            end if
-
-            return (consentValue = "y" or consentValue = "p" or consentValue = "n")
-        end function,
-
         _extractCollectConsentValueFromConfig: function(consentMap as object) as dynamic
             if _adb_isEmptyOrInvalidMap(consentMap) then
                 return invalid
@@ -125,9 +107,6 @@ function _adb_ConsentState(configurationModule as object) as object
             end if
 
             collectConsentValue = collectConsent["val"]
-            if not m._isValidConsentValue(collectConsentValue) then
-                return invalid
-            end if
 
             return collectConsentValue
         end function,

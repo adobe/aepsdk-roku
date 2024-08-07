@@ -32,7 +32,7 @@ function _adb_ConsentModule(consentState as object, edgeModule as object) as obj
     module.Append({
         _CONSENT_REQUEST_PATH: "/v1/privacy/set-consent",
         _HANDLE_TYPE_CONSENT_PREFERENCES: "consent:preferences",
-        _CONSENT_PENDING: "p",
+        _REQUEST_TYPE_CONSENT: "consent",
         _edgeModule: edgeModule,
         _consentState: consentState,
 
@@ -45,19 +45,8 @@ function _adb_ConsentModule(consentState as object, edgeModule as object) as obj
             eventData = event.data
             timestampInMillis = event.timestampInMillis
 
-            collectConsentValue = m._extractCollectConsentValue(eventData)
-            if _adb_isEmptyOrInvalidString(collectConsentValue)
-                _adb_logVerbose("ConsentModule::processEvent() - collect consent value not found in data:(" + FormatJson(eventData) + ").")
-            end if
-
-            if _adb_stringEqualsIgnoreCase(collectConsentValue, m._CONSENT_PENDING)
-                m._consentState.setCollectConsent(m._CONSENT_PENDING)
-                _adb_logDebug("ConsentModule::processEvent() - Collect consent value is set to (" + FormatJson(collectConsentValue) + ") pending, not sending the consent request to edge.")
-                return
-            end if
-
             _adb_logDebug("ConsentModule::processEvent() - Sending consent request with data: (" + FormatJson(eventData) + ").")
-            m._edgeModule.queueEdgeRequest(requestId, eventData, timestampInMillis, {}, m._CONSENT_REQUEST_PATH)
+            m._edgeModule.queueEdgeRequest(requestId, eventData, timestampInMillis, {}, m._CONSENT_REQUEST_PATH, m._REQUEST_TYPE_CONSENT)
         end function,
 
         ' Processes edge response events dispatched by the event processor

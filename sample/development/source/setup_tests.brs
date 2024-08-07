@@ -197,11 +197,7 @@ function _adb_test_functions() as dynamic
         TC_adb_ConsentState_init
         TC_adb_ConsentState_extractConsentFromConfiguration_valid
         TC_adb_ConsentState_extractConsentFromConfiguration_invalid
-        TC_adb_ConsentState_isValidConsentValue_valid
-        TC_adb_ConsentState_isValidConsentValue_invalid
-        TC_adb_ConsentState_setCollectConsent_validValue_cachesAndPersists
-        TC_adb_ConsentState_setCollectConsent_invalidValue_doesNotCacheOrPersist
-        TC_adb_ConsentState_setCollectConsent_validValue_invalidValue_retainsOldValidValue
+        TC_adb_ConsentState_setCollectConsent_cachesAndPersists
         TC_adb_ConsentState_getCollectConsent_cached_returnsCachedValue
         TC_adb_ConsentState_getCollectConsent_notCached_returnsPersistedValue
         TC_adb_ConsentState_getCollectConsent_notPersisted_fetchesFromConfig
@@ -321,8 +317,6 @@ function _adb_test_functions() as dynamic
         TC_APIs_setConsent
         TC_APIs_setConsent_invalid
         TC_APIs_setConsent_emptyConsentList
-        TC_APIs_setConsentWithCallback
-        TC_APIs_setConsentWithCallback_timeout
     ]
     task = [
         'test_eventProcessor.brs
