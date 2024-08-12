@@ -18,6 +18,7 @@ function _adb_EventProcessor(task as object) as object
         _CONSTANTS: _adb_InternalConstants(),
         _task: task,
         _configurationModule: invalid,
+        _consentState: invalid,
         _identityModule: invalid,
         _edgeModule: invalid,
         _consentModule: invalid,
@@ -27,9 +28,10 @@ function _adb_EventProcessor(task as object) as object
 
         init: function() as void
             m._configurationModule = _adb_ConfigurationModule()
+            m._consentState = _adb_ConsentState(m._configurationModule)
             m._identityModule = _adb_IdentityModule(m._configurationModule)
             m._edgeModule = _adb_EdgeModule(m._configurationModule, m._identityModule)
-            m._consentModule = _adb_ConsentModule(m._configurationModule)
+            m._consentModule = _adb_ConsentModule(m._consentState, m._edgeModule)
             m._mediaModule = _adb_MediaModule(m._configurationModule, m._edgeModule)
             m._modulesRegisteredForResponseEvents = [m._consentModule, m._mediaModule]
             ' enable debug mode if needed
@@ -93,6 +95,15 @@ function _adb_EventProcessor(task as object) as object
             end if
         end function,
 
+        _getECID: function(event as object) as void
+            ecid = m._identityModule.getECID()
+
+            _adb_logDebug("EventProcessor::_getECID() - Dispatching getECID response event with ECID: (" + FormatJson(ecid) + ")")
+            ecidResponseEvent = _adb_IdentityResponseEvent(event.uuid, ecid)
+
+            m._sendResponseEvent(ecidResponseEvent)
+        end function,
+
         _handleCreateMediaSession: function(event as object) as void
             requestId = event.uuid
             data = event.data
@@ -119,17 +130,6 @@ function _adb_EventProcessor(task as object) as object
             m._mediaModule.processEvent(requestId, data)
         end function,
 
-        _setLogLevel: function(event as object) as void
-            logLevel = _adb_optIntFromMap(event.data, m._CONSTANTS.EVENT_DATA_KEY.LOG.LEVEL)
-            if logLevel <> invalid
-                loggingService = _adb_serviceProvider().loggingService
-                loggingService.setLogLevel(logLevel)
-                _adb_logInfo("EventProcessor::_setLogLevel() - Setting log level to (" + FormatJson(logLevel) + ")")
-            else
-                _adb_logWarning("EventProcessor::_setLogLevel() - Cannot set log level, level not found in event data.")
-            end if
-        end function,
-
         _resetIdentities: function(_event as object) as void
             _adb_logInfo("EventProcessor::_resetIdentities() - Resetting persisted identities.")
             m._identityModule.resetIdentities()
@@ -152,6 +152,12 @@ function _adb_EventProcessor(task as object) as object
             _adb_logVerbose("EventProcessor::_setConfiguration() - Configuration updated: " + chr(10) + FormatJson(m._configurationModule.dump()))
         end function,
 
+        _setConsent: function(event as object) as void
+            _adb_logInfo("EventProcessor::_setConsent() - Received set consent event with uuid:(" + FormatJson(event.uuid) + ").")
+
+            m._consentModule.processEvent(event)
+        end function,
+
         _setECID: function(event as object) as void
 
             ecid = _adb_optStringFromMap(event.data, m._CONSTANTS.EVENT_DATA_KEY.ECID)
@@ -163,13 +169,15 @@ function _adb_EventProcessor(task as object) as object
             end if
         end function,
 
-        _getECID: function(event as object) as void
-            ecid = m._identityModule.getECID()
-
-            _adb_logDebug("EventProcessor::_getECID() - Dispatching getECID response event with ECID: (" + FormatJson(ecid) + ")")
-            ecidResponseEvent = _adb_IdentityResponseEvent(event.uuid, ecid)
-
-            m._sendResponseEvent(ecidResponseEvent)
+        _setLogLevel: function(event as object) as void
+            logLevel = _adb_optIntFromMap(event.data, m._CONSTANTS.EVENT_DATA_KEY.LOG.LEVEL)
+            if logLevel <> invalid
+                loggingService = _adb_serviceProvider().loggingService
+                loggingService.setLogLevel(logLevel)
+                _adb_logInfo("EventProcessor::_setLogLevel() - Setting log level to (" + FormatJson(logLevel) + ")")
+            else
+                _adb_logWarning("EventProcessor::_setLogLevel() - Cannot set log level, level not found in event data.")
+            end if
         end function,
 
         _sendEvent: function(event as object) as void
@@ -187,17 +195,6 @@ function _adb_EventProcessor(task as object) as object
             m._edgeModule.processEvent(requestId, eventData, timestampInMillis)
         end function,
 
-        _setConsent: function(event as object) as void
-            _adb_logInfo("EventProcessor::_setConsent() - Received set consent event with uuid:(" + FormatJson(event.uuid) + ").")
-
-            m._consentModule.processEvent(event)
-        end function,
-
-        processQueuedRequests: function() as void
-            responseEvents = m._edgeModule.processQueuedRequests()
-            m._sendResponseEvents(responseEvents)
-        end function
-
         _sendResponseEvent: function(event as object) as void
             _adb_logInfo("EventProcessor::_sendResponseEvent() - Sending response event: (" + chr(10) + FormatJson(event) + chr(10) + ")")
 
@@ -210,6 +207,16 @@ function _adb_EventProcessor(task as object) as object
             else
                 _adb_logError("EventProcessor::_sendResponseEvent() - Cannot send response event, invalid event:(" + chr(10) + FormatJson(event) + chr(10) + ")")
             end if
+        end function,
+
+        _sendResponseEvents: function(responseEvents as dynamic) as void
+            if _adb_isEmptyOrInvalidArray(responseEvents)
+                return
+            end if
+
+            for each event in responseEvents
+                m._sendResponseEvent(event)
+            end for
         end function,
 
         _dispatchResponseEventToTask: function(event as object) as void
@@ -232,17 +239,6 @@ function _adb_EventProcessor(task as object) as object
 
         end function,
 
-        _sendResponseEvents: function(responseEvents as dynamic) as void
-            if _adb_isEmptyOrInvalidArray(responseEvents)
-                return
-            end if
-
-            for each event in responseEvents
-                m._sendResponseEvent(event)
-            end for
-        end function,
-
-        ''' TODO cleanup (clean up Media public API data and MediaModule)
         ''' Validates the event data for createMediaSession request event
         _isValidEventDataForSessionStartRequest: function(data as object) as boolean
             if data = invalid or _adb_isEmptyOrInvalidString(data.clientSessionId) or data.tsObject = invalid
@@ -256,7 +252,10 @@ function _adb_EventProcessor(task as object) as object
             return true
         end function,
 
-        ''' TODO cleanup
+        _hasXDMData: function(event as object) as boolean
+            return event <> invalid and event.DoesExist("data") and event.data.DoesExist("xdm") and event.data.xdm.Count() > 0
+        end function,
+
         ''' Validates the event data for media events
         _isValidEventDataForMediaEventRequest: function(data as object) as boolean
             if data = invalid or _adb_isEmptyOrInvalidString(data.clientSessionId) or data.tsObject = invalid
@@ -268,10 +267,6 @@ function _adb_EventProcessor(task as object) as object
             end if
 
             return true
-        end function,
-
-        _hasXDMData: function(event as object) as boolean
-            return event <> invalid and event.DoesExist("data") and event.data.DoesExist("xdm") and event.data.xdm.Count() > 0
         end function,
 
         _dumpDebugInfo: function(event as object, loggingService as object, networkService as object) as void
@@ -297,10 +292,7 @@ function _adb_EventProcessor(task as object) as object
         end function,
 
         _isInDebugMode: function() as boolean
-            if m._task <> invalid and m._task.hasField("debugInfo")
-                return true
-            end if
-            return false
+            return m._task <> invalid and m._task.hasField("debugInfo")
         end function,
     }
 

@@ -43,6 +43,7 @@ governing permissions and limitations under the License.-->
   </children>
 
   <script type="text/brightscript" uri="pkg:/components/MainScene.brs"/>
+
   <script type="text/brightscript" uri="pkg:/source/adobe/AEPSDK.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/common/constants.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/common/datetime.brs"/>
@@ -66,6 +67,8 @@ governing permissions and limitations under the License.-->
   <script type="text/brightscript" uri="pkg:/source/adobe/edge/edgeResponseManager.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/edge/locationHintManager.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/edge/stateStoreManager.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/consent/consentState.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/consent/consentModule.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/media/mediaModule.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/media/mediaUtils.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/media/mediaSessionManager.brs"/>
