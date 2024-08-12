@@ -16,8 +16,9 @@
 sub TC_adb_MediaSession_init()
     ''' setup
     configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    consentState = _adb_ConsentState(configurationModule)
+    identityModule = _adb_IdentityModule(configurationModule, consentState)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
 
     configuration = {}
     ADB_CONSTANTS = AdobeAEPSDKConstants()
@@ -53,8 +54,9 @@ sub TC_adb_MediaSession_init_withoutSessionConfig()
     ''' setup
     configurationModule = _adb_ConfigurationModule()
 
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    consentState = _adb_ConsentState(configurationModule)
+    identityModule = _adb_IdentityModule(configurationModule, consentState)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
 
     configuration = {}
     ADB_CONSTANTS = AdobeAEPSDKConstants()
@@ -89,8 +91,9 @@ end sub
 sub TC_adb_MediaSession_init_withFullSessionConfig()
     ''' setup
     configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    consentState = _adb_ConsentState(configurationModule)
+    identityModule = _adb_IdentityModule(configurationModule, consentState)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
 
     configuration = {}
     ADB_CONSTANTS = AdobeAEPSDKConstants()
@@ -149,8 +152,9 @@ sub TC_adb_MediaSession_process_notActiveSession()
     sessionStartHit.requestId = "sessionStartRequestId"
 
     configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    consentState = _adb_ConsentState(configurationModule)
+    identityModule = _adb_IdentityModule(configurationModule, consentState)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
 
     ''' create media session
     mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeModule)
@@ -242,8 +246,9 @@ sub TC_adb_MediaSession_process_activeSession_sessionStartHit_queued()
     sessionStartHit.requestId = "sessionStartRequestId"
 
     configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    consentState = _adb_ConsentState(configurationModule)
+    identityModule = _adb_IdentityModule(configurationModule, consentState)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
 
     ''' create media session
     mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeModule)
@@ -354,8 +359,9 @@ sub TC_adb_MediaSession_process_activeSession_playbackHits_queued()
     pingHit2.requestId = "pingRequestId2"
 
     configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    consentState = _adb_ConsentState(configurationModule)
+    identityModule = _adb_IdentityModule(configurationModule, consentState)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
 
     ''' create media session
     mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeModule)
@@ -493,8 +499,9 @@ sub TC_adb_MediaSession_process_activeSession_adHits_queued()
 
 
     configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    consentState = _adb_ConsentState(configurationModule)
+    identityModule = _adb_IdentityModule(configurationModule, consentState)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
 
     ''' create media session
     mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeModule)
@@ -676,8 +683,9 @@ sub TC_adb_MediaSession_process_activeSession_idleTimeout_queued()
     }
 
     configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    consentState = _adb_ConsentState(configurationModule)
+    identityModule = _adb_IdentityModule(configurationModule, consentState)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
 
     ''' create media session
     mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeModule)
@@ -859,8 +867,9 @@ sub TC_adb_MediaSession_process_activeSession_longRunningSession_queued()
     }
 
     configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    consentState = _adb_ConsentState(configurationModule)
+    identityModule = _adb_IdentityModule(configurationModule, consentState)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
 
     ''' create media session
     mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeModule)
@@ -946,8 +955,9 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigAndSessio
     sessionStartHit.requestId = "sessionStartRequestId"
 
     configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    consentState = _adb_ConsentState(configurationModule)
+    identityModule = _adb_IdentityModule(configurationModule, consentState)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
 
     ''' mock configuration
     MEDIA_CONFIG_CONSTANTS = AdobeAEPSDKConstants().CONFIGURATION
@@ -1043,8 +1053,9 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_validConfigNoSession
 
 
     configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    consentState = _adb_ConsentState(configurationModule)
+    identityModule = _adb_IdentityModule(configurationModule, consentState)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
 
     ''' mock configuration
     MEDIA_CONFIG_CONSTANTS = AdobeAEPSDKConstants().CONFIGURATION
@@ -1116,7 +1127,7 @@ end sub
 ' target: tryDispatchMediaEvents()
 ' SDK doesn't support remove configuration item at runtime and the required configuration items are not available when running into the MediaSession code.
 ' TODO: skip this test for now, let's remove it when refactoring the Media module before alpha release.
-' @Ignore
+' @Test
 sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_NoValidConfigNoSessionConfig()
     ''' setup
     sessionStartHit = {}
@@ -1140,8 +1151,9 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_sessionStart_NoValidConfigNoSessi
     sessionStartHit.requestId = "sessionStartRequestId"
 
     configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    consentState = _adb_ConsentState(configurationModule)
+    identityModule = _adb_IdentityModule(configurationModule, consentState)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
 
     ''' mock edgeModule.queueEdgeRequest()
     GetGlobalAA()._test_edgeModule_queueEdgeRequest_called = false
@@ -1219,8 +1231,9 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_notSessionStart_validBackendId()
     playHit.requestId = "playRequestId"
 
     configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    consentState = _adb_ConsentState(configurationModule)
+    identityModule = _adb_IdentityModule(configurationModule, consentState)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
 
     ''' mock edgeModule.queueEdgeRequest()
     GetGlobalAA()._test_edgeModule_queueEdgeRequest_called = false
@@ -1298,8 +1311,9 @@ sub TC_adb_MediaSession_tryDispatchMediaEvents_notSessionStart_invalidBackendId(
     playHit.requestId = "playRequestId"
 
     configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    consentState = _adb_ConsentState(configurationModule)
+    identityModule = _adb_IdentityModule(configurationModule, consentState)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
 
     ''' mock edgeModule.queueEdgeRequest()
     GetGlobalAA()._test_edgeModule_queueEdgeRequest_called = false
@@ -1478,8 +1492,9 @@ sub TC_adb_MediaSession_attachMediaConfig()
     configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_APP_VERSION] = "testAppVersion"
 
     configurationModule.updateConfiguration(configuration)
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    consentState = _adb_ConsentState(configurationModule)
+    identityModule = _adb_IdentityModule(configurationModule, consentState)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
 
     ''' test
     mediaSession = _adb_MediaSession("testId", configurationModule, {}, edgeModule)
@@ -2659,8 +2674,9 @@ end sub
 sub TC_adb_MediaSession_processEdgeRequestQueue_sessionStart_200_storesBackendSessionId()
     ''' setup
     configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    consentState = _adb_ConsentState(configurationModule)
+    identityModule = _adb_IdentityModule(configurationModule, consentState)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
 
     mediaSession = _adb_MediaSession("testId", {}, {}, edgeModule)
 
@@ -2738,8 +2754,9 @@ end sub
 sub TC_adb_MediaSession_processEdgeRequestQueue_sessionStart_207_vaError400_closesSession()
     ''' setup
     configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    consentState = _adb_ConsentState(configurationModule)
+    identityModule = _adb_IdentityModule(configurationModule, consentState)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
 
     mediaSession = _adb_MediaSession("testId", {}, {}, edgeModule)
 
