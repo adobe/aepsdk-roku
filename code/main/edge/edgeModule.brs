@@ -17,7 +17,7 @@ function _adb_isEdgeModule(module as object) as boolean
     return (module <> invalid and module.type = "com.adobe.module.edge")
 end function
 
-function _adb_EdgeModule(configurationModule as object, identityModule as object) as object
+function _adb_EdgeModule(configurationModule as object, identityModule as object, consentState as object) as object
     if not _adb_isConfigurationModule(configurationModule) then
         _adb_logError("EdgeModule::_adb_EdgeModule() - configurationModule is not valid.")
         return invalid
@@ -28,22 +28,34 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
         return invalid
     end if
 
+    if not _adb_isConsentStateModule(consentState) then
+        _adb_logError("EdgeModule::_adb_EdgeModule() - consentState is not valid.")
+        return invalid
+    end if
+
     edgeResponseManager = _adb_EdgeResponseManager()
 
     module = _adb_AdobeObject("com.adobe.module.edge")
     module.Append({
         _EDGE_REQUEST_PATH: "/v1/interact",
+        _REQUEST_TYPE_EDGE: "edge",
         _configurationModule: configurationModule,
         _identityModule: identityModule,
         _edgeResponseManager: edgeResponseManager,
-        _edgeRequestWorker: _adb_EdgeRequestWorker(edgeResponseManager),
+        _edgeRequestWorker: _adb_EdgeRequestWorker(edgeResponseManager, consentState),
 
         ' sendEvent API triggers this API to queue edge requests
         ' requestId: unique id for the request
         ' eventData: data to be sent to edge
         ' timestampInMillis: timestamp of the event
-        processEvent: function(requestId as string, eventData as object, timestampInMillis as longinteger) as void
-            m._edgeRequestWorker.queue(requestId, eventData, timestampInMillis, {}, m._EDGE_REQUEST_PATH)
+        processEvent: function(requestId as string, eventData as object, timestampInMillis as longinteger, requestType = m._REQUEST_TYPE_EDGE as string) as void
+            edgeRequest = _adb_EdgeRequest(requestId, eventData, timestampInMillis)
+            edgeRequest.setMeta({})
+            edgeRequest.setPath(m._EDGE_REQUEST_PATH)
+            edgeRequest.setRequestType(requestType)
+
+            m._edgeRequestWorker.queue(edgeRequest)
+            ' m._edgeRequestWorker.queue(requestId, eventData, timestampInMillis, {}, m._EDGE_REQUEST_PATH, requestType)
         end function,
 
         ' Queues edge requests to be sent to Edge server
@@ -52,8 +64,15 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
         ' timestampInMillis: timestamp of the event
         ' meta: meta data for the edge request
         ' path: path to send the edge request to
-        queueEdgeRequest: function(requestId as string, eventData as object, timestampInMillis as longinteger, meta as object, path as string) as void
-            m._edgeRequestWorker.queue(requestId, eventData, timestampInMillis, meta, path)
+        queueEdgeRequest: function(requestId as string, eventData as object, timestampInMillis as longinteger, meta as object, path as string, requestType = m._REQUEST_TYPE_EDGE as string) as void
+            edgeRequest = _adb_EdgeRequest(requestId, eventData, timestampInMillis)
+            edgeRequest.setMeta(meta)
+            edgeRequest.setPath(path)
+            edgeRequest.setRequestType(requestType)
+
+            m._edgeRequestWorker.queue(edgeRequest)
+
+            'm._edgeRequestWorker.queue(requestId, eventData, timestampInMillis, meta, path, requestType)
         end function,
 
         ' Sends queued edge requests to edge
@@ -67,11 +86,11 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
             end if
 
             edgeConfig = m._getEdgeConfig()
-            if edgeConfig = invalid
+            if _adb_isEmptyOrInvalidMap(edgeConfig)
                 return responseEvents
             end if
 
-            responses = m._edgeRequestWorker.processRequests(edgeConfig.configId, edgeConfig.ecid, edgeConfig.edgeDomain)
+            responses = m._edgeRequestWorker.processRequests(edgeConfig)
 
             for each edgeResponse in responses
                 if _adb_isEdgeResponse(edgeResponse) then
