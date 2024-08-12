@@ -54,30 +54,33 @@ function _adb_ConsentModule(consentState as object, edgeModule as object) as obj
         processResponseEvent: function(event as object) as void
             _adb_logVerbose("ConsentModule::processResponseEvent() - Received response event:(" + chr(10) + FormatJson(event) + chr(10) + ")")
 
-            if _adb_isEdgeResponseEvent(event) then
-                try
-                    eventData = event.data
-                    if _adb_isEmptyOrInvalidMap(eventData)
-                        _adb_logWarning("ConsentModule::processResponseEvent() - Invalid eventData in the edge response.")
-                        return
-                    end if
-
-                    responseString = eventData.message
-                    if _adb_isEmptyOrInvalidString(responseString)
-                        _adb_logWarning("ConsentModule::processResponseEvent() - Invalid responseString in the edge response.")
-                        return
-                    end if
-
-                    responseObj = ParseJson(responseString)
-
-                    ''' process the response handles
-                    if not _adb_isEmptyOrInvalidArray(responseObj.handle) then
-                        m._processEdgeResponseHandles(responseObj.handle)
-                    end if
-                catch exception
-                    _adb_logError(" - Failed to process the edge response, the exception message: " + exception.Message)
-                end try
+            if not _adb_isEdgeResponseEvent(event) then
+                return
             end if
+
+            try
+                eventData = event.data
+                if _adb_isEmptyOrInvalidMap(eventData)
+                    _adb_logWarning("ConsentModule::processResponseEvent() - Invalid eventData in the edge response.")
+                    return
+                end if
+
+                responseString = eventData.message
+                if _adb_isEmptyOrInvalidString(responseString)
+                    _adb_logWarning("ConsentModule::processResponseEvent() - Invalid responseString in the edge response.")
+                    return
+                end if
+
+                responseObj = ParseJson(responseString)
+
+                ''' process the response handles
+                if not _adb_isEmptyOrInvalidArray(responseObj.handle) then
+                    m._processEdgeResponseHandles(responseObj.handle)
+                end if
+            catch exception
+                _adb_logError(" - Failed to process the edge response, the exception message: " + exception.Message)
+            end try
+
         end function,
 
         _processEdgeResponseHandles: function(handles as object) as void
@@ -102,8 +105,16 @@ function _adb_ConsentModule(consentState as object, edgeModule as object) as obj
 
                 collectConsentValue = collectPayload.val
 
+                if _adb_isEmptyOrInvalidString(collectConsentValue)
+                    _adb_logWarning("ConsentModule::_processEdgeResponseHandles() - Invalid collect consent value:(" + FormatJson(collectConsentValue)  ") in the edge response.")
+                    exit for
+                end if
+
                 _adb_logDebug("ConsentModule::_processEdgeResponseHandles() - Updating collect consent value to (" + FormatJson(collectConsentValue) + ").")
                 m._consentState.setCollectConsent(collectConsentValue)
+
+                ' break the loop as the consent:preferences handle is processed
+                exit for
             end for
         end function,
 
@@ -132,6 +143,8 @@ function _adb_ConsentModule(consentState as object, edgeModule as object) as obj
                 end if
 
                 collectConsentValue = consent.value.collect.val
+                ' break the loop as the collect consent value is found
+                exit for
             end for
 
             return collectConsentValue

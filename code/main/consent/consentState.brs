@@ -37,6 +37,12 @@ function _adb_ConsentState(configurationModule as object) as object
         setCollectConsent: sub(collectConsent as dynamic)
             _adb_logVerbose("ConsentState::setCollectConsent() - Setting collect consent value to (" + FormatJson(collectConsent) + ").")
 
+            if _adb_isEmptyOrInvalidString(collectConsent) then
+                _adb_logDebug("ConsentState::setCollectConsent() - collectConsent value:(" + FormatJson(collectConsent) + ") is empty or invalid. Deleting collect consent value.")
+                m._deleteCollectConsent()
+                return
+            end if
+
             m._saveCollectConsent(collectConsent)
         end sub,
 
