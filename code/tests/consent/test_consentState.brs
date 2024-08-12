@@ -258,7 +258,7 @@ sub TC_adb_ConsentState_setCollectConsent_invalidOrEmpty_deletesPersistedValue()
 
         ' set the invalid or empty consent value
         actualCollectConsent = consentState.setCollectConsent(consent)
-        UTF_assertInvalid(, generateErrorMessage("Collect consent value in persistence", "invalid", persistedConsent))
+        UTF_assertInvalid(generateErrorMessage("Collect consent value in persistence", "invalid", persistedConsent))
         UTF_assertInvalid(consentState._collectConsent, generateErrorMessage("Collect consent value in memory", "invalid", consentState._collectConsent))
     end for
 end sub
