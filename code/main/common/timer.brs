@@ -21,14 +21,17 @@ function _adb_Timer(durationInMillis as longinteger, startTimeMillis = _adb_time
         _init: function(durationInMillis as longinteger, startTimeMillis as longinteger) as void
             m.initTSInMillis = startTimeMillis
             m.expiryTSInMillis = m.initTSInMillis + durationInMillis
+            _adb_logDebug("_adb_Timer::_init() - Timer initialized with duration: (" + FormatJson(durationInMillis) + ") and expiry time: (" + FormatJson(m.expiryTSInMillis) + ").")
         end function,
 
         isExpired: function(currentTimeInMillis = _adb_timestampInMillis() as longinteger) as boolean
             if m.expiryTSInMillis = invalid
+                _adb_logVerbose("_adb_Timer::isExpired() - Timer not initialized.")
                 return true
             end if
 
             if currentTimeInMillis > m.expiryTSInMillis
+                _adb_logDebug("_adb_Timer::isExpired() - Timer expired at (" + FormatJson(currentTimeInMillis) + ").")
                 return true
             end if
 
