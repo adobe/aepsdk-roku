@@ -141,6 +141,7 @@ m.aepSdk.shutdown();
 | :-- | :--: | :--: | :--: |
 | `ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID` | "edge.configId" | String | **Yes**
 | `ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN` | "edge.domain" | String | **No**
+| `ADB_CONSTANTS.CONFIGURATION.CONSENT_DEFAULT` | "consent.default" | Map | **No**
 
 - Required for Media tracking APIs
 
@@ -167,6 +168,15 @@ configuration = {}
 configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = "<YOUR_CONFIG_ID>"
 configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = "<YOUR_DOMAIN_NAME>"
 
+' Set the default consent to pending and update the consent later based on user preference
+configuration[ADB_CONSTANTS.CONFIGURATION.CONSENT_DEFAULT] = {
+    "consents": {
+        "collect": {
+            "val": "p"
+        }
+    }
+}
+
 m.aepSdk.updateConfiguration(configuration)
 ```
 
@@ -174,11 +184,34 @@ The `EDGE_CONFIG_ID` value is presented as `Datastream ID` in the [Datastream de
 
 The `EDGE_DOMAIN` value is the first-party domain mapped to the Adobe-provisioned Edge Network domain. For more information, see this [documentation](https://developer.adobe.com/client-sdks/documentation/edge-network/#domain-configuration)
 
+### Configure default consent
+
+The default consent configuration determines how data collection consent is managed before invoking the [setConsent](#setconsent) API. This setting is particularly important to avoid unintentionally collecting data from users in regions where consent is required prior to data collection.
+
+By default, users are opted in for all purposes.
+
+#### Example: Setting default collect consent to pending before collecting actual user consent
+```brightscript
+ADB_CONSTANTS = AdobeAEPSDKConstants()
+
+configuration = {}
+
+configuration[ADB_CONSTANTS.CONFIGURATION.CONSENT_DEFAULT] = {
+    "consents": {
+        "collect": {
+            "val": "p"
+        }
+    }
+}
+
+m.aepSdk.updateConfiguration(configuration)
+```
+
 ## Consent APIs:
 
 ### setConsent
 
-Sends consent preferences to Edge Network.
+Sends consent preferences to the Edge Network. For details on setting default consent before collecting user preferences, refer to the [Configure default consent](#configure-default-consent) section.
 
 > [!Important]
 > Please provide the entire payload with all the fields required by the Adobe 2.0 Standard.
