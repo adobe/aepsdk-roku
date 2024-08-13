@@ -55,7 +55,6 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
             edgeRequest.setRequestType(requestType)
 
             m._edgeRequestWorker.queue(edgeRequest)
-            ' m._edgeRequestWorker.queue(requestId, eventData, timestampInMillis, {}, m._EDGE_REQUEST_PATH, requestType)
         end function,
 
         ' Queues edge requests to be sent to Edge server
@@ -71,8 +70,6 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
             edgeRequest.setRequestType(requestType)
 
             m._edgeRequestWorker.queue(edgeRequest)
-
-            'm._edgeRequestWorker.queue(requestId, eventData, timestampInMillis, meta, path, requestType)
         end function,
 
         ' Sends queued edge requests to edge
