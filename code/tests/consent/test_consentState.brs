@@ -236,29 +236,3 @@ sub TC_adb_ConsentState_getCollectConsent_notPersisted_notInConfig_returnsInvali
     UTF_assertInvalid(cachedCollectConsent, generateErrorMessage("Collect consent value in memory", "invalid", cachedCollectConsent))
     UTF_assertInvalid(persistedCollectConsent, generateErrorMessage("Collect consent value in persistence", "invalid", persistedCollectConsent))
 end sub
-
-' target: _adb_ConsentState()
-' @Test
-sub TC_adb_ConsentState_setCollectConsent_invalidOrEmpty_deletesPersistedValue()
-    configurationModule = _adb_ConfigurationModule()
-    consentState = _adb_ConsentState(configurationModule)
-
-    consentValues = [
-        invalid,
-        ""
-    ]
-
-    for each consent in consentValues
-        ' mock the persisted value
-        persistCollectConsent("y")
-
-        ' verify the initial consent value
-        persistedConsent = getPersistedCollectConsent()
-        UTF_assertEqual("y", persistedConsent, generateErrorMessage("Collect consent value in persistence", "y", persistedConsent))
-
-        ' set the invalid or empty consent value
-        actualCollectConsent = consentState.setCollectConsent(consent)
-        UTF_assertInvalid(, generateErrorMessage("Collect consent value in persistence", "invalid", persistedConsent))
-        UTF_assertInvalid(consentState._collectConsent, generateErrorMessage("Collect consent value in memory", "invalid", consentState._collectConsent))
-    end for
-end sub

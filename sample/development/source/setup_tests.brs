@@ -124,6 +124,7 @@ function _adb_test_functions() as dynamic
         'test_implementationDetails.brs
         TC_adb_ImplementationDetails
         ' test_edgeRequestWorker.brs
+        TS_EdgeRequestWorker_BeforeEach
         TC_adb_EdgeRequestWorker_init
         TC_adb_EdgeRequestWorker_hasQueuedEvent
         TC_adb_EdgeRequestWorker_queue
@@ -169,13 +170,18 @@ function _adb_test_functions() as dynamic
         TC_adb_StateStoreEntry_noMaxAge
 
         'test_locationHintManager.brs
+        TS_LocationHintManager_BeforeEach
+        TS_LocationHintManager_AfterEach
         TC_adb_LocationHintManager_init
+        TC_adb_LocationHintManager_Init_locationHintPersisted_notExpired
         TC_adb_LocationHintManager_setLocationHint_validHintNoTTL
         TC_adb_LocationHintManager_setLocationHint_validHintWithTTL
         TC_adb_LocationHintManager_setLocationHint_invalid
         TC_adb_LocationHintManager_islocationHintExpired
         TC_adb_LocationHintManager_setLocationHint_validHintWithTTL
-        TC_adb_LocationHintManager_getLocationHint_withoutSet
+        TC_adb_LocationHintManager_getLocationHint_noPersistedValue
+        TC_adb_LocationHintManager_getLocationHint_persistedValue_notExpired
+        TC_adb_LocationHintManager_getLocationHint_persistedValue_expired
         TC_adb_LocationHintManager_getLocationHint_expiredTTL_callsDelete
         TC_adb_LocationHintManager_processLocationHintHandle_invalidHandle
         TC_adb_LocationHintManager_processLocationHintHandle_validHandle

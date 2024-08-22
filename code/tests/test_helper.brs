@@ -17,6 +17,33 @@ function getTestSDKVersion() as string
 end function
 
 ' ************************ Registry Helpers ************************
+function _adb_testUtil_persistLocationHint(locationHint as dynamic, initTSInMillis as longinteger, expiryTSInMillis as longinteger) as void
+    locationHintObject = {
+        value: locationHint,
+        initTs: initTSInMillis,
+        expiryTs: expiryTSInMillis
+    }
+
+    locationHintJsonString = FormatJson(locationHintObject)
+
+    writeValue("locationhint", locationHintJsonString)
+end function
+
+function _adb_testUtil_clearPersistedLocationHint() as void
+    removeValue("locationhint")
+end function
+
+function _adb_testUtil_getPersistedLocationHint() as dynamic
+    locationHintJsonString = readValueFromRegistry("locationhint")
+    if isEmptyOrInvalidString(locationHintJsonString)
+        return invalid
+    end if
+
+    locationHintObject = ParseJson(locationHintJsonString)
+
+    return locationHintObject
+end function
+
 function clearPersistedECID() as void
     removeValue("ecid")
 end function
