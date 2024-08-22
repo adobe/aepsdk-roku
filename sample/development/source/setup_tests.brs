@@ -160,8 +160,11 @@ function _adb_test_functions() as dynamic
         TC_adb_EdgeRequestWorker_processRequests_consentNo_dropsRequest
         TC_adb_EdgeRequestWorker_processRequests_consentYes_sendsRequests
         TC_adb_EdgeRequestWorker_processRequests_consentPending_queuesRequest
-        TC_adb_EdgeRequestWorker_shouldSendRequest_returnsTrue
-        TC_adb_EdgeRequestWorker_shouldSendRequest_returnsFalse
+        TC_adb_EdgeRequestWorker_processRequests_consentRequest_consentNo_sendsRequests
+        TC_adb_EdgeRequestWorker_processRequests_consentRequest_consentYes_sendsRequests
+        TC_adb_EdgeRequestWorker_processRequests_consentRequest_consentPending_sendsRequests
+        TC_adb_EdgeRequestWorker_isBlockedByConsent_returnsTrue
+        TC_adb_EdgeRequestWorker_isBlockedByConsent_returnsFalse
         TC_adb_EdgeRequestWorker_shouldQueueRequest_returnsTrue
         TC_adb_EdgeRequestWorker_shouldQueueRequest_returnsFalse
         'test_edgeModule.brs

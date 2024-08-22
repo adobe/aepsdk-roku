@@ -1108,12 +1108,12 @@ sub TC_adb_EdgeRequestWorker_processRequests_consentRequest_consentNo_sendsReque
     worker = _adb_testUtil_getEdgeRequestWorker(_adb_EdgeResponseManager(), consentState)
 
     edgeRequest1 = _adb_EdgeRequest("request_id_1", { xdm: { key: "value" } }, 12345534&)
-    edgeRequest1.type = "consent"
+    edgeRequest1.setRequestType("consent")
     edgeRequest2 = _adb_EdgeRequest("request_id_2", { xdm: { key: "value" } }, 12345534&)
-    edgeRequest2.type = "consent"
+    edgeRequest2.setRequestType("consent")
 
 
-    worker._queue = [edgeRequest1, edgeRequest2]
+    worker._consentQueue = [edgeRequest1, edgeRequest2]
 
     ' Verify when consent is no network requests are made and the queued requests are dropped
     responseArray = worker.processRequests(_adb_testUtil_getEdgeConfig())
@@ -1145,9 +1145,9 @@ sub TC_adb_EdgeRequestWorker_processRequests_consentRequest_consentYes_sendsRequ
     worker = _adb_testUtil_getEdgeRequestWorker(_adb_EdgeResponseManager(), consentState)
 
     edgeRequest1 = _adb_EdgeRequest("request_id_1", { xdm: { key: "value" } }, 12345534&)
-    edgeRequest1.type = "consent"
+    edgeRequest1.setRequestType("consent")
     edgeRequest2 = _adb_EdgeRequest("request_id_2", { xdm: { key: "value" } }, 12345534&)
-    edgeRequest2.type = "consent"
+    edgeRequest2.setRequestType("consent")
 
     worker._queue = [edgeRequest1, edgeRequest2]
 
@@ -1180,9 +1180,11 @@ sub TC_adb_EdgeRequestWorker_processRequests_consentRequest_consentPending_sends
     worker = _adb_testUtil_getEdgeRequestWorker(_adb_EdgeResponseManager(), consentState)
 
     edgeRequest1 = _adb_EdgeRequest("request_id_1", { xdm: { key: "value" } }, 12345534&)
-    edgeRequest2 = _adb_EdgeRequest("request_id_2", { xdm: { key: "value" } }, 12345534&)
+    edgeRequest1.setRequestType("consent")
+    edgeRequest2 = _adb_EdgeRequest("request_id_2", { xdm: { key: "value" } }, 12345535&)
+    edgeRequest2.setRequestType("consent")
 
-    worker._queue = [edgeRequest1, edgeRequest2]
+    worker._consentQueue = [edgeRequest1, edgeRequest2]
 
     ' Verify when consent is pending (i.e it is not set to "y" or "n") network requests are not made and the queued requests are not dropped
     responseArray = worker.processRequests(_adb_testUtil_getEdgeConfig())
@@ -1197,54 +1199,46 @@ sub TC_adb_EdgeRequestWorker_processRequests_consentRequest_consentPending_sends
 end sub
 
 
-' ****************************** _shouldSendRequest tests ******************************
-
-' target: _shouldSendRequest()
+' ****************************** _isBlockedByConsent tests ******************************
+' target: _isBlockedByConsent()
 ' @Test
-sub TC_adb_EdgeRequestWorker_shouldSendRequest_returnsTrue()
+sub TC_adb_EdgeRequestWorker_isBlockedByConsent_returnsTrue()
     worker = _adb_testUtil_getEdgeRequestWorker()
-    edgeRequest = _adb_EdgeRequest("request_id", { xdm: { key: "value" } }, 12345534&)
     consentState = _adb_ConsentState(_adb_ConfigurationModule())
-
-    ' collect consent is not set and is invalid or empty
-    UTF_assertTrue(worker._shouldSendRequest(edgeRequest, consentState))
-    consentState.setCollectConsent("")
-    UTF_assertTrue(worker._shouldSendRequest(edgeRequest, consentState))
-
-    ' collect consent is set to "n" but the request is a consent request
-    consentState.setCollectConsent("n")
-    edgeRequest.type = "consent"
-    UTF_assertTrue(worker._shouldSendRequest(edgeRequest, consentState))
-
-    ' reset the request type to edge
-    edgeRequest.type = "edge"
-
-    ' collect consent is set to "y"
-    consentState.setCollectConsent("y")
-    UTF_assertTrue(worker._shouldSendRequest(edgeRequest, consentState))
-end sub
-
-' target: _shouldSendRequest()
-' @Test
-sub TC_adb_EdgeRequestWorker_shouldSendRequest_returnsFalse()
-    worker = _adb_testUtil_getEdgeRequestWorker()
-    edgeRequest = _adb_EdgeRequest("request_id", { xdm: { key: "value" } }, 12345534&)
-    consentState = _adb_ConsentState(_adb_ConfigurationModule())
-
-    ' collect consent is set to "n"
-    consentState.setCollectConsent("n")
-    UTF_assertFalse(worker._shouldSendRequest(edgeRequest, consentState))
 
     ' collect consent is set to "p"
     consentState.setCollectConsent("p")
-    UTF_assertFalse(worker._shouldSendRequest(edgeRequest, consentState))
+    UTF_assertTrue(worker._isBlockedByConsent(consentState), generateErrorMessage("is blocked by consent (consent = p)", "true", "false"))
 
     ' collect consent is set to non-standard consent value"
     notStandardConsents = ["pending", "yes", "no", "true", "in"]
     for each consent in notStandardConsents
         consentState.setCollectConsent(consent)
-        UTF_assertFalse(worker._shouldSendRequest(edgeRequest, consentState), generateErrorMessage("Consent state", consent, consentState.getCollectConsent()))
+        UTF_assertTrue(worker._isBlockedByConsent(consentState), generateErrorMessage("is blocked by consent (consent = " + FormatJson(consent) + ")", "true", "false"))
     end for
+end sub
+
+' target: _isBlockedByConsent()
+' @Test
+sub TC_adb_EdgeRequestWorker_isBlockedByConsent_returnsFalse()
+    worker = _adb_testUtil_getEdgeRequestWorker()
+    consentState = _adb_ConsentState(_adb_ConfigurationModule())
+
+    ' collect consent is set to "n"
+    consentState.setCollectConsent("n")
+    UTF_assertFalse(worker._isBlockedByConsent(consentState), generateErrorMessage("is blocked by consent (consent = n)", "false", "true"))
+
+    ' collect consent is set to "y"
+    consentState.setCollectConsent("y")
+    UTF_assertFalse(worker._isBlockedByConsent(consentState), generateErrorMessage("is blocked by consent (consent = y)", "false", "true"))
+
+    ' collect consent is set to ""
+    consentState.setCollectConsent("")
+    UTF_assertFalse(worker._isBlockedByConsent(consentState), generateErrorMessage("is blocked by consent (consent = emptyString)", "false", "true"))
+
+    ' collect consent is not set
+    consentState.setCollectConsent(invalid)
+    UTF_assertFalse(worker._isBlockedByConsent(consentState), generateErrorMessage("is blocked by consent (consent = invalid)", "false", "true"))
 end sub
 
 ' ****************************** _shouldQueueRequest tests ******************************
@@ -1256,25 +1250,25 @@ sub TC_adb_EdgeRequestWorker_shouldQueueRequest_returnsTrue()
     consentState = _adb_ConsentState(_adb_ConfigurationModule())
 
     ' collect consent is not set and is invalid
-    UTF_assertTrue(worker._shouldQueueRequest(edgeRequest, consentState))
+    UTF_assertTrue(worker._shouldQueueRequest(edgeRequest, consentState), generateErrorMessage("should queue request (conset = invalid)", "true", "false"))
 
     ' collect consent is set to ""
     consentState.setCollectConsent("")
-    UTF_assertTrue(worker._shouldQueueRequest(edgeRequest, consentState))
+    UTF_assertTrue(worker._shouldQueueRequest(edgeRequest, consentState), generateErrorMessage("should queue request (conset = emptyString)", "true", "false"))
 
     ' collect consent is set to "n" but the request is a consent request
     consentState.setCollectConsent("n")
-    edgeRequest.type = "consent"
-    UTF_assertTrue(worker._shouldQueueRequest(edgeRequest, consentState))
+    edgeRequest.setRequestType("consent")
+    UTF_assertTrue(worker._shouldQueueRequest(edgeRequest, consentState), generateErrorMessage("should queue request (conset = n)", "true", "false"))
 
     ' reset the request type to edge
-    edgeRequest.type = "edge"
+    edgeRequest.setRequestType("edge")
 
     ' collect consent is set to non 'n' value
     notNConsents = ["p", "pending", "yes", "y", "true", "in"]
     for each consent in notNConsents
         consentState.setCollectConsent(consent)
-        UTF_assertTrue(worker._shouldQueueRequest(edgeRequest, consentState), generateErrorMessage("Consent state", consent, consentState.getCollectConsent()))
+        UTF_assertTrue(worker._shouldQueueRequest(edgeRequest, consentState), generateErrorMessage("should queue request (conset = " + FormatJson(consent) + ")", "true", "false"))
     end for
 end sub
 
@@ -1287,7 +1281,7 @@ sub TC_adb_EdgeRequestWorker_shouldQueueRequest_returnsFalse()
 
     ' collect consent is set to "n"
     consentState.setCollectConsent("n")
-    UTF_assertFalse(worker._shouldQueueRequest(edgeRequest, consentState))
+    UTF_assertFalse(worker._shouldQueueRequest(edgeRequest, consentState), generateErrorMessage("should queue request (conset = n)", "false", "true"))
 end sub
 
 
