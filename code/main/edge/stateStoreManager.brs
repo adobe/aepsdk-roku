@@ -26,7 +26,7 @@ function _adb_StateStoreManager() as object
                 stateStoreEntry = m._stateStoreMap[stateName]
 
                 if stateStoreEntry.isExpired()
-                    _adb_logVerbose("_adb_StateStoreManager::getStateStore() - stateStore with key:(" + FormatJson(state.key) + ") is expired and will be deleted.")
+                    _adb_logVerbose("_adb_StateStoreManager::getStateStore() - stateStore with key:(" + FormatJson(stateName) + ") is expired and will be deleted.")
                     expiredStateStoreEntries.push(stateName)
                     continue for
                 end if
