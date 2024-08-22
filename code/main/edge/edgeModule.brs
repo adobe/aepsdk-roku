@@ -50,7 +50,6 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
         ' timestampInMillis: timestamp of the event
         processEvent: function(requestId as string, eventData as object, timestampInMillis as longinteger, requestType = m._REQUEST_TYPE_EDGE as string) as void
             edgeRequest = _adb_EdgeRequest(requestId, eventData, timestampInMillis)
-            edgeRequest.setMeta({})
             edgeRequest.setPath(m._EDGE_REQUEST_PATH)
             edgeRequest.setRequestType(requestType)
 
