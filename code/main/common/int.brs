@@ -20,3 +20,11 @@ function _adb_isInvalidInt(int as dynamic) as boolean
 
     return false
 end function
+
+function _adb_isInvalidLongInt(number as dynamic) as boolean
+    if number = invalid or (type(number) <> "roLongInteger" and type(number) <> "LongInteger")
+        return true
+    end if
+
+   return false
+end function

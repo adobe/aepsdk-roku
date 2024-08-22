@@ -62,3 +62,17 @@ function _adb_TimestampObject() as object
         tsInMillis: tsInMillis&
     }
 end function
+
+function _adb_isValidTimestamp(ts as dynamic)
+    ' The timestamp must be a valid long integer.
+    if _adb_isInvalidLongInt(ts)
+        return false
+    end if
+
+    ' The timestamp must be a positive number.
+    if ts < 0
+        return false
+    end if
+
+    return true
+end function
