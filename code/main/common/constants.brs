@@ -32,8 +32,9 @@ function _adb_InternalConstants() as object
             ECID: "ecid",
         },
         LOCAL_DATA_STORE_KEYS: {
-            ECID: "ecid"
-            CONSENT_COLLECT: "consent.collect"
+            ECID: "ecid",
+            CONSENT_COLLECT: "consent.collect",
+            LOCATION_HINT: "locationhint"
         },
         TASK: {
             REQUEST_EVENT: "requestEvent",
@@ -61,15 +62,16 @@ function _adb_InternalConstants() as object
                 SESSION_COMPLETE: "media.sessionComplete"
             }
         },
-
         REQUEST_TYPE: {
             CONSENT: "consent",
             EDGE: "edge"
         },
         OBJECT_TYPE: {
             EDGE_REQUEST: "com.adobe.request.edge",
-        }
-
+        },
+        TIMESTAMP: {
+            INVALID_VALUE: -1&
+        },
         CALLBACK_TIMEOUT_MS: 5000,
         EVENT_OWNER: "adobe",
     }

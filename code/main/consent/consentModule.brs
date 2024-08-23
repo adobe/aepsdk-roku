@@ -106,7 +106,7 @@ function _adb_ConsentModule(consentState as object, edgeModule as object) as obj
                 collectConsentValue = collectPayload.val
 
                 if _adb_isEmptyOrInvalidString(collectConsentValue)
-                    _adb_logWarning("ConsentModule::_processEdgeResponseHandles() - Invalid collect consent value:(" + FormatJson(collectConsentValue) +  ") in the edge response.")
+                    _adb_logWarning("ConsentModule::_processEdgeResponseHandles() - Invalid collect consent value:(" + FormatJson(collectConsentValue) + ") in the edge response.")
                     exit for
                 end if
 

@@ -11,6 +11,12 @@
 
 ' *****************************************************************************************
 
+
+' @BeforeEach
+sub TS_EdgeRequestWorker_BeforeEach()
+    _adb_testUtil_clearPersistedLocationHint()
+end sub
+
 ' ****************************** init tests ******************************
 
 ' target: _adb_EdgeRequestWorker()
