@@ -28,3 +28,11 @@ function _adb_isInvalidLongInt(number as dynamic) as boolean
 
    return false
 end function
+
+function _adb_isPositiveNumber(number as dynamic) as boolean
+    if (_adb_isInvalidInt(number) and _adb_isInvalidLongInt(number)) or number <= 0
+        return false
+    end if
+
+    return true
+end function

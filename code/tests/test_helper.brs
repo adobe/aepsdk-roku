@@ -17,10 +17,9 @@ function getTestSDKVersion() as string
 end function
 
 ' ************************ Registry Helpers ************************
-function _adb_testUtil_persistLocationHint(locationHint as dynamic, initTSInMillis as longinteger, expiryTSInMillis as longinteger) as void
+function _adb_testUtil_persistLocationHint(locationHint as dynamic, expiryTSInMillis as longinteger) as void
     locationHintObject = {
         value: locationHint,
-        initTs: initTSInMillis,
         expiryTs: expiryTSInMillis
     }
 

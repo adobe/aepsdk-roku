@@ -27,12 +27,10 @@ sub TC_adb_LocationHintManager_Init()
     locationHintManager = _adb_LocationHintManager()
 
     actualLocationHint = locationHintManager.getLocationHint()
-    actualInitTS& = locationHintManager._initTSInMillis&
     actualExpiryTS& = locationHintManager._expiryTSInMillis&
     invalidTS& = _adb_InternalConstants().TIMESTAMP.INVALID_VALUE
 
     UTF_assertInvalid(actualLocationHint, generateErrorMessage("Location hint", "invalid", actualLocationHint))
-    UTF_assertEqual(invalidTS&, actualInitTS&, generateErrorMessage("Location hint init timestamp", invalidTS&, actualInitTS&))
     UTF_assertEqual(invalidTS&, actualExpiryTS&, generateErrorMessage("Location hint expiry timestamp", invalidTS&, actualExpiryTS&))
 end sub
 
@@ -40,7 +38,7 @@ end sub
 ' @Test
 sub TC_adb_LocationHintManager_Init_locationHintPersisted_notExpired()
     ' Mock persisted location hint
-    _adb_testUtil_persistLocationHint("persistedLocationHint", 0&, 100&)
+    _adb_testUtil_persistLocationHint("persistedLocationHint", 1000&)
 
     ' Init should load persisted location hint
     locationHintManager = _adb_LocationHintManager()
@@ -51,12 +49,10 @@ sub TC_adb_LocationHintManager_Init_locationHintPersisted_notExpired()
     end function
 
     actualLocationHint = locationHintManager.getLocationHint()
-    actualInitTS& = locationHintManager._initTSInMillis&
     actualExpiryTS& = locationHintManager._expiryTSInMillis&
 
     UTF_assertEqual("persistedLocationHint", actualLocationHint, generateErrorMessage("Location hint", "persistedLocationHint", actualLocationHint))
-    UTF_assertEqual(0&, actualInitTS&, generateErrorMessage("Location hint init timestamp", 0&, actualInitTS&))
-    UTF_assertEqual(100&, actualExpiryTS&, generateErrorMessage("Location hint expiry timestamp", 100&, actualExpiryTS&))
+    UTF_assertEqual(1000&, actualExpiryTS&, generateErrorMessage("Location hint expiry timestamp", 1000&, actualExpiryTS&))
 end sub
 
 ' target: _adb_LocationHintManager_setLocationHint()
@@ -65,19 +61,19 @@ sub TC_adb_LocationHintManager_setLocationHint_validHintNoTTL()
     locationHintManager = _adb_LocationHintManager()
     locationHint = "locationHint"
 
-    locationHintManager.setLocationHint(locationHint)
-    expectedExpiryTS& = locationHintManager._initTSInMillis& + (locationHintManager._DEFAULT_LOCATION_HINT_TTL_SEC * 1000)
+    locationHintManager.setLocationHint(locationHint, 1&, 0&)
+    expectedExpiryTS& = 1000&
 
-    actualLocationHint = locationHintManager.getLocationHint()
+    actualLocationHint = locationHintManager._locationHint
     actualExpiryTS& = locationHintManager._expiryTSInMillis&
     UTF_assertEqual(locationHint, actualLocationHint, generateErrorMessage("Location hint", locationHint, actualLocationHint))
     UTF_assertEqual(expectedExpiryTS&, actualExpiryTS&, generateErrorMessage("Location hint expiry timestamp", expectedExpiryTS&, actualExpiryTS&))
 
     ' assert that location hint data is persisted
     persistedLocationHint = _adb_testUtil_getPersistedLocationHint()
+    persistedExpiryTS& = persistedLocationHint.expiryTs
     UTF_assertEqual(locationHint, persistedLocationHint.value, generateErrorMessage("Persisted location hint", locationHint, persistedLocationHint.value))
-    UTF_assertEqual(locationHintManager._initTSInMillis&, persistedLocationHint.initTs, generateErrorMessage("Persisted location hint init timestamp", locationHintManager._initTSInMillis&, persistedLocationHint.initTs))
-    UTF_assertEqual(locationHintManager._expiryTSInMillis&, persistedLocationHint.expiryTs, generateErrorMessage("Persisted location hint expiry timestamp", locationHintManager._expiryTSInMillis&, persistedLocationHint.expiryTs))
+    UTF_assertEqual(locationHintManager._expiryTSInMillis&, persistedExpiryTS&, generateErrorMessage("Persisted location hint expiry timestamp", locationHintManager._expiryTSInMillis&, persistedExpiryTS&))
 end sub
 
 ' target: _adb_LocationHintManager_setLocationHint()
@@ -86,20 +82,20 @@ sub TC_adb_LocationHintManager_setLocationHint_validHintWithTTL()
     locationHintManager = _adb_LocationHintManager()
     locationHint = "locationHint"
 
-    locationHintManager.setLocationHint(locationHint, 100)
+    locationHintManager.setLocationHint(locationHint, 1&, 0&)
 
-    expectedExpiryTS& = locationHintManager._initTSInMillis& + (100 * 1000) ' TTL is 100 seconds
+    expectedExpiryTS& = 1000&
 
-    actualLocationHint = locationHintManager.getLocationHint()
+    actualLocationHint = locationHintManager._locationHint
     actualExpiryTS& = locationHintManager._expiryTSInMillis&
     UTF_assertEqual(locationHint, actualLocationHint, generateErrorMessage("Location hint", locationHint, actualLocationHint))
     UTF_assertEqual(expectedExpiryTS&, actualExpiryTS&, generateErrorMessage("Location hint expiry timestamp", expectedExpiryTS&, actualExpiryTS&))
 
     ' assert that location hint data is persisted
     persistedLocationHint = _adb_testUtil_getPersistedLocationHint()
+    persistedExpiryTS& = persistedLocationHint.expiryTs
     UTF_assertEqual(locationHint, persistedLocationHint.value, generateErrorMessage("Persisted location hint", locationHint, persistedLocationHint.value))
-    UTF_assertEqual(locationHintManager._initTSInMillis&, persistedLocationHint.initTs, generateErrorMessage("Persisted location hint init timestamp", locationHintManager._initTSInMillis&, persistedLocationHint.initTs))
-    UTF_assertEqual(locationHintManager._expiryTSInMillis&, persistedLocationHint.expiryTs, generateErrorMessage("Persisted location hint expiry timestamp", locationHintManager._expiryTSInMillis&, persistedLocationHint.expiryTs))
+    UTF_assertEqual(locationHintManager._expiryTSInMillis&, persistedExpiryTS&, generateErrorMessage("Persisted location hint expiry timestamp", locationHintManager._expiryTSInMillis&, persistedExpiryTS&))
 end sub
 
 ' target: _adb_LocationHintManager_setLocationHint()
@@ -108,23 +104,19 @@ sub TC_adb_LocationHintManager_setLocationHint_invalid()
     locationHintManager = _adb_LocationHintManager()
 
     locationHintManager.setLocationHint(invalid)
-    actualLocationHint = locationHintManager.getLocationHint()
-    actualInitTS& = locationHintManager._initTSInMillis&
+    actualLocationHint = locationHintManager._locationHint
     actualExpiryTS& = locationHintManager._expiryTSInMillis&
     invalidTS& = _adb_InternalConstants().TIMESTAMP.INVALID_VALUE
 
     UTF_assertInvalid(actualLocationHint, generateErrorMessage("Location hint (1)", "invalid", actualLocationHint))
-    UTF_assertEqual(invalidTS&, actualInitTS&, generateErrorMessage("Location hint init timestamp (1)", invalidTS&, actualInitTS&))
     UTF_assertEqual(invalidTS& ,actualExpiryTS&, generateErrorMessage("Location hint expiry timestamp (1)", invalidTS&, actualExpiryTS&))
 
     locationHintManager.setLocationHint("")
-    actualLocationHint = locationHintManager.getLocationHint()
+    actualLocationHint = locationHintManager._locationHint
 
-    actualInitTS& = locationHintManager._initTSInMillis&
     actualExpiryTS& = locationHintManager._expiryTSInMillis&
 
     UTF_assertInvalid(actualLocationHint, generateErrorMessage("Location hint (2)", "invalid", actualLocationHint))
-    UTF_assertEqual(invalidTS&, actualInitTS&, generateErrorMessage("Location hint init timestamp (2)", invalidTS&, actualInitTS&))
     UTF_assertEqual(invalidTS& ,actualExpiryTS&, generateErrorMessage("Location hint expiry timestamp (2)", invalidTS&, actualExpiryTS&))
 
     ' assert that location hint data is not persisted
@@ -138,7 +130,6 @@ sub TC_adb_LocationHintManager_islocationHintExpired()
     locationHintManager = _adb_LocationHintManager()
     locationHint = "locationHint"
 
-    locationHintManager._initTSInMillis& = 0&
     locationHintManager._expiryTSInMillis& = 100&
 
     UTF_assertFalse(locationHintManager._isLocationHintExpired(99), generateErrorMessage("Location hint expiry at timestamp:(99)", "false", "true"))
@@ -160,7 +151,7 @@ end sub
 ' @Test
 sub TC_adb_LocationHintManager_getLocationHint_persistedValue_notExpired()
         ' Mock persisted location hint
-        _adb_testUtil_persistLocationHint("persistedLocationHint", 0&, 100&)
+        _adb_testUtil_persistLocationHint("persistedLocationHint", 100&)
 
         ' Init should load persisted location hint
         locationHintManager = _adb_LocationHintManager()
@@ -179,7 +170,7 @@ end sub
 ' @Test
 sub TC_adb_LocationHintManager_getLocationHint_persistedValue_expired()
     ' Mock persisted location hint
-    _adb_testUtil_persistLocationHint("persistedLocationHint", 0&, 100&)
+    _adb_testUtil_persistLocationHint("persistedLocationHint", 100&)
 
     ' Init should load persisted location hint
     locationHintManager = _adb_LocationHintManager()
@@ -205,11 +196,15 @@ sub TC_adb_LocationHintManager_getLocationHint_expiredTTL_callsDelete()
     locationHintManager = _adb_LocationHintManager()
     locationHint = "locationHint"
 
-    locationHintManager.setLocationHint(locationHint, 100)
+    locationHintManager.setLocationHint(locationHint, 100&, 0&)
+
+    ' mock location hint not expired
+    locationHintManager._isLocationHintExpired = function(currentTimeInMillis = _adb_timestampInMillis() as longinteger) as boolean
+        return false
+    end function
 
     actualLocationHint = locationHintManager.getLocationHint()
     UTF_assertEqual(locationHint, actualLocationHint, generateErrorMessage("Location hint", locationHint, actualLocationHint))
-    UTF_assertNotEqual(invalidTS&, locationHintManager._initTSInMillis&, generateErrorMessage("Location hint init timestamp", "not invalid", locationHintManager._initTSInMillis&))
     UTF_assertNotEqual(invalidTS&, locationHintManager._expiryTSInMillis&, generateErrorMessage("Location hint expiry timestamp", "not invalid", locationHintManager._expiryTSInMillis&))
 
     ' mock location hint expiry
@@ -220,7 +215,6 @@ sub TC_adb_LocationHintManager_getLocationHint_expiredTTL_callsDelete()
     actualLocationHint = locationHintManager.getLocationHint()
     UTF_assertInvalid(actualLocationHint, generateErrorMessage("Location hint expiry timestamp", "invalid", actualLocationHint))
     UTF_assertInvalid(locationHintManager._locationHint, generateErrorMessage("Location hint", "invalid", locationHintManager._locationHint))
-    UTF_assertEqual(invalidTS&, locationHintManager._initTSInMillis&, generateErrorMessage("Location hint init timestamp", invalidTS&, locationHintManager._initTSInMillis&))
     UTF_assertEqual(invalidTS&, locationHintManager._expiryTSInMillis&, generateErrorMessage("Location hint expiry timestamp", invalidTS&, locationHintManager._expiryTSInMillis&))
 end sub
 
@@ -277,7 +271,7 @@ sub TC_adb_LocationHintManager_processLocationHintHandle_invalidHandle()
 
     ' invalid payload.scope
     handle = {
-        payload: [
+        payload: [m._DEFAULT_LOCATION_HINT_TTL_SEC
             {
                 scope: invalid,
                 hint: "locationHint",
@@ -351,13 +345,11 @@ sub TC_adb_LocationHintManager_delete()
 
     actualLocationHint = locationHintManager.getLocationHint()
     UTF_assertEqual(locationHint, actualLocationHint, generateErrorMessage("Location hint", locationHint, actualLocationHint))
-    UTF_assertNotEqual(invalidTS&, locationHintManager._initTSInMillis&, generateErrorMessage("Location hint init timestamp", "not invalid", locationHintManager._initTSInMillis&))
     UTF_assertNotEqual(invalidTS&, locationHintManager._expiryTSInMillis&, generateErrorMessage("Location hint expiry timestamp", "not invalid", locationHintManager._expiryTSInMillis&))
 
     locationHintManager._delete()
 
     actualLocationHint = locationHintManager.getLocationHint()
     UTF_assertInvalid(actualLocationHint, generateErrorMessage("Location hint", "invalid", actualLocationHint))
-    UTF_assertEqual(invalidTS&, locationHintManager._initTSInMillis&, generateErrorMessage("Location hint init timestamp", invalidTS&, locationHintManager._initTSInMillis&))
     UTF_assertEqual(invalidTS&, locationHintManager._expiryTSInMillis&, generateErrorMessage("Location hint expiry timestamp", invalidTS&, locationHintManager._expiryTSInMillis&))
 end sub
