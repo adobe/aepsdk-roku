@@ -75,7 +75,7 @@ function _adb_LocationHintManager() as object
         end function,
 
         _setExpiryTime: function(ttlSeconds as dynamic, startTimeInMillis = _adb_timestampInMillis() as longinteger) as void
-            if not _adb_isPositiveNumber(ttlSeconds)
+            if not _adb_isPositiveWholeNumber(ttlSeconds)
                 ttlSeconds = m._DEFAULT_LOCATION_HINT_TTL_SEC
             end if
 
@@ -85,7 +85,7 @@ function _adb_LocationHintManager() as object
         end function,
 
         _isLocationHintExpired: function(currentTimeInMillis = _adb_timestampInMillis() as longinteger) as boolean
-            if not _adb_isValidTimestamp(m._expiryTSInMillis&)
+            if not _adb_isPositiveWholeNumber(m._expiryTSInMillis&)
                 return true
             end if
 

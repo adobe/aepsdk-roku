@@ -11,24 +11,106 @@
 
 ' *****************************************************************************************
 
-' target: _adb_isInvalidInt()
+' target: _adb_isValidInt()
 ' @Test
-sub TC_adb_isInvalidInt_invalidInt()
-    UTF_assertTrue(_adb_isInvalidInt(invalid), generateErrorMessage("isInvalidInt (invalid)", "true", "false"))
-    UTF_assertTrue(_adb_isInvalidInt("123"), generateErrorMessage("isInvalidInt ("+Chr(34)+"123"+Chr(34)+")", "true", "false"))
-    UTF_assertTrue(_adb_isInvalidInt({}), generateErrorMessage("isInvalidInt ({})", "true", "false"))
-    UTF_assertTrue(_adb_isInvalidInt([]), generateErrorMessage("isInvalidInt ([])","true", "false"))
-    UTF_assertTrue(_adb_isInvalidInt(true), generateErrorMessage("isInvalidInt (true)", "true", "false"))
-    UTF_assertTrue(_adb_isInvalidInt(false), generateErrorMessage("isInvalidInt (false)", "true", "false"))
-    UTF_assertTrue(_adb_isInvalidInt(1.23), generateErrorMessage("isInvalidInt (1.23)", "true", "false"))
-    UTF_assertTrue(_adb_isInvalidInt(-1.23), generateErrorMessage("isInvalidInt (-1.23)", "true", "false"))
+sub TC_adb_isValidInt_invalidInt()
+
+    inputs = [
+        invalid,
+        "123",
+        {},
+        [],
+        true,
+        false,
+        1.23,
+        -1.23
+    ]
+    for each input in inputs
+        UTF_assertFalse(_adb_isValidInt(input), generateErrorMessage("isValidInt ("+Chr(34)+FormatJson(input)+Chr(34)+")", "false", "true"))
+    end for
 end sub
 
-' target: _adb_isInvalidInt_false()
+' target: _adb_isValidInt()
 ' @Test
-sub TC_adb_isInvalidInt_validInt()
-    UTF_assertFalse(_adb_isInvalidInt(123), generateErrorMessage("isInvalidInt (123)", "false", "true"))
-    UTF_assertFalse(_adb_isInvalidInt(0), generateErrorMessage("isInvalidInt (0)", "false", "true"))
-    UTF_assertFalse(_adb_isInvalidInt(-123), generateErrorMessage("isInvalidInt (-123)", "false", "true"))
-    UTF_assertFalse(_adb_isInvalidInt(&HFF), generateErrorMessage("isInvalidInt Hex int (&HFF)", "false", "true"))
+sub TC_adb_isValidInt_validInt()
+    inputs = [
+        123,
+        0,
+        -123,
+        &HFF
+    ]
+    for each input in inputs
+        UTF_assertTrue(_adb_isValidInt(input), generateErrorMessage("isValidInt ("+Chr(34)+FormatJson(input)+Chr(34)+")", "true", "false"))
+    end for
+end sub
+
+' target: _adb_isValidLongInt()
+' @Test
+sub TC_adb_isValidLongInt_invalidLongInt()
+
+    inputs = [
+        invalid,
+        "123",
+        {},
+        [],
+        true,
+        false,
+        1.23,
+        -1.23,
+        123
+    ]
+    for each input in inputs
+        UTF_assertFalse(_adb_isValidLongInt(input), generateErrorMessage("isValidLongInt ("+Chr(34)+FormatJson(input)+Chr(34)+")", "false", "true"))
+    end for
+end sub
+
+' target: _adb_isValidLongInt()
+' @Test
+sub TC_adb_isValidLongInt_validLongInt()
+    inputs = [
+        123&,
+        0&,
+        -123&,
+        &HFF&,
+    ]
+    for each input in inputs
+        UTF_assertTrue(_adb_isValidLongInt(input), generateErrorMessage("isValidLongInt ("+Chr(34)+FormatJson(input)+Chr(34)+")", "true", "false"))
+    end for
+end sub
+
+' target: _adb_isPositiveWholeNumber()
+' @Test
+sub TC_adb_isPositiveWholeNumber_invalid()
+
+    inputs = [
+        invalid,
+        "123",
+        {},
+        [],
+        true,
+        false,
+        1.23,
+        -1.23,
+        -1,
+        -1&
+    ]
+    for each input in inputs
+        UTF_assertFalse(_adb_isPositiveWholeNumber(input), generateErrorMessage("isPositiveNumber ("+Chr(34)+FormatJson(input)+Chr(34)+")", "false", "true"))
+    end for
+end sub
+
+' target: _adb_isPositiveWholeNumber()
+' @Test
+sub TC_adb_isPositiveWholeNumber_valid()
+    inputs = [
+        123,
+        1,
+        &HFF,
+        123&,
+        &HFF&,
+        0
+    ]
+    for each input in inputs
+        UTF_assertTrue(_adb_isPositiveWholeNumber(input), generateErrorMessage("isPositiveNumber ("+Chr(34)+FormatJson(input)+Chr(34)+")", "true", "false"))
+    end for
 end sub

@@ -98,7 +98,7 @@ function _adb_StateStoreEntry(payload as object) as object
             m._payload = payload
 
             maxAge = m._payload.maxAge
-            if _adb_isInvalidInt(maxAge)
+            if not _adb_isPositiveWholeNumber(maxAge)
                 _adb_logDebug("_adb_StateStore::init() - Invalid payload.maxAge value:(" + FormatJson(maxAge) + "), using 0 as default value.")
                 maxAge = 0
             end if

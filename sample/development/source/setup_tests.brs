@@ -50,8 +50,14 @@ function _adb_test_functions() as dynamic
         TC_adb_stringEqualsIgnoreCase
         TC_adb_stringEquals
         'test_int.brs
-        TC_adb_isInvalidInt_invalidInt
-        TC_adb_isInvalidInt_validInt
+        TC_adb_isValidInt_invalidInt
+        TC_adb_isValidInt_validInt
+        'test_longInt.brs
+        TC_adb_isValidLongInt_invalidLongInt
+        TC_adb_isValidLongInt_validLongInt
+        'test_positiveNumber.brs
+        TC_adb_isPositiveWholeNumber_invalid
+        TC_adb_isPositiveWholeNumber_valid
         'test_datetime.brs
         TC_adb_timestampInMillis
         TC_adb_ISO8601_timestamp
