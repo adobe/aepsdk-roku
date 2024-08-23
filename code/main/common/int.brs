@@ -13,8 +13,24 @@
 
 ' ********************************** MODULE: Int utils *********************************
 
-function _adb_isInvalidInt(int as dynamic) as boolean
+function _adb_isValidInt(int as dynamic) as boolean
     if int = invalid or (type(int) <> "roInteger" and type(int) <> "roInt" and type(int) <> "Integer")
+        return false
+    end if
+
+    return true
+end function
+
+function _adb_isValidLongInt(number as dynamic) as boolean
+    if number = invalid or (type(number) <> "roLongInteger" and type(number) <> "LongInteger")
+        return false
+    end if
+
+    return true
+end function
+
+function _adb_isPositiveWholeNumber(number as dynamic) as boolean
+    if (_adb_isValidInt(number) or _adb_isValidLongInt(number)) and number >= 0 then
         return true
     end if
 

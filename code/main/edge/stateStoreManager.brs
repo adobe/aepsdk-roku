@@ -26,7 +26,7 @@ function _adb_StateStoreManager() as object
                 stateStoreEntry = m._stateStoreMap[stateName]
 
                 if stateStoreEntry.isExpired()
-                    _adb_logVerbose("_adb_StateStoreManager::getStateStore() - stateStore with key:(" + FormatJson(state.key) + ") is expired and will be deleted.")
+                    _adb_logVerbose("_adb_StateStoreManager::getStateStore() - stateStore with key:(" + FormatJson(stateName) + ") is expired and will be deleted.")
                     expiredStateStoreEntries.push(stateName)
                     continue for
                 end if
@@ -98,7 +98,7 @@ function _adb_StateStoreEntry(payload as object) as object
             m._payload = payload
 
             maxAge = m._payload.maxAge
-            if _adb_isInvalidInt(maxAge)
+            if not _adb_isPositiveWholeNumber(maxAge)
                 _adb_logDebug("_adb_StateStore::init() - Invalid payload.maxAge value:(" + FormatJson(maxAge) + "), using 0 as default value.")
                 maxAge = 0
             end if
