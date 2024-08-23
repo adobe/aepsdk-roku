@@ -121,7 +121,7 @@ function _adb_EdgeRequestWorker(edgeResponseManager as object, consentState as o
                         requestToBeSent = edgeRequest
                     else if not _adb_isValidEdgeRequest(edgeRequest) ' edge request might be invalid if queue is empty
                         requestToBeSent = consentRequest
-                    else if _adb_isEdgeConsentRequest(consentRequest) and _adb_isEdgeConsentRequest(edgeRequest) ' Both edge and consent requests are present in the queue
+                    else if _adb_isEdgeConsentRequest(consentRequest) and _adb_isValidEdgeRequest(edgeRequest) ' Both edge and consent requests are present in the queue
                         ' Both edge and consent requests are present in the queue
                         ' check for the oldest request (FIFO)
                         if consentRequest.getTimestampInMillis() <= edgeRequest.getTimestampInMillis()
@@ -403,12 +403,7 @@ function _adb_EdgeRequestWorker(edgeResponseManager as object, consentState as o
                 return false
             end if
 
-            if _adb_stringEqualsIgnoreCase(collectConsent, m._COLLECT_CONSENT_YES)
-                _adb_logVerbose("EdgeRequestWorker::_isBlockedByConsent() - Collect consent value is set to (" + FormatJson(collectConsent) + "). The edge requests will not be blocked.")
-                return false
-            end if
-
-            if _adb_stringEqualsIgnoreCase(collectConsent, m._COLLECT_CONSENT_NO)
+            if _adb_stringEqualsIgnoreCase(collectConsent, m._COLLECT_CONSENT_YES) or _adb_stringEqualsIgnoreCase(collectConsent, m._COLLECT_CONSENT_NO)
                 _adb_logVerbose("EdgeRequestWorker::_isBlockedByConsent() - Collect consent value is set to (" + FormatJson(collectConsent) + "). The edge requests will not be blocked.")
                 return false
             end if

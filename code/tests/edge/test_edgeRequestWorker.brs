@@ -1092,7 +1092,7 @@ end sub
 
 ' target: processRequests()
 ' @Test
-sub TC_adb_EdgeRequestWorker_processRequests_consentRequest_consentNo_sendsRequests()
+sub TC_adb_EdgeRequestWorker_processRequests_consentRequest_consentNo_sendsConsentRequests()
     cachedFuntion = _adb_serviceProvider().networkService.syncPostRequest
     _adb_serviceProvider().networkService.syncPostRequest = function(url as string, jsonObj as object, headers = [] as object) as object
         UTF_assertEqual(0, headers.Count())
@@ -1107,57 +1107,25 @@ sub TC_adb_EdgeRequestWorker_processRequests_consentRequest_consentNo_sendsReque
     consentState.setCollectConsent("n")
     worker = _adb_testUtil_getEdgeRequestWorker(_adb_EdgeResponseManager(), consentState)
 
-    edgeRequest1 = _adb_EdgeRequest("request_id_1", { xdm: { key: "value" } }, 12345534&)
-    edgeRequest1.setRequestType("consent")
-    edgeRequest2 = _adb_EdgeRequest("request_id_2", { xdm: { key: "value" } }, 12345534&)
-    edgeRequest2.setRequestType("consent")
+    edgeRequest1 = _adb_EdgeRequest("edge_request_id_1", { xdm: { key: "value" } }, 100&)
+    edgeRequest2 = _adb_EdgeRequest("edge_request_id_2", { xdm: { key: "value" } }, 101&)
 
+    consentRequest1 = _adb_EdgeRequest("consent_request_id_1", { xdm: { key: "value" } }, 102&)
+    consentRequest1.setRequestType("consent")
+    consentRequest2 = _adb_EdgeRequest("consent_request_id_2", { xdm: { key: "value" } }, 103&)
+    consentRequest2.setRequestType("consent")
 
-    worker._consentQueue = [edgeRequest1, edgeRequest2]
+    worker._queue = [edgeRequest1, edgeRequest2]
+    worker._consentQueue = [consentRequest1, consentRequest2]
 
     ' Verify when consent is no network requests are made and the queued requests are dropped
     responseArray = worker.processRequests(_adb_testUtil_getEdgeConfig())
     UTF_assertEqual(2, responseArray.Count(), generateErrorMessage("Response array count", 0, responseArray.Count()))
     UTF_assertEqual(0, worker._queue.Count(), generateErrorMessage("Queue count", 0, worker._queue.Count()))
-    UTF_assertTrue(_adb_isEdgeResponse(responseArray[0]))
-    UTF_assertEqual("request_id_1", responseArray[0].getRequestId())
-    UTF_assertTrue(_adb_isEdgeResponse(responseArray[1]))
-    UTF_assertEqual("request_id_2", responseArray[1].getRequestId())
+    UTF_assertEqual(0, worker._consentQueue.Count(), generateErrorMessage("Consent Queue count", 0, worker._consentQueue.Count()))
 
-    _adb_serviceProvider().networkService.syncPostRequest = cachedFuntion
-end sub
-
-' target: processRequests()
-' @Test
-sub TC_adb_EdgeRequestWorker_processRequests_consentRequest_consentYes_sendsRequests()
-    cachedFuntion = _adb_serviceProvider().networkService.syncPostRequest
-    _adb_serviceProvider().networkService.syncPostRequest = function(url as string, jsonObj as object, headers = [] as object) as object
-        UTF_assertEqual(0, headers.Count())
-        UTF_assertNotInvalid(url)
-        UTF_assertNotInvalid(jsonObj)
-
-        return _adb_NetworkResponse(200, "response body")
-    end function
-
-    consentState = _adb_ConsentState(_adb_ConfigurationModule())
-
-    consentState.setCollectConsent("y")
-    worker = _adb_testUtil_getEdgeRequestWorker(_adb_EdgeResponseManager(), consentState)
-
-    edgeRequest1 = _adb_EdgeRequest("request_id_1", { xdm: { key: "value" } }, 12345534&)
-    edgeRequest1.setRequestType("consent")
-    edgeRequest2 = _adb_EdgeRequest("request_id_2", { xdm: { key: "value" } }, 12345534&)
-    edgeRequest2.setRequestType("consent")
-
-    worker._queue = [edgeRequest1, edgeRequest2]
-
-    responseArray = worker.processRequests(_adb_testUtil_getEdgeConfig())
-
-    UTF_assertEqual(2, responseArray.Count())
-    UTF_assertTrue(_adb_isEdgeResponse(responseArray[0]))
-    UTF_assertEqual("request_id_1", responseArray[0].getRequestId())
-    UTF_assertTrue(_adb_isEdgeResponse(responseArray[1]))
-    UTF_assertEqual("request_id_2", responseArray[1].getRequestId())
+    UTF_assertEqual("consent_request_id_1", responseArray[0].getRequestId())
+    UTF_assertEqual("consent_request_id_2", responseArray[1].getRequestId())
 
     _adb_serviceProvider().networkService.syncPostRequest = cachedFuntion
 end sub
@@ -1179,21 +1147,70 @@ sub TC_adb_EdgeRequestWorker_processRequests_consentRequest_consentPending_sends
     consentState.setCollectConsent("p")
     worker = _adb_testUtil_getEdgeRequestWorker(_adb_EdgeResponseManager(), consentState)
 
-    edgeRequest1 = _adb_EdgeRequest("request_id_1", { xdm: { key: "value" } }, 12345534&)
-    edgeRequest1.setRequestType("consent")
-    edgeRequest2 = _adb_EdgeRequest("request_id_2", { xdm: { key: "value" } }, 12345535&)
-    edgeRequest2.setRequestType("consent")
+    edgeRequest1 = _adb_EdgeRequest("edge_request_id_1", { xdm: { key: "value" } }, 100&)
+    edgeRequest2 = _adb_EdgeRequest("edge_request_id_2", { xdm: { key: "value" } }, 101&)
 
-    worker._consentQueue = [edgeRequest1, edgeRequest2]
+    consentRequest1 = _adb_EdgeRequest("consent_request_id_1", { xdm: { key: "value" } }, 102&)
+    consentRequest1.setRequestType("consent")
+    consentRequest2 = _adb_EdgeRequest("consent_request_id_2", { xdm: { key: "value" } }, 103&)
+    consentRequest2.setRequestType("consent")
+
+    worker._consentQueue = [consentRequest1, consentRequest2]
+    worker._queue = [edgeRequest1, edgeRequest2]
 
     ' Verify when consent is pending (i.e it is not set to "y" or "n") network requests are not made and the queued requests are not dropped
     responseArray = worker.processRequests(_adb_testUtil_getEdgeConfig())
     UTF_assertEqual(2, responseArray.Count(), generateErrorMessage("Response array count", 0, responseArray.Count()))
+    UTF_assertEqual(2, worker._queue.Count(), generateErrorMessage("Queue count", 0, worker._queue.Count()))
+    UTF_assertEqual(0, worker._consentQueue.Count(), generateErrorMessage("Consent Queue count", 0, worker._consentQueue.Count()))
+
+    UTF_assertEqual("consent_request_id_1", responseArray[0].getRequestId())
+    UTF_assertEqual("consent_request_id_2", responseArray[1].getRequestId())
+
+    _adb_serviceProvider().networkService.syncPostRequest = cachedFuntion
+end sub
+
+' target: processRequests()
+' @Test
+sub TC_adb_EdgeRequestWorker_processRequests_edgeAndConsentRequest_consentYes_sendsInOrder()
+    cachedFuntion = _adb_serviceProvider().networkService.syncPostRequest
+    _adb_serviceProvider().networkService.syncPostRequest = function(url as string, jsonObj as object, headers = [] as object) as object
+        UTF_assertEqual(0, headers.Count())
+        UTF_assertNotInvalid(url)
+        UTF_assertNotInvalid(jsonObj)
+
+        return _adb_NetworkResponse(200, "response body")
+    end function
+
+    consentState = _adb_ConsentState(_adb_ConfigurationModule())
+
+    consentState.setCollectConsent("y")
+    worker = _adb_testUtil_getEdgeRequestWorker(_adb_EdgeResponseManager(), consentState)
+
+
+    edgeRequest1 = _adb_EdgeRequest("edge_request_id_1", { xdm: { key: "value" } }, 98&)
+    edgeRequest2 = _adb_EdgeRequest("edge_request_id_2", { xdm: { key: "value " } }, 99&)
+    edgeRequest3 = _adb_EdgeRequest("edge_request_id_3", { xdm: { key: "value" } }, 102&)
+
+    consentRequest1 = _adb_EdgeRequest("consent_request_id_1", { xdm: { key: "value" } }, 100&)
+    consentRequest1.setRequestType("consent")
+    consentRequest2 = _adb_EdgeRequest("consent_request_id_2", { xdm: { key: "value" } }, 101&)
+    consentRequest2.setRequestType("consent")
+
+    worker._consentQueue = [consentRequest1, consentRequest2]
+    worker._queue = [edgeRequest1, edgeRequest2, edgeRequest3]
+
+    ' Verify when consent is pending (i.e it is not set to "y" or "n") network requests are not made and the queued requests are not dropped
+    responseArray = worker.processRequests(_adb_testUtil_getEdgeConfig())
+    UTF_assertEqual(5, responseArray.Count(), generateErrorMessage("Response array count", 0, responseArray.Count()))
     UTF_assertEqual(0, worker._queue.Count(), generateErrorMessage("Queue count", 0, worker._queue.Count()))
-    UTF_assertTrue(_adb_isEdgeResponse(responseArray[0]))
-    UTF_assertEqual("request_id_1", responseArray[0].getRequestId())
-    UTF_assertTrue(_adb_isEdgeResponse(responseArray[1]))
-    UTF_assertEqual("request_id_2", responseArray[1].getRequestId())
+    UTF_assertEqual(0, worker._consentQueue.Count(), generateErrorMessage("Consent Queue count", 0, worker._consentQueue.Count()))
+
+    UTF_assertEqual("edge_request_id_1", responseArray[0].getRequestId())
+    UTF_assertEqual("edge_request_id_2", responseArray[1].getRequestId())
+    UTF_assertEqual("consent_request_id_1", responseArray[2].getRequestId())
+    UTF_assertEqual("consent_request_id_2", responseArray[3].getRequestId())
+    UTF_assertEqual("edge_request_id_3", responseArray[4].getRequestId())
 
     _adb_serviceProvider().networkService.syncPostRequest = cachedFuntion
 end sub

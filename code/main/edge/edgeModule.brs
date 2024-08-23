@@ -49,11 +49,7 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
         ' eventData: data to be sent to edge
         ' timestampInMillis: timestamp of the event
         processEvent: function(requestId as string, eventData as object, timestampInMillis as longinteger, requestType = m._REQUEST_TYPE_EDGE as string) as void
-            edgeRequest = _adb_EdgeRequest(requestId, eventData, timestampInMillis)
-            edgeRequest.setPath(m._EDGE_REQUEST_PATH)
-            edgeRequest.setRequestType(requestType)
-
-            m._edgeRequestWorker.queue(edgeRequest)
+            m.queueEdgeRequest(requestId, eventData, timestampInMillis, {}, m._EDGE_REQUEST_PATH, requestType)
         end function,
 
         ' Queues edge requests to be sent to Edge server
