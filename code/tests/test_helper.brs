@@ -32,6 +32,14 @@ function _adb_testUtil_clearPersistedLocationHint() as void
     removeValue("locationhint")
 end function
 
+function _adb_testUtil_persistStateStore(stateStore as object) as void
+    writeValue("statestore", stateStore)
+end function
+
+function _adb_testUtil_clearPersistedStateStore() as void
+    removeValue("statestore")
+end function
+
 function _adb_testUtil_getPersistedLocationHint() as dynamic
     locationHintJsonString = readValueFromRegistry("locationhint")
     if isEmptyOrInvalidString(locationHintJsonString)

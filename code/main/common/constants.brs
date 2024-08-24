@@ -34,7 +34,8 @@ function _adb_InternalConstants() as object
         LOCAL_DATA_STORE_KEYS: {
             ECID: "ecid",
             CONSENT_COLLECT: "consent.collect",
-            LOCATION_HINT: "locationhint"
+            LOCATION_HINT: "locationhint",
+            STATE_STORE: "statestore",
         },
         TASK: {
             REQUEST_EVENT: "requestEvent",

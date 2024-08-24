@@ -15,8 +15,13 @@
 
 function _adb_StateStoreManager() as object
 
-    return {
+    stateStoreManager = {
         _stateStoreMap: {},
+
+        _init: function() as void
+            m._loadStateStoreObject()
+            _adb_logVerbose("_adb_StateStoreManager::_init() - StateStoreManager initialized with stateStore: (" + FormatJson(m._stateStoreMap) + ").")
+        end function,
 
         getStateStore: function() as object
             stateStorePayload = []
@@ -25,13 +30,13 @@ function _adb_StateStoreManager() as object
             for each stateName in m._stateStoreMap
                 stateStoreEntry = m._stateStoreMap[stateName]
 
-                if stateStoreEntry.isExpired()
+                if m._isStateStoreEntryExpired(stateStoreEntry)
                     _adb_logVerbose("_adb_StateStoreManager::getStateStore() - stateStore with key:(" + FormatJson(stateName) + ") is expired and will be deleted.")
                     expiredStateStoreEntries.push(stateName)
                     continue for
                 end if
 
-                stateStorePayload.push(stateStoreEntry.getPayload())
+                stateStorePayload.push(stateStoreEntry.payload)
             end for
 
             m._deleteStateStoreEntries(expiredStateStoreEntries)
@@ -51,9 +56,10 @@ function _adb_StateStoreManager() as object
                 m._addToStateStore(payload)
             end for
 
+            m._saveStateStoreObject()
         end function,
 
-        _addToStateStore: function(payload as object) as void
+        _addToStateStore: function(payload as object, startTimeInMillis = _adb_timestampInMillis() as longinteger) as void
             if _adb_isEmptyOrInvalidMap(payload)
                 _adb_logDebug("_adb_StateStoreManager::setStateStore() - stateStore payload is empty or invalid.")
                 return
@@ -64,9 +70,44 @@ function _adb_StateStoreManager() as object
                 return
             end if
 
-            m._stateStoreMap[payload.key] = _adb_StateStoreEntry(payload)
+            maxAgeSeconds = payload.maxAge
+            if not _adb_isPositiveWholeNumber(maxAgeSeconds)
+                _adb_logDebug("_adb_StateStore::_setExpiryTime() - Invalid payload.maxAge value:(" + FormatJson(maxAgeSeconds) + "), using 0 as default value.")
+                maxAgeSeconds = 0
+            end if
+
+            _expiryTSInMillis& = startTimeInMillis + (maxAgeSeconds * 1000)
+
+            stateStoreEntryName = payload.key
+            m._stateStoreMap[stateStoreEntryName] = {
+                payload: payload,
+                expiryTS: _expiryTSInMillis&
+            }
+
             _adb_logDebug("_adb_StateStoreManager::setStateStore() - stateStore updated to: (" + FormatJson(m._stateStoreMap) + ").")
 
+        end function,
+
+        _loadStateStoreObject: function() as void
+            localDataStoreService = _adb_serviceProvider().localDataStoreService
+            stateStoreJsonString = localDataStoreService.readValue(_adb_InternalConstants().LOCAL_DATA_STORE_KEYS.STATE_STORE)
+
+            try
+                if not _adb_isEmptyOrInvalidString(stateStoreJsonString)
+                    m._stateStoreMap = ParseJson(stateStoreJsonString)
+                    _adb_logVerbose("_adb_StateStoreManager::_loadStateStoreObject() - Loaded stateStore from local data store: (" + FormatJson(m._stateStoreMap) + ").")
+                end if
+            catch exception
+                _adb_logError("_adb_StateStoreManager::_loadStateStoreObject() - Failed to load stateStore from local data store, the exception message: " + exception.Message)
+            end try
+        end function,
+
+        _saveStateStoreObject: function() as void
+            stateStoreJsonString = FormatJson(m._stateStoreMap)
+
+            _adb_logVerbose("_adb_StateStoreManager::_saveStateStoreObject() - Saving stateStore to local data store: (" + FormatJson(stateStoreJsonString) + ").")
+            localDataStoreService = _adb_serviceProvider().localDataStoreService
+            localDataStoreService.writeValue(_adb_InternalConstants().LOCAL_DATA_STORE_KEYS.STATE_STORE, stateStoreJsonString)
         end function,
 
         _deleteStateStoreEntries: function(stateNames as object) as void
@@ -75,56 +116,21 @@ function _adb_StateStoreManager() as object
                 _adb_logVerbose("_adb_StateStoreManager::_deleteStateStoreEntries() - stateStore with key:(" + FormatJson(stateName) + ") deleted.")
             end for
 
+            ' save the updated stateStore
+            m._saveStateStoreObject()
             _adb_logVerbose("_adb_StateStoreManager::_deleteStateStoreEntries() - stateStore updated to: (" + FormatJson(m._stateStoreMap) + ").")
         end function
-    }
 
-end function
-
-function _adb_StateStoreEntry(payload as object) as object
-
-    stateStoreEntry = {
-        _payload: invalid,
-        _timer: invalid,
-
-        _init: function(payload as object) as void
-            _adb_logVerbose("_adb_StateStore::init() - Intializing stateStore with payload: (" + FormatJson(m._payload) + ").")
-
-            if _adb_isEmptyOrInvalidMap(payload)
-                _adb_logDebug("_adb_StateStore::init() - stateStore payload is empty or invalid.")
-                return
-            end if
-
-            m._payload = payload
-
-            maxAge = m._payload.maxAge
-            if not _adb_isPositiveWholeNumber(maxAge)
-                _adb_logDebug("_adb_StateStore::init() - Invalid payload.maxAge value:(" + FormatJson(maxAge) + "), using 0 as default value.")
-                maxAge = 0
-            end if
-
-            m._timer = _adb_Timer(maxAge * 1000)
-        end function,
-
-        getPayload: function() as dynamic
-            if m.isExpired()
-                _adb_logDebug("_adb_StateStore::getPayload() - state is expired returning invalid.")
-                return invalid
-            end if
-
-            return m._payload
-        end function,
-
-        isExpired: function(currentTimeInMillis = _adb_timestampInMillis() as longinteger) as boolean
-            if m._timer = invalid
+        _isStateStoreEntryExpired: function(stateStoreEntry as object, currentTimeInMillis = _adb_timestampInMillis() as longinteger) as boolean
+            if not _adb_isPositiveWholeNumber(stateStoreEntry.expiryTS)
                 return true
             end if
 
-            return m._timer.isExpired(currentTimeInMillis)
+            return currentTimeInMillis > stateStoreEntry.expiryTS
         end function
     }
 
-    stateStoreEntry._init(payload)
+    stateStoreManager._init()
 
-    return stateStoreEntry
+    return stateStoreManager
 end function
