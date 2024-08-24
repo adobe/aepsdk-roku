@@ -165,6 +165,7 @@ function _adb_test_functions() as dynamic
         TC_adb_StateStoreManager_Init
         TC_adb_StateStoreManager_Init_stateStorePersisted_expired
         TC_adb_StateStoreManager_Init_stateStorePersisted_notExpired
+        TC_adb_StateStoreManager_Init_stateStorePersisted_mixed
         TC_adb_StateStoreManager_processStateStoreHandle_validHandle
         TC_adb_StateStoreManager_processStateStoreHandle_invalidHandle
         TC_adb_StateStoreManager_deleteStateStore
