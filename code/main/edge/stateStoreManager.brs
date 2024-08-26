@@ -72,8 +72,11 @@ function _adb_StateStoreManager() as object
 
             maxAgeSeconds = payload.maxAge
             if not _adb_isPositiveWholeNumber(maxAgeSeconds)
-                _adb_logDebug("_adb_StateStore::_setExpiryTime() - Invalid payload.maxAge value:(" + FormatJson(maxAgeSeconds) + "), using 0 as default value.")
-                maxAgeSeconds = 0
+                _adb_logDebug("_adb_StateStore::_setExpiryTime() - Invalid payload.maxAge value:(" + FormatJson(maxAgeSeconds) + "). Deleting the state store entry.")
+
+                ' delete the state store entry if maxAge is 0 or less than 0
+                m._deleteStateStoreEntries([payload.key])
+                return
             end if
 
             _expiryTSInMillis& = startTimeInMillis + (maxAgeSeconds * 1000)

@@ -228,6 +228,36 @@ sub TC_adb_StateStoreManager_processStateStoreHandle_invalidHandle()
     UTF_assertEqual([], actualStateStore, generateErrorMessage("State store", "[]", actualStateStore))
 end sub
 
+
+' target: _adb_StateStoreManager_processStateStoreHandle()
+' @Test
+sub TC_adb_StateStoreManager_processStateStoreHandle_validHandle_maxAgeZeroOrless()
+    stateStoreManager = _adb_StateStoreManager()
+
+    handle = {
+        payload: [
+            {
+                key: "kndctr_1234_AdobeOrg_cluster",
+                value: "or2",
+                maxAge: 0
+            },
+            {
+                key: "kndctr_1234_AdobeOrg_cluster2",
+                value: "or3",
+                maxAge: -1
+            }
+        ],
+        type: "state:store"
+    }
+
+    stateStoreManager.processStateStoreHandle(handle)
+    actualStateStore = stateStoreManager.getStateStore()
+    UTF_assertEqual([], actualStateStore, generateErrorMessage("State store", [], actualStateStore))
+
+    persistedStateStoreMapJson = _adb_testUtil_getPersistedStateStore()
+    UTF_assertEqual({}, persistedStateStoreMapJson, generateErrorMessage("Persisted state store", {}, persistedStateStoreMapJson))
+end sub
+
 sub TC_adb_StateStoreManager_deleteStateStore()
     stateStoreManager = _adb_StateStoreManager()
 
@@ -270,18 +300,10 @@ sub TC_adb_StateStoreManager_deleteStateStore()
     stateStoreManager._deleteStateStore(["key1", "key4"])
 
     actualStateStore = stateStoreManager.getStateStore()
-
     UTF_assertEqual(expectedStateStore, actualStateStore, generateErrorMessage("State store", expectedStateStore, actualStateStore))
+
+    persistedStateStoreMapJson = _adb_testUtil_getPersistedStateStore()
+    UTF_assertEqual(2, persistedStateStoreMapJson.count(), generateErrorMessage("Persisted state store", 2, persistedStateStoreMapJson.count()))
+    UTF_assertEqual(persistedStateStoreMapJson["key2"].payload, expectedStateStore["key2"], generateErrorMessage("Persisted state store", expectedStateStore["key2"].payload, persistedStateStoreMapJson["key2"]))
+    UTF_assertEqual(persistedStateStoreMapJson["key3"].payload, expectedStateStore["key3"], generateErrorMessage("Persisted state store", expectedStateStore["key3"].payload, persistedStateStoreMapJson["key3"]))
 end sub
-
-' ************************ Test Helper ************************
-
-function _adb_testUtil_ArrayContains(array as dynamic, key as string) as boolean
-    for each item in array
-        if item.key = key
-            return true
-        end if
-    end for
-
-    return false
-end function

@@ -36,6 +36,17 @@ function _adb_testUtil_persistStateStore(stateStore as object) as void
     writeValue("statestore", stateStore)
 end function
 
+function _adb_testUtil_getPersistedStateStore() as object
+    stateStoreJsonString = readValueFromRegistry("statestore")
+    if isEmptyOrInvalidString(stateStoreJsonString)
+        return invalid
+    end if
+
+    stateStoreObject = ParseJson(stateStoreJsonString)
+
+    return stateStoreObject
+end function
+
 function _adb_testUtil_clearPersistedStateStore() as void
     removeValue("statestore")
 end function
@@ -117,6 +128,18 @@ function isEmptyOrInvalidString(str as dynamic) as boolean
     if Len(str) = 0
         return true
     end if
+
+    return false
+end function
+
+' ************************ Array Helper ************************
+
+function _adb_testUtil_ArrayContains(array as dynamic, key as string) as boolean
+    for each item in array
+        if item.key = key
+            return true
+        end if
+    end for
 
     return false
 end function
