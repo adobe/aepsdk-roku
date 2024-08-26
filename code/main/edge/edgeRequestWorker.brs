@@ -102,26 +102,28 @@ function _adb_EdgeRequestWorker(edgeResponseManager as object, consentState as o
                 requestToBeSent = invalid
 
                 if m._isBlockedByConsent(m._consentState)
-                    ' since the consent is pending process the consent request
-                    consentRequest = m._consentQueue.Shift()
-                    if not _adb_isEdgeConsentRequest(consentRequest)
-                        ' consent request might be invalid if queue is empty
-                        ' so no consent request to process and edge request cannot be processed
-                        ' exit the processing loop
+                    ' since the consent is pending process the consent request if any
+                    if m._consentQueue.count() = 0
+                        ' no consent request to process
                         exit while
                     end if
 
-                    requestToBeSent = consentRequest
+                    requestToBeSent = m._consentQueue.Shift()
                 else
                     ' process the oldest request from both queues
-                    edgeRequest = m._queue.Shift() ' get the oldest edge request
-                    consentRequest = m._consentQueue.Shift() ' get the oldest consent request
 
-                    if not _adb_isEdgeConsentRequest(consentRequest) ' consent request might be invalid if queue is empty
-                        requestToBeSent = edgeRequest
-                    else if not _adb_isValidEdgeRequest(edgeRequest) ' edge request might be invalid if queue is empty
-                        requestToBeSent = consentRequest
-                    else if _adb_isEdgeConsentRequest(consentRequest) and _adb_isValidEdgeRequest(edgeRequest) ' Both edge and consent requests are present in the queue
+                    if m._consentQueue.count() = 0
+                        ' no consent request to process
+                        ' process the oldest edge request
+                        requestToBeSent = m._queue.Shift()
+                    else if m._queue.count() = 0
+                        ' no edge request to process
+                        ' process the oldest consent request
+                        requestToBeSent = m._consentQueue.Shift()
+                    else
+                        edgeRequest = m._queue.Shift() ' get the oldest edge request
+                        consentRequest = m._consentQueue.Shift() ' get the oldest consent request
+
                         ' Both edge and consent requests are present in the queue
                         ' check for the oldest request (FIFO)
                         if consentRequest.getTimestampInMillis() <= edgeRequest.getTimestampInMillis()
@@ -135,6 +137,13 @@ function _adb_EdgeRequestWorker(edgeResponseManager as object, consentState as o
                         end if
                     end if
 
+                end if
+
+                ' this should not happen but added for safety
+                ' check if the request is valid edge or consent request
+                if not _adb_isEdgeConsentRequest(requestToBeSent) and not _adb_isValidEdgeRequest(requestToBeSent)
+                    ' no request to process
+                    exit while
                 end if
 
                 collectConsent = m._consentState.getCollectConsent()
