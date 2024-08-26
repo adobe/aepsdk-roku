@@ -47,7 +47,6 @@ governing permissions and limitations under the License.-->
   <script type="text/brightscript" uri="pkg:/source/adobe/AEPSDK.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/common/constants.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/common/datetime.brs"/>
-  <script type="text/brightscript" uri="pkg:/source/adobe/common/timer.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/common/id.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/common/log.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/common/map.brs"/>

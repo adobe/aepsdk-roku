@@ -33,9 +33,6 @@ function _adb_test_functions() as dynamic
     common = [
         'test_datetime.brs
         TC_adb_sdkVersion
-        'test_timer.brs
-        TC_adb_timer_init
-        TC_adb_timer_initWithoutStartTime
         'test_constants.brs
         TC_AdobeAEPSDKConstants
         'test_map.brs
@@ -184,16 +181,15 @@ function _adb_test_functions() as dynamic
         TC_adb_EdgeResponseManager_processResponse_validStateStoreResponse
         TC_adb_EdgeResponseManager_processResponse_responseWithTypeNotHandled
         'test_stateStoreManager.brs
+        TS_StateStoreManager_BeforeEach
         TC_adb_StateStoreManager_Init
+        TC_adb_StateStoreManager_Init_stateStorePersisted_expired
+        TC_adb_StateStoreManager_Init_stateStorePersisted_notExpired
+        TC_adb_StateStoreManager_Init_stateStorePersisted_mixed
         TC_adb_StateStoreManager_processStateStoreHandle_validHandle
         TC_adb_StateStoreManager_processStateStoreHandle_invalidHandle
+        TC_adb_StateStoreManager_processStateStoreHandle_validHandle_maxAgeZeroOrless
         TC_adb_StateStoreManager_deleteStateStore
-        TC_adb_StateStoreEntry_init
-        TC_adb_StateStoreEntry_invalidPayload
-        TC_adb_StateStoreEntry_invalidKey
-        TC_adb_StateStoreEntry_isExpired_notExpired
-        TC_adb_StateStoreEntry_isExpired_expired
-        TC_adb_StateStoreEntry_noMaxAge
 
         'test_locationHintManager.brs
         TS_LocationHintManager_BeforeEach
