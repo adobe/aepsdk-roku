@@ -51,8 +51,10 @@ function _adb_MediaModule(configurationModule as object, edgeModule as object) a
             eventType = eventData.xdmData.xdm.eventType
             clientSessionId = eventData.clientSessionId
 
+            ' If the eventType is not session start and the clientSessionId does not match the active clientSessionId, then ignore the event
+            ' In case of sessionStart, new session is created and the clientSessionId is set as active clientSessionId
             if not _adb_stringEqualsIgnoreCase(eventType, m._CONSTANTS.MEDIA.EVENT_TYPE.SESSION_START) and clientSessionId <> m._sessionManager.getActiveClientSessionId() then
-                _adb_logError("MediaModule::processEvent() - Cannot process the media event. It's clientSessionId (" + FormatJson(clientSessionId) + ") does not match the active clientSessionId (" + FormatJson(m._sessionManager.getActiveClientSessionId()) + ").")
+                _adb_logError("MediaModule::processEvent() - Cannot process the media event(" + FormatJson(eventType) + "). It's clientSessionId (" + FormatJson(clientSessionId) + ") does not match the active clientSessionId (" + FormatJson(m._sessionManager.getActiveClientSessionId()) + ").")
                 return
             end if
 

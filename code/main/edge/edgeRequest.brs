@@ -30,7 +30,7 @@ function _adb_isValidEdgeRequest(obj as object) as boolean
         return false
     end if
 
-    if _adb_isInvalidLongInt(obj._timestampInMillis) or obj._timestampInMillis <= 0&
+    if not _adb_isValidLongInt(obj._timestampInMillis) or obj._timestampInMillis <= 0&
         _adb_logVerbose("EdgeRequest::_adb_isValidEdgeRequest() - Invalid edge request, timestampInMillis :(" + FormatJson(obj.timestampInMillis) + ") is invalid")
         return false
     end if
@@ -55,7 +55,7 @@ function _adb_EdgeRequest(requestId as string, data as object, timestampInMillis
         return invalid
     end if
 
-    if _adb_isInvalidLongInt(timestampInMillis) or timestampInMillis <= 0&
+    if not _adb_isValidLongInt(timestampInMillis) or timestampInMillis <= 0&
         _adb_logDebug("EdgeRequest::_adb_EdgeRequest() - Invalid edge request, timestampInMillis :(" + FormatJson(obj.timestampInMillis) + ") is invalid")
         return invalid
     end if
