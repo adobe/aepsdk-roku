@@ -14,6 +14,7 @@
 ' @BeforeEach
 sub TS_EdgeRequestWorker_BeforeEach()
     _adb_testUtil_clearPersistedLocationHint()
+    _adb_testUtil_clearPersistedStateStore()
 end sub
 
 ' target: _adb_EdgeRequestWorker()
