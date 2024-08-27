@@ -109,7 +109,7 @@ sub TC_adb_EdgeResponseManager_processResponse_responseWithTypeNotHandled()
 
     ' mock state store manager
     mockStateStoreManager = {
-        processStateStoreHandle: function(handle as object) as void
+        processStateStoreHandle: function(_handle as object) as void
             GetGlobalAA().stateStoreManager_processStateStoreHandle_called = true
         end function
     }
@@ -117,10 +117,11 @@ sub TC_adb_EdgeResponseManager_processResponse_responseWithTypeNotHandled()
 
     ' mock location hint manager
     mockLocationHintManager = {
-        processLocationHintHandle: function(handle as object) as void
+        processLocationHintHandle: function(_handle as object) as void
             GetGlobalAA().locationHintManager_processLocationHintHandle_called = true
         end function
     }
+    edgeResponseManager._locationHintManager = mockLocationHintManager
 
     fakeEdgeResponse = _adb_EdgeResponse("fakeRequestID", 200, FormatJson({ "handle": [{ type: "notHandled" }] }))
 

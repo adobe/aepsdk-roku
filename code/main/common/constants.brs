@@ -63,9 +63,16 @@ function _adb_InternalConstants() as object
                 SESSION_COMPLETE: "media.sessionComplete"
             }
         },
+        REQUEST_TYPE: {
+            CONSENT: "consent",
+            EDGE: "edge"
+        },
+        OBJECT_TYPE: {
+            EDGE_REQUEST: "com.adobe.request.edge",
+        },
         TIMESTAMP: {
             INVALID_VALUE: -1&
-        }
+        },
         CALLBACK_TIMEOUT_MS: 5000,
         EVENT_OWNER: "adobe",
     }

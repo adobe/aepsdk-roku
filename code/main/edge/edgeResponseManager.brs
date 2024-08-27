@@ -34,7 +34,7 @@ function _adb_EdgeResponseManager() as object
                 return
             end if
 
-            _adb_logVerbose("EdgeResponseManager::processResponse() - Processing Edge response: (" + FormatJson(edgeResponse.getResponseString()) + ").")
+            _adb_logVerbose("EdgeResponseManager::processResponse() - Processing Edge response: (" + edgeResponse.getResponseString() + ").")
 
             try
                 responseString = edgeResponse.getResponseString()
@@ -62,7 +62,7 @@ function _adb_EdgeResponseManager() as object
                     end if
                 end for
             catch exception
-                _adb_logError("EdgeResponseManager::_processResponseOnSuccess() - Failed to handle edge response: (" + FormatJson(responseString) + ")")
+                _adb_logError("EdgeResponseManager::_processResponseOnSuccess() - Failed to handle edge response: (" + FormatJson(responseString) + ") with exception (" + exception.message + ")")
             end try
         end function
 
