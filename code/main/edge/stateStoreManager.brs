@@ -61,12 +61,12 @@ function _adb_StateStoreManager() as object
 
         _addToStateStore: function(payload as object, startTimeInMillis = _adb_timestampInMillis() as longinteger) as void
             if _adb_isEmptyOrInvalidMap(payload)
-                _adb_logDebug("_adb_StateStoreManager::setStateStore() - stateStore payload is empty or invalid.")
+                _adb_logDebug("_adb_StateStoreManager::_addToStateStore() - stateStore payload is empty or invalid.")
                 return
             end if
 
             if _adb_isEmptyOrInvalidString(payload.key)
-                _adb_logDebug("_adb_StateStoreManager::setStateStore() - payload key is empty or invalid.")
+                _adb_logDebug("_adb_StateStoreManager::_addToStateStore() - payload key is empty or invalid.")
                 return
             end if
 

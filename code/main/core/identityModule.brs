@@ -17,8 +17,14 @@ function _adb_isIdentityModule(module as object) as boolean
     return (module <> invalid and module.type = "com.adobe.module.identity")
 end function
 
-function _adb_IdentityModule(configurationModule as object) as object
+function _adb_IdentityModule(configurationModule as object, consentState as object) as object
     if not _adb_isConfigurationModule(configurationModule) then
+        _adb_logError("IdentityModule::_adb_IdentityModule() - configurationModule is not valid.")
+        return invalid
+    end if
+
+    if not _adb_isConsentStateModule(consentState) then
+        _adb_logError("IdentityModule::_adb_IdentityModule() - consentState is not valid.")
         return invalid
     end if
 
@@ -27,6 +33,7 @@ function _adb_IdentityModule(configurationModule as object) as object
     module.Append({
         _EDGE_REQUEST_PATH: "/v1/interact",
         _configurationModule: configurationModule,
+        _consentState: consentState,
         _ecid: invalid,
 
         resetIdentities: function() as void
@@ -86,6 +93,14 @@ function _adb_IdentityModule(configurationModule as object) as object
 
             if _adb_isEmptyOrInvalidString(configId)
                 _adb_logError("IdentityModule::_queryECID() - Unable to fetch ECID from service side, invalid configuration.")
+                return invalid
+            end if
+
+            collectConsent = m._consentState.getCollectConsent()
+            if collectConsent = invalid
+                _adb_logVerbose("IdentityModule::_queryECID() - Consent value is not set, using default consent:(y) and will fetch the ECID from edge server.")
+            else if not _adb_stringEqualsIgnoreCase(collectConsent, "y")
+                _adb_logError("IdentityModule::_queryECID() - Unable to fetch ECID from service side, collect consent value is:(" + FormatJson(collectConsent) + ").")
                 return invalid
             end if
 

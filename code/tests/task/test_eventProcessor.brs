@@ -149,6 +149,7 @@ sub TC_adb_eventProcessor_handleEvent_handleMediaEvents()
             }
         })
     end function
+
     event = _adb_RequestEvent("sendMediaEvent", {
         clientSessionId: "clientSessionId_test",
         tsObject: tsObj,

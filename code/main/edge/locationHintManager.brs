@@ -29,7 +29,7 @@ function _adb_LocationHintManager() as object
 
         getLocationHint: function() as dynamic
             if m._isLocationHintExpired()
-                _adb_logVerbose("_adb_LocationHintManager::getLocationHint() - Location hint expired, returning invalid.")
+                _adb_logVerbose("_adb_LocationHintManager::getLocationHint() - Location hint expired or not set, returning invalid.")
                 m._delete()
                 return invalid
             end if

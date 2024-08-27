@@ -13,14 +13,18 @@
 
 ' ******************************* MODULE: EdgeRequestWorker *******************************
 
-function _adb_EdgeRequestWorker(edgeResponseManager as object) as object
+function _adb_EdgeRequestWorker(edgeResponseManager as object, consentState as object) as object
     instance = {
         _RETRY_WAIT_TIME_MS: 30000, ' 30 seconds
+        _COLLECT_CONSENT_NO: "n",
+        _COLLECT_CONSENT_YES: "y",
         _INVALID_WAIT_TIME: -1,
         _lastFailedRequestTS: -1,
         _queue: [],
+        _consentQueue: [],
         _queue_size_max: 50,
         _edgeResponseManager: edgeResponseManager,
+        _consentState: consentState,
 
         ' ------------------------------------------------------------------------------------------------
         ' Queue the Edge request.
@@ -33,47 +37,45 @@ function _adb_EdgeRequestWorker(edgeResponseManager as object) as object
         '
         ' @return void
         ' ------------------------------------------------------------------------------------------------
-        queue: function(requestId as string, eventData as object, timestampInMillis as longinteger, meta as object, path as string) as void
-            if meta = invalid
-                meta = {}
-            end if
-
-            if _adb_isEmptyOrInvalidString(requestId)
-                _adb_logDebug("EdgeRequestWorker::queue() - Cannot queue request, requestId is invalid")
+        queue: function(edgeRequest as object) as void
+            if not _adb_isValidEdgeRequest(edgeRequest)
+                _adb_logError("EdgeRequestWorker::queue() - Invalid Edge request:(" + FormatJson(edgeRequest) + ").")
                 return
             end if
 
-            if _adb_isEmptyOrInvalidMap(eventData)
-                _adb_logDebug("EdgeRequestWorker::queue() - Cannot queue request, eventData object is invalid")
+            if not m._shouldQueueRequest(edgeRequest, m._consentState)
+                _adb_logDebug("EdgeRequestWorker::queue() - Not queuing request with id:(" + FormatJson(edgeRequest.getRequestId()) + ") as collect consent is set to: (" + FormatJson(m._consentState.getCollectConsent()) + ").")
                 return
             end if
 
-            if timestampInMillis <= 0
-                _adb_logDebug("EdgeRequestWorker::queue() - Cannot queue request, timestampInMillis is invalid")
-                return
+            if _adb_isEdgeConsentRequest(edgeRequest)
+                _adb_logDebug("EdgeRequestWorker::queue() - Queuing consent request with id:(" + FormatJson(edgeRequest.getRequestId()) + ").")
+                if m._consentQueue.count() >= m._queue_size_max
+                    _adb_logDebug("EdgeRequestWorker::queue() - Number of queued consent requests exceeds the maximum queue size (" + StrI(m._queue_size_max) + "). Removing the oldest consent request.")
+                    m._consentQueue.Shift()
+                end if
+
+                ' queue the request
+                m._consentQueue.Push(edgeRequest)
+            else
+                _adb_logDebug("EdgeRequestWorker::queue() - Queuing Edge request with id:(" + FormatJson(edgeRequest.getRequestId()) + ").")
+                ' remove the oldest request if exceeds the queue limit
+                if m._queue.count() >= m._queue_size_max
+                    _adb_logDebug("EdgeRequestWorker::queue() - Number of queued hits exceeds the maximum queue size (" + StrI(m._queue_size_max) + "). Removing the oldest hit.")
+                    m._queue.Shift()
+                end if
+
+                ' queue the request
+                m._queue.Push(edgeRequest)
             end if
 
-            requestEntity = {
-                requestId: requestId,
-                eventData: eventData,
-                timestampInMillis: timestampInMillis,
-                path: path,
-                meta: meta
-            }
-            ' remove the oldest entity if reaching the limit
-            if m._queue.count() >= m._queue_size_max
-                _adb_logDebug("EdgeRequestWorker::queue() - No of queued hits exceeds the maximum queue size (" + StrI(m._queue_size_max) + "). Removing the oldest hit.")
-                m._queue.Shift()
-            end if
-            m._queue.Push(requestEntity)
-
-            ''' force retry the hits by disabling wait
+            ' force retry the hits by disabling wait
             m._lastFailedRequestTS = m._INVALID_WAIT_TIME
         end function,
 
         ' Check if there is any queued Edge request.
         hasQueuedEvent: function() as boolean
-            return m._queue.count() > 0
+            return m._queue.count() > 0 or m._consentQueue.count() > 0
         end function,
 
         ' ------------------------------------------------------------------------------------------
@@ -87,72 +89,182 @@ function _adb_EdgeRequestWorker(edgeResponseManager as object) as object
         '
         ' @return an array of EdgeResponse objects
         ' ------------------------------------------------------------------------------------------
-        processRequests: function(configId as string, ecid as string, edgeDomain = invalid as dynamic) as dynamic
+        processRequests: function(edgeConfig as object) as dynamic
             responseArray = []
             while m.hasQueuedEvent()
 
-                currTS = _adb_timestampInMillis()
-                if (m._lastFailedRequestTS <> m._INVALID_WAIT_TIME) and ((currTS - m._lastFailedRequestTS) < m._RETRY_WAIT_TIME_MS)
-                    ' Wait for 30 seconds before retrying the hit failed with recoverable error.
+                if m._shouldWaitBeforeRetry()
+                    ' Wait for 30 seconds before retrying the request
                     exit while
                 end if
 
                 ' grab oldest hit in the queue
-                requestEntity = m._queue.Shift()
+                requestToBeSent = invalid
 
-                eventData = requestEntity.eventData
-                requestId = requestEntity.requestId
-                meta = requestEntity.meta
-                path = requestEntity.path
+                if m._isBlockedByConsent(m._consentState)
+                    ' since the consent is pending process the consent request if any
+                    if m._consentQueue.count() = 0
+                        ' no consent request to process
+                        exit while
+                    end if
 
-                networkResponse = m._processRequest(eventData, ecid, configId, requestId, path, meta, edgeDomain)
-                if not _adb_isNetworkResponse(networkResponse)
-                    _adb_logError("EdgeRequestWorker::processRequests() - Edge request dropped. Response is invalid.")
-                    ' drop the request
+                    requestToBeSent = m._consentQueue.Shift()
+                else
+                    if m._consentQueue.count() = 0
+                        ' no consent request to process
+                        ' process the oldest edge request
+                        requestToBeSent = m._queue.Shift()
+                    else if m._queue.count() = 0
+                        ' no edge request to process
+                        ' process the oldest consent request
+                        requestToBeSent = m._consentQueue.Shift()
+                    else
+                        edgeRequest = m._queue.GetEntry(0) ' get the oldest edge request
+                        consentRequest = m._consentQueue.GetEntry(0) ' get the oldest consent request
+
+                        ' Both edge and consent requests are present in the queue
+                        ' check for the oldest request (FIFO)
+                        if consentRequest.getTimestampInMillis() <= edgeRequest.getTimestampInMillis()
+                            requestToBeSent = m._consentQueue.Shift()
+                        else
+                            requestToBeSent = m._queue.Shift()
+                        end if
+                    end if
+
+                end if
+
+                ' this should not happen but added for safety
+                ' check if the request is valid edge or consent request
+                if not _adb_isEdgeConsentRequest(requestToBeSent) and not _adb_isValidEdgeRequest(requestToBeSent)
+                    ' no request to process
+                    exit while
+                end if
+
+                collectConsent = m._consentState.getCollectConsent()
+                ' If collect consent is set to "n" and the request is not a consent request, drop the request
+                if not _adb_isEdgeConsentRequest(requestToBeSent) and _adb_stringEqualsIgnoreCase(collectConsent, m._COLLECT_CONSENT_NO)
+                    _adb_logVerbose("EdgeRequestWorker::processRequests() - Collect consent value is set to (" + FormatJson(collectConsent) + "). The Edge request with id:(" + FormatJson(requestToBeSent.getRequestId()) + ") will be dropped.")
                     continue while
                 end if
 
-                _adb_logVerbose("EdgeRequestWorker::processRequests() - Request with id:(" + FormatJson(requestId) + ") response: " + networkResponse.toString())
+                networkResponse = m._processRequest(edgeConfig, requestToBeSent)
+                edgeResponse = m._processResponse(networkResponse, requestToBeSent)
 
-                if networkResponse.isSuccessful()
-                    edgeResponse = _adb_EdgeResponse(requestId, networkResponse.getResponseCode(), networkResponse.getResponseString())
+                if _adb_isEdgeResponse(edgeResponse)
                     responseArray.Push(edgeResponse)
-                    m._processResponseOnSuccess(edgeResponse)
-                    ' Request sent out successfully
-                    m._lastFailedRequestTS = m._INVALID_WAIT_TIME
-                    _adb_logVerbose("EdgeRequestWorker::processRequests() - Edge request with id (" + FormatJson(requestId) + ") was sent successfully code (" + FormatJson(networkResponse.getResponseCode()) + ").")
-
-                else if networkResponse.isRecoverable()
-                    m._lastFailedRequestTS = _adb_timestampInMillis()
-                    _adb_logWarning("EdgeRequestWorker::processRequests() - Edge request with id (" + FormatJson(requestId) + ") failed with recoverable error code (" + FormatJson(networkResponse.getResponseCode()) + "). Request will be retried after (" + FormatJson(m._RETRY_WAIT_TIME_MS) + ") ms.")
-                    m._queue.Unshift(requestEntity)
-                    exit while
-                else
-                    edgeResponse = _adb_EdgeResponse(requestId, networkResponse.getResponseCode(), networkResponse.getResponseString())
-                    responseArray.Push(edgeResponse)
-                    _adb_logError("EdgeRequestWorker::processRequests() - Failed to send Edge request with id (" + FormatJson(requestId) + ") code (" + FormatJson(networkResponse.getResponseCode()) + ") response:(" + networkResponse.toString() + ")")
                 end if
+
+                if _adb_isEdgeConsentRequest(requestToBeSent)
+                    ' exit the loop after processing the consent request
+                    ' this ensures the consent request is fully processed and consent state is updated properly
+                    ' before the edge requests go out.
+                    exit while
+                end if
+
             end while
+
             return responseArray
         end function,
 
-        _processRequest: function(eventData as object, ecid as string, datastreamId as string, requestId as string, path as string, meta as object, edgeDomain as dynamic) as object
-            ''' Append config overrides to meta if set in eventData.config
+        _processResponse: function(networkResponse as object, originRequest as object) as object
+            edgeResponse = invalid
+
+            requestId = originRequest.getRequestId()
+
+            if not _adb_isNetworkResponse(networkResponse)
+                _adb_logError("EdgeRequestWorker::_processResponse() - Edge request with id:(" + FormatJson(requestId) + ") returned invalid response:(" + FormatJson(networkResponse) + ").")
+                return invalid
+            end if
+
+            responseString = networkResponse.toString()
+            responseCode = networkResponse.getResponseCode()
+            responseBody = networkResponse.getResponseString()
+
+            _adb_logVerbose("EdgeRequestWorker::_processResponse() - Edge request with id:(" + FormatJson(requestId) + ") response:(" + chr(10) + responseString + chr(10) + ").")
+
+            if networkResponse.isSuccessful()
+                ' Request sent out successfully
+                m._lastFailedRequestTS = m._INVALID_WAIT_TIME
+
+                edgeResponse = _adb_EdgeResponse(requestId, responseCode, responseBody)
+                m._processResponseOnSuccess(edgeResponse)
+
+                _adb_logVerbose("EdgeRequestWorker::_processResponse() - Successfully sent Edge request with id (" + FormatJson(requestId) + ") response code:(" + FormatJson(responseCode) + ").")
+            else if networkResponse.isRecoverable()
+                m._lastFailedRequestTS = _adb_timestampInMillis()
+
+                ' Add the request back to the particular queue based on request type for retry
+                m._pushBackToQueue(originRequest)
+
+                _adb_logWarning("EdgeRequestWorker::_processResponse() - Failed to send Edge request with id (" + FormatJson(requestId) + ") recoverable error code:(" + FormatJson(responseCode) + ") response:(" + responseBody + "). Request will be retried after (" + FormatJson(m._RETRY_WAIT_TIME_MS) + ") ms.")
+            else
+                m._lastFailedRequestTS = m._INVALID_WAIT_TIME
+                edgeResponse = _adb_EdgeResponse(requestId, responseCode, responseBody)
+
+                _adb_logError("EdgeRequestWorker::_processResponse() - Failed to send Edge request with id (" + FormatJson(requestId) + ") unrecoverable error code:(" + FormatJson(responseCode) + ") response:(" + responseString + ").")
+            end if
+            return edgeResponse
+        end function,
+
+        _pushBackToQueue: function(edgeRequest as object) as void
+            if _adb_isEmptyOrInvalidMap(edgeRequest)
+                return
+            end if
+
+            if _adb_isEdgeConsentRequest(edgeRequest)
+                m._consentQueue.Unshift(edgeRequest)
+            else
+                m._queue.Unshift(edgeRequest)
+            end if
+        end function,
+
+        _shouldWaitBeforeRetry: function() as object
+            if m._lastFailedRequestTS = m._INVALID_WAIT_TIME
+                return false
+            end if
+
+            currTS = _adb_timestampInMillis()
+            if (currTS - m._lastFailedRequestTS) >= m._RETRY_WAIT_TIME_MS
+                return false
+            end if
+
+            return true
+        end function,
+
+        _processRequest: function(edgeConfig as object, edgeRequest as object) as object
+            requestId = edgeRequest.getRequestId()
+            eventData = edgeRequest.getEventData()
+            requestType = edgeRequest.getRequestType()
+            path = edgeRequest.getPath()
+            meta = edgeRequest.getMeta()
+
+            ecid = edgeConfig.ecid
+            datastreamId = edgeConfig.configId
+            edgeDomain = edgeConfig.edgeDomain
+
+            stateStorePayload = m._edgeResponseManager.getStateStore()
+
+            ' Append config overrides to meta if set in eventData.config
             meta = m._appendConfigOverridesToMeta(meta, eventData.config, datastreamId)
 
-            meta = m._appendStateToMeta(meta, m._edgeResponseManager.getStateStore())
+            ' Append statestore payload to meta
+            meta = m._appendStateToMeta(meta, stateStorePayload)
 
-            ''' Get datastreamId to be used in the request. If datastreamIdOverride is set in eventData.config, use it. Otherwise, use the original datastreamId.
+            ' Get datastreamId to be used in the request. If datastreamIdOverride is set in eventData.config, use it. Otherwise, use the original datastreamId.
             datastreamId = m._getDatastreamId(eventData.config, datastreamId)
 
-            ''' Remove config from eventData
+            ' Remove config from eventData
             eventData.Delete("config")
 
-            requestBody = m._createEdgeRequestBody(eventData, ecid, meta)
+            if _adb_isEdgeConsentRequest(edgeRequest)
+                requestBody = m._createConsentRequestBody(eventData, ecid, meta)
+            else
+                requestBody = m._createEdgeRequestBody(eventData, ecid, meta)
+            end if
 
             locationHint = m._edgeResponseManager.getLocationHint()
             url = _adb_buildEdgeRequestURL(datastreamId, requestId, path, locationHint, edgeDomain)
-            _adb_logVerbose("EdgeRequestWorker::_processRequest() - Processing Request with url:(" + chr(10) + FormatJson(url) + chr(10) + ") with payload:(" + chr(10) + FormatJson(requestBody) + chr(10) + ")")
+            _adb_logVerbose("EdgeRequestWorker::_processRequest() - Processing " + FormatJson(requestType) + " Request with url:(" + chr(10) + FormatJson(url) + chr(10) + ") with payload:(" + chr(10) + FormatJson(requestBody) + chr(10) + ")")
             networkResponse = _adb_serviceProvider().networkService.syncPostRequest(url, requestBody)
             return networkResponse
         end function
@@ -183,7 +295,7 @@ function _adb_EdgeRequestWorker(edgeResponseManager as object) as object
             end if
 
             if not _adb_isEmptyOrInvalidString(config.datastreamIdOverride)
-                ''' Genrate sdkConfig payload with original datastreamId
+                ' Genrate sdkConfig payload with original datastreamId
                 meta["sdkConfig"] = m._getSdkConfigPayload(originalDatastreamId)
             end if
 
@@ -210,19 +322,49 @@ function _adb_EdgeRequestWorker(edgeResponseManager as object) as object
         _createEdgeRequestBody: function(eventData as object, ecid as string, meta as object) as object
             requestBody = {
                 "xdm": {
-                    "identityMap": m._getIdentityMap(ecid),
                     "implementationDetails": _adb_ImplementationDetails()
                 },
                 "events": []
             }
 
-            ''' Add eventData under events key as an array
+            if not _adb_isEmptyOrInvalidString(ecid)
+                ' Add ECID to the xdm.identityMap
+                requestBody.xdm.identityMap = m._getIdentityMap(ecid)
+            end if
+
+            ' Add eventData under events key as an array
             requestBody.events = [eventData]
 
             if not _adb_isEmptyOrInvalidMap(meta)
                 requestBody.meta = meta
             end if
 
+            _adb_logVerbose("EdgeRequestWorker::_createEdgeRequestBody() - Created Edge request body: (" + FormatJson(requestBody) + ").")
+            return requestBody
+        end function,
+
+        _createConsentRequestBody: function(consentData as object, ecid as string, meta as object) as object
+            requestBody = {
+                "query" : {
+                    "consent" : {
+                    "operation" : "update"
+                    }
+                },
+                "xdm": {
+                    "identityMap": m._getIdentityMap(ecid),
+                    "implementationDetails": _adb_ImplementationDetails()
+                },
+                "consent": []
+            }
+
+            ' consentData is an array of consents
+            requestBody.consent = consentData.consent
+
+            if not _adb_isEmptyOrInvalidMap(meta)
+                requestBody.meta = meta
+            end if
+
+            _adb_logVerbose("EdgeRequestWorker::_createConsentRequestBody() - Created Consent request body: (" + FormatJson(requestBody) + ").")
             return requestBody
         end function,
 
@@ -251,8 +393,38 @@ function _adb_EdgeRequestWorker(edgeResponseManager as object) as object
             m._edgeResponseManager.processResponse(edgeResponse)
         end function,
 
+        _shouldQueueRequest: function(edgeRequest as object, consentState as object) as boolean
+            collectConsent = consentState.getCollectConsent()
+
+            if _adb_stringEqualsIgnoreCase(collectConsent, m._COLLECT_CONSENT_NO) and not _adb_isEdgeConsentRequest(edgeRequest)
+                _adb_logVerbose("EdgeRequestWorker::_shouldQueue() - Collect consent value is set to (" + FormatJson(collectConsent) + "). The Edge request will be dropped.")
+                return false
+            end if
+
+            _adb_logVerbose("EdgeRequestWorker::_shouldQueue() - Collect consent value is set to (" + FormatJson(collectConsent) + "). The Edge request will be queued and processed.")
+            return true
+        end function,
+
+        _isBlockedByConsent: function(consentState as object) as boolean
+            collectConsent = consentState.getCollectConsent()
+
+            if _adb_isEmptyOrInvalidString(collectConsent)
+                _adb_logVerbose("EdgeRequestWorker::_isBlockedByConsent() - Collect consent value is not set and is defaulted to collect consent (y). The edge requests will not be blocked.")
+                return false
+            end if
+
+            if _adb_stringEqualsIgnoreCase(collectConsent, m._COLLECT_CONSENT_YES) or _adb_stringEqualsIgnoreCase(collectConsent, m._COLLECT_CONSENT_NO)
+                _adb_logVerbose("EdgeRequestWorker::_isBlockedByConsent() - Collect consent value is set to (" + FormatJson(collectConsent) + "). The edge requests will not be blocked.")
+                return false
+            end if
+
+            _adb_logVerbose("EdgeRequestWorker::_isBlockedByConsent() - Collect consent value is set to (" + FormatJson(collectConsent) + "). The edge requests will be blocked until the collect consent is set to (y) or (n).")
+            return true
+        end function,
+
         clear: function() as void
             m._queue.Clear()
+            m._consentQueue.Clear()
         end function
     }
 

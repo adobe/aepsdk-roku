@@ -102,8 +102,12 @@ function _adb_test_functions() as dynamic
 
         ' test_identityModule.brs
         TS_identityModule_BeforeEach
+        TC_adb_IdentityModule_init
         TC_adb_IdentityModule_bad_init
         TC_adb_IdentityModule_getECID_noSetECID_invalidConfiguration_returnsInvalid
+        TC_adb_IdentityModule_getECID_validConfiguration_consentNotSet_fetchesECID
+        TC_adb_IdentityModule_getECID_validConfiguration_consentYes_fetchesECID
+        TC_adb_IdentityModule_getECID_validConfiguration_consentNo_returnsInvalid
         TC_adb_IdentityModule_updateECID_validString_updatesECID
         TC_adb_IdentityModule_updateECID_invalid_deletesECID
         TC_adb_IdentityModule_resetIdentities_deletesECIDAndOtherIdentities
@@ -126,13 +130,20 @@ function _adb_test_functions() as dynamic
         TC_adb_buildEdgeRequestURL_validLocationHint
         'test_implementationDetails.brs
         TC_adb_ImplementationDetails
+        ' test_edgeRequest.brs
+        TC_adb_EdgeRequest_init_valid
+        TC_adb_EdgeRequest_init_invalid
+        TC_adb_EdgeRequest_isValidEdgeRequest_valid
+        TC_adb_EdgeRequest_isValidEdgeRequest_invalid
+        TC_adb_EdgeRequest_isEdgeConsentRequest_valid
         ' test_edgeRequestWorker.brs
         TS_EdgeRequestWorker_BeforeEach
         TC_adb_EdgeRequestWorker_init
         TC_adb_EdgeRequestWorker_hasQueuedEvent
         TC_adb_EdgeRequestWorker_queue
-        TC_adb_EdgeRequestWorker_queue_bad_input
+        TC_adb_EdgeRequestWorker_queue_notEdgeRequest_doesNotQueue
         TC_adb_EdgeRequestWorker_queue_limit
+        TC_adb_EdgeRequestWorker_queue_newRequest_after_RecoverableError_retriesImmediately
         TC_adb_EdgeRequestWorker_clear
         TC_adb_EdgeRequestWorker_processRequest_valid_response
         TC_adb_EdgeRequestWorker_processRequest_customMeta_valid_response
@@ -150,7 +161,16 @@ function _adb_test_functions() as dynamic
         TC_adb_EdgeRequestWorker_processRequests
         TC_adb_EdgeRequestWorker_processRequests_empty_queue
         TC_adb_EdgeRequestWorker_processRequests_recoverableError_retriesAfterWaitTimeout
-        TC_adb_EdgeRequestWorker_queue_newRequest_after_RecoverableError_retriesImmediately
+        TC_adb_EdgeRequestWorker_processRequests_consentNo_dropsRequest
+        TC_adb_EdgeRequestWorker_processRequests_consentYes_sendsRequests
+        TC_adb_EdgeRequestWorker_processRequests_consentPending_queuesRequest
+        TC_adb_EdgeRequestWorker_processRequests_consentRequest_consentNo_sendsConsentRequests
+        TC_adb_EdgeRequestWorker_processRequests_consentRequest_consentPending_sendsRequests
+        TC_adb_EdgeRequestWorker_processRequests_edgeAndConsentRequest_consentYes_sendsInOrder
+        TC_adb_EdgeRequestWorker_isBlockedByConsent_returnsTrue
+        TC_adb_EdgeRequestWorker_isBlockedByConsent_returnsFalse
+        TC_adb_EdgeRequestWorker_shouldQueueRequest_returnsTrue
+        TC_adb_EdgeRequestWorker_shouldQueueRequest_returnsFalse
         'test_edgeModule.brs
         TC_adb_EdgeModule_init
         TC_adb_EdgeModule_processEvent

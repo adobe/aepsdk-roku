@@ -209,7 +209,7 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
                     end if
 
                     eventData = responseEvent.data
-                    if eventData = invalid then
+                    if _adb_isEmptyOrInvalidMap(eventData) then
                         _adb_logWarning("MediaSession::processEdgeResponse() - Invalid eventData in the edge response.")
                         return
                     end if
@@ -245,7 +245,7 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
 
         _processEdgeResponseHandles: function(handleList as object) as void
             for each handle in handleList
-                if handle.type = m._HANDLE_TYPE_SESSION_START
+                if _adb_stringEqualsIgnoreCase(handle.type, m._HANDLE_TYPE_SESSION_START)
                     payloadSessionId = handle.payload[0]["sessionId"]
 
                     if _adb_isEmptyOrInvalidString(payloadSessionId)
@@ -267,7 +267,7 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
 
         _processEdgeResponseErrors: function(errorList as object) as void
             for each error in errorList
-                if error.type = m._ERROR_TYPE_VA_EDGE_400
+                if _adb_stringEqualsIgnoreCase(error.type, m._ERROR_TYPE_VA_EDGE_400)
                     ''' abort the session if sessionStart fails
                     m.close(true)
                     _adb_logError("MediaSession::_processEdgeResponseErrors() - Closing the session as the SessionStart request failed.")
@@ -301,7 +301,7 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
         end function,
 
         _extractSessionStartData: function(mediaHit as object) as void
-            if mediaHit.eventType <> m._MEDIA_EVENT_TYPE.SESSION_START
+            if not _adb_stringEqualsIgnoreCase(mediaHit.eventType, m._MEDIA_EVENT_TYPE.SESSION_START)
                 return
             end if
 
@@ -310,10 +310,18 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
 
         ''' Called for sessionStart hit only
         _attachMediaConfig: function(xdmData as object) as object
-            xdmData.xdm["mediaCollection"]["sessionDetails"]["playerName"] = m._getPlayerName()
-            xdmData.xdm["mediaCollection"]["sessionDetails"]["channel"] = m._getChannelName()
-
+            playerName = m._getPlayerName()
+            channel = m._getChannelName()
             appVersion = m._getAppVersion()
+
+            if not _adb_isEmptyOrInvalidString(playerName)
+                xdmData.xdm["mediaCollection"]["sessionDetails"]["playerName"] = playerName
+            end if
+
+            if not _adb_isEmptyOrInvalidString(channel)
+                xdmData.xdm["mediaCollection"]["sessionDetails"]["channel"] = channel
+            end if
+
             if not _adb_isEmptyOrInvalidString(appVersion) then
                 xdmData.xdm["mediaCollection"]["sessionDetails"]["appVersion"] = appVersion
             end if
@@ -451,15 +459,15 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
             end if
         end function,
 
-        _getAppVersion: function() as string
+        _getAppVersion: function() as dynamic
             return m._configurationModule.getMediaAppVersion()
         end function,
 
-        _getPlayerName: function() as string
+        _getPlayerName: function() as dynamic
             return m._configurationModule.getMediaPlayerName()
         end function,
 
-        _getChannelName: function() as string
+        _getChannelName: function() as dynamic
             if m._sessionChannelName <> invalid
                 return m._sessionChannelName
             else

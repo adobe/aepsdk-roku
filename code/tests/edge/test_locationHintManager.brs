@@ -129,6 +129,7 @@ end sub
 sub TC_adb_LocationHintManager_islocationHintExpired()
     locationHintManager = _adb_LocationHintManager()
     locationHint = "locationHint"
+    locationHintManager.setLocationHint(locationHint, 100)
 
     locationHintManager._expiryTSInMillis& = 100&
 
@@ -208,7 +209,7 @@ sub TC_adb_LocationHintManager_getLocationHint_expiredTTL_callsDelete()
     UTF_assertNotEqual(invalidTS&, locationHintManager._expiryTSInMillis&, generateErrorMessage("Location hint expiry timestamp", "not invalid", locationHintManager._expiryTSInMillis&))
 
     ' mock location hint expiry
-    locationHintManager._isLocationHintExpired = function(currentTimeInMillis = _adb_timestampInMillis() as longinteger) as boolean
+    locationHintManager._isLocationHintExpired = function(_currentTimeInMillis = _adb_timestampInMillis() as longinteger) as boolean
         return true
     end function
 

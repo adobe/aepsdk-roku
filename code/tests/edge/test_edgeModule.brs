@@ -15,17 +15,21 @@
 ' @Test
 sub TC_adb_EdgeModule_init()
     configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    consentState = _adb_ConsentState(configurationModule)
+    identityModule = _adb_IdentityModule(configurationModule, consentState)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
     UTF_assertTrue(_adb_isEdgeModule(edgeModule))
 
-    edgeModule = _adb_EdgeModule(configurationModule, invalid)
+    edgeModule = _adb_EdgeModule(configurationModule, invalid, consentState)
     UTF_assertInvalid(edgeModule)
 
-    edgeModule = _adb_EdgeModule(invalid, identityModule)
+    edgeModule = _adb_EdgeModule(invalid, identityModule, consentState)
     UTF_assertInvalid(edgeModule)
 
-    edgeModule = _adb_EdgeModule(invalid, invalid)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule, invalid)
+    UTF_assertInvalid(edgeModule)
+
+    edgeModule = _adb_EdgeModule(invalid, invalid, invalid)
     UTF_assertInvalid(edgeModule)
 end sub
 
@@ -33,25 +37,27 @@ end sub
 ' @Test
 sub TC_adb_EdgeModule_processEvent()
     configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    consentState = _adb_ConsentState(configurationModule)
+    identityModule = _adb_IdentityModule(configurationModule, consentState)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
 
     timestampInMillis& = _adb_timestampInMillis()
     edgeModule.processEvent("request_id", { key: "value" }, timestampInMillis&)
 
     queue = edgeModule._edgeRequestWorker._queue
     UTF_assertEqual(1, queue.Count())
-    UTF_assertEqual("request_id", queue[0].requestId)
-    UTF_assertEqual({ key: "value" }, queue[0].eventData)
-    UTF_assertEqual(timestampInMillis&, queue[0].timestampInMillis)
+    UTF_assertEqual("request_id", queue[0].getRequestId())
+    UTF_assertEqual({ key: "value" }, queue[0].getEventData())
+    UTF_assertEqual(timestampInMillis&, queue[0].getTimestampInMillis())
 end sub
 
 ' target: processQueuedRequests()
 ' @Test
 sub TC_adb_EdgeModule_processQueuedRequests()
     configurationModule = _adb_ConfigurationModule()
-    identityModule = _adb_IdentityModule(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule)
+    consentState = _adb_ConsentState(configurationModule)
+    identityModule = _adb_IdentityModule(configurationModule, consentState)
+    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
 
     edgeModule._getEdgeConfig = function() as object
         return {
@@ -65,7 +71,7 @@ sub TC_adb_EdgeModule_processQueuedRequests()
         return true
     end function
 
-    edgeModule._edgeRequestWorker.processRequests = function(_x, _y, _z) as dynamic
+    edgeModule._edgeRequestWorker.processRequests = function(_edgeConfig as object) as dynamic
         array = []
         array.Push(_adb_EdgeResponse("request_id", 200, "response_body"))
         return array

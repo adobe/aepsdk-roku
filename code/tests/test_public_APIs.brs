@@ -398,9 +398,7 @@ sub TC_APIs_getExperienceCloudId_callbackTimeout()
     context = {
         content: "test"
     }
-    callback_result = "testECID"
-
-    sdkInstance.getExperienceCloudId(sub(ctx, result)
+    sdkInstance.getExperienceCloudId(sub(_ctx, _result)
         throw "should not be called"
     end sub, context)
 

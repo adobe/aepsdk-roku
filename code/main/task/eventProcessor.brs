@@ -29,8 +29,8 @@ function _adb_EventProcessor(task as object) as object
         init: function() as void
             m._configurationModule = _adb_ConfigurationModule()
             m._consentState = _adb_ConsentState(m._configurationModule)
-            m._identityModule = _adb_IdentityModule(m._configurationModule)
-            m._edgeModule = _adb_EdgeModule(m._configurationModule, m._identityModule)
+            m._identityModule = _adb_IdentityModule(m._configurationModule, m._consentState)
+            m._edgeModule = _adb_EdgeModule(m._configurationModule, m._identityModule, m._consentState)
             m._consentModule = _adb_ConsentModule(m._consentState, m._edgeModule)
             m._mediaModule = _adb_MediaModule(m._configurationModule, m._edgeModule)
             m._modulesRegisteredForResponseEvents = [m._consentModule, m._mediaModule]
@@ -234,7 +234,11 @@ function _adb_EventProcessor(task as object) as object
             ''' notify response events all the modules
             for each module in registeredModules
                 ''' registered modules should have the method processResponseEvent
-                module.processResponseEvent(event)
+                try
+                    module.processResponseEvent(event)
+                catch exception
+                    _adb_logError("EventProcessor::_dispatchResponseEventToRegisteredModules() - Failed to process the response event, the exception message: " + exception.Message)
+                end try
             end for
 
         end function,
