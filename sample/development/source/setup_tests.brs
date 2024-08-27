@@ -160,6 +160,7 @@ function _adb_test_functions() as dynamic
         TC_adb_EdgeResponseManager_processResponse_validLocationHintResponse
         TC_adb_EdgeResponseManager_processResponse_validStateStoreResponse
         TC_adb_EdgeResponseManager_processResponse_responseWithTypeNotHandled
+        TC_adb_EdgeResponseManager_handleResetIdentities
         'test_stateStoreManager.brs
         TS_StateStoreManager_BeforeEach
         TC_adb_StateStoreManager_Init

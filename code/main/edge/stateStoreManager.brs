@@ -131,6 +131,13 @@ function _adb_StateStoreManager() as object
 
             return currentTimeInMillis > stateStoreEntry.expiryTS
         end function
+
+        _delete: function() as void
+            _adb_logVerbose("_adb_StateStoreManager::_delete() - Deleting stateStore object.")
+            m._stateStoreMap = {}
+            localDataStoreService = _adb_serviceProvider().localDataStoreService
+            localDataStoreService.removeValue(_adb_InternalConstants().LOCAL_DATA_STORE_KEYS.STATE_STORE)
+        end function
     }
 
     stateStoreManager._init()
