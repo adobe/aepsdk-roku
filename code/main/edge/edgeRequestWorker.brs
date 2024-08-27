@@ -154,6 +154,13 @@ function _adb_EdgeRequestWorker(edgeResponseManager as object, consentState as o
                     responseArray.Push(edgeResponse)
                 end if
 
+                if _adb_isEdgeConsentRequest(requestToBeSent)
+                    ' exit the loop after processing the consent request
+                    ' this ensures the consent request is fully processed and consent state is updated properly
+                    ' before the edge requests go out.
+                    exit while
+                end if
+
             end while
 
             return responseArray

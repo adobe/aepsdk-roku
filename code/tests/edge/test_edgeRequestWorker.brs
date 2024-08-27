@@ -1124,15 +1124,22 @@ sub TC_adb_EdgeRequestWorker_processRequests_consentRequest_consentNo_sendsConse
 
     worker._queue = [edgeRequest1, edgeRequest2]
     worker._consentQueue = [consentRequest1, consentRequest2]
+    edgeConfig = _adb_testUtil_getEdgeConfig()
 
     ' Verify when consent is no network requests are made and the queued requests are dropped
-    responseArray = worker.processRequests(_adb_testUtil_getEdgeConfig())
-    UTF_assertEqual(2, responseArray.Count(), generateErrorMessage("Response array count", 0, responseArray.Count()))
+    responseArray = worker.processRequests(edgeConfig)
+
+    ' Consent request will break the processing loop and responseArray will have only one response
+    UTF_assertEqual(1, responseArray.Count(), generateErrorMessage("Response array count", 0, responseArray.Count()))
     UTF_assertEqual(0, worker._queue.Count(), generateErrorMessage("Queue count", 0, worker._queue.Count()))
-    UTF_assertEqual(0, worker._consentQueue.Count(), generateErrorMessage("Consent Queue count", 0, worker._consentQueue.Count()))
+    UTF_assertEqual(1, worker._consentQueue.Count(), generateErrorMessage("Consent Queue count", 0, worker._consentQueue.Count()))
 
     UTF_assertEqual("consent_request_id_1", responseArray[0].getRequestId())
-    UTF_assertEqual("consent_request_id_2", responseArray[1].getRequestId())
+
+    responseArray = worker.processRequests(edgeConfig)
+    UTF_assertEqual(1, responseArray.Count(), generateErrorMessage("Response array count", 0, responseArray.Count()))
+
+    UTF_assertEqual("consent_request_id_2", responseArray[0].getRequestId())
 
     _adb_serviceProvider().networkService.syncPostRequest = cachedFuntion
 end sub
@@ -1164,15 +1171,29 @@ sub TC_adb_EdgeRequestWorker_processRequests_consentRequest_consentPending_sends
 
     worker._consentQueue = [consentRequest1, consentRequest2]
     worker._queue = [edgeRequest1, edgeRequest2]
+    edgeConfig = _adb_testUtil_getEdgeConfig()
 
     ' Verify when consent is pending (i.e it is not set to "y" or "n") network requests are not made and the queued requests are not dropped
-    responseArray = worker.processRequests(_adb_testUtil_getEdgeConfig())
-    UTF_assertEqual(2, responseArray.Count(), generateErrorMessage("Response array count", 0, responseArray.Count()))
+    responseArray = worker.processRequests(edgeConfig)
+    ' Consent request will break the processing loop and responseArray will have only one response
+    UTF_assertEqual(1, responseArray.Count(), generateErrorMessage("Response array count", 0, responseArray.Count()))
+    UTF_assertEqual(2, worker._queue.Count(), generateErrorMessage("Queue count", 0, worker._queue.Count()))
+    UTF_assertEqual(1, worker._consentQueue.Count(), generateErrorMessage("Consent Queue count", 0, worker._consentQueue.Count()))
+
+    UTF_assertEqual("consent_request_id_1", responseArray[0].getRequestId())
+
+    responseArray = worker.processRequests(edgeConfig)
+    ' Consent request will break the processing loop and responseArray will have only one response
+    UTF_assertEqual(1, responseArray.Count(), generateErrorMessage("Response array count", 0, responseArray.Count()))
     UTF_assertEqual(2, worker._queue.Count(), generateErrorMessage("Queue count", 0, worker._queue.Count()))
     UTF_assertEqual(0, worker._consentQueue.Count(), generateErrorMessage("Consent Queue count", 0, worker._consentQueue.Count()))
 
-    UTF_assertEqual("consent_request_id_1", responseArray[0].getRequestId())
-    UTF_assertEqual("consent_request_id_2", responseArray[1].getRequestId())
+
+    UTF_assertEqual("consent_request_id_2", responseArray[0].getRequestId())
+
+    responseArray = worker.processRequests(edgeConfig)
+    UTF_assertEqual(0, responseArray.Count(), generateErrorMessage("Response array count", 0, responseArray.Count()))
+    UTF_assertEqual(2, worker._queue.Count(), generateErrorMessage("Queue count", 0, worker._queue.Count()))
 
     _adb_serviceProvider().networkService.syncPostRequest = cachedFuntion
 end sub
@@ -1198,6 +1219,7 @@ sub TC_adb_EdgeRequestWorker_processRequests_edgeAndConsentRequest_consentYes_se
     edgeRequest1 = _adb_EdgeRequest("edge_request_id_1", { xdm: { key: "value" } }, 98&)
     edgeRequest2 = _adb_EdgeRequest("edge_request_id_2", { xdm: { key: "value " } }, 99&)
     edgeRequest3 = _adb_EdgeRequest("edge_request_id_3", { xdm: { key: "value" } }, 102&)
+    edgeRequest4 = _adb_EdgeRequest("edge_request_id_4", { xdm: { key: "value" } }, 103&)
 
     consentRequest1 = _adb_EdgeRequest("consent_request_id_1", { xdm: { key: "value" } }, 100&)
     consentRequest1.setRequestType("consent")
@@ -1205,23 +1227,36 @@ sub TC_adb_EdgeRequestWorker_processRequests_edgeAndConsentRequest_consentYes_se
     consentRequest2.setRequestType("consent")
 
     worker._consentQueue = [consentRequest1, consentRequest2]
-    worker._queue = [edgeRequest1, edgeRequest2, edgeRequest3]
+    worker._queue = [edgeRequest1, edgeRequest2, edgeRequest3, edgeRequest4]
+    edgeConfig = _adb_testUtil_getEdgeConfig()
 
     ' Verify when consent is pending (i.e it is not set to "y" or "n") network requests are not made and the queued requests are not dropped
-    responseArray = worker.processRequests(_adb_testUtil_getEdgeConfig())
-    UTF_assertEqual(5, responseArray.Count(), generateErrorMessage("Response array count", 0, responseArray.Count()))
-    UTF_assertEqual(0, worker._queue.Count(), generateErrorMessage("Queue count", 0, worker._queue.Count()))
-    UTF_assertEqual(0, worker._consentQueue.Count(), generateErrorMessage("Consent Queue count", 0, worker._consentQueue.Count()))
+    responseArray = worker.processRequests(edgeConfig)
+    UTF_assertEqual(3, responseArray.Count(), generateErrorMessage("Response array count", 0, responseArray.Count()))
+    UTF_assertEqual(2, worker._queue.Count(), generateErrorMessage("Queue count", 0, worker._queue.Count()))
+    UTF_assertEqual(1, worker._consentQueue.Count(), generateErrorMessage("Consent Queue count", 0, worker._consentQueue.Count()))
 
     UTF_assertEqual("edge_request_id_1", responseArray[0].getRequestId())
     UTF_assertEqual("edge_request_id_2", responseArray[1].getRequestId())
     UTF_assertEqual("consent_request_id_1", responseArray[2].getRequestId())
-    UTF_assertEqual("consent_request_id_2", responseArray[3].getRequestId())
-    UTF_assertEqual("edge_request_id_3", responseArray[4].getRequestId())
+
+    responseArray = worker.processRequests(edgeConfig)
+    UTF_assertEqual(1, responseArray.Count(), generateErrorMessage("Response array count", 0, responseArray.Count()))
+    UTF_assertEqual(2, worker._queue.Count(), generateErrorMessage("Queue count", 0, worker._queue.Count()))
+    UTF_assertEqual(0, worker._consentQueue.Count(), generateErrorMessage("Consent Queue count", 0, worker._consentQueue.Count()))
+
+    UTF_assertEqual("consent_request_id_2", responseArray[0].getRequestId())
+
+    responseArray = worker.processRequests(edgeConfig)
+    UTF_assertEqual(2, responseArray.Count(), generateErrorMessage("Response array count", 0, responseArray.Count()))
+    UTF_assertEqual(0, worker._queue.Count(), generateErrorMessage("Queue count", 0, worker._queue.Count()))
+    UTF_assertEqual(0, worker._consentQueue.Count(), generateErrorMessage("Consent Queue count", 0, worker._consentQueue.Count()))
+
+    UTF_assertEqual("edge_request_id_3", responseArray[0].getRequestId())
+    UTF_assertEqual("edge_request_id_4", responseArray[1].getRequestId())
 
     _adb_serviceProvider().networkService.syncPostRequest = cachedFuntion
 end sub
-
 
 ' ****************************** _isBlockedByConsent tests ******************************
 ' target: _isBlockedByConsent()
@@ -1308,7 +1343,6 @@ sub TC_adb_EdgeRequestWorker_shouldQueueRequest_returnsFalse()
     UTF_assertFalse(worker._shouldQueueRequest(edgeRequest, consentState), generateErrorMessage("should queue request (conset = n)", "false", "true"))
 end sub
 
-
 ' ****************************** Helper functions ******************************
 
 function _adb_testUtil_getEdgeRequestWorker(edgeResponseManager = _adb_edgeResponseManager() as object, consentState = invalid as object) as object
@@ -1325,4 +1359,3 @@ function _adb_testUtil_getEdgeConfig() as object
         edgeDomain: invalid
     }
 end function
-
