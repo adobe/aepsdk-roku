@@ -135,8 +135,6 @@ function _adb_EventProcessor(task as object) as object
             _adb_logInfo("EventProcessor::_resetIdentities() - Resetting persisted identities.")
 
             m._dispatchResetIdentitiesEvent()
-            'm._identityModule.resetIdentities()
-            ' Add handlers to each module and call those handlers from here.
         end function,
 
         _resetSDK: function(_event as object) as void
