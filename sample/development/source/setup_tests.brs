@@ -104,13 +104,20 @@ function _adb_test_functions() as dynamic
         TS_identityModule_BeforeEach
         TC_adb_IdentityModule_init
         TC_adb_IdentityModule_bad_init
-        TC_adb_IdentityModule_getECID_noSetECID_invalidConfiguration_returnsInvalid
-        TC_adb_IdentityModule_getECID_validConfiguration_consentNotSet_fetchesECID
-        TC_adb_IdentityModule_getECID_validConfiguration_consentYes_fetchesECID
-        TC_adb_IdentityModule_getECID_validConfiguration_consentNo_returnsInvalid
-        TC_adb_IdentityModule_updateECID_validString_updatesECID
-        TC_adb_IdentityModule_updateECID_invalid_deletesECID
-        TC_adb_IdentityModule_resetIdentities_deletesECIDAndOtherIdentities
+        TC_adb_IdentityModule_getECID_persistedECID_returnsECID
+        TC_adb_IdentityModule_getECID_API_persistedECID_DispatchesResponse
+        TC_adb_IdentityModule_getECID_API_ECIDNotPersisted_queriesECID
+        ' test_identityState.brs
+        TS_identityState_BeforeEach
+        TS_identityState_AfterEach
+        TC_adb_IdentityState_init_noPersistedECID
+        TC_adb_IdentityState_init_persistedECID
+        TC_adb_IdentityState_resetIdentities
+        TC_adb_IdentityState_getECID_noPersistedECID
+        TC_adb_IdentityState_getECID_persistedECID
+        TC_adb_IdentityState_updateECID
+        TC_adb_IdentityState_updateECID_invalidECID
+        TC_adb_IdentityState_updateECID_emptyECID
         'test_adobeObject.brs
         TC_adb_AdobeObject
         'test_event.brs
