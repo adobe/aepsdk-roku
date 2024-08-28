@@ -13,22 +13,26 @@
 
 ' *********************************** MODULE: map utils ***********************************
 
-function _adb_optMapFromMap(map as object, key as string, fallback = invalid as dynamic)
-    if map = invalid
-        return fallback
-    end if
+function _adb_isTypeMap(element as dynamic) as boolean
+    return type(element) = "roAssociativeArray"
+end function
 
-    if not map.DoesExist(key)
+function _adb_isEmptyOrInvalidMap(input as object) as boolean
+    return input = invalid or not _adb_isTypeMap(input) or input.count() = 0
+end function
+
+function _adb_optMapFromMap(map as object, key as string, fallback = invalid as dynamic)
+    if map = invalid or not map.DoesExist(key)
         return fallback
     end if
 
     ret = map[key]
-    if type(ret) <> "roAssociativeArray"
+
+    if not _adb_isTypeMap(ret)
         return fallback
     end if
 
     return ret
-
 end function
 
 function _adb_optStringFromMap(map as object, key as string, fallback = invalid as dynamic)
@@ -41,40 +45,23 @@ function _adb_optStringFromMap(map as object, key as string, fallback = invalid 
     end if
 
     ret = map[key]
-    if type(ret) <> "roString" and type(ret) <> "String"
+    if not _adb_isTypeString(ret)
         return fallback
     end if
 
     return ret
-
 end function
 
 function _adb_optIntFromMap(map as object, key as string, fallback = invalid as dynamic)
-    if map = invalid
-        return fallback
-    end if
-
-    if not map.DoesExist(key)
+    if map = invalid or not map.DoesExist(key)
         return fallback
     end if
 
     ret = map[key]
-    if type(ret) <> "roInteger" and type(ret) <> "roInt"
+
+    if not _adb_isTypeInt(ret)
         return fallback
     end if
 
     return ret
-
-end function
-
-function _adb_isEmptyOrInvalidMap(input as object) as boolean
-    if input = invalid or type(input) <> "roAssociativeArray"
-        return true
-    end if
-
-    if input.count() = 0
-        return true
-    end if
-
-    return false
 end function
