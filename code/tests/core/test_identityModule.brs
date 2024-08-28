@@ -20,203 +20,94 @@ end sub
 ' @Test
 sub TC_adb_IdentityModule_init()
     configurationModule = _adb_ConfigurationModule()
+    identityState = _adb_IdentityState()
     consentState = _adb_ConsentState(configurationModule)
-    identityModule = _adb_IdentityModule(configurationModule, consentState)
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
+    identityModule = _adb_IdentityModule(identityState, edgeModule)
     UTF_assertNotInvalid(identityModule)
 end sub
 
 ' target: _adb_IdentityModule()
 ' @Test
 sub TC_adb_IdentityModule_bad_init()
-    identityModule = _adb_IdentityModule({}, {})
+    configurationModule = _adb_ConfigurationModule()
+    identityState = _adb_IdentityState()
+    consentState = _adb_ConsentState(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
+
+    identityModule = _adb_IdentityModule({}, {}, {})
     UTF_assertInvalid(identityModule)
 
-    identityModule = _adb_IdentityModule(_adb_ConfigurationModule(), invalid)
+    identityModule = _adb_IdentityModule(_adb_ConfigurationModule(), invalid, invalid)
     UTF_assertInvalid(identityModule)
 
-    identityModule = _adb_IdentityModule(invalid, _adb_ConsentState(_adb_ConfigurationModule()))
+    identityModule = _adb_IdentityModule(invalid, edgeModule)
     UTF_assertInvalid(identityModule)
+
+    ' 3rd param task is optional
+    identityModule = _adb_IdentityModule(identityState, edgeModule, invalid)
+    UTF_assertNotInvalid(identityModule)
 end sub
 
 ' target: _adb_IdentityModule()
 ' @Test
-sub TC_adb_IdentityModule_getECID_noSetECID_invalidConfiguration_returnsInvalid()
+sub TC_adb_IdentityModule_getECID_persistedECID_returnsECID()
+    _adb_testUtil_persistECID("persistedECID")
     configurationModule = _adb_ConfigurationModule()
+    identityState = _adb_IdentityState()
     consentState = _adb_ConsentState(configurationModule)
-    identityModule = _adb_IdentityModule(configurationModule, consentState)
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
 
-    UTF_assertInvalid(identityModule._ecid)
+    identityModule = _adb_IdentityModule(identityState, edgeModule)
+    UTF_assertEqual("persistedECID", identityModule.getECID())
 
-    ' fetches ECID from server and returns
-    generatedECID = identityModule.getECID()
-    UTF_assertInvalid(generatedECID)
-
-    ' verify if the ecid is persisted
-    persistedECID = getPersistedECID()
-    UTF_assertInvalid(identityModule._ecid)
-    UTF_assertInvalid(persistedECID)
 end sub
 
-
 ' target: _adb_IdentityModule()
-sub TC_adb_IdentityModule_getECID_validConfiguration_consentNotSet_fetchesECID()
-    test_config = ParseJson(ReadAsciiFile("pkg:/source/test_config.json"))
-    configId = test_config.config_id
-
-    if(configId = invalid)
-        print("Set config_id in test_config.json configuration file.")
-        return
-    end if
-
+' @Test
+sub TC_adb_IdentityModule_getECID_API_persistedECID_DispatchesResponse()
+    _adb_testUtil_persistECID("persistedECID")
     configurationModule = _adb_ConfigurationModule()
+    identityState = _adb_IdentityState()
     consentState = _adb_ConsentState(configurationModule)
-    identityModule = _adb_IdentityModule(configurationModule, consentState)
-    config = {
-        "edge.configId": configId
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
+
+    identityModule = _adb_IdentityModule(identityState, edgeModule)
+
+    identityModule._dispatchECIDResponseEventToTask = function(event as object) as void
+        GetGlobalAA().dispatchECIDResponseEventToTask_called = true
+        GetGlobalAA().dispatchECIDResponseEventToTask_actualEvent = event
+    end function
+
+    getExperienceCloudIdAPIEvent = {
+        "uuid": "test-uuid",
+        "apiName": "getExperienceCloudId",
     }
-    identityModule.updateConfiguration(config)
 
-    UTF_assertInvalid(identityModule._ecid)
+    UTF_assertEqual("persistedECID", identityModule.getECID(getExperienceCloudIdAPIEvent))
 
-    ' fetches ECID from server and returns
-    generatedECID = identityModule.getECID()
-    UTF_assertNotInvalid(generatedECID)
-
-    'verify if the ecid is persisted
-    persistedECID = getPersistedECID()
-    UTF_assertFalse(isEmptyOrInvalidString(identityModule._ecid))
-    UTF_assertFalse(isEmptyOrInvalidString(persistedECID))
-
+    actualIdentityResponseEvent = GetGlobalAA().dispatchECIDResponseEventToTask_actualEvent
+    UTF_assertTrue(GetGlobalAA().dispatchECIDResponseEventToTask_called)
+    UTF_assertEqual("persistedECID", actualIdentityResponseEvent.data)
+    UTF_assertEqual("test-uuid", actualIdentityResponseEvent.parentId)
 end sub
 
-' target: _adb_IdentityModule()
-sub TC_adb_IdentityModule_getECID_validConfiguration_consentYes_fetchesECID()
-    test_config = ParseJson(ReadAsciiFile("pkg:/source/test_config.json"))
-    configId = test_config.config_id
-
-    if(configId = invalid)
-        print("Set config_id in test_config.json configuration file.")
-        return
-    end if
-
-    configurationModule = _adb_ConfigurationModule()
-    consentState = _adb_ConsentState(configurationModule)
-    identityModule = _adb_IdentityModule(configurationModule, consentState)
-    config = {
-        "edge.configId": configId
-    }
-    identityModule.updateConfiguration(config)
-
-    UTF_assertInvalid(identityModule._ecid)
-
-    ' setConsent to y
-    consentState.setCollectConsent("y")
-    ' fetches ECID from server and returns
-    generatedECID = identityModule.getECID()
-    UTF_assertNotInvalid(generatedECID)
-
-    'verify if the ecid is persisted
-    persistedECID = getPersistedECID()
-    UTF_assertFalse(isEmptyOrInvalidString(identityModule._ecid))
-    UTF_assertFalse(isEmptyOrInvalidString(persistedECID))
-
-end sub
 
 ' target: _adb_IdentityModule()
-sub TC_adb_IdentityModule_getECID_validConfiguration_consentNo_returnsInvalid()
-    test_config = ParseJson(ReadAsciiFile("pkg:/source/test_config.json"))
-    configId = test_config.config_id
-
-    if(configId = invalid)
-        print("Set config_id in test_config.json configuration file.")
-        return
-    end if
-
+sub TC_adb_IdentityModule_getECID_ECIDNotPersisted_queriesECID()
+    ' GetECID will queue a request with Edge Module when ECID is not persisted
     configurationModule = _adb_ConfigurationModule()
+    identityState = _adb_IdentityState()
     consentState = _adb_ConsentState(configurationModule)
-    identityModule = _adb_IdentityModule(configurationModule, consentState)
-    config = {
-        "edge.configId": configId
-    }
-    identityModule.updateConfiguration(config)
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
 
-    UTF_assertInvalid(identityModule._ecid)
+    edgeModule.queueEdgeRequest = function(requestId as string, eventData as object, timestampInMillis as longinteger, meta as object, path as string, requestType = m._REQUEST_TYPE_EDGE as string)
+        GetGlobalAA().queueEdgeRequest_called = true
+    end function
 
-    ' setConsent to n
-    consentState.setCollectConsent("n")
-    ' since consentState is not "y", network request should not be made and invalid is returned
-    generatedECID = identityModule.getECID()
-    UTF_assertInvalid(generatedECID)
+    identityModule = _adb_IdentityModule(identityState, edgeModule)
 
-    'verify if the ecid is persisted
-    persistedECID = getPersistedECID()
-    UTF_assertTrue(isEmptyOrInvalidString(identityModule._ecid))
-    UTF_assertTrue(isEmptyOrInvalidString(persistedECID))
-
-end sub
-
-' target: _adb_IdentityModule()
-' @Test
-sub TC_adb_IdentityModule_updateECID_validString_updatesECID()
-    configurationModule = _adb_ConfigurationModule()
-    consentState = _adb_ConsentState(configurationModule)
-    identityModule = _adb_IdentityModule(configurationModule, consentState)
-
-    UTF_assertInvalid(identityModule._ecid)
-
-    identityModule.updateECID("test-ecid")
-
-    persistedECID = getPersistedECID()
-
-    UTF_assertEqual("test-ecid", identityModule._ecid)
-    UTF_assertNotInvalid(persistedECID)
-    UTF_assertEqual("test-ecid", persistedECID)
-end sub
-
-' target: _adb_IdentityModule()
-' @Test
-sub TC_adb_IdentityModule_updateECID_invalid_deletesECID()
-    configurationModule = _adb_ConfigurationModule()
-    consentState = _adb_ConsentState(configurationModule)
-    identityModule = _adb_IdentityModule(configurationModule, consentState)
-
-    UTF_assertInvalid(identityModule._ecid)
-
-    identityModule.updateECID("test-ecid")
-
-    persistedECID = getPersistedECID()
-
-    UTF_assertEqual("test-ecid", identityModule._ecid)
-    UTF_assertNotInvalid(persistedECID)
-    UTF_assertEqual("test-ecid", persistedECID)
-
-    identityModule.updateECID(invalid)
-    persistedECID = getPersistedECID()
-    UTF_assertInvalid(identityModule._ecid)
-    UTF_assertInvalid(persistedECID)
-
-end sub
-
-' target: _adb_IdentityModule()
-' @Test
-sub TC_adb_IdentityModule_resetIdentities_deletesECIDAndOtherIdentities()
-    configurationModule = _adb_ConfigurationModule()
-    consentState = _adb_ConsentState(configurationModule)
-    identityModule = _adb_IdentityModule(configurationModule, consentState)
-
-    UTF_assertInvalid(identityModule._ecid)
-
-    identityModule.updateECID("test-ecid")
-
-    persistedECID = getPersistedECID()
-
-    UTF_assertEqual("test-ecid", identityModule._ecid)
-    UTF_assertNotInvalid(persistedECID)
-    UTF_assertEqual("test-ecid", persistedECID)
-
-    identityModule.resetIdentities()
-    persistedECID = getPersistedECID()
-    UTF_assertInvalid(identityModule._ecid)
-    UTF_assertInvalid(persistedECID)
-
+    ' queries ECID from server
+    identityModule.getECID()
+    UTF_assertTrue(GetGlobalAA().queueEdgeRequest_called, "Edge Module queueEdgeRequest() was not called.")
 end sub

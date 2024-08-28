@@ -17,136 +17,209 @@ function _adb_isIdentityModule(module as object) as boolean
     return (module <> invalid and module.type = "com.adobe.module.identity")
 end function
 
-function _adb_IdentityModule(configurationModule as object, consentState as object) as object
-    if not _adb_isConfigurationModule(configurationModule) then
-        _adb_logError("IdentityModule::_adb_IdentityModule() - configurationModule is not valid.")
+function _adb_IdentityModule(identityState as object, edgeModule as object, task = invalid as object) as object
+    if not _adb_isIdentityState(identityState)
+        _adb_logError("IdentityModule::_adb_IdentityModule() - identityState is not valid.")
         return invalid
     end if
 
-    if not _adb_isConsentStateModule(consentState) then
-        _adb_logError("IdentityModule::_adb_IdentityModule() - consentState is not valid.")
+    if not _adb_isEdgeModule(edgeModule)
+        _adb_logError("IdentityModule::_adb_IdentityModule() - edgeModule is not valid.")
         return invalid
     end if
 
-    module = _adb_AdobeObject("com.adobe.module.identity")
+    identityModule = _adb_AdobeObject("com.adobe.module.identity")
 
-    module.Append({
+    identityModule.Append({
+        _CONSTANTS: _adb_InternalConstants(),
+        _IDENTITY_RESULT_HANDLE_TYPE: "identity:result",
+        _STATE_STORE_HANDLE_TYPE: "state:store",
         _EDGE_REQUEST_PATH: "/v1/interact",
-        _configurationModule: configurationModule,
-        _consentState: consentState,
+        _RESPONSE_CODE_200: 200,
+        _RESPONSE_CODE_300: 300,
+        _identityState: invalid,
+        _edgeModule: invalid,
         _ecid: invalid,
+        _identityRequestEventIds: [],
+        _task: invalid,
+
+        _init: function(identityState as object, edgeModule as object, task = invalid as object) as void
+            _adb_logVerbose("IdentityModule::init() - Initializing identity module.")
+            m._identityState = identityState
+            m._edgeModule = edgeModule
+            m._task = task
+        end function,
 
         resetIdentities: function() as void
-            m.updateECID(invalid)
+            _adb_logDebug("IdentityModule::resetIdentities() - Resetting identities.")
+            m._identityState.resetIdentities()
         end function,
 
-        getECID: function() as dynamic
-            if _adb_isEmptyOrInvalidString(m._ecid)
-                m._ecid = m._loadECID()
-            end if
-
-            if _adb_isEmptyOrInvalidString(m._ecid)
-                m.updateECID(m._queryECID())
-            end if
-
-            _adb_logVerbose("IdentityModule::getECID() - Returning ECID:(" + FormatJson(m._ecid) + ")")
-            return m._ecid
+        setECID: function(ecid as dynamic) as void
+            _adb_logDebug("IdentityModule::setECID() - Setting ECID:(" + FormatJson(ecid) + ")")
+            m._identityState.updateECID(ecid)
         end function,
 
-        updateECID: function(ecid as dynamic) as void
-            m._ecid = ecid
-            if _adb_isEmptyOrInvalidString(m._ecid)
-                _adb_logDebug("IdentityModule::updateECID() - Deleting ECID, updateECID() called with empty or invalid string value.")
-                m._deleteECID()
-            else
-                _adb_logVerbose("IdentityModule::updateECID() - Saving ECID:(" + FormatJson(m._ecid) + ") in cache and persistence.")
-                m._saveECID(m._ecid)
+        getECID: function(event = invalid as object) as dynamic
+            _adb_logDebug("IdentityModule::getECID() - getting ECID.")
+            ecid = m._identityState.getECID()
+
+            if not _adb_isEmptyOrInvalidMap(event) and not _adb_isEmptyOrInvalidString(event.uuid)
+                ' Add the request event id to the list of events that are waiting for ECID
+                ' Used to call the callback of the public API once the ECID is fetched
+                m._identityRequestEventIds.push(event.uuid)
             end if
 
-        end function,
+            if _adb_isEmptyOrInvalidString(ecid)
+                _adb_logDebug("IdentityModule::getECID() - ECID not found in the cache, querying edge server to fetch ECID.")
+                m._queryECID()
+            else if not _adb_isEmptyOrInvalidString(m._identityRequestEventIds.GetEntry(0))
+                ' If ECID is already set, dispatch the response event to the task
+                _adb_logDebug("IdentityModule::getECID() - ECID found in the cache, dispatching response event to the task.")
+                ecidResponseEvent = _adb_IdentityResponseEvent(m._identityRequestEventIds.Shift(), ecid)
+                m._dispatchECIDResponseEventToTask(ecidResponseEvent)
+            end if
 
-        _loadECID: function() as dynamic
-            _adb_logVerbose("IdentityModule::_loadECID() - Loading ECID from persistence.")
-            localDataStoreService = _adb_serviceProvider().localDataStoreService
-            ecid = localDataStoreService.readValue(_adb_InternalConstants().LOCAL_DATA_STORE_KEYS.ECID)
+            _adb_logVerbose("IdentityModule::getECID() - Returning ECID:(" + FormatJson(ecid) + ")")
 
             return ecid
         end function,
 
-        _saveECID: function(ecid as dynamic) as void
-            _adb_logVerbose("IdentityModule::_saveECID() - Saving ECID:(" + FormatJson(ecid) + ") to presistence.")
-            localDataStoreService = _adb_serviceProvider().localDataStoreService
-            localDataStoreService.writeValue(_adb_InternalConstants().LOCAL_DATA_STORE_KEYS.ECID, ecid)
-        end function,
-
-        _deleteECID: function() as void
-            _adb_logVerbose("IdentityModule::_deleteECID() - Removing ECID from persistence.")
-            localDataStoreService = _adb_serviceProvider().localDataStoreService
-            localDataStoreService.removeValue(_adb_InternalConstants().LOCAL_DATA_STORE_KEYS.ECID)
-            return
-        end function
-
         _queryECID: function() as dynamic
-            _adb_logInfo("IdentityModule::_queryECID() - Fetching ECID from service side.")
-            configId = m._configurationModule.getConfigId()
-            edgeDomain = m._configurationModule.getEdgeDomain()
+            _adb_logInfo("IdentityModule::_queryECID() - Queuing request with edge to fetch ECID from server.")
 
-            if _adb_isEmptyOrInvalidString(configId)
-                _adb_logError("IdentityModule::_queryECID() - Unable to fetch ECID from service side, invalid configuration.")
-                return invalid
+            requestId = _adb_generate_UUID()
+            m._edgeModule.queueEdgeRequest(requestId, m._getECIDQueryPayload(), _adb_timestampInMillis(), {}, m._EDGE_REQUEST_PATH)
+        end function,
+
+        processResponseEvent: function(responseEvent as object) as void
+            try
+                currentECID = m._identityState.getECID()
+                if not _adb_isEmptyOrInvalidString(currentECID)
+                    ' No need to process the response if the current ECID is already set
+                    return
+                end if
+
+                ' ECID is not set, process the response to get the ECID
+                remoteECID = m._extractECIDFromEdgeRespose(responseEvent)
+
+                if _adb_isEmptyOrInvalidString(remoteECID)
+                    _adb_logDebug("IdentityModule::processResponseEvent() - ECID not found in the edge response.")
+                    return
+                end if
+
+                if _adb_isEmptyOrInvalidString(currentECID) or remoteECID <> currentECID
+                    _adb_logDebug("IdentityModule::processResponseEvent() - Got ECID from Edge response. Updating ECID from: (" + FormatJson(currentECID) + ") to: (" + FormatJson(remoteECID) + ")")
+
+                    m._identityState.updateECID(remoteECID)
+
+                    ' Check if there are any events waiting for ECID
+                    requestEventId = m._identityRequestEventIds.Shift()
+                    if not _adb_isEmptyOrInvalidString(requestEventId)
+                        ecidResponseEvent = _adb_IdentityResponseEvent(requestEventId, remoteECID)
+                        m._dispatchECIDResponseEventToTask(ecidResponseEvent)
+                    end if
+                end if
+
+            catch exception
+                _adb_logError("IdentityModule::processResponseEvent() - Failed to process the edge response, the exception message: " + exception.Message)
+            end try
+        end function,
+
+        _extractECIDFromEdgeRespose: function(responseEvent as object) as dynamic
+            remoteECID = invalid
+            if not _adb_isEdgeResponseEvent(responseEvent)
+                return remoteECID
             end if
 
-            collectConsent = m._consentState.getCollectConsent()
-            if collectConsent = invalid
-                _adb_logVerbose("IdentityModule::_queryECID() - Consent value is not set, using default consent:(y) and will fetch the ECID from edge server.")
-            else if not _adb_stringEqualsIgnoreCase(collectConsent, "y")
-                _adb_logError("IdentityModule::_queryECID() - Unable to fetch ECID from service side, collect consent value is:(" + FormatJson(collectConsent) + ").")
-                return invalid
+            _adb_logVerbose("IdentityModule::processResponseEvent() - Received response event:(" + chr(10) + FormatJson(responseEvent) + chr(10) + ")")
+            eventData = responseEvent.data
+            responseCode = eventData.code
+            responseString = eventData.message
+
+            if responseCode < m._RESPONSE_CODE_200 or responseCode >= m._RESPONSE_CODE_300
+                return remoteECID
             end if
 
-            url = _adb_buildEdgeRequestURL(configId, _adb_generate_UUID(), m._EDGE_REQUEST_PATH, invalid, edgeDomain)
-            jsonBody = m._getECIDQueryPayload()
-            networkResponse = _adb_serviceProvider().networkService.syncPostRequest(url, jsonBody)
-            remoteECID = m._getECIDFromQueryResponse(networkResponse)
+            responseJson = ParseJson(responseString)
+
+            if _adb_isEmptyOrInvalidMap(responseJson)
+                _adb_logError("IdentityModule::processResponseEvent() - Request to fetch ECID failed with response: (" + FormatJson(responseJson) + ")")
+                return remoteECID
+            end if
+
+            handles = responseJson.handle
+            if _adb_isEmptyOrInvalidArray(handles)
+                return remoteECID
+            end if
+
+            for each handle in handles
+                if _adb_isEmptyOrInvalidMap(handle)
+                    continue for
+                end if
+
+                if _adb_stringEqualsIgnoreCase(handle.type, m._IDENTITY_RESULT_HANDLE_TYPE)
+                    remoteECID = m._getEcidFromIdentityResultHandle(handle)
+                    exit for
+                else if _adb_stringEqualsIgnoreCase(handle.type, m._STATE_STORE_HANDLE_TYPE) and _adb_isEmptyOrInvalidString(remoteECID)
+                    remoteECID = m._getEcidFromStateStoreHandle(handle)
+                    ' not breaking here to check if ECID is present in identity:result handle
+                end if
+            end for
 
             return remoteECID
         end function,
 
-        _getECIDFromQueryResponse: function(networkResponse as dynamic) as dynamic
-            if not _adb_isNetworkResponse(networkResponse)
-                _adb_logError("IdentityModule::_getECIDFromQueryResponse() - Edge response is invalid.")
-                return invalid
+        _getEcidFromIdentityResultHandle: function(handle as object) as dynamic
+            ecid = invalid
+            if _adb_isEmptyOrInvalidMap(handle) or _adb_isEmptyOrInvalidArray(handle.payload)
+                return ecid
             end if
 
-            responseJson = ParseJson(networkResponse.getResponseString())
+            for each payload in handle.payload
+                if not _adb_isEmptyOrInvalidMap(payload.namespace) and _adb_stringEqualsIgnoreCase(payload.namespace.code, "ECID")
+                    ecid = payload.id
+                    exit for
+                end if
+            end for
 
-            if _adb_isEmptyOrInvalidMap(responseJson) or not networkResponse.isSuccessful() or _adb_isEmptyOrInvalidString(networkResponse.getResponseString())
-                _adb_logError("IdentityModule::_getECIDFromQueryResponse() - Request to fetch ECID failed with response: (" + FormatJson(responseJson) + ")")
-                return invalid
+            return ecid
+        end function,
+
+        _getEcidFromStateStoreHandle: function(handle as object) as dynamic
+            ecid = invalid
+            if _adb_isEmptyOrInvalidMap(handle) or _adb_isEmptyOrInvalidArray(handle.payload)
+                return ecid
             end if
 
-            if _adb_isEmptyOrInvalidArray(responseJson.handle) or _adb_isEmptyOrInvalidArray(responseJson.handle[0].payload) or _adb_isEmptyOrInvalidString(responseJson.handle[0].payload[0].id)
-                _adb_logError("IdentityModule::_getECIDFromQueryResponse() - Unable to parse ECID from the response: (" + FormatJson(responseJson) + ")")
-                return invalid
+            for each payload in handle.payload
+                if _adb_stringContains(payload.key, "_AdobeOrg_identity")
+                    ecid = payload.value
+                    exit for
+                end if
+            end for
+
+            return ecid
+        end function,
+
+        _dispatchECIDResponseEventToTask: function(event as object) as void
+            if m._task = invalid
+                _adb_logError("IdentityModule::_dispatchResponseEventToTask() - Cannot send response event, task node instance is invalid.")
+                return
             end if
 
-            remoteECID = responseJson.handle[0].payload[0].id
-
-            return remoteECID
+            m._task[m._CONSTANTS.TASK.RESPONSE_EVENT] = event
         end function,
 
         _getECIDQueryPayload: function() as object
             jsonBody = {
-                "events": [
-                    {
-                        "query": {
-                            "identity": { "fetch": [
-                                    "ECID"
-                            ] }
-
-                        }
+                "query": {
+                    "identity": {
+                        "fetch": [
+                            "ECID"
+                        ]
                     }
-                ]
+                }
             }
 
             return jsonBody
@@ -154,9 +227,12 @@ function _adb_IdentityModule(configurationModule as object, consentState as obje
 
         dump: function() as object
             return {
-                ecid: m._ecid,
+                ecid: m._identityState.getECID(),
             }
         end function
     })
-    return module
+
+    identityModule._init(identityState, edgeModule, task)
+
+    return identityModule
 end function

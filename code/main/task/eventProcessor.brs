@@ -29,11 +29,12 @@ function _adb_EventProcessor(task as object) as object
         init: function() as void
             m._configurationModule = _adb_ConfigurationModule()
             m._consentState = _adb_ConsentState(m._configurationModule)
-            m._identityModule = _adb_IdentityModule(m._configurationModule, m._consentState)
-            m._edgeModule = _adb_EdgeModule(m._configurationModule, m._identityModule, m._consentState)
+            m._identityState = _adb_IdentityState()
+            m._edgeModule = _adb_EdgeModule(m._configurationModule, m._identityState, m._consentState)
+            m._identityModule = _adb_IdentityModule(m._identityState, m._edgeModule, m._task)
             m._consentModule = _adb_ConsentModule(m._consentState, m._edgeModule)
             m._mediaModule = _adb_MediaModule(m._configurationModule, m._edgeModule)
-            m._modulesRegisteredForResponseEvents = [m._consentModule, m._mediaModule]
+            m._modulesRegisteredForResponseEvents = [m._identityModule, m._consentModule, m._mediaModule]
             ' enable debug mode if needed
             if m._isInDebugMode()
                 _adb_serviceProvider().networkService._debugMode = true
@@ -54,7 +55,7 @@ function _adb_EventProcessor(task as object) as object
                     m.processQueuedRequests()
 
                 catch exception
-                    _adb_logError("EventProcessor::handleEvent() - Failed to process the request event, the exception message: " + exception.Message)
+                    _adb_logError("EventProcessor::handleEvent() - Failed to process the request event (" + FormatJson(event.apiName) + "), the exception message: " + exception.Message)
                 end try
 
                 m._dumpDebugInfo(event, _adb_serviceProvider().loggingService, _adb_serviceProvider().networkService)
@@ -96,12 +97,7 @@ function _adb_EventProcessor(task as object) as object
         end function,
 
         _getECID: function(event as object) as void
-            ecid = m._identityModule.getECID()
-
-            _adb_logDebug("EventProcessor::_getECID() - Dispatching getECID response event with ECID: (" + FormatJson(ecid) + ")")
-            ecidResponseEvent = _adb_IdentityResponseEvent(event.uuid, ecid)
-
-            m._sendResponseEvent(ecidResponseEvent)
+            m._identityModule.getECID(event)
         end function,
 
         _handleCreateMediaSession: function(event as object) as void
@@ -165,7 +161,7 @@ function _adb_EventProcessor(task as object) as object
                 _adb_logWarning("EventProcessor::_setECID() - Cannot set ECID, not found in event data.")
             else
                 _adb_logDebug("EventProcessor::_setECID() - Setting ECID to: (" + ecid + ")")
-                m._identityModule.updateECID(ecid)
+                m._identityModule.setECID(ecid)
             end if
         end function,
 
