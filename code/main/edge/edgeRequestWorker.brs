@@ -154,10 +154,13 @@ function _adb_EdgeRequestWorker(edgeResponseManager as object, consentState as o
                     responseArray.Push(edgeResponse)
                 end if
 
-                if _adb_isEdgeConsentRequest(requestToBeSent)
+                if _adb_isEdgeConsentRequest(requestToBeSent) or _adb_isEmptyOrInvalidString(edgeConfig.ecid)
                     ' exit the loop after processing the consent request
                     ' this ensures the consent request is fully processed and consent state is updated properly
                     ' before the edge requests go out.
+
+                    ' exit the loop if the ecid is not set and let the first request set the ecid
+                    ' so the subsequent requests can use the ecid
                     exit while
                 end if
 

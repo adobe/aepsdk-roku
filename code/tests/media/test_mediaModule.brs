@@ -16,16 +16,16 @@
 sub TC_adb_MediaModule_init()
     configurationModule = _adb_ConfigurationModule()
     consentState = _adb_ConsentState(configurationModule)
-    identityModule = _adb_IdentityModule(configurationModule, consentState)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
+    identityState = _adb_IdentityState()
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
 
     mediaModule = _adb_MediaModule(configurationModule, edgeModule)
-    UTF_assertTrue(_adb_isMediaModule(mediaModule))
+    UTF_assertTrue(_adb_isMediaModule(mediaModule), "MediaModule should be valid")
 
-    UTF_assertInvalid(_adb_MediaModule(edgeModule, configurationModule))
-    UTF_assertInvalid(_adb_MediaModule(configurationModule, invalid))
-    UTF_assertInvalid(_adb_MediaModule(invalid, edgeModule))
-    UTF_assertInvalid(_adb_MediaModule(invalid, invalid))
+    UTF_assertInvalid(_adb_MediaModule(edgeModule, configurationModule), "MediaModule should be invalid (1)")
+    UTF_assertInvalid(_adb_MediaModule(configurationModule, invalid), "MediaModule should be invalid (2)")
+    UTF_assertInvalid(_adb_MediaModule(invalid, edgeModule), "MediaModule should be invalid (3)")
+    UTF_assertInvalid(_adb_MediaModule(invalid, invalid), "MediaModule should be invalid (4)")
 
 end sub
 
@@ -42,8 +42,8 @@ sub TC_adb_MediaModule_processEvent_sessionStart_validConfig_createsSessionAndQu
     configurationModule.updateConfiguration(configuration)
 
     consentState = _adb_ConsentState(configurationModule)
-    identityModule = _adb_IdentityModule(configurationModule, consentState)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
+    identityState = _adb_IdentityState()
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
 
     mediaModule = _adb_MediaModule(configurationModule, edgeModule)
     mediaSessionManager = _adb_MediaSessionManager()
@@ -125,8 +125,8 @@ sub TC_adb_MediaModule_processEvent_sessionStart_InvalidConfig_ignoresEvent()
     ' setup
     configurationModule = _adb_ConfigurationModule()
     consentState = _adb_ConsentState(configurationModule)
-    identityModule = _adb_IdentityModule(configurationModule, consentState)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
+    identityState = _adb_IdentityState()
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
 
     mediaModule = _adb_MediaModule(configurationModule, edgeModule)
     mediaSessionManager = _adb_MediaSessionManager()
@@ -195,8 +195,8 @@ sub TC_adb_MediaModule_processEvent_MediaEventOtherThanSessionStart_validConfig_
     configurationModule.updateConfiguration(configuration)
 
     consentState = _adb_ConsentState(configurationModule)
-    identityModule = _adb_IdentityModule(configurationModule, consentState)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
+    identityState = _adb_IdentityState()
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
 
     mediaModule = _adb_MediaModule(configurationModule, edgeModule)
     mediaSessionManager = _adb_MediaSessionManager()
@@ -282,8 +282,8 @@ sub TC_adb_MediaModule_processEvent_SessionComplete_validConfig_queuesEventAndEn
     configurationModule.updateConfiguration(configuration)
 
     consentState = _adb_ConsentState(configurationModule)
-    identityModule = _adb_IdentityModule(configurationModule, consentState)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
+    identityState = _adb_IdentityState()
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
 
     mediaModule = _adb_MediaModule(configurationModule, edgeModule)
     mediaSessionManager = _adb_MediaSessionManager()
@@ -360,8 +360,8 @@ end sub
 sub TC_adb_MediaModule_processEvent_invalidMediaEvent_ignoresEvent()
     configurationModule = _adb_ConfigurationModule()
     consentState = _adb_ConsentState(configurationModule)
-    identityModule = _adb_IdentityModule(configurationModule, consentState)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
+    identityState = _adb_IdentityState()
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
     mediaModule = _adb_MediaModule(configurationModule, edgeModule)
     mediaSessionManager = _adb_MediaSessionManager()
     mediaModule._sessionManager = mediaSessionManager
@@ -409,8 +409,8 @@ end sub
 sub TC_adb_MediaModule_processEvent_invalidMediaEvent_inactiveSession()
     configurationModule = _adb_ConfigurationModule()
     consentState = _adb_ConsentState(configurationModule)
-    identityModule = _adb_IdentityModule(configurationModule, consentState)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
+    identityState = _adb_IdentityState()
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
     mediaModule = _adb_MediaModule(configurationModule, edgeModule)
     mediaSessionManager = _adb_MediaSessionManager()
     mediaModule._sessionManager = mediaSessionManager
@@ -465,8 +465,8 @@ end sub
 sub TC_hasValidConfig()
     configurationModule = _adb_ConfigurationModule()
     consentState = _adb_ConsentState(configurationModule)
-    identityModule = _adb_IdentityModule(configurationModule, consentState)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
+    identityState = _adb_IdentityState()
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
     mediaModule = _adb_MediaModule(configurationModule, edgeModule)
     UTF_assertTrue(_adb_isMediaModule(mediaModule))
 
