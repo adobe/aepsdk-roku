@@ -33,7 +33,6 @@ function _adb_IdentityModule(identityState as object, edgeModule as object, task
     identityModule.Append({
         _CONSTANTS: _adb_InternalConstants(),
         _IDENTITY_RESULT_HANDLE_TYPE: "identity:result",
-        _STATE_STORE_HANDLE_TYPE: "state:store",
         _EDGE_REQUEST_PATH: "/v1/interact",
         _RESPONSE_CODE_200: 200,
         _RESPONSE_CODE_300: 300,
@@ -161,9 +160,6 @@ function _adb_IdentityModule(identityState as object, edgeModule as object, task
                 if _adb_stringEqualsIgnoreCase(handle.type, m._IDENTITY_RESULT_HANDLE_TYPE)
                     remoteECID = m._getEcidFromIdentityResultHandle(handle)
                     exit for
-                else if _adb_stringEqualsIgnoreCase(handle.type, m._STATE_STORE_HANDLE_TYPE) and _adb_isEmptyOrInvalidString(remoteECID)
-                    remoteECID = m._getEcidFromStateStoreHandle(handle)
-                    ' not breaking here to check if ECID is present in identity:result handle
                 end if
             end for
 
@@ -179,22 +175,6 @@ function _adb_IdentityModule(identityState as object, edgeModule as object, task
             for each payload in handle.payload
                 if not _adb_isEmptyOrInvalidMap(payload.namespace) and _adb_stringEqualsIgnoreCase(payload.namespace.code, "ECID")
                     ecid = payload.id
-                    exit for
-                end if
-            end for
-
-            return ecid
-        end function,
-
-        _getEcidFromStateStoreHandle: function(handle as object) as dynamic
-            ecid = invalid
-            if _adb_isEmptyOrInvalidMap(handle) or _adb_isEmptyOrInvalidArray(handle.payload)
-                return ecid
-            end if
-
-            for each payload in handle.payload
-                if _adb_stringContains(payload.key, "_AdobeOrg_identity")
-                    ecid = payload.value
                     exit for
                 end if
             end for
