@@ -98,6 +98,11 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
             return responseEvents
         end function,
 
+        resetIdentities: function() as void
+            _adb_logVerbose("EdgeModule::resetIdentities() - Resetting identities.")
+            m._edgeResponseManager.handleResetIdentities()
+        end function,
+
         _getEdgeConfig: function() as object
             configId = m._configurationModule.getConfigId()
             if _adb_isEmptyOrInvalidString(configId)

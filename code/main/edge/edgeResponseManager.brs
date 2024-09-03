@@ -65,6 +65,12 @@ function _adb_EdgeResponseManager() as object
                 _adb_logError("EdgeResponseManager::_processResponseOnSuccess() - Failed to handle edge response: (" + FormatJson(responseString) + ") with exception (" + exception.message + ")")
             end try
         end function
+
+        handleResetIdentities: function() as void
+            _adb_logVerbose("EdgeResponseManager::handleResetIdentities() - Resetting location hint and state store.")
+            m._locationHintManager._delete()
+            m._stateStoreManager._delete()
+        end function,
     }
 
 end function
