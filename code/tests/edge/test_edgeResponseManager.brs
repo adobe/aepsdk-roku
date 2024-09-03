@@ -130,3 +130,34 @@ sub TC_adb_EdgeResponseManager_processResponse_responseWithTypeNotHandled()
     UTF_assertFalse(GetGlobalAA().stateStoreManager_processStateStoreHandle_called, "stateStoreManager.processStateStoreHandle() was called.")
     UTF_assertFalse(GetGlobalAA().locationHintManager_processLocationHintHandle_called, "locationHintManager.processLocationHintHandle() was called.")
 end sub
+
+' target: _adb_edgeResponseManager_handleResetIdentities()
+' @Test
+sub TC_adb_EdgeResponseManager_handleResetIdentities()
+    edgeResponseManager = _adb_edgeResponseManager()
+
+    GetGlobalAA().locationHintManager_delete_called = false
+    GetGlobalAA().stateStoreManager_delete_called = false
+
+    ' mock state store manager
+    mockStateStoreManager = {
+        _delete: function() as void
+            GetGlobalAA().stateStoreManager_delete_called = true
+        end function
+    }
+
+    ' mock location hint manager
+    mockLocationHintManager = {
+        _delete: function() as void
+            GetGlobalAA().locationHintManager_delete_called = true
+        end function
+    }
+
+    edgeResponseManager._stateStoreManager = mockStateStoreManager
+    edgeResponseManager._locationHintManager = mockLocationHintManager
+
+    edgeResponseManager.handleResetIdentities()
+
+    UTF_assertTrue(GetGlobalAA().stateStoreManager_delete_called, "stateStoreManager._delete() was not called.")
+    UTF_assertTrue(GetGlobalAA().locationHintManager_delete_called, "locationHintManager._delete() was not called.")
+end sub

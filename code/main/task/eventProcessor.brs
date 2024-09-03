@@ -24,7 +24,7 @@ function _adb_EventProcessor(task as object) as object
         _consentModule: invalid,
         _mediaModule: invalid,
         _modulesRegisteredForResponseEvents: invalid,
-        ' TODO add _modulesRegisteredForResetIdentitiesEvent: invalid,
+        _modulesRegisteredForResetIdentitiesEvent: invalid,
 
         init: function() as void
             m._configurationModule = _adb_ConfigurationModule()
@@ -35,6 +35,7 @@ function _adb_EventProcessor(task as object) as object
             m._consentModule = _adb_ConsentModule(m._consentState, m._edgeModule)
             m._mediaModule = _adb_MediaModule(m._configurationModule, m._edgeModule)
             m._modulesRegisteredForResponseEvents = [m._identityModule, m._consentModule, m._mediaModule]
+            m._modulesRegisteredForResetIdentitiesEvent = [m._identityModule, m._edgeModule]
             ' enable debug mode if needed
             if m._isInDebugMode()
                 _adb_serviceProvider().networkService._debugMode = true
@@ -128,8 +129,8 @@ function _adb_EventProcessor(task as object) as object
 
         _resetIdentities: function(_event as object) as void
             _adb_logInfo("EventProcessor::_resetIdentities() - Resetting persisted identities.")
-            m._identityModule.resetIdentities()
-            ' Add handlers to each module and call those handlers from here.
+
+            m._dispatchResetIdentitiesEvent()
         end function,
 
         _resetSDK: function(_event as object) as void
@@ -212,6 +213,18 @@ function _adb_EventProcessor(task as object) as object
 
             for each event in responseEvents
                 m._sendResponseEvent(event)
+            end for
+        end function,
+
+        _dispatchResetIdentitiesEvent: function() as void
+            _adb_logInfo("EventProcessor::_dispatchResetIdentitiesEvent() - Dispatching reset identities event.")
+
+            for each module in m._modulesRegisteredForResetIdentitiesEvent
+                try
+                    module.resetIdentities()
+                catch exception
+                    _adb_logError("EventProcessor::_dispatchResetIdentitiesEvent() - Failed to reset identities, the exception message: " + exception.Message)
+                end try
             end for
         end function,
 

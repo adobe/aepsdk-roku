@@ -15,7 +15,7 @@ sub init()
   m.Warning = m.top.findNode("WarningDialog")
 
   m.ButtonGroup = m.top.findNode("ButtonGroup")
-  m.ButtonGroup.buttons = ["SendEventWithCallback", "Shutdown", "NewScreen(API)", "MediaTracking"]
+  m.ButtonGroup.buttons = ["GetExperienceCloudId", "SendEventWithCallback", "setConsent(y)", "setConsent(n)", "setConsent(p)", "ResetIdentities", "NewScreen(API)", "MediaTracking", "Shutdown", "ReInitSDK"]
   m.ButtonGroup.observeField("buttonSelected", "onButtonSelected")
 
   m.timer = m.top.findNode("MainTimer")
@@ -60,6 +60,7 @@ sub _initSDK()
     configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL] = test_config.edgemedia_channel
     configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_PLAYER_NAME] = test_config.edgemedia_playerName
     configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_APP_VERSION] = test_config.edgemedia_appVersion
+    configuration[ADB_CONSTANTS.CONFIGURATION.CONSENT_DEFAULT] = test_config.consent_default
   end if
 
   m.aepSdk.updateConfiguration(configuration)
@@ -67,6 +68,28 @@ sub _initSDK()
   ' initialize the SDK flags/vars
   m.test_shutdown = false
   m.video_position = 0
+end sub
+
+sub _getECID()
+  '----------------------------------------
+  ' Get the Adobe Experience Cloud Id
+  '----------------------------------------
+  adbEcidCallback = sub(context, ecid)
+    print "getECID(): " + FormatJson(ecid)
+        ' show result in dialog
+    context.Warning.visible = "true"
+    context.Warning.message = ecid
+  end sub
+
+m.aepSdk.getExperienceCloudId(adbEcidCallback, m)
+end sub
+
+
+sub _resetIdentities()
+  '----------------------------------------
+  ' Reset Identities persisted in the SDK
+  '----------------------------------------
+  m.aepSdk.resetIdentities()
 
 end sub
 
@@ -100,6 +123,41 @@ sub _sendEventWithCallback()
     context.Warning.visible = "true"
     context.Warning.message = message
   end sub, m)
+end sub
+
+sub _setConsent(collectConsetValue as string)
+  consentData = {
+    "consent": [
+        {
+            "standard": "Adobe",
+            "version": "2.0",
+            "value": {
+                "collect": {
+                    "val": collectConsetValue
+                },
+                "metadata": {
+                   "time": _adb_ISO8601_timestamp()
+                }
+            }
+        }
+    ]
+}
+
+  m.aepSdk.setConsent(consentData)
+end sub
+
+sub _shutdown()
+  '----------------------------------------
+  ' Shut down the SDK
+  '----------------------------------------
+  m.aepSdk.shutdown()
+end sub
+
+sub _reInitSdk()
+  '----------------------------------------
+  ' Re-initialize the SDK
+  '----------------------------------------
+  _initSDK()
 end sub
 
 function _extractLocationHint(jsonObj as object, defaultMessage as string) as string
@@ -140,16 +198,27 @@ sub _testShutdownAPI()
 end sub
 
 sub onButtonSelected()
-  ' 0: "SendEventWithCallback",  1: "Shutdown", 2: "NewScreen(API)", 3: "MediaTracking"
+  ' 0: "GetExperienceCloudId", 1: "SendEventWithCallback", 2: "setConsent(y)", 3: "setConsent(n)", 4: "setConsent(p)", 5: "ResetIdentities", 6: "NewScreen(API)", 7: "MediaTracking", 8: "Shutdown", 9: "ReInitSDK"
   if m.ButtonGroup.buttonSelected = 0
-    _sendEventWithCallback()
+    _getECID()
   else if m.ButtonGroup.buttonSelected = 1
-    _testShutdownAPI()
+    _sendEventWithCallback()
   else if m.ButtonGroup.buttonSelected = 2
-    _createAndShowNewScreen()
+    _setConsent("y")
   else if m.ButtonGroup.buttonSelected = 3
+    _setConsent("n")
+  else if m.ButtonGroup.buttonSelected = 4
+    _setConsent("p")
+  else if m.ButtonGroup.buttonSelected = 5
+    _resetIdentities()
+  else if m.ButtonGroup.buttonSelected = 6
+    _createAndShowNewScreen()
+  else if m.ButtonGroup.buttonSelected = 7
     _showVideoScreen()
-  else
+  else if m.ButtonGroup.buttonSelected = 8
+    _shutdown()
+  else if m.ButtonGroup.buttonSelected = 9
+    _reInitSdk()
   end if
 end sub
 
