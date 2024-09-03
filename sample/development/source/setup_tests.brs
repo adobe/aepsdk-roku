@@ -107,6 +107,10 @@ function _adb_test_functions() as dynamic
         TC_adb_IdentityModule_getECID_persistedECID_returnsECID
         TC_adb_IdentityModule_getECID_API_persistedECID_DispatchesResponse
         TC_adb_IdentityModule_getECID_API_ECIDNotPersisted_queriesECID
+        TC_adb_IdentityModule_processResponseEvent_updatesECID
+        TC_adb_IdentityModule_processResponseEvent_noECIDInResponse
+        TC_adb_IdentityModule_processResponseEvent_doesNotUpdateECIDIfAlreadyPresent
+        TC_adb_IdentityModule_processResponseEvent_invalidResponseEvent_ignored
         ' test_identityState.brs
         TS_identityState_BeforeEach
         TS_identityState_AfterEach

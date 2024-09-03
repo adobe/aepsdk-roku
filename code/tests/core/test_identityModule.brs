@@ -63,7 +63,7 @@ sub TC_adb_IdentityModule_getECID_persistedECID_returnsECID()
 
 end sub
 
-' target: _adb_IdentityModule()
+' target: _adb_IdentityModule_getECID()
 ' @Test
 sub TC_adb_IdentityModule_getECID_API_persistedECID_DispatchesResponse()
     _adb_testUtil_persistECID("persistedECID")
@@ -93,7 +93,7 @@ sub TC_adb_IdentityModule_getECID_API_persistedECID_DispatchesResponse()
 end sub
 
 
-' target: _adb_IdentityModule()
+' target: _adb_IdentityModule_getECID()
 sub TC_adb_IdentityModule_getECID_ECIDNotPersisted_queriesECID()
     ' GetECID will queue a request with Edge Module when ECID is not persisted
     configurationModule = _adb_ConfigurationModule()
@@ -111,3 +111,214 @@ sub TC_adb_IdentityModule_getECID_ECIDNotPersisted_queriesECID()
     identityModule.getECID()
     UTF_assertTrue(GetGlobalAA().queueEdgeRequest_called, "Edge Module queueEdgeRequest() was not called.")
 end sub
+
+' target: _adb_IdentityModule_processResponseEvent()
+' @Test
+sub TC_adb_IdentityModule_processResponseEvent_updatesECID()
+    configurationModule = _adb_ConfigurationModule()
+    identityState = _adb_IdentityState()
+    consentState = _adb_ConsentState(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
+
+    identityState.updateECID = function(ecid as string) as void
+        GetGlobalAA().updateECID_called = true
+        GetGlobalAA().updateECID_actualECID = ecid
+    end function
+
+    identityModule = _adb_IdentityModule(identityState, edgeModule)
+
+    sampleEdgeResponse = getTestEdgeResponseIdentityEvent()
+
+    identityModule.processResponseEvent(sampleEdgeResponse)
+
+    UTF_assertTrue(GetGlobalAA().updateECID_called)
+    UTF_assertEqual("ECID_FROM_EDGE_RESPONSE", GetGlobalAA().updateECID_actualECID, ADB_GenerateErrorMessage("ECID ", "ECID_FROM_EDGE_RESPONSE" ,GetGlobalAA().updateECID_actualECID))
+end sub
+
+' target: _adb_IdentityModule_processResponseEvent()
+' @Test
+sub TC_adb_IdentityModule_processResponseEvent_noECIDInResponse()
+    configurationModule = _adb_ConfigurationModule()
+    identityState = _adb_IdentityState()
+    consentState = _adb_ConsentState(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
+
+    GetGlobalAA().updateECID_called = false
+    identityState.updateECID = function(ecid as string) as void
+        GetGlobalAA().updateECID_called = true
+        UTF_fail("updateECID() should not be called when ECID is not in response.")
+    end function
+
+    identityModule = _adb_IdentityModule(identityState, edgeModule)
+
+    sampleEdgeResponse = getTestEdgeResponseEventWithoutIdentity()
+
+    identityModule.processResponseEvent(sampleEdgeResponse)
+
+    UTF_assertFalse(GetGlobalAA().updateECID_called)
+end sub
+
+' target: _adb_IdentityModule_processResponseEvent()
+' @Test
+sub TC_adb_IdentityModule_processResponseEvent_doesNotUpdateECIDIfAlreadyPresent()
+    configurationModule = _adb_ConfigurationModule()
+    identityState = _adb_IdentityState()
+    consentState = _adb_ConsentState(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
+
+    identityState._ecid = "ECID_ALREADY_PRESENT"
+
+    GetGlobalAA().updateECID_called = false
+    identityState.updateECID = function(ecid as string) as void
+        GetGlobalAA().updateECID_called = true
+        UTF_fail("updateECID() should not be called when ECID is already present.")
+    end function
+
+    identityModule = _adb_IdentityModule(identityState, edgeModule)
+
+    sampleEdgeResponse = getTestEdgeResponseIdentityEvent()
+    identityModule.processResponseEvent(sampleEdgeResponse)
+
+    UTF_assertFalse(GetGlobalAA().updateECID_called)
+    UTF_assertEqual("ECID_ALREADY_PRESENT", identityState.getECID())
+end sub
+
+' target: _adb_IdentityModule_processResponseEvent()
+' @Test
+sub TC_adb_IdentityModule_processResponseEvent_invalidResponseEvent_ignored()
+    configurationModule = _adb_ConfigurationModule()
+    identityState = _adb_IdentityState()
+    consentState = _adb_ConsentState(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
+
+    identityState.updateECID = function(ecid as string) as void
+        GetGlobalAA().updateECID_called = true
+        UTF_fail("updateECID() should not be called when response event is not a valid Edge response.")
+    end function
+
+    identityModule = _adb_IdentityModule(identityState, edgeModule)
+
+    invalidResponseEvent = [
+        {},
+        "invalid event",
+        invalid,
+        123,
+        true,
+        _adb_EdgeResponseEvent("test", { "data missing code and message fields" : "invalid" })
+    ]
+
+    for each responseEvent in invalidResponseEvent
+        identityModule.processResponseEvent(responseEvent)
+        UTF_assertFalse(GetGlobalAA().updateECID_called)
+    end for
+
+end sub
+
+
+' ********************************************* Helper Functions *********************************************
+function getTestEdgeResponseIdentityEvent() as object
+    data = {
+    "requestId": "fe59f430-ccaa-4d79-b1e8-cecf785609a3",
+    "handle": [
+            {
+            "payload": [
+                {
+                "id": "ECID_FROM_EDGE_RESPONSE",
+                "namespace": {
+                    "code": "ECID"
+                }
+                }
+            ],
+            "type": "identity:result"
+            },
+            {
+            "payload": [
+                {
+                "scope": "EdgeNetwork",
+                "hint": "or2",
+                "ttlSeconds": 1800
+                }
+            ],
+            "type": "locationHint:result"
+            },
+            {
+            "payload": [
+                {
+                "collect": {
+                    "val": "y"
+                },
+                "metadata": {
+                    "time": "2024-08-30T22:31:45.925Z"
+                }
+                }
+            ],
+            "type": "consent:preferences"
+            },
+            {
+            "payload": [
+                {
+                "key": "kndctr_972C898555E9F7BC7F000101_AdobeOrg_identity",
+                "value": "CiY0OTU0NTQ4MjAxMDQ5NTcyNzIzMzMzMjg3Njc5OTI0NjY0OTM5MVISCNWDqquaMhABGAEqA09SMjAA8AHVg6qrmjI=",
+                "maxAge": 34128000
+                }
+            ],
+            "type": "state:store"
+            }
+        ]
+    }
+
+    edgeResponse = _adb_EdgeResponseEvent("test",  {
+    code: 200,
+    message: FormatJson(data)
+    })
+
+    return edgeResponse
+end function
+
+function getTestEdgeResponseEventWithoutIdentity() as object
+    data = {
+    "requestId": "fe59f430-ccaa-4d79-b1e8-cecf785609a3",
+    "handle": [
+            {
+            "payload": [
+                {
+                "scope": "EdgeNetwork",
+                "hint": "or2",
+                "ttlSeconds": 1800
+                }
+            ],
+            "type": "locationHint:result"
+            },
+            {
+            "payload": [
+                {
+                "collect": {
+                    "val": "y"
+                },
+                "metadata": {
+                    "time": "2024-08-30T22:31:45.925Z"
+                }
+                }
+            ],
+            "type": "consent:preferences"
+            },
+            {
+            "payload": [
+                {
+                "key": "kndctr_972C898555E9F7BC7F000101_AdobeOrg_identity",
+                "value": "CiY0OTU0NTQ4MjAxMDQ5NTcyNzIzMzMzMjg3Njc5OTI0NjY0OTM5MVISCNWDqquaMhABGAEqA09SMjAA8AHVg6qrmjI=",
+                "maxAge": 34128000
+                }
+            ],
+            "type": "state:store"
+            }
+        ]
+    }
+
+    edgeResponse = _adb_EdgeResponseEvent("test",  {
+    code: 200,
+    message: FormatJson(data)
+    })
+
+    return edgeResponse
+end function

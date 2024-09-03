@@ -191,7 +191,7 @@ sub TC_adb_EdgeRequestWorker_processRequest_valid_response()
                 }
             }
         ]
-        UTF_assertEqual(expectedEventsArray, jsonObj.events, "Expected != actual (Events payload in the request)")
+        UTF_assertEqual(expectedEventsArray, jsonObj.events, generateErrorMessage("Events payload in the request", FormatJson(expectedEventsArray), FormatJson(jsonObj.events)))
         return _adb_NetworkResponse(200, "response body")
     end function
 

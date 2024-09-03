@@ -24,7 +24,6 @@ end sub
 ' target: _init()
 ' @Test
 sub TC_adb_IdentityState_init_noPersistedECID()
-    configurationModule = _adb_ConfigurationModule()
     identityState = _adb_IdentityState()
 
     UTF_assertNotInvalid(identityState, generateErrorMessage("identityState", "not invalid", "invalid"))
@@ -36,7 +35,6 @@ end sub
 sub TC_adb_IdentityState_init_persistedECID()
     _adb_testUtil_persistECID("persistedECID")
 
-    configurationModule = _adb_ConfigurationModule()
     identityState = _adb_IdentityState()
 
     actualECID = identityState._ecid
@@ -49,7 +47,6 @@ end sub
 sub TC_adb_IdentityState_resetIdentities()
     _adb_testUtil_persistECID("persistedECID")
 
-    configurationModule = _adb_ConfigurationModule()
     identityState = _adb_IdentityState()
 
     actualECID = identityState._ecid
@@ -64,7 +61,6 @@ end sub
 ' target: getECID()
 ' @Test
 sub TC_adb_IdentityState_getECID_noPersistedECID()
-    configurationModule = _adb_ConfigurationModule()
     identityState = _adb_IdentityState()
 
     actualECID = identityState.getECID()
@@ -76,7 +72,6 @@ end sub
 sub TC_adb_IdentityState_getECID_persistedECID()
     _adb_testUtil_persistECID("persistedECID")
 
-    configurationModule = _adb_ConfigurationModule()
     identityState = _adb_IdentityState()
 
     actualECID = identityState.getECID()
@@ -86,7 +81,6 @@ end sub
 ' target: updateECID()
 ' @Test
 sub TC_adb_IdentityState_updateECID()
-    configurationModule = _adb_ConfigurationModule()
     identityState = _adb_IdentityState()
 
     identityState.updateECID("test-ecid")
@@ -99,7 +93,6 @@ end sub
 ' @Test
 sub TC_adb_IdentityState_updateECID_invalidECID()
     _adb_testUtil_persistECID("persistedECID")
-    configurationModule = _adb_ConfigurationModule()
     identityState = _adb_IdentityState()
 
     actualECID = identityState._ecid
@@ -114,7 +107,6 @@ end sub
 ' @Test
 sub TC_adb_IdentityState_updateECID_emptyECID()
     _adb_testUtil_persistECID("persistedECID")
-    configurationModule = _adb_ConfigurationModule()
     identityState = _adb_IdentityState()
 
     actualECID = identityState._ecid
@@ -124,4 +116,3 @@ sub TC_adb_IdentityState_updateECID_emptyECID()
     actualECID = identityState._ecid
     UTF_assertInvalid(actualECID, generateErrorMessage("get ECID", "invalid", "not invalid"))
 end sub
-

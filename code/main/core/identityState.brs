@@ -17,7 +17,6 @@ function _adb_isIdentityState(module as object) as boolean
     return (module <> invalid and module.type = "com.adobe.module.identityState")
 end function
 
-
 function _adb_IdentityState() as object
     identityState = _adb_AdobeObject("com.adobe.module.identityState")
 
@@ -30,26 +29,21 @@ function _adb_IdentityState() as object
         end function,
 
         resetIdentities: function() as void
-            m.updateECID(invalid)
+            m._deleteECID()
         end function,
 
         getECID: function() as dynamic
-            if _adb_isEmptyOrInvalidString(m._ecid)
-                m._loadECID()
-            end if
-
             _adb_logVerbose("IdentityState::getECID() - Returning ECID:(" + FormatJson(m._ecid) + ")")
             return m._ecid
         end function,
 
         updateECID: function(ecid as dynamic) as void
-            m._ecid = ecid
-            if _adb_isEmptyOrInvalidString(m._ecid)
+            if _adb_isEmptyOrInvalidString(ecid)
                 _adb_logDebug("IdentityState::updateECID() - Deleting ECID, updateECID() called with empty or invalid string value.")
                 m._deleteECID()
             else
                 _adb_logVerbose("IdentityState::updateECID() - Saving ECID:(" + FormatJson(m._ecid) + ") in cache and persistence.")
-                m._saveECID(m._ecid)
+                m._saveECID(ecid)
             end if
 
         end function,

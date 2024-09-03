@@ -1160,7 +1160,7 @@ function TS_SDK_integration() as object
                 clientSessionId = debugInfo.eventData.clientSessionId
                 ADB_assertTrue((debugInfo <> invalid and debugInfo.apiName = "createMediaSession"), LINE_NUM, "assert debugInfo.apiName = createMediaSession")
                 ADB_assertTrue((clientSessionId = debugInfo.media.clientSessionId), LINE_NUM, "assert clientSessionId is stored correctly")
-                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 1), LINE_NUM, "assert networkRequests.count() = 2")
+                ADB_assertTrue((debugInfo.networkRequests <> invalid and debugInfo.networkRequests.count() = 1), LINE_NUM, ADB_generateErrorMessage("Number of network requests", 1, FormatJson(debugInfo.networkRequests.count())))
 
                 ' ECID is no longer fetched explicitly
                 ADB_assertTrue((debugInfo.networkRequests[0].jsonObj.events[0].xdm.eventType = "media.sessionStart"), LINE_NUM, "assert eventType = media.sessionStart")
