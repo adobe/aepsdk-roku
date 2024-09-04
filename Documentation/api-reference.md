@@ -182,6 +182,8 @@ The `EDGE_CONFIG_ID` value is presented as `Datastream ID` in the [Datastream de
 
 The `EDGE_DOMAIN` value is the first-party domain mapped to the Adobe-provisioned Edge Network domain. For more information, see this [documentation](https://developer.adobe.com/client-sdks/documentation/edge-network/#domain-configuration)
 
+## Consent APIs:
+
 ### Configure default consent
 
 The default consent configuration determines how data collection consent is managed before invoking the [setConsent](#setconsent) API. This setting is particularly important to avoid unintentionally collecting data from users in regions where consent is required prior to data collection.
@@ -205,14 +207,12 @@ configuration[ADB_CONSTANTS.CONFIGURATION.CONSENT_DEFAULT] = {
 m.aepSdk.updateConfiguration(configuration)
 ```
 
-## Consent APIs:
-
 ### setConsent
 
 Sends consent preferences to the Edge Network. For details on setting default consent before collecting user preferences, refer to the [Configure default consent](#configure-default-consent) section.
 
 > [!Important]
-> Please provide the entire payload with all the fields required by the Adobe 2.0 Standard.
+> Please provide the entire payload with all the fields required by the [Adobe 2.0 Standard](https://experienceleague.adobe.com/en/docs/experience-platform/landing/governance-privacy-security/consent/adobe/overview).
 
 ##### Syntax
 
@@ -231,6 +231,10 @@ setConsent: function(data as object) as void
 > Use the [`ToISOString("milliseconds")`](https://developer.roku.com/docs/references/brightscript/interfaces/ifdatetime.md#toisostringformat-as-string-as-string) to generate timestamp in the required format.
 
 ```brightscript
+  currentDate = CreateObject("roDateTime")
+  timestampInISO8601 = currentDate.ToISOString("milliseconds")
+
+
   collectConsentYes = {
     "consent": [
       {
@@ -239,7 +243,7 @@ setConsent: function(data as object) as void
         "value": {
           "metadata": {
             ' pass timestamp in ISO format
-            "time" = "2023-10-03T17:23:04.443Z"
+            "time": timestampInISO8601  ' sample value: "2023-10-03T17:23:04.443Z"
           },
           "collect": {
             "val": "y"
