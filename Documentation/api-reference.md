@@ -19,8 +19,6 @@ This document lists the APIs provided by AEP Roku SDK, along with code samples f
 - Media APIs
   - [createMediaSession](#createMediaSession)
   - [sendMediaEvent](#sendMediaEvent)
-- Util APIs
-  - [_adb_ISO8601_timestamp](#_adb_ISO8601_timestamp)
 
 ## Core APIs:
 
@@ -227,8 +225,12 @@ setConsent: function(data as object) as void
 ##### Example: setConsent using consent object following Adobe 2.0 Standard
 
 > [!Note]
-> The "time" field under "metadata" should contain timestamp in ISO format as shown below.
-> Use the SDK helper function [_adb_ISO8601_timestamp()](#_adb_ISO8601_timestamp) to generate timestamp in required ISO format.
+> The "time" field under "metadata" should contain ISO 8601 formatted with UTC(Z) time zone, millisecond precision date as shown below.
+
+> [!TIP]
+> Use the [`ToISOString("milliseconds")`](https://developer.roku.com/docs/references/brightscript/interfaces/ifdatetime.md#toisostringformat-as-string-as-string) to generate timestamp in the required format.
+> currentDateTime = CreateObject("roDateTime")
+> isoDateTime = currentDateTime.ToISOString("milliseconds")
 
 ```brightscript
   collectConsentYes = {
@@ -626,17 +628,5 @@ playXDM = {
 }
 
 m.aepSdk.sendMediaEvent(playXDM)
-```
-
-## Util APIs
-
-### _adb_ISO8601_timestamp()
-
-Generates and returns the current time in ISO 8601 format.
-
-#### Example
-
-```brightscript
-timestampInISOFormat = _adb_ISO8601_timestamp()
 ```
 
