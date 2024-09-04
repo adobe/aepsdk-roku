@@ -229,8 +229,6 @@ setConsent: function(data as object) as void
 
 > [!TIP]
 > Use the [`ToISOString("milliseconds")`](https://developer.roku.com/docs/references/brightscript/interfaces/ifdatetime.md#toisostringformat-as-string-as-string) to generate timestamp in the required format.
-> currentDateTime = CreateObject("roDateTime")
-> isoDateTime = currentDateTime.ToISOString("milliseconds")
 
 ```brightscript
   collectConsentYes = {
