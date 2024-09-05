@@ -372,7 +372,7 @@ function _adb_test_functions() as dynamic
         TC_adb_eventProcessor_handleCreateMediaSession_invalid
         TC_adb_eventProcessor_hasXDMData
         TC_adb_eventProcessor_handleEvent_sendEvent
-        TC_adb_eventProcessor_sendResponseEvent_shouldNotBeDispatchedToTask
+        TC_adb_eventProcessor_sendResponseEvent_shouldBeDispatchedToTask
         TC_adb_eventProcessor_processQueuedRequests
         TC_adb_eventProcessor_processQueuedRequests_multiple
         TC_adb_eventProcessor_processQueuedRequests_bad_request
