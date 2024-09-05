@@ -64,36 +64,6 @@ sub TC_adb_IdentityModule_getECID_persistedECID_returnsECID()
 end sub
 
 ' target: _adb_IdentityModule_getECID()
-' @Test
-sub TC_adb_IdentityModule_getECID_API_persistedECID_DispatchesResponse()
-    _adb_testUtil_persistECID("persistedECID")
-    configurationModule = _adb_ConfigurationModule()
-    identityState = _adb_IdentityState()
-    consentState = _adb_ConsentState(configurationModule)
-    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
-
-    identityModule = _adb_IdentityModule(identityState, edgeModule)
-
-    identityModule._dispatchECIDResponseEventToTask = function(event as object) as void
-        GetGlobalAA().dispatchECIDResponseEventToTask_called = true
-        GetGlobalAA().dispatchECIDResponseEventToTask_actualEvent = event
-    end function
-
-    getExperienceCloudIdAPIEvent = {
-        "uuid": "test-uuid",
-        "apiName": "getExperienceCloudId",
-    }
-
-    UTF_assertEqual("persistedECID", identityModule.getECID(getExperienceCloudIdAPIEvent))
-
-    actualIdentityResponseEvent = GetGlobalAA().dispatchECIDResponseEventToTask_actualEvent
-    UTF_assertTrue(GetGlobalAA().dispatchECIDResponseEventToTask_called)
-    UTF_assertEqual("persistedECID", actualIdentityResponseEvent.data)
-    UTF_assertEqual("test-uuid", actualIdentityResponseEvent.parentId)
-end sub
-
-
-' target: _adb_IdentityModule_getECID()
 sub TC_adb_IdentityModule_getECID_ECIDNotPersisted_queriesECID()
     ' GetECID will queue a request with Edge Module when ECID is not persisted
     configurationModule = _adb_ConfigurationModule()
@@ -112,9 +82,70 @@ sub TC_adb_IdentityModule_getECID_ECIDNotPersisted_queriesECID()
     UTF_assertTrue(GetGlobalAA().queueEdgeRequest_called, "Edge Module queueEdgeRequest() was not called.")
 end sub
 
+' target: _adb_IdentityModule_getECIDAsync()
+' @Test
+sub TC_adb_IdentityModule_getECIDAsync_persistedECID_callsCallback()
+    _adb_testUtil_persistECID("persistedECID")
+    configurationModule = _adb_ConfigurationModule()
+    identityState = _adb_IdentityState()
+    consentState = _adb_ConsentState(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
+
+    identityModule = _adb_IdentityModule(identityState, edgeModule)
+
+    getExperienceCloudIdAPIEvent = {
+        "uuid": "test-uuid",
+        "apiName": "getExperienceCloudId",
+    }
+
+    ecidCallback = function(ecid as string) as void
+        GetGlobalAA().callbackCalled = true
+        GetGlobalAA().ecidFromCallback = ecid
+    end function
+
+    identityModule.getECIDAsync(getExperienceCloudIdAPIEvent, ecidCallback)
+
+    UTF_assertTrue(GetGlobalAA().callbackCalled, generateErrorMessage("Callback called", "true", "false"))
+    UTF_assertEqual("persistedECID", GetGlobalAA().ecidFromCallback, generateErrorMessage("ECID from callback", "persistedECID", GetGlobalAA().ecidFromCallback))
+
+    ' verify that the request event and callback are not cached
+    UTF_assertEqual(0, identityModule._callbackMap.Count(), generateErrorMessage("Callback cached", "0", identityModule._callbackMap.Count()))
+end sub
+
+' target: _adb_IdentityModule_getECIDAsync()
+' @Test
+sub TC_adb_IdentityModule_getECIDAsync_ECIDnotPersisted_cachesCallback()
+
+    configurationModule = _adb_ConfigurationModule()
+    identityState = _adb_IdentityState()
+    consentState = _adb_ConsentState(configurationModule)
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
+
+    identityModule = _adb_IdentityModule(identityState, edgeModule)
+
+    edgeModule.queueEdgeRequest = function(requestId as string, eventData as object, timestampInMillis as longinteger, meta as object, path as string, requestType = m._REQUEST_TYPE_EDGE as string)
+        GetGlobalAA().queuesEdgeRequest_called = true
+    end function
+
+    getExperienceCloudIdAPIEvent = {
+        "uuid": "test-uuid",
+        "apiName": "getExperienceCloudId",
+    }
+
+    ecidCallback = function(ecid as string) as void
+        GetGlobalAA().callbackCalled = true
+        GetGlobalAA().ecidFromCallback = ecid
+    end function
+
+    identityModule.getECIDAsync(getExperienceCloudIdAPIEvent, ecidCallback)
+
+    UTF_assertTrue(GetGlobalAA().callbackCalled, generateErrorMessage("Callback called", "true", "false"))
+    UTF_assertEqual(ecidCallback, identityModule._callbackMap[getExperienceCloudIdAPIEvent.uuid], generateErrorMessage("Callback cached", "true", "false"))
+end sub
+
 ' target: _adb_IdentityModule_processResponseEvent()
 ' @Test
-sub TC_adb_IdentityModule_processResponseEvent_updatesECID()
+sub TC_adb_IdentityModule_processResponseEvent_updatesECID_callsPendingCallback()
     configurationModule = _adb_ConfigurationModule()
     identityState = _adb_IdentityState()
     consentState = _adb_ConsentState(configurationModule)
@@ -126,6 +157,11 @@ sub TC_adb_IdentityModule_processResponseEvent_updatesECID()
     end function
 
     identityModule = _adb_IdentityModule(identityState, edgeModule)
+    ' mock request event and callback
+    identityModule._callbackMap["test-uuid"] = function(ecid as string) as void
+        GetGlobalAA().callbackCalled = true
+        GetGlobalAA().ecidFromCallback = ecid
+    end function
 
     sampleEdgeResponse = getTestEdgeResponseIdentityEvent()
 
@@ -133,6 +169,9 @@ sub TC_adb_IdentityModule_processResponseEvent_updatesECID()
 
     UTF_assertTrue(GetGlobalAA().updateECID_called)
     UTF_assertEqual("ECID_FROM_EDGE_RESPONSE", GetGlobalAA().updateECID_actualECID, ADB_GenerateErrorMessage("ECID ", "ECID_FROM_EDGE_RESPONSE" ,GetGlobalAA().updateECID_actualECID))
+    UTF_assertTrue(GetGlobalAA().callbackCalled)
+    UTF_assertEqual("ECID_FROM_EDGE_RESPONSE", GetGlobalAA().ecidFromCallback, ADB_GenerateErrorMessage("ECID from callback", "ECID_FROM_EDGE_RESPONSE", GetGlobalAA().ecidFromCallback))
+    UTF_assertEqual(0, identityModule._callbackMap.Count(), generateErrorMessage("Callback cached", "0", identityModule._callbackMap.Count()))
 end sub
 
 ' target: _adb_IdentityModule_processResponseEvent()

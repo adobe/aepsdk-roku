@@ -105,9 +105,10 @@ function _adb_test_functions() as dynamic
         TC_adb_IdentityModule_init
         TC_adb_IdentityModule_bad_init
         TC_adb_IdentityModule_getECID_persistedECID_returnsECID
-        TC_adb_IdentityModule_getECID_API_persistedECID_DispatchesResponse
-        TC_adb_IdentityModule_getECID_API_ECIDNotPersisted_queriesECID
-        TC_adb_IdentityModule_processResponseEvent_updatesECID
+        TC_adb_IdentityModule_getECIDAsync_persistedECID_callsCallback
+        TC_adb_IdentityModule_getECIDAsync_ECIDnotPersisted_cachesCallback
+        TC_adb_IdentityModule_getECID_ECIDNotPersisted_queriesECID
+        TC_adb_IdentityModule_processResponseEvent_updatesECID_callsPendingCallback
         TC_adb_IdentityModule_processResponseEvent_noECIDInResponse
         TC_adb_IdentityModule_processResponseEvent_doesNotUpdateECIDIfAlreadyPresent
         TC_adb_IdentityModule_processResponseEvent_invalidResponseEvent_ignored
@@ -371,7 +372,7 @@ function _adb_test_functions() as dynamic
         TC_adb_eventProcessor_handleCreateMediaSession_invalid
         TC_adb_eventProcessor_hasXDMData
         TC_adb_eventProcessor_handleEvent_sendEvent
-        TC_adb_eventProcessor_sendResponseEvent
+        TC_adb_eventProcessor_sendResponseEvent_shouldNotBeDispatchedToTask
         TC_adb_eventProcessor_processQueuedRequests
         TC_adb_eventProcessor_processQueuedRequests_multiple
         TC_adb_eventProcessor_processQueuedRequests_bad_request

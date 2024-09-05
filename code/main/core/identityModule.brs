@@ -39,14 +39,12 @@ function _adb_IdentityModule(identityState as object, edgeModule as object, task
         _identityState: invalid,
         _edgeModule: invalid,
         _ecid: invalid,
-        _identityRequestEventIds: [],
-        _task: invalid,
+        _callbackMap: {},
 
-        _init: function(identityState as object, edgeModule as object, task = invalid as object) as void
+        _init: function(identityState as object, edgeModule as object) as void
             _adb_logVerbose("IdentityModule::init() - Initializing identity module.")
             m._identityState = identityState
             m._edgeModule = edgeModule
-            m._task = task
         end function,
 
         resetIdentities: function() as void
@@ -59,27 +57,28 @@ function _adb_IdentityModule(identityState as object, edgeModule as object, task
             m._identityState.updateECID(ecid)
         end function,
 
-        getECID: function(event = invalid as object) as dynamic
+        getECIDAsync: function(event as object, callback as function) as void
+            _adb_logDebug("IdentityModule::getECIDAsync() - getting ECID.")
+            ecid = m.getECID()
+
+            ' If ECID is not found in the cache, getECID will fetch ECID from the edge server
+            ' Callback will be called once the ECID is found in the edge response
+
+            if _adb_isEmptyOrInvalidString(ecid)
+                m._callbackMap[event.uuid] = callback
+            else
+                callback(ecid)
+            end if
+        end function,
+
+        getECID: function() as dynamic
             _adb_logDebug("IdentityModule::getECID() - getting ECID.")
             ecid = m._identityState.getECID()
-
-            if not _adb_isEmptyOrInvalidMap(event) and not _adb_isEmptyOrInvalidString(event.uuid)
-                ' Add the request event id to the list of events that are waiting for ECID
-                ' Used to call the callback of the public API once the ECID is fetched
-                m._identityRequestEventIds.push(event.uuid)
-            end if
 
             if _adb_isEmptyOrInvalidString(ecid)
                 _adb_logDebug("IdentityModule::getECID() - ECID not found in the cache, querying edge server to fetch ECID.")
                 m._queryECID()
-            else if not _adb_isEmptyOrInvalidString(m._identityRequestEventIds.GetEntry(0))
-                ' If ECID is already set, dispatch the response event to the task
-                _adb_logDebug("IdentityModule::getECID() - ECID found in the cache, dispatching response event to the task.")
-                ecidResponseEvent = _adb_IdentityResponseEvent(m._identityRequestEventIds.Shift(), ecid)
-                m._dispatchECIDResponseEventToTask(ecidResponseEvent)
             end if
-
-            _adb_logVerbose("IdentityModule::getECID() - Returning ECID:(" + FormatJson(ecid) + ")")
 
             return ecid
         end function,
@@ -111,18 +110,41 @@ function _adb_IdentityModule(identityState as object, edgeModule as object, task
                     _adb_logDebug("IdentityModule::processResponseEvent() - Got ECID from Edge response. Updating ECID from: (" + FormatJson(currentECID) + ") to: (" + FormatJson(remoteECID) + ")")
 
                     m._identityState.updateECID(remoteECID)
-
-                    ' Check if there are any events waiting for ECID
-                    requestEventId = m._identityRequestEventIds.Shift()
-                    if not _adb_isEmptyOrInvalidString(requestEventId)
-                        ecidResponseEvent = _adb_IdentityResponseEvent(requestEventId, remoteECID)
-                        m._dispatchECIDResponseEventToTask(ecidResponseEvent)
-                    end if
+                    m._handlePendingCallbacks(remoteECID)
                 end if
 
             catch exception
                 _adb_logError("IdentityModule::processResponseEvent() - Failed to process the edge response, the exception message: " + exception.Message)
             end try
+        end function,
+
+        _handlePendingCallbacks: function(ecid as dynamic) as void
+            if _adb_isEmptyOrInvalidString(ecid)
+                _adb_logError("IdentityModule::_handleWaitingCallbacks() - ECID is invalid.")
+                return
+            end if
+
+            ' process all the events/callbacks waiting for ECID
+            for each item in m._callbackMap.Items()
+                eventId = item.key
+                callback = item.value
+
+                if _adb_isEmptyOrInvalidString(eventId)
+                    continue for
+                end if
+
+                callback = m._callbackMap[eventId]
+                if callback = invalid
+                    continue for
+                end if
+
+                ' call the waiting callback with the ECID
+                _adb_logDebug("IdentityModule::processResponseEvent() - Calling the waiting callback for request event id:(" + eventId + ") with ECID:(" + FormatJson(ecid) + ")")
+                callback(ecid)
+            end for
+
+            ' clear the callback map
+            m._callbackMap = {}
         end function,
 
         _extractECIDFromEdgeRespose: function(responseEvent as object) as dynamic
@@ -182,15 +204,6 @@ function _adb_IdentityModule(identityState as object, edgeModule as object, task
             return ecid
         end function,
 
-        _dispatchECIDResponseEventToTask: function(event as object) as void
-            if m._task = invalid
-                _adb_logError("IdentityModule::_dispatchResponseEventToTask() - Cannot send response event, task node instance is invalid.")
-                return
-            end if
-
-            m._task[m._CONSTANTS.TASK.RESPONSE_EVENT] = event
-        end function,
-
         _getECIDQueryPayload: function() as object
             jsonBody = {
                 "query": {
@@ -212,7 +225,7 @@ function _adb_IdentityModule(identityState as object, edgeModule as object, task
         end function
     })
 
-    identityModule._init(identityState, edgeModule, task)
+    identityModule._init(identityState, edgeModule)
 
     return identityModule
 end function

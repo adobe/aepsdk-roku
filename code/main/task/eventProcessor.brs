@@ -31,7 +31,7 @@ function _adb_EventProcessor(task as object) as object
             m._consentState = _adb_ConsentState(m._configurationModule)
             m._identityState = _adb_IdentityState()
             m._edgeModule = _adb_EdgeModule(m._configurationModule, m._identityState, m._consentState)
-            m._identityModule = _adb_IdentityModule(m._identityState, m._edgeModule, m._task)
+            m._identityModule = _adb_IdentityModule(m._identityState, m._edgeModule)
             m._consentModule = _adb_ConsentModule(m._consentState, m._edgeModule)
             m._mediaModule = _adb_MediaModule(m._configurationModule, m._edgeModule)
             m._modulesRegisteredForResponseEvents = [m._identityModule, m._consentModule, m._mediaModule]
@@ -98,7 +98,12 @@ function _adb_EventProcessor(task as object) as object
         end function,
 
         _getECID: function(event as object) as void
-            m._identityModule.getECID(event)
+            ecidCallback = function(ecid as string) as void
+                ecidResponseEvent = _adb_IdentityResponseEvent(event.uuid, ecid)
+                m._dispatchPublicApiResponseEventToTask(ecidResponseEvent)
+            end function
+
+            m._identityModule.getECIDAsync(event, ecidCallback)
         end function,
 
         _handleCreateMediaSession: function(event as object) as void
@@ -196,10 +201,8 @@ function _adb_EventProcessor(task as object) as object
             _adb_logInfo("EventProcessor::_sendResponseEvent() - Sending response event: (" + chr(10) + FormatJson(event) + chr(10) + ")")
 
             if _adb_isResponseEvent(event)
-                ''' for public API response events, we need to set the response event in task node
-                m._dispatchResponseEventToTask(event)
-
-                ''' for modules response events, we need to call handleResponseEvent
+                ' These reponse events for internal module processing and not for public API
+                ' Registered modules need to be notified about these response events
                 m._dispatchResponseEventToRegisteredModules(m._modulesRegisteredForResponseEvents, event)
             else
                 _adb_logError("EventProcessor::_sendResponseEvent() - Cannot send response event, invalid event:(" + chr(10) + FormatJson(event) + chr(10) + ")")
@@ -228,9 +231,9 @@ function _adb_EventProcessor(task as object) as object
             end for
         end function,
 
-        _dispatchResponseEventToTask: function(event as object) as void
+        _dispatchPublicApiResponseEventToTask: function(event as object) as void
             if m._task = invalid
-                _adb_logError("EventProcessor::_dispatchResponseEventToTask() - Cannot send response event, task node instance is invalid.")
+                _adb_logError("EventProcessor::_dispatchPublicApiResponseEventToTask() - Cannot send response event, task node instance is invalid.")
                 return
             end if
 
