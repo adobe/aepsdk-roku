@@ -13,7 +13,7 @@
 
 function TS_SDK_integration() as object
     instance = {
-
+        name: "Integration Tests",
         _testECID: "12345678901234567890123456789012345678",
         configId: invalid,
         mediaChannel: invalid,

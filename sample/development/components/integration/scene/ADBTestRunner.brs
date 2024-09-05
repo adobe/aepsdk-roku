@@ -20,9 +20,11 @@ function ADBTestRunner() as object
             m._addDebugInfo(info)
         end sub,
 
-        init: sub(testSuite as object)
+        init: sub(testSuiteList as object)
             _adb_resetResultMap()
             _adb_updateCurrentTestCaseName("unknown")
+            m._testSuiteList = testSuiteList
+            testSuite = m._testSuiteList.Shift()
             m._loadTestSuite(testSuite)
         end sub
     }
@@ -30,9 +32,19 @@ function ADBTestRunner() as object
     runner.Append({
         _debugInfoMap: {},
         _currentValidater: invalid,
+        _testSuiteList: [],
         _testSuite: {},
         _testCaseNameArray: [],
         _testCaseNameArrayForResultMap: [],
+
+        _reset: sub()
+            m._debugInfoMap = {}
+            m._currentValidater = invalid
+            m._testSuiteList = []
+            m._testSuite = {}
+            m._testCaseNameArray = []
+            m._testCaseNameArrayForResultMap = []
+        end sub,
 
         _addDebugInfo: sub(info as object)
             m._debugInfoMap[info.eventId] = info
@@ -92,7 +104,7 @@ function ADBTestRunner() as object
                 _adb_logInfo("")
 
                 _adb_logInfo("======================================================")
-                _adb_logInfo("            Integration Tests Report                  ")
+                _adb_logInfo("            Integration Tests Report - " + m._testSuite.name + "                  ")
                 _adb_logInfo("======================================================")
                 failedTestCaseNameArray = []
                 for each testCaseName in m._testCaseNameArrayForResultMap
@@ -128,14 +140,19 @@ function ADBTestRunner() as object
                 _adb_logInfo("======================================================")
                 _adb_logInfo("")
                 if failedTestCaseNameArray.count() > 0 then
-                    _adb_logInfo("      Integration Tests: FAILED")
+                    _adb_logInfo("      Integration Tests (" + m._testSuite.name + ") : FAILED")
                     _adb_logInfo("  in: " + FormatJson(failedTestCaseNameArray))
                 else
-                    _adb_logInfo("      Integration Tests: SUCCESS")
+                    _adb_logInfo("      Integration Tests (" + m._testSuite.name + ") : SUCCESS")
                 end if
                 _adb_logInfo("")
                 _adb_logInfo("======================================================")
 
+                ' Previous testSuite ended, load the next testSuite
+                m._reset()
+                if m._testSuiteList.Count() > 0 then
+                    m._loadTestSuite(m._testSuiteList.Shift())
+                end if
             end if
 
             return true

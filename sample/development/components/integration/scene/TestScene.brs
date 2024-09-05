@@ -28,8 +28,11 @@ sub setupTest()
   taskNode.observeField("debugInfo", "onDebugInfoChange")
 
   m.testRunner = ADBTestRunner()
-  testSuite = TS_SDK_integration()
-  m.testRunner.init(testSuite)
+  integrationTests = TS_SDK_integration()
+  ' TODO divide integration tests per module into separate test suites in their respective files
+  'mediaIntegerationTests = TS_Media_IntegrationTests()
+  'coreIntegrationTests = TS_Core_IntegrationTests()
+  m.testRunner.init([integrationTests])
 end sub
 
 sub onDebugInfoChange()
