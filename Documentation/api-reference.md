@@ -212,7 +212,7 @@ m.aepSdk.updateConfiguration(configuration)
 Sends consent preferences to the Edge Network. For details on setting default consent before collecting user preferences, refer to the [Configure default consent](#configure-default-consent) section.
 
 > [!Important]
-> Please provide the entire payload with all the fields required by the [Adobe 2.0 Standard](https://experienceleague.adobe.com/en/docs/experience-platform/landing/governance-privacy-security/consent/adobe/overview).
+> Please provide the entire payload with all the fields required by the [Adobe 2.0 Standard](https://github.com/adobe/xdm/blob/master/docs/reference/mixins/profile/profile-consents.schema.md).
 
 ##### Syntax
 
