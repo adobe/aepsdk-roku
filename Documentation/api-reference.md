@@ -166,7 +166,8 @@ configuration = {}
 configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = "<YOUR_CONFIG_ID>"
 configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = "<YOUR_DOMAIN_NAME>"
 
-' Set the default consent to pending and update the consent later based on user preference
+' This example sets the default consent to pending. You can later update the consent based on user preferences using the setConsent API.
+
 configuration[ADB_CONSTANTS.CONFIGURATION.CONSENT_DEFAULT] = {
     "consents": {
         "collect": {
@@ -195,6 +196,8 @@ By default, users are opted in for all purposes.
 ADB_CONSTANTS = AdobeAEPSDKConstants()
 
 configuration = {}
+
+' This example sets the default consent to pending. You can later update the consent based on user preferences using the setConsent API.
 
 configuration[ADB_CONSTANTS.CONFIGURATION.CONSENT_DEFAULT] = {
     "consents": {
