@@ -98,12 +98,12 @@ function _adb_EventProcessor(task as object) as object
         end function,
 
         _getECID: function(event as object) as void
-            ecidCallback = function(ecid as string) as void
-                ecidResponseEvent = _adb_IdentityResponseEvent(event.uuid, ecid)
-                m._dispatchPublicApiResponseEventToTask(ecidResponseEvent)
+            ecidCallback = function(context as dynamic, eventId as string, ecid as string) as void
+                ecidResponseEvent = _adb_IdentityResponseEvent(eventId, ecid)
+                context._dispatchResponseEventToTask(ecidResponseEvent)
             end function
 
-            m._identityModule.getECIDAsync(event, ecidCallback)
+            m._identityModule.getECIDAsync(m, event, ecidCallback)
         end function,
 
         _handleCreateMediaSession: function(event as object) as void
@@ -201,7 +201,9 @@ function _adb_EventProcessor(task as object) as object
             _adb_logInfo("EventProcessor::_sendResponseEvent() - Sending response event: (" + chr(10) + FormatJson(event) + chr(10) + ")")
 
             if _adb_isResponseEvent(event)
-                ' These reponse events for internal module processing and not for public API
+                ''' for public API response events, we need to set the response event in task node
+                m._dispatchResponseEventToTask(event)
+
                 ' Registered modules need to be notified about these response events
                 m._dispatchResponseEventToRegisteredModules(m._modulesRegisteredForResponseEvents, event)
             else
@@ -231,9 +233,9 @@ function _adb_EventProcessor(task as object) as object
             end for
         end function,
 
-        _dispatchPublicApiResponseEventToTask: function(event as object) as void
+        _dispatchResponseEventToTask: function(event as object) as void
             if m._task = invalid
-                _adb_logError("EventProcessor::_dispatchPublicApiResponseEventToTask() - Cannot send response event, task node instance is invalid.")
+                _adb_logError("EventProcessor::_dispatchResponseEventToTask() - Cannot send response event, task node instance is invalid.")
                 return
             end if
 

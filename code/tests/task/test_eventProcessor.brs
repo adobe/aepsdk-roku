@@ -359,7 +359,7 @@ end sub
 
 ' target: _sendResponseEvent()
 ' @Test
-sub TC_adb_eventProcessor_sendResponseEvent_shouldNotBeDispatchedToTask()
+sub TC_adb_eventProcessor_sendResponseEvent_shouldBeDispatchedToTask()
     eventProcessor = _createMockedEventProcessor()
     eventProcessor._task = { responseEvent: invalid }
 
@@ -369,7 +369,8 @@ sub TC_adb_eventProcessor_sendResponseEvent_shouldNotBeDispatchedToTask()
     })
     eventProcessor._sendResponseEvent(responseEvent)
 
-    UTF_assertInvalid(eventProcessor._task.responseEvent, generateErrorMessage("Task response event should not be dispatched to task.", "invalid", eventProcessor._task.responseEvent))
+    UTF_assertNotInvalid(eventProcessor._task.responseEvent, generateErrorMessage("Task response event should be dispatched to task", "true", "false"))
+    UTF_assertEqual(responseEvent, eventProcessor._task.responseEvent, generateErrorMessage("Dispatched event", responseEvent, eventProcessor._task.responseEvent))
 end sub
 
 ' target: processQueuedRequests()

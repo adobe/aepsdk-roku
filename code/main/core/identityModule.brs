@@ -57,7 +57,7 @@ function _adb_IdentityModule(identityState as object, edgeModule as object, task
             m._identityState.updateECID(ecid)
         end function,
 
-        getECIDAsync: function(event as object, callback as function) as void
+        getECIDAsync: function(context as dynamic, event as object, callback as function) as void
             _adb_logDebug("IdentityModule::getECIDAsync() - getting ECID.")
             ecid = m.getECID()
 
@@ -65,9 +65,12 @@ function _adb_IdentityModule(identityState as object, edgeModule as object, task
             ' Callback will be called once the ECID is found in the edge response
 
             if _adb_isEmptyOrInvalidString(ecid)
-                m._callbackMap[event.uuid] = callback
+                m._callbackMap[event.uuid] = {
+                    "context": context,
+                    "callback": callback
+                }
             else
-                callback(ecid)
+                callback(context, event.uuid, ecid)
             end if
         end function,
 
@@ -127,20 +130,22 @@ function _adb_IdentityModule(identityState as object, edgeModule as object, task
             ' process all the events/callbacks waiting for ECID
             for each item in m._callbackMap.Items()
                 eventId = item.key
-                callback = item.value
+                callbackItem = item.value
 
                 if _adb_isEmptyOrInvalidString(eventId)
                     continue for
                 end if
 
-                callback = m._callbackMap[eventId]
-                if callback = invalid
+                callback = callbackItem.callback
+                context = callbackItem.context
+                if callback = invalid or context = invalid
+                    _adb_logDebug("IdentityModule::_handleWaitingCallbacks() - Callback or context is invalid. Callback will not be called and will be deleted.")
                     continue for
                 end if
 
                 ' call the waiting callback with the ECID
                 _adb_logDebug("IdentityModule::processResponseEvent() - Calling the waiting callback for request event id:(" + eventId + ") with ECID:(" + FormatJson(ecid) + ")")
-                callback(ecid)
+                callback(context, eventId, ecid)
             end for
 
             ' clear the callback map

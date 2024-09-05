@@ -98,15 +98,19 @@ sub TC_adb_IdentityModule_getECIDAsync_persistedECID_callsCallback()
         "apiName": "getExperienceCloudId",
     }
 
-    ecidCallback = function(ecid as string) as void
+    ecidCallback = function(context, eventId, ecid as string) as void
         GetGlobalAA().callbackCalled = true
         GetGlobalAA().ecidFromCallback = ecid
+        GetGlobalAA().eventId = eventId
+        GetGlobalAA().context = context
     end function
 
-    identityModule.getECIDAsync(getExperienceCloudIdAPIEvent, ecidCallback)
+    identityModule.getECIDAsync({}, getExperienceCloudIdAPIEvent, ecidCallback)
 
     UTF_assertTrue(GetGlobalAA().callbackCalled, generateErrorMessage("Callback called", "true", "false"))
     UTF_assertEqual("persistedECID", GetGlobalAA().ecidFromCallback, generateErrorMessage("ECID from callback", "persistedECID", GetGlobalAA().ecidFromCallback))
+    UTF_assertEqual("test-uuid", GetGlobalAA().eventId, generateErrorMessage("Event ID", "test-uuid", GetGlobalAA().eventId))
+    UTF_assertEqual({}, GetGlobalAA().context, generateErrorMessage("Context", "{}", GetGlobalAA().context))
 
     ' verify that the request event and callback are not cached
     UTF_assertEqual(0, identityModule._callbackMap.Count(), generateErrorMessage("Callback cached", "0", identityModule._callbackMap.Count()))
@@ -132,16 +136,18 @@ sub TC_adb_IdentityModule_getECIDAsync_ECIDnotPersisted_cachesCallback()
         "apiName": "getExperienceCloudId",
     }
 
-    ecidCallback = function(ecid as string) as void
-        GetGlobalAA().callbackCalled = true
-        GetGlobalAA().ecidFromCallback = ecid
+    ecidCallback = function(_context as dynamic, _eventId as string, _ecid as string) as void
+        UTF_fail("Callback should not be called when ECID is not present.")
     end function
 
-    identityModule.getECIDAsync(getExperienceCloudIdAPIEvent, ecidCallback)
+    identityModule.getECIDAsync({}, getExperienceCloudIdAPIEvent, ecidCallback)
 
-    UTF_assertTrue(GetGlobalAA().callbackCalled, generateErrorMessage("Callback called", "true", "false"))
-    UTF_assertEqual(ecidCallback, identityModule._callbackMap[getExperienceCloudIdAPIEvent.uuid], generateErrorMessage("Callback cached", "true", "false"))
-end sub
+    callbackItem = identityModule._callbackMap["test-uuid"]
+
+    UTF_assertNotInvalid(callbackItem, generateErrorMessage("Callback cached", "not invalid", "invalid"))
+    UTF_assertEqual(ecidCallback, callbackItem.callback, generateErrorMessage("Callback cached", "true", "false"))
+    UTF_assertEqual({}, callbackItem.context, generateErrorMessage("Context cached", "true", "false"))
+    end sub
 
 ' target: _adb_IdentityModule_processResponseEvent()
 ' @Test
@@ -157,11 +163,13 @@ sub TC_adb_IdentityModule_processResponseEvent_updatesECID_callsPendingCallback(
     end function
 
     identityModule = _adb_IdentityModule(identityState, edgeModule)
+
     ' mock request event and callback
-    identityModule._callbackMap["test-uuid"] = function(ecid as string) as void
+    callback = function(context as dynamic, eventId as string, ecid as string) as void
         GetGlobalAA().callbackCalled = true
         GetGlobalAA().ecidFromCallback = ecid
     end function
+    identityModule._callbackMap["test-uuid"] = { "context": {}, "callback": callback }
 
     sampleEdgeResponse = getTestEdgeResponseIdentityEvent()
 
