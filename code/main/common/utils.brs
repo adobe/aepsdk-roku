@@ -13,6 +13,10 @@
 
 ' ********************************** MODULE: other utils **********************************
 
+function _adb_isTypeArray(element as dynamic) as boolean
+    return Type(element) = "roArray"
+end function
+
 function _adb_isArray(input as dynamic) as boolean
     return input <> invalid and Type(input) = "roArray"
 end function

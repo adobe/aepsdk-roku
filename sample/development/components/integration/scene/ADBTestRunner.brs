@@ -24,6 +24,9 @@ function ADBTestRunner() as object
             _adb_resetResultMap()
             _adb_updateCurrentTestCaseName("unknown")
             m._loadTestSuite(testSuite)
+            ' cache the original SDK data to be restored after the test suite execution
+            m._cacheSDKData()
+            m._run_beforeAll(m._testSuite)
         end sub
     }
 
@@ -78,10 +81,14 @@ function ADBTestRunner() as object
                 m._run_beforeEach(m._testSuite)
                 m._currentValidater = m._executeTestCase(name)
                 m._run_afterEach(m._testSuite)
-
             end if
 
             if m._hasNoExecutor() then
+                ' run the after all function since the test suite execution is done
+                m._run_afterAll(m._testSuite)
+                ' restore the original SDK data
+                m._restoreSDKData()
+
                 resultMap = _adb_resetResultMap()
                 _adb_logInfo("")
                 _adb_logInfo("")
@@ -152,10 +159,10 @@ function ADBTestRunner() as object
                         m._currentValidater[key](m._debugInfoMap[key])
                     end if
                 end for
-            catch e
-                _adb_logInfo("exception: " + e.message)
-                _adb_reportResult(false, LINE_NUM, e.message)
-                print e
+            catch exception
+                _adb_logInfo("exception: " + exception.message)
+                _adb_reportResult(false, LINE_NUM, exception.message)
+                print exception
             end try
             m._currentValidater = invalid
         end sub
@@ -202,6 +209,49 @@ function ADBTestRunner() as object
                 testSuiteObject.TS_afterEach()
             end if
         end sub,
+
+        _run_beforeAll: sub(testSuiteObject as object)
+            if m._isFunction(testSuiteObject.TS_beforeAll) then
+                testSuiteObject.TS_beforeAll()
+            end if
+        end sub,
+
+        _run_afterAll: sub(testSuiteObject as object)
+            if m._isFunction(m._testSuite.TS_afterAll) then
+                testSuiteObject.TS_afterAll()
+            end if
+        end sub
+
+        _cacheSDKData: function() as void
+            print("ADBTestRunner - cacheSDKData")
+            m.originalSDKData = {
+                "ecid" : ADB_getPersistedECID(),
+                "statestore" : ADB_getPersistedStateStore(),
+                "locationhint": ADB_getPersistedLocationHint(),
+                "consent.collect": ADB_getPersistedConsent(),
+            }
+
+            print("ADBTestRunner::cacheSDKData - originalSDKData: " + FormatJson(m.originalSDKData))
+        end function
+
+        _restoreSDKData: function() as void
+            print("ADBTestRunner - restoreSDKData: " + FormatJson(m.originalSDKData))
+            if _adb_isEmptyOrInvalidMap(m.originalSDKData)
+                return
+            end if
+
+            ADB_persistECIDInRegistry(m.originalSDKData.ecid)
+
+            if not _adb_isEmptyOrInvalidMap(m.originalSDKData.statestore) then
+                ADB_persistStateStoreInRegistry(FormatJson(m.originalSDKData.statestore))
+            end if
+
+            if not _adb_isEmptyOrInvalidString(m.originalSDKData.locationhint) then
+                ADB_persistLocationHintInRegistry(FormatJson(m.originalSDKData.locationhint))
+            end if
+
+            ADB_persistConsentInRegistry(m.originalSDKData["consent.collect"])
+        end function
     })
     return runner
 end function
@@ -240,6 +290,103 @@ sub _adb_updateCurrentTestCaseName(name as string)
     GetGlobalAA()._adb_assert_current_tc_name = name
 end sub
 
+' ************************ Registry Helpers ************************
+function ADB_persistECIDInRegistry(value as dynamic) as void
+    if _adb_isEmptyOrInvalidString(value)
+        ADB_removeRegistryValue("ecid")
+        return
+    end if
+
+    ADB_writeRegistryValue("ecid", value)
+end function
+
+function ADB_getPersistedECID() as dynamic
+    persistedECID = ADB_readRegistryValue("ecid")
+    return persistedECID
+end function
+
+function ADB_clearPersistedECID() as void
+    ADB_removeRegistryValue("ecid")
+end function
+
+function ADB_persistStateStoreInRegistry(value as dynamic) as void
+    ADB_writeRegistryValue("statestore", value)
+end function
+
+function ADB_getPersistedStateStore() as dynamic
+    persistedStateStoreJson = ADB_readRegistryValue("statestore")
+    if _adb_isEmptyOrInvalidString(persistedStateStoreJson)
+        return invalid
+    end if
+
+    persistedStateStoreObject = ParseJson(persistedStateStoreJson)
+
+    return persistedStateStoreObject
+end function
+
+function ADB_clearPersistedStateStore() as void
+    ADB_removeRegistryValue("statestore")
+end function
+
+function ADB_persistLocationHintInRegistry(value as dynamic) as void
+    ADB_writeRegistryValue("locationhint", value)
+end function
+
+function ADB_getPersistedLocationHint() as dynamic
+    persistedLocationHintJson = ADB_readRegistryValue("locationhint")
+    if _adb_isEmptyOrInvalidString(persistedLocationHintJson)
+        return invalid
+    end if
+
+    locationHintObject = ParseJson(persistedLocationHintJson)
+    return locationHintObject
+end function
+
+function ADB_clearPersistedLocationHint() as void
+    ADB_removeRegistryValue("locationhint")
+end function
+
+function ADB_persistConsentInRegistry(value as dynamic) as void
+    if _adb_isEmptyOrInvalidString(value)
+        ADB_removeRegistryValue("consent.collect")
+        return
+    end if
+
+    ADB_writeRegistryValue("consent.collect", value)
+end function
+
+function ADB_getPersistedConsent() as dynamic
+    persistedConsentString = ADB_readRegistryValue("consent.collect")
+
+    return persistedConsentString
+end function
+
+function ADB_clearPersistedConsent() as void
+    ADB_removeRegistryValue("consent.collect")
+end function
+
+function ADB_writeRegistryValue(key as string, value as dynamic) as void
+    _registry = CreateObject("roRegistrySection", "adb_aep_roku_sdk")
+    _registry.Write(key, value)
+    _registry.Flush()
+end function
+
+function ADB_readRegistryValue(key as string) as dynamic
+    _registry = CreateObject("roRegistrySection", "adb_aep_roku_sdk")
+    if _registry.Exists(key) and _registry.Read(key).Len() > 0
+        return _registry.Read(key)
+    end if
+
+    return invalid
+end function
+
+function ADB_removeRegistryValue(key) as void
+    _registry = CreateObject("roRegistrySection", "adb_aep_roku_sdk")
+    _registry.Delete(key)
+    _registry.Flush()
+end function
+
+' ************************ Test Helpers ************************
 function ADB_retrieveSDKInstance() as object
     if GetGlobalAA()._adb_public_api <> invalid then
         return GetGlobalAA()._adb_public_api
@@ -252,36 +399,25 @@ sub ADB_resetSDK(instance as object)
     instance._private.dispatchEvent(event)
 end sub
 
-function ADB_removeRegistryValue(key) as void
-    _registry = CreateObject("roRegistrySection", "adb_aep_roku_sdk")
-    _registry.Delete(key)
-    _registry.Flush()
-end function
-
-function ADB_clearPersistedECID() as void
-    ADB_removeRegistryValue("ecid")
-end function
-
-function ADB_getPersistedECID() as dynamic
-    persistedECID = ADB_readRegistryValue("ecid")
-    return persistedECID
-end function
-
-function ADB_readRegistryValue(key as string) as dynamic
-    _registry = CreateObject("roRegistrySection", "adb_aep_roku_sdk")
-    if _registry.Exists(key) and _registry.Read(key).Len() > 0
-        return _registry.Read(key)
-    end if
-
-    return invalid
-end function
-
-function ADB_persistECIDInRegistry(value as string) as dynamic
-    _registry = CreateObject("roRegistrySection", "adb_aep_roku_sdk")
-    _registry.Write("ecid", value)
-    return invalid
-end function
-
 sub ADB_testSDKVersion() as string
     return "1.2.0"
 end sub
+
+function ADB_generateErrorMessage(message as string, expected as dynamic, actual as dynamic) as string
+    if (type(expected) <> "roString" and type(expected) <> "String")
+        expected = FormatJson(expected)
+    end if
+
+    if (type(actual) <> "roString" and type(actual) <> "String")
+        actual = FormatJson(actual)
+    end if
+
+    return message + " Expected: (" + chr(10) + expected + chr(10) + ") Actual: ("+ chr(10) + actual + chr(10) +")"
+end function
+
+function _adb_integrationTestUtil_reset()
+    ADB_clearPersistedECID()
+    ADB_clearPersistedConsent()
+    ADB_clearPersistedLocationHint()
+    ADB_clearPersistedStateStore()
+end function

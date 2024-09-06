@@ -65,6 +65,7 @@ governing permissions and limitations under the License.-->
   <script type="text/brightscript" uri="pkg:/source/adobe/core/adobeObject.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/core/configurationModule.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/core/identityModule.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/core/identityState.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/edge/edgeModule.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/edge/edgeRequest.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/edge/edgeRequestQueue.brs"/>

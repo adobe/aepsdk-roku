@@ -50,13 +50,12 @@ sub _initSDK()
 
   configuration = {}
 
-  configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = "1c2dd701-655b-4330-9289-a396c9fff1f8"
+  configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = "<YOUR_EDGE_CONFIG_ID>"
   ' Note: the below Edge domain configuration is optional
   ' configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = ""
   configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL] = "channel_test_roku"
   configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_PLAYER_NAME] = "player_test_roku"
   configuration[ADB_CONSTANTS.CONFIGURATION.MEDIA_APP_VERSION] = "1.0.0"
-  configuration[ADB_CONSTANTS.CONFIGURATION.CONSENT_DEFAULT] = "p" ' p: pending, y: yes, n: no
   m.aepSdk.updateConfiguration(configuration)
 
   m.video_position = 0

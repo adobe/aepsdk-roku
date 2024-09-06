@@ -62,6 +62,10 @@ function _adb_testUtil_getPersistedLocationHint() as dynamic
     return locationHintObject
 end function
 
+function _adb_testUtil_persistECID(ecid as string) as void
+    writeValue("ecid", ecid)
+end function
+
 function clearPersistedECID() as void
     removeValue("ecid")
 end function

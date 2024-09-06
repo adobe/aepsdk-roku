@@ -16,17 +16,18 @@
 sub TC_adb_EdgeModule_init()
     configurationModule = _adb_ConfigurationModule()
     consentState = _adb_ConsentState(configurationModule)
-    identityModule = _adb_IdentityModule(configurationModule, consentState)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
+    identityState = _adb_IdentityState()
+
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
     UTF_assertTrue(_adb_isEdgeModule(edgeModule))
 
     edgeModule = _adb_EdgeModule(configurationModule, invalid, consentState)
     UTF_assertInvalid(edgeModule)
 
-    edgeModule = _adb_EdgeModule(invalid, identityModule, consentState)
+    edgeModule = _adb_EdgeModule(invalid, identityState, consentState)
     UTF_assertInvalid(edgeModule)
 
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule, invalid)
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, invalid)
     UTF_assertInvalid(edgeModule)
 
     edgeModule = _adb_EdgeModule(invalid, invalid, invalid)
@@ -38,8 +39,8 @@ end sub
 sub TC_adb_EdgeModule_processEvent()
     configurationModule = _adb_ConfigurationModule()
     consentState = _adb_ConsentState(configurationModule)
-    identityModule = _adb_IdentityModule(configurationModule, consentState)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
+    identityState = _adb_IdentityState()
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
 
     timestampInMillis& = _adb_timestampInMillis()
     edgeModule.processEvent("request_id", { key: "value" }, timestampInMillis&)
@@ -56,8 +57,8 @@ end sub
 sub TC_adb_EdgeModule_processQueuedRequests()
     configurationModule = _adb_ConfigurationModule()
     consentState = _adb_ConsentState(configurationModule)
-    identityModule = _adb_IdentityModule(configurationModule, consentState)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
+    identityState = _adb_IdentityState()
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
 
     edgeModule._getEdgeConfig = function() as object
         return {

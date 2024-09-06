@@ -13,24 +13,16 @@
 
 ' ********************************** MODULE: string utils *********************************
 
-function _adb_isEmptyOrInvalidString(str as dynamic) as boolean
-    if _adb_isInvalidString(str)
-        return true
-    end if
-
-    if Len(str) = 0
-        return true
-    end if
-
-    return false
+function _adb_isTypeString(element as dynamic) as boolean
+    return type(element) = "roString" or type(element) = "String"
 end function
 
 function _adb_isInvalidString(str as dynamic) as boolean
-    if str = invalid or (type(str) <> "roString" and type(str) <> "String")
-        return true
-    end if
+    return str = invalid or not _adb_isTypeString(str)
+end function
 
-    return false
+function _adb_isEmptyOrInvalidString(str as dynamic) as boolean
+    return _adb_isInvalidString(str) or Len(str) = 0
 end function
 
 function _adb_isStringEndsWith(string as string, sufix as string) as boolean
@@ -68,4 +60,12 @@ function _adb_stringEquals(s1 as dynamic, s2 as dynamic) as boolean
     end if
 
     return s1.Trim() = s2.Trim()
+end function
+
+function _adb_stringContains(str as dynamic, substr as dynamic) as boolean
+    if _adb_isInvalidString(str) or _adb_isInvalidString(substr)
+        return false
+    end if
+
+    return str.InStr(substr) > 0
 end function

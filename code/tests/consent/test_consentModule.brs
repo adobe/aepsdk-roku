@@ -16,8 +16,8 @@
 sub TC_adb_ConsentModule_init()
     configurationModule = _adb_ConfigurationModule()
     consentState = _adb_ConsentState(configurationModule)
-    identityModule = _adb_IdentityModule(configurationModule, consentState)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
+    identityState = _adb_IdentityState()
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
 
     consentModule = _adb_ConsentModule(consentState, edgeModule)
     UTF_assertTrue(_adb_isConsentModule(consentModule), generateErrorMessage("Consent module is valid", "yes", "no"))
@@ -34,8 +34,8 @@ end sub
 sub TC_adb_ConsentModule_processEvent_withCollectConsent_queuesEdgeRequest()
     configurationModule = _adb_ConfigurationModule()
     consentState = _adb_ConsentState(configurationModule)
-    identityModule = _adb_IdentityModule(configurationModule, consentState)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
+    identityState = _adb_IdentityState()
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
     consentModule = _adb_ConsentModule(consentState, edgeModule)
 
     GetGlobalAA().setConsentEvent = {
@@ -81,8 +81,8 @@ end sub
 sub TC_adb_ConsentModule_processEvent_withoutCollectConsent_queuesEdgeRequest()
     configurationModule = _adb_ConfigurationModule()
     consentState = _adb_ConsentState(configurationModule)
-    identityModule = _adb_IdentityModule(configurationModule, consentState)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
+    identityState = _adb_IdentityState()
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
     consentModule = _adb_ConsentModule(consentState, edgeModule)
 
     GetGlobalAA().setConsentEvent = {
@@ -129,8 +129,8 @@ sub TC_adb_ConsentModule_processResponseEvent_validConsentHandle()
 
     configurationModule = _adb_ConfigurationModule()
     consentState = _adb_ConsentState(configurationModule)
-    identityModule = _adb_IdentityModule(configurationModule, consentState)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
+    identityState = _adb_IdentityState()
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
 
     GetGlobalAA().setCollectConsentCalled = false
     GetGlobalAA().setCollectConsentValue = invalid
@@ -183,8 +183,8 @@ sub TC_adb_ConsentModule_processResponseEvent_missingConsentPreferencesHandle()
 
     configurationModule = _adb_ConfigurationModule()
     consentState = _adb_ConsentState(configurationModule)
-    identityModule = _adb_IdentityModule(configurationModule, consentState)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
+    identityState = _adb_IdentityState()
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
 
     GetGlobalAA().setCollectConsentCalled = false
     GetGlobalAA().setCollectConsentValue = invalid
@@ -228,8 +228,8 @@ sub TC_adb_ConsentModule_processResponseEvent_invalidHandle()
 
     configurationModule = _adb_ConfigurationModule()
     consentState = _adb_ConsentState(configurationModule)
-    identityModule = _adb_IdentityModule(configurationModule, consentState)
-    edgeModule = _adb_EdgeModule(configurationModule, identityModule, consentState)
+    identityState = _adb_IdentityState()
+    edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
 
 
     GetGlobalAA().setCollectConsentCalled = false

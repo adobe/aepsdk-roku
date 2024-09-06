@@ -104,13 +104,25 @@ function _adb_test_functions() as dynamic
         TS_identityModule_BeforeEach
         TC_adb_IdentityModule_init
         TC_adb_IdentityModule_bad_init
-        TC_adb_IdentityModule_getECID_noSetECID_invalidConfiguration_returnsInvalid
-        TC_adb_IdentityModule_getECID_validConfiguration_consentNotSet_fetchesECID
-        TC_adb_IdentityModule_getECID_validConfiguration_consentYes_fetchesECID
-        TC_adb_IdentityModule_getECID_validConfiguration_consentNo_returnsInvalid
-        TC_adb_IdentityModule_updateECID_validString_updatesECID
-        TC_adb_IdentityModule_updateECID_invalid_deletesECID
-        TC_adb_IdentityModule_resetIdentities_deletesECIDAndOtherIdentities
+        TC_adb_IdentityModule_getECID_persistedECID_returnsECID
+        TC_adb_IdentityModule_getECIDAsync_persistedECID_callsCallback
+        TC_adb_IdentityModule_getECIDAsync_ECIDnotPersisted_cachesCallback
+        TC_adb_IdentityModule_getECID_ECIDNotPersisted_queriesECID
+        TC_adb_IdentityModule_processResponseEvent_updatesECID_callsPendingCallback
+        TC_adb_IdentityModule_processResponseEvent_noECIDInResponse
+        TC_adb_IdentityModule_processResponseEvent_doesNotUpdateECIDIfAlreadyPresent
+        TC_adb_IdentityModule_processResponseEvent_invalidResponseEvent_ignored
+        ' test_identityState.brs
+        TS_identityState_BeforeEach
+        TS_identityState_AfterEach
+        TC_adb_IdentityState_init_noPersistedECID
+        TC_adb_IdentityState_init_persistedECID
+        TC_adb_IdentityState_resetIdentities
+        TC_adb_IdentityState_getECID_noPersistedECID
+        TC_adb_IdentityState_getECID_persistedECID
+        TC_adb_IdentityState_updateECID
+        TC_adb_IdentityState_updateECID_invalidECID
+        TC_adb_IdentityState_updateECID_emptyECID
         'test_adobeObject.brs
         TC_adb_AdobeObject
         'test_event.brs
@@ -360,7 +372,7 @@ function _adb_test_functions() as dynamic
         TC_adb_eventProcessor_handleCreateMediaSession_invalid
         TC_adb_eventProcessor_hasXDMData
         TC_adb_eventProcessor_handleEvent_sendEvent
-        TC_adb_eventProcessor_sendResponseEvent
+        TC_adb_eventProcessor_sendResponseEvent_shouldBeDispatchedToTask
         TC_adb_eventProcessor_processQueuedRequests
         TC_adb_eventProcessor_processQueuedRequests_multiple
         TC_adb_eventProcessor_processQueuedRequests_bad_request

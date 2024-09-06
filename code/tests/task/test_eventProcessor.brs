@@ -99,8 +99,8 @@ sub TC_adb_eventProcessor_handleEvent_setECID()
     GetGlobalAA().updateECID_is_called = false
 
     eventProcessor = _createMockedEventProcessor()
-    eventProcessor._identityModule.updateECID = function(ecid as string) as void
-        GetGlobalAA().updateECID_is_called = true
+    eventProcessor._identityModule.setECID = function(ecid as string) as void
+        GetGlobalAA().setECID_is_called = true
         UTF_assertEqual(ecid, "ecid_test")
     end function
 
@@ -109,7 +109,7 @@ sub TC_adb_eventProcessor_handleEvent_setECID()
     })
 
     eventProcessor.handleEvent(event)
-    UTF_assertTrue(GetGlobalAA().updateECID_is_called)
+    UTF_assertTrue(GetGlobalAA().setECID_is_called)
 end sub
 
 ' target: _getECID()
@@ -118,7 +118,7 @@ sub TC_adb_eventProcessor_handleEvent_getECID()
     GetGlobalAA().getECID_is_called = false
 
     eventProcessor = _createMockedEventProcessor()
-    eventProcessor._identityModule.getECID = function() as string
+    eventProcessor._identityModule.getECID = function(event = invalid as object) as string
         GetGlobalAA().getECID_is_called = true
         return "ecid_test"
     end function
@@ -359,7 +359,7 @@ end sub
 
 ' target: _sendResponseEvent()
 ' @Test
-sub TC_adb_eventProcessor_sendResponseEvent()
+sub TC_adb_eventProcessor_sendResponseEvent_shouldBeDispatchedToTask()
     eventProcessor = _createMockedEventProcessor()
     eventProcessor._task = { responseEvent: invalid }
 
@@ -369,7 +369,8 @@ sub TC_adb_eventProcessor_sendResponseEvent()
     })
     eventProcessor._sendResponseEvent(responseEvent)
 
-    UTF_assertEqual(eventProcessor._task.responseEvent, responseEvent)
+    UTF_assertNotInvalid(eventProcessor._task.responseEvent, generateErrorMessage("Task response event should be dispatched to task", "true", "false"))
+    UTF_assertEqual(responseEvent, eventProcessor._task.responseEvent, generateErrorMessage("Dispatched event", responseEvent, eventProcessor._task.responseEvent))
 end sub
 
 ' target: processQueuedRequests()

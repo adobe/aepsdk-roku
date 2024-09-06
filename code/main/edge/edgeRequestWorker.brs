@@ -154,10 +154,13 @@ function _adb_EdgeRequestWorker(edgeResponseManager as object, consentState as o
                     responseArray.Push(edgeResponse)
                 end if
 
-                if _adb_isEdgeConsentRequest(requestToBeSent)
+                if _adb_isEdgeConsentRequest(requestToBeSent) or _adb_isEmptyOrInvalidString(edgeConfig.ecid)
                     ' exit the loop after processing the consent request
                     ' this ensures the consent request is fully processed and consent state is updated properly
                     ' before the edge requests go out.
+
+                    ' exit the loop if the ecid is not set and let the first request set the ecid
+                    ' so the subsequent requests can use the ecid
                     exit while
                 end if
 
@@ -319,7 +322,7 @@ function _adb_EdgeRequestWorker(edgeResponseManager as object, consentState as o
             return meta
         end function,
 
-        _createEdgeRequestBody: function(eventData as object, ecid as string, meta as object) as object
+        _createEdgeRequestBody: function(eventData as object, ecid as dynamic, meta as object) as object
             requestBody = {
                 "xdm": {
                     "implementationDetails": _adb_ImplementationDetails()
@@ -330,10 +333,13 @@ function _adb_EdgeRequestWorker(edgeResponseManager as object, consentState as o
             if not _adb_isEmptyOrInvalidString(ecid)
                 ' Add ECID to the xdm.identityMap
                 requestBody.xdm.identityMap = m._getIdentityMap(ecid)
+            else
+                ecidQuery = m._getECIDQueryPayload()
+                requestBody["query"] = ecidQuery.query
             end if
 
             ' Add eventData under events key as an array
-            requestBody.events = [eventData]
+            requestBody.events.push(eventData)
 
             if not _adb_isEmptyOrInvalidMap(meta)
                 requestBody.meta = meta
@@ -343,7 +349,7 @@ function _adb_EdgeRequestWorker(edgeResponseManager as object, consentState as o
             return requestBody
         end function,
 
-        _createConsentRequestBody: function(consentData as object, ecid as string, meta as object) as object
+        _createConsentRequestBody: function(consentData as object, ecid as dynamic, meta as object) as object
             requestBody = {
                 "query" : {
                     "consent" : {
@@ -351,11 +357,18 @@ function _adb_EdgeRequestWorker(edgeResponseManager as object, consentState as o
                     }
                 },
                 "xdm": {
-                    "identityMap": m._getIdentityMap(ecid),
                     "implementationDetails": _adb_ImplementationDetails()
                 },
                 "consent": []
             }
+
+            if not _adb_isEmptyOrInvalidString(ecid)
+                ' Add ECID to the xdm.identityMap
+                requestBody.xdm.identityMap = m._getIdentityMap(ecid)
+            else
+                ecidQuery = m._getECIDQueryPayload()
+                requestBody.query["identity"] = ecidQuery.query.identity
+            end if
 
             ' consentData is an array of consents
             requestBody.consent = consentData.consent
@@ -387,6 +400,20 @@ function _adb_EdgeRequestWorker(edgeResponseManager as object, consentState as o
                 ]
             }
             return identityMap
+        end function,
+
+        _getECIDQueryPayload: function() as object
+            jsonBody = {
+                "query": {
+                    "identity": {
+                        "fetch": [
+                            "ECID"
+                        ]
+                    }
+                }
+            }
+
+            return jsonBody
         end function,
 
         _processResponseOnSuccess: function(edgeResponse as object) as void
