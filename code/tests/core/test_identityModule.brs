@@ -35,18 +35,14 @@ sub TC_adb_IdentityModule_bad_init()
     consentState = _adb_ConsentState(configurationModule)
     edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
 
-    identityModule = _adb_IdentityModule({}, {}, {})
+    identityModule = _adb_IdentityModule({}, {})
     UTF_assertInvalid(identityModule)
 
-    identityModule = _adb_IdentityModule(_adb_ConfigurationModule(), invalid, invalid)
+    identityModule = _adb_IdentityModule(_adb_ConfigurationModule(), invalid)
     UTF_assertInvalid(identityModule)
 
     identityModule = _adb_IdentityModule(invalid, edgeModule)
     UTF_assertInvalid(identityModule)
-
-    ' 3rd param task is optional
-    identityModule = _adb_IdentityModule(identityState, edgeModule, invalid)
-    UTF_assertNotInvalid(identityModule)
 end sub
 
 ' target: _adb_IdentityModule()

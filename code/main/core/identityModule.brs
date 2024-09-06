@@ -17,7 +17,7 @@ function _adb_isIdentityModule(module as object) as boolean
     return (module <> invalid and module.type = "com.adobe.module.identity")
 end function
 
-function _adb_IdentityModule(identityState as object, edgeModule as object, task = invalid as object) as object
+function _adb_IdentityModule(identityState as object, edgeModule as object) as object
     if not _adb_isIdentityState(identityState)
         _adb_logError("IdentityModule::_adb_IdentityModule() - identityState is not valid.")
         return invalid
