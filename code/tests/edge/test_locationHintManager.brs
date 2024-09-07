@@ -44,7 +44,7 @@ sub TC_adb_LocationHintManager_Init_locationHintPersisted_notExpired()
     locationHintManager = _adb_LocationHintManager()
 
     ' mock _isLocationHintExpired
-    locationHintManager._isLocationHintExpired = function(currentTimeInMillis = _adb_timestampInMillis() as longinteger) as boolean
+    locationHintManager._isLocationHintExpired = function(_currentTimeInMillis = _adb_timestampInMillis() as longinteger) as boolean
         return false
     end function
 
@@ -158,7 +158,7 @@ sub TC_adb_LocationHintManager_getLocationHint_persistedValue_notExpired()
         locationHintManager = _adb_LocationHintManager()
 
         ' mock _isLocationHintExpired
-        locationHintManager._isLocationHintExpired = function(currentTimeInMillis = _adb_timestampInMillis() as longinteger) as boolean
+        locationHintManager._isLocationHintExpired = function(_currentTimeInMillis = _adb_timestampInMillis() as longinteger) as boolean
             return false
         end function
 
@@ -177,7 +177,7 @@ sub TC_adb_LocationHintManager_getLocationHint_persistedValue_expired()
     locationHintManager = _adb_LocationHintManager()
 
     ' mock _isLocationHintExpired
-    locationHintManager._isLocationHintExpired = function(currentTimeInMillis = _adb_timestampInMillis() as longinteger) as boolean
+    locationHintManager._isLocationHintExpired = function(_currentTimeInMillis = _adb_timestampInMillis() as longinteger) as boolean
         return true
     end function
 
@@ -200,7 +200,7 @@ sub TC_adb_LocationHintManager_getLocationHint_expiredTTL_callsDelete()
     locationHintManager.setLocationHint(locationHint, 100&, 0&)
 
     ' mock location hint not expired
-    locationHintManager._isLocationHintExpired = function(currentTimeInMillis = _adb_timestampInMillis() as longinteger) as boolean
+    locationHintManager._isLocationHintExpired = function(_currentTimeInMillis = _adb_timestampInMillis() as longinteger) as boolean
         return false
     end function
 

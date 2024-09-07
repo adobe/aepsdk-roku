@@ -67,7 +67,7 @@ sub TC_adb_IdentityModule_getECID_ECIDNotPersisted_queriesECID()
     consentState = _adb_ConsentState(configurationModule)
     edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
 
-    edgeModule.queueEdgeRequest = function(requestId as string, eventData as object, timestampInMillis as longinteger, meta as object, path as string, requestType = m._REQUEST_TYPE_EDGE as string)
+    edgeModule.queueEdgeRequest = function(_requestId as string, _eventData as object, _timestampInMillis as longinteger, _meta as object, _path as string, _requestType = m._REQUEST_TYPE_EDGE as string)
         GetGlobalAA().queueEdgeRequest_called = true
     end function
 
@@ -123,7 +123,7 @@ sub TC_adb_IdentityModule_getECIDAsync_ECIDnotPersisted_cachesCallback()
 
     identityModule = _adb_IdentityModule(identityState, edgeModule)
 
-    edgeModule.queueEdgeRequest = function(requestId as string, eventData as object, timestampInMillis as longinteger, meta as object, path as string, requestType = m._REQUEST_TYPE_EDGE as string)
+    edgeModule.queueEdgeRequest = function(_requestId as string, _eventData as object, _timestampInMillis as longinteger, _meta as object, _path as string, _requestType = m._REQUEST_TYPE_EDGE as string)
         GetGlobalAA().queuesEdgeRequest_called = true
     end function
 
@@ -161,7 +161,7 @@ sub TC_adb_IdentityModule_processResponseEvent_updatesECID_callsPendingCallback(
     identityModule = _adb_IdentityModule(identityState, edgeModule)
 
     ' mock request event and callback
-    callback = function(context as dynamic, eventId as string, ecid as string) as void
+    callback = function(_context as dynamic, _eventId as string, ecid as string) as void
         GetGlobalAA().callbackCalled = true
         GetGlobalAA().ecidFromCallback = ecid
     end function
@@ -187,7 +187,7 @@ sub TC_adb_IdentityModule_processResponseEvent_noECIDInResponse()
     edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
 
     GetGlobalAA().updateECID_called = false
-    identityState.updateECID = function(ecid as string) as void
+    identityState.updateECID = function(_ecid as string) as void
         GetGlobalAA().updateECID_called = true
         UTF_fail("updateECID() should not be called when ECID is not in response.")
     end function
@@ -212,7 +212,7 @@ sub TC_adb_IdentityModule_processResponseEvent_doesNotUpdateECIDIfAlreadyPresent
     identityState._ecid = "ECID_ALREADY_PRESENT"
 
     GetGlobalAA().updateECID_called = false
-    identityState.updateECID = function(ecid as string) as void
+    identityState.updateECID = function(_ecid as string) as void
         GetGlobalAA().updateECID_called = true
         UTF_fail("updateECID() should not be called when ECID is already present.")
     end function
@@ -234,7 +234,7 @@ sub TC_adb_IdentityModule_processResponseEvent_invalidResponseEvent_ignored()
     consentState = _adb_ConsentState(configurationModule)
     edgeModule = _adb_EdgeModule(configurationModule, identityState, consentState)
 
-    identityState.updateECID = function(ecid as string) as void
+    identityState.updateECID = function(_ecid as string) as void
         GetGlobalAA().updateECID_called = true
         UTF_fail("updateECID() should not be called when response event is not a valid Edge response.")
     end function
