@@ -421,3 +421,27 @@ function _adb_integrationTestUtil_reset()
     ADB_clearPersistedLocationHint()
     ADB_clearPersistedStateStore()
 end function
+
+function _adb_integrationTestUtil_getHandle(handleType as string, responsePayload as object) as object
+    handle = {}
+
+    handles = responsePayload.handle
+    if _adb_isEmptyOrInvalidArray(handles) then
+      return handle
+    end if
+
+    for each item in handles
+        if _adb_isEmptyOrInvalidMap(item) then
+            continue for
+        end if
+
+        if not _adb_stringEqualsIgnoreCase(item.type, handleType) then
+            continue for
+        end if
+
+        handle = item
+        exit for
+    end for
+
+    return handle
+end function
