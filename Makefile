@@ -13,9 +13,7 @@ clean:
 	(rm -rf ./out)
 
 archive:clean build-sdk
-	@echo "######################################################################"
-	@echo "##### Archiving AEP Roku SDK"
-	@echo "######################################################################"
+	@echo "############################### Archiving AEP Roku SDK ###############################"
 	@echo git-hash=$(GIT_HASH)
 	@echo version=$(SDK_VERSION)
 
