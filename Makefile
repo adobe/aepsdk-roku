@@ -42,3 +42,12 @@ build-sdk:
 # usage: make check-version VERSION=1.0.0
 check-version:
 	sh ./build/version.sh $(VERSION)
+
+all:
+	@echo "############################### Make all ###############################"
+	@echo "############################### Installing BrighterScript Compiler ###############################"
+	make install-bsc
+	@echo "############################### Building AEP Roku SDK ###############################"
+	make archive
+	@echo "############################### Building Sample app (simple-videoplayer-channel) ###############################"
+	cd ./sample/simple-videoplayer-channel && make install-sdk && make build
