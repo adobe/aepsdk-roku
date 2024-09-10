@@ -2405,7 +2405,6 @@ sub TC_adb_MediaSession_resetForRestart()
     ''' should not be reset
     mediaSession._sessionStartHit = {}
     mediaSession._configurationModule = {}
-    mediaSession._edgeRequestQueue = {}
     mediaSession._isPlaying = false
     mediaSession._isInAd = true
 
@@ -2425,7 +2424,6 @@ sub TC_adb_MediaSession_resetForRestart()
     UTF_assertFalse(mediaSession._isPlaying)
     UTF_assertTrue(mediaSession._isInAd)
     UTF_assertNotInvalid(mediaSession._configurationModule)
-    UTF_assertNotInvalid(mediaSession._edgeRequestQueue)
 end sub
 
 ' target: _createSessionResumeHit()
