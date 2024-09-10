@@ -125,7 +125,7 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
         tryDispatchMediaEvents: function() as void
             ' Process the queue and send the hits to edgeWorker
             while m._hitQueue.Count() <> 0
-                hit = m._hitQueue.Shift()
+                hit = m._hitQueue.GetEntry(0)
 
                 requestId = hit.requestId
                 tsInMillis = hit.tsObject.tsInMillis
@@ -149,6 +149,9 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
                     ' attach sessionId to events other than sessionStart
                     eventData.xdm["mediaCollection"]["sessionID"] = m._backendSessionId
                 end if
+
+                ' remove the hit from the queue since it has all the required data
+                m._hitQueue.Shift()
 
                 eventNameTokens = eventType.tokenize(".") ''' ex: eventType =  media.sessionStart
                 path = m._MEDIA_PATH_PREFIX + eventNameTokens[1] ''' ex: eventNameTokens[1] = sessionStart

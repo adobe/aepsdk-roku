@@ -132,6 +132,8 @@ function _adb_EdgeModule(configurationModule as object, identityState as object,
             return {
                 requestQueue: m._edgeRequestWorker._queue
                 consentQueue: m._edgeRequestWorker._consentQueue
+                locationHint: m._edgeResponseManager.getLocationHint()
+                stateStore: m._edgeResponseManager.getStateStore()
             }
         end function
     })

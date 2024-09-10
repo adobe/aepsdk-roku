@@ -118,7 +118,7 @@ sub TC_adb_eventProcessor_handleEvent_getECID()
     GetGlobalAA().getECID_is_called = false
 
     eventProcessor = _createMockedEventProcessor()
-    eventProcessor._identityModule.getECID = function(event = invalid as object) as string
+    eventProcessor._identityModule.getECID = function(_event = invalid as object) as string
         GetGlobalAA().getECID_is_called = true
         return "ecid_test"
     end function

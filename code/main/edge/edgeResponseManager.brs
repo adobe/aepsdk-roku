@@ -38,6 +38,12 @@ function _adb_EdgeResponseManager() as object
 
             try
                 responseString = edgeResponse.getResponseString()
+
+                if _adb_isEmptyOrInvalidString(responseString)
+                    _adb_logError("EdgeResponseManager::processResponse() - Empty or invalid response.")
+                    return
+                end if
+
                 responseJson = ParseJson(responseString)
                 if _adb_isEmptyOrInvalidMap(responseJson)
                     _adb_logError("EdgeResponseManager::_processResponseOnSuccess() - Failed to parse response: (" + FormatJson(responseString) + ")")
