@@ -13,7 +13,6 @@
 
 function TS_SDK_integration() as object
     instance = {
-
         _testECID: "12345678901234567890123456789012345678",
         configId: invalid,
         mediaChannel: invalid,
@@ -226,10 +225,7 @@ function TS_SDK_integration() as object
             ' verify sendEvent 2 has ecid, locationHint and state:store
             validator[eventIdForSendEvent2] = sub(debugInfo)
                 ecid = debugInfo.identity.ecid
-                eventid = debugInfo.eventid
-                xdmData = debugInfo.eventData
                 locationHint = debugInfo.edge.locationHint
-                stateStore = debugInfo.edge.stateStore
 
                 networkRequest1 = debugInfo.networkRequests[0]
                 jsonObj1 = networkRequest1.jsonObj
@@ -269,7 +265,6 @@ function TS_SDK_integration() as object
             validator[eventIdForSendEvent3] = sub(debugInfo)
                 ecid = debugInfo.identity.ecid
                 eventid = debugInfo.eventid
-                xdmData = debugInfo.eventData
                 locationHint = debugInfo.edge.locationHint
                 stateStore = debugInfo.edge.stateStore
 
