@@ -123,6 +123,9 @@ function TS_SDK_integration() as object
             eventIdForUpdateConfiguration = aepSdk._private.lastEventId
 
             ' API call 2
+            ' Should send network request with no location hint and state store
+            ' Should have query object with fetch ECID
+            ' Response should have locationHint, stateStore and ECID
             aepSdk.sendEvent({
                 "xdm": {
                     "key": "value"
@@ -131,6 +134,7 @@ function TS_SDK_integration() as object
             eventIdForSendEvent1 = aepSdk._private.lastEventId
 
             ' API call 3
+            ' Should send network request with location hint, state store and ECID
             aepsdk.sendEvent({
                 "xdm": {
                     "key2": "value2"
@@ -139,10 +143,14 @@ function TS_SDK_integration() as object
             eventIdForSendEvent2 = aepSdk._private.lastEventId
 
             ' API call 4
+            ' Should clear location hint, state store and ECID
             aepSdk.resetIdentities()
             eventIdForResetIdentities = aepSdk._private.lastEventId
 
             ' API call 5
+            ' Should send network request with no location hint, state store and ECID
+            ' Should have query object with fetch ECID
+            ' Response should have locationHint, stateStore and ECID
             aepSdk.sendEvent({
                 "xdm": {
                     "key3": "value3"
