@@ -1,10 +1,12 @@
 clean:
+	@echo "############################### Sample App: Removing AEP Roku SDK ###############################"
 	(rm -rf ./out)
 	(rm -rf ./AEPRokuSDK)
 	(rm -rf ./source/AEPSDK.brs)
 	(rm -rf ./components/adobe)
 
 install-sdk: clean
+	@echo "############################### Sample App: Installing AEP Roku SDK ###############################"
 	(cp -R ../../out .)
 	(test -f ./out/AEPRokuSDK.zip)
 	(unzip ./out/AEPRokuSDK.zip)
@@ -18,7 +20,9 @@ install-sdk: clean
 
 # bsc: https://github.com/rokucommunity/brighterscript
 install-bsc:
+	@echo "############################### Sample App: Installing BrighterScript Compiler ###############################"
 	(npm install brighterscript -g)
 
 build:
+	@echo "############################### Sample App: Building simple-videoplayer-channel ###############################"
 	(bsc)
