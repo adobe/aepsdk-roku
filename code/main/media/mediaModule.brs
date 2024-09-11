@@ -16,7 +16,6 @@ function _adb_isMediaModule(module as object) as boolean
     return (module <> invalid and module.type = "com.adobe.module.media")
 end function
 
-''' TODO Add try catch to all module classes
 function _adb_MediaModule(configurationModule as object, edgeModule as object) as object
     if not _adb_isConfigurationModule(configurationModule) then
         _adb_logError("MediaModule::_adb_MediaModule() - configurationModule is not valid.")
