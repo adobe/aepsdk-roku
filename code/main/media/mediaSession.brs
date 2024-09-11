@@ -24,7 +24,6 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
 
         ' external dependencies
         _configurationModule: invalid,
-        _edgeRequestQueue: invalid,
 
         _isActive: true,
 
