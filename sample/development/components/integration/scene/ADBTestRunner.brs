@@ -400,7 +400,7 @@ sub ADB_resetSDK(instance as object)
 end sub
 
 sub ADB_testSDKVersion() as string
-    return "1.2.0"
+    return "1.3.0"
 end sub
 
 function ADB_generateErrorMessage(message as string, expected as dynamic, actual as dynamic) as string
