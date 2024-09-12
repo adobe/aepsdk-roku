@@ -15,8 +15,17 @@ sub init()
   m.Warning = m.top.findNode("WarningDialog")
 
   m.ButtonGroup = m.top.findNode("ButtonGroup")
-  m.ButtonGroup.buttons = ["GetExperienceCloudId", "SendEventWithCallback", "setConsent(y)", "setConsent(n)", "setConsent(p)", "ResetIdentities", "NewScreen(API)", "MediaTracking", "Shutdown", "ReInitSDK"]
+  m.ButtonGroup.buttons = ["GetExperienceCloudId", "SendEventWithCallback", "setConsent(y)", "setConsent(n)", "deleteConsent (not a public API)", "ResetIdentities", "NewScreen(API)", "MediaTracking", "Shutdown", "ReInitSDK"]
   m.ButtonGroup.observeField("buttonSelected", "onButtonSelected")
+
+  ' Position the button group in the center of the screen
+  di = CreateObject("roDeviceInfo")
+  display = di.GetDisplaySize()
+  buttonbox = m.ButtonGroup.boundingRect()
+  centerx = (display.w - buttonbox.width) / 2
+  centery = (display.h - buttonbox.height) / 2
+  m.ButtonGroup.translation = [ centerx, centery ]
+
 
   m.timer = m.top.findNode("MainTimer")
   m.timer.control = "start"
@@ -146,6 +155,15 @@ sub _setConsent(collectConsetValue as string)
   m.aepSdk.setConsent(consentData)
 end sub
 
+sub _deleteConsent()
+  '----------------------------------------
+  ' Delete Consent persisted in the SDK
+  '----------------------------------------
+  _registry = CreateObject("roRegistrySection", "adb_aep_roku_sdk")
+  _registry.Delete("consent.collect")
+  _registry.Flush()
+end sub
+
 sub _shutdown()
   '----------------------------------------
   ' Shut down the SDK
@@ -208,7 +226,7 @@ sub onButtonSelected()
   else if m.ButtonGroup.buttonSelected = 3
     _setConsent("n")
   else if m.ButtonGroup.buttonSelected = 4
-    _setConsent("p")
+    _deleteConsent()
   else if m.ButtonGroup.buttonSelected = 5
     _resetIdentities()
   else if m.ButtonGroup.buttonSelected = 6

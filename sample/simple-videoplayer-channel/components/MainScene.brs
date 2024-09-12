@@ -15,8 +15,16 @@ sub init()
   m.dialog = m.top.findNode("messageDialog")
 
   m.ButtonGroup = m.top.findNode("ButtonGroup")
-  m.ButtonGroup.buttons = ["GetExperienceCloudId", "SendEventWithCallback", "setConsent(y)", "setConsent(n)", "setConsent(p)", "ResetIdentities", "NewScreen(API)", "MediaTracking", "Shutdown", "ReInitSDK"]
+  m.ButtonGroup.buttons = ["GetExperienceCloudId", "SendEventWithCallback", "setConsent(y)", "setConsent(n)", "ResetIdentities", "NewScreen(API)", "MediaTracking", "Shutdown", "ReInitSDK"]
   m.ButtonGroup.observeField("buttonSelected", "onButtonSelected")
+
+  ' Position the button group in the center of the screen
+  di = CreateObject("roDeviceInfo")
+  display = di.GetDisplaySize()
+  buttonbox = m.ButtonGroup.boundingRect()
+  centerx = (display.w - buttonbox.width) / 2
+  centery = (display.h - buttonbox.height) / 2
+  m.ButtonGroup.translation = [ centerx, centery ]
 
   m.videoTimer = m.top.findNode("VideoTimer")
   m.videoTimer.control = "none"
@@ -188,7 +196,7 @@ function _extractLocationHint(jsonObj as object, defaultMessage as string) as st
 end function
 
 sub onButtonSelected()
-  ' 0: "GetExperienceCloudId", 1: "SendEventWithCallback", 2: "setConsent(y)", 3: "setConsent(n)", 4: "setConsent(p)", 5: "ResetIdentities", 6: "NewScreen(API)", 7: "MediaTracking", 8: "Shutdown", 9: "ReInitSDK"
+  ' 0: "GetExperienceCloudId", 1: "SendEventWithCallback", 2: "setConsent(y)", 3: "setConsent(n)", 4: "ResetIdentities", 5: "NewScreen(API)", 6: "MediaTracking", 7: "Shutdown", 8: "ReInitSDK"
   if m.ButtonGroup.buttonSelected = 0
     _getECID()
   else if m.ButtonGroup.buttonSelected = 1
@@ -198,16 +206,14 @@ sub onButtonSelected()
   else if m.ButtonGroup.buttonSelected = 3
     _setConsent("n")
   else if m.ButtonGroup.buttonSelected = 4
-    _setConsent("p")
-  else if m.ButtonGroup.buttonSelected = 5
     _resetIdentities()
-  else if m.ButtonGroup.buttonSelected = 6
+  else if m.ButtonGroup.buttonSelected = 5
     _createAndShowNewScreen()
-  else if m.ButtonGroup.buttonSelected = 7
+  else if m.ButtonGroup.buttonSelected = 6
     _showVideoScreen()
-  else if m.ButtonGroup.buttonSelected = 8
+  else if m.ButtonGroup.buttonSelected = 7
     _shutdown()
-  else if m.ButtonGroup.buttonSelected = 9
+  else if m.ButtonGroup.buttonSelected = 8
     _reInitSdk()
   end if
 end sub
