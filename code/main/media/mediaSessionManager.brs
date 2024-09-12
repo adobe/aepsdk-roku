@@ -17,7 +17,7 @@ function _adb_MediaSessionManager() as object
     return {
         _activeSession: invalid,
 
-        createSession: function(clientSessionId as string, configurationModule as object, sessionConfig as object, edgeRequestQueue as object) as void
+        createSession: function(clientSessionId as string, configurationModule as object, sessionConfig as object, edgeModule as object) as void
             ' End the current session if any
             if m._activeSession <> invalid then
                 _adb_logVerbose("MediaSessionManager::createSession() - Ending active session before creating the new session.")
@@ -25,7 +25,7 @@ function _adb_MediaSessionManager() as object
             end if
 
             ' Start a new session
-            m._activeSession = _adb_MediaSession(clientSessionId, configurationModule, sessionConfig, edgeRequestQueue)
+            m._activeSession = _adb_MediaSession(clientSessionId, configurationModule, sessionConfig, edgeModule)
 
         end function,
 
@@ -50,6 +50,16 @@ function _adb_MediaSessionManager() as object
             ' Dispatch all the hits before closing and deleting the internal session
             m._activeSession.close(isAbort)
             m._activeSession = invalid
+        end function,
+
+        handleResponseEvent: function(event as object) as void
+            ' Check if there is any active session
+            if m._activeSession = invalid then
+                _adb_logVerbose("MediaSessionManager::processResponseEvent() - Cannot process response event as there is no active session.")
+                return
+            end if
+
+            m._activeSession.processEdgeResponse(event)
         end function,
 
         getActiveClientSessionId: function() as string

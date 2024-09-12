@@ -43,6 +43,7 @@ governing permissions and limitations under the License.-->
   </children>
 
   <script type="text/brightscript" uri="pkg:/components/MainScene.brs"/>
+
   <script type="text/brightscript" uri="pkg:/source/adobe/AEPSDK.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/common/constants.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/common/datetime.brs"/>
@@ -50,17 +51,24 @@ governing permissions and limitations under the License.-->
   <script type="text/brightscript" uri="pkg:/source/adobe/common/log.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/common/map.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/common/string.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/common/int.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/common/version.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/common/utils.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/core/event.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/core/adobeObject.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/core/configurationModule.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/core/identityModule.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/core/identityState.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/edge/edgeModule.brs"/>
-  <script type="text/brightscript" uri="pkg:/source/adobe/edge/edgeRequestQueue.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/edge/edgeRequest.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/edge/buildEdgeRequestURL.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/edge/edgeRequestWorker.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/edge/implementationDetails.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/edge/edgeResponseManager.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/edge/locationHintManager.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/edge/stateStoreManager.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/consent/consentState.brs"/>
+  <script type="text/brightscript" uri="pkg:/source/adobe/consent/consentModule.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/media/mediaModule.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/media/mediaUtils.brs"/>
   <script type="text/brightscript" uri="pkg:/source/adobe/media/mediaSessionManager.brs"/>

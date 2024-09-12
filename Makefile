@@ -3,17 +3,17 @@ SDK_VERSION:=$(shell cat ./code/main/common/version.brs | egrep '\s*VERSION\s*=\
 
 # bsc: https://github.com/rokucommunity/brighterscript
 install-bsc:
+	@echo "############################### Installing BrighterScript Compiler ###############################"
 	(npm install brighterscript -g)
 
 clean:
+	@echo "############################### Clean ###############################"
 	(rm -rf ./output)
 	(rm -rf ./AEPRokuSDK)
 	(rm -rf ./out)
 
 archive:clean build-sdk
-	@echo "######################################################################"
-	@echo "##### Archiving AEP Roku SDK"
-	@echo "######################################################################"
+	@echo "############################### Archiving AEP Roku SDK ###############################"
 	@echo git-hash=$(GIT_HASH)
 	@echo version=$(SDK_VERSION)
 
@@ -37,8 +37,14 @@ version:
 # The module line should be placed before line 15.
 MODULE_LINE_SHOULD_BEFORE_LINE_NUMBER = 15
 build-sdk:
+	@echo "############################### Building AEP Roku SDK ###############################"
 	./build/build.sh ${MODULE_LINE_SHOULD_BEFORE_LINE_NUMBER}
 
 # usage: make check-version VERSION=1.0.0
 check-version:
-	sh ./build/version.sh $(VERSION)
+	@echo "############################### Check Version ###############################"
+	@VERSION=$(VERSION) sh ./build/version.sh $(VERSION)
+#sh ./build/version.sh $(VERSION)
+
+all: install-bsc archive
+	make -C ./sample/simple-videoplayer-channel install-sdk build

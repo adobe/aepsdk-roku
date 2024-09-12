@@ -13,16 +13,16 @@
 
 ' ********************************** MODULE: string utils *********************************
 
+function _adb_isTypeString(element as dynamic) as boolean
+    return type(element) = "roString" or type(element) = "String"
+end function
+
+function _adb_isInvalidString(str as dynamic) as boolean
+    return str = invalid or not _adb_isTypeString(str)
+end function
+
 function _adb_isEmptyOrInvalidString(str as dynamic) as boolean
-    if str = invalid or (type(str) <> "roString" and type(str) <> "String")
-        return true
-    end if
-
-    if Len(str) = 0
-        return true
-    end if
-
-    return false
+    return _adb_isInvalidString(str) or Len(str) = 0
 end function
 
 function _adb_isStringEndsWith(string as string, sufix as string) as boolean
@@ -41,4 +41,31 @@ function _adb_isStringInArray(str as string, array as object) as boolean
     end for
 
     return false
+end function
+
+function _adb_stringEqualsIgnoreCase(s1 as dynamic, s2 as dynamic) as boolean
+    if _adb_isInvalidString(s1) or _adb_isInvalidString(s2)
+        return false
+    end if
+
+    s1 = LCase(s1.Trim())
+    s2 = LCase(s2.Trim())
+
+    return s1 = s2
+end function
+
+function _adb_stringEquals(s1 as dynamic, s2 as dynamic) as boolean
+    if _adb_isInvalidString(s1) or _adb_isInvalidString(s2)
+        return false
+    end if
+
+    return s1.Trim() = s2.Trim()
+end function
+
+function _adb_stringContains(str as dynamic, substr as dynamic) as boolean
+    if _adb_isInvalidString(str) or _adb_isInvalidString(substr)
+        return false
+    end if
+
+    return str.InStr(substr) > 0
 end function
