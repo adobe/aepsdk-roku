@@ -43,6 +43,14 @@ function _adb_isEdgeConsentRequest(obj as object) as boolean
     return _adb_isValidEdgeRequest(obj) and _adb_stringEqualsIgnoreCase(obj._requestType, _CONSTANTS.REQUEST_TYPE.CONSENT)
 end function
 
+function _adb_ConsentRequest(requestId as string, data as object, timestampInMillis as longinteger) as object
+    _CONSTANTS = _adb_InternalConstants()
+    consentRequest = _adb_EdgeRequest(requestId, data, timestampInMillis)
+    consentRequest.setRequestType(_CONSTANTS.REQUEST_TYPE.CONSENT)
+
+    return consentRequest
+end function
+
 function _adb_EdgeRequest(requestId as string, data as object, timestampInMillis as longinteger) as object
     _CONSTANTS = _adb_InternalConstants()
     if _adb_isEmptyOrInvalidString(requestId)

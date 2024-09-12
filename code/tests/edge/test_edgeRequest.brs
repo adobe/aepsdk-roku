@@ -82,8 +82,7 @@ end sub
 ' target: edgeRequest()
 ' @Test
 sub TC_adb_EdgeRequest_isEdgeConsentRequest_valid()
-    edgeConsentRequest = _adb_EdgeRequest("request_id", { key: "value" }, 12345534)
-    edgeConsentRequest.setRequestType("consent")
+    edgeConsentRequest = _adb_ConsentRequest("request_id", { key: "value" }, 12345534)
 
     UTF_assertTrue(_adb_isEdgeConsentRequest(edgeConsentRequest))
     UTF_assertEqual("consent", edgeConsentRequest.getRequestType())
