@@ -27,6 +27,38 @@ sub TC_adb_EdgeRequestWorker_init()
     UTF_AssertNotInvalid(worker)
 end sub
 
+' target: _adb_EdgeRequestWorker()
+' @Test
+sub TC_adb_EdgeRequestWorker_QueueLimit()
+    worker = _adb_testUtil_getEdgeRequestWorker()
+
+    for i = 0 to 99
+        edgeRequest = _adb_EdgeRequest(strI(i).trim(), { xdm: {} }, 1)
+        consentRequest = _adb_ConsentRequest(strI(i).trim(), { xdm: {} }, 1)
+
+        worker.queue(edgeRequest)
+        worker.queue(consentRequest)
+    end for
+
+    UTF_assertEqual(100, worker._queue.Count())
+    UTF_assertEqual(100, worker._consentQueue.Count())
+
+    ' verify first request for both queues
+    UTF_assertEqual("0", worker._queue[0].getRequestId())
+    UTF_assertEqual("0", worker._consentQueue[0].getRequestId())
+
+    ' add 101th request
+    edgeRequest = _adb_EdgeRequest("100", { xdm: {} }, 100)
+    consentRequest = _adb_ConsentRequest("100", { xdm: {} }, 100)
+
+    worker.queue(edgeRequest)
+    worker.queue(consentRequest)
+
+    ' verify request with id:0 is removed and first request for both queues is now id:1
+    UTF_assertEqual("1", worker._queue[0].getRequestId())
+    UTF_assertEqual("1", worker._consentQueue[0].getRequestId())
+end sub
+
 ' ****************************** hasQueuedEvent tests ******************************
 
 ' target: hasQueuedEvent()
@@ -1117,10 +1149,8 @@ sub TC_adb_EdgeRequestWorker_processRequests_consentRequest_consentNo_sendsConse
     edgeRequest1 = _adb_EdgeRequest("edge_request_id_1", { xdm: { key: "value" } }, 100&)
     edgeRequest2 = _adb_EdgeRequest("edge_request_id_2", { xdm: { key: "value" } }, 101&)
 
-    consentRequest1 = _adb_EdgeRequest("consent_request_id_1", { xdm: { key: "value" } }, 102&)
-    consentRequest1.setRequestType("consent")
-    consentRequest2 = _adb_EdgeRequest("consent_request_id_2", { xdm: { key: "value" } }, 103&)
-    consentRequest2.setRequestType("consent")
+    consentRequest1 = _adb_ConsentRequest("consent_request_id_1", { xdm: { key: "value" } }, 102&)
+    consentRequest2 = _adb_ConsentRequest("consent_request_id_2", { xdm: { key: "value" } }, 103&)
 
     worker._queue = [edgeRequest1, edgeRequest2]
     worker._consentQueue = [consentRequest1, consentRequest2]
@@ -1164,10 +1194,8 @@ sub TC_adb_EdgeRequestWorker_processRequests_consentRequest_consentPending_sends
     edgeRequest1 = _adb_EdgeRequest("edge_request_id_1", { xdm: { key: "value" } }, 100&)
     edgeRequest2 = _adb_EdgeRequest("edge_request_id_2", { xdm: { key: "value" } }, 101&)
 
-    consentRequest1 = _adb_EdgeRequest("consent_request_id_1", { xdm: { key: "value" } }, 102&)
-    consentRequest1.setRequestType("consent")
-    consentRequest2 = _adb_EdgeRequest("consent_request_id_2", { xdm: { key: "value" } }, 103&)
-    consentRequest2.setRequestType("consent")
+    consentRequest1 = _adb_ConsentRequest("consent_request_id_1", { xdm: { key: "value" } }, 102&)
+    consentRequest2 = _adb_ConsentRequest("consent_request_id_2", { xdm: { key: "value" } }, 103&)
 
     worker._consentQueue = [consentRequest1, consentRequest2]
     worker._queue = [edgeRequest1, edgeRequest2]
@@ -1221,10 +1249,8 @@ sub TC_adb_EdgeRequestWorker_processRequests_edgeAndConsentRequest_consentYes_se
     edgeRequest3 = _adb_EdgeRequest("edge_request_id_3", { xdm: { key: "value" } }, 102&)
     edgeRequest4 = _adb_EdgeRequest("edge_request_id_4", { xdm: { key: "value" } }, 103&)
 
-    consentRequest1 = _adb_EdgeRequest("consent_request_id_1", { xdm: { key: "value" } }, 100&)
-    consentRequest1.setRequestType("consent")
-    consentRequest2 = _adb_EdgeRequest("consent_request_id_2", { xdm: { key: "value" } }, 101&)
-    consentRequest2.setRequestType("consent")
+    consentRequest1 = _adb_ConsentRequest("consent_request_id_1", { xdm: { key: "value" } }, 100&)
+    consentRequest2 = _adb_ConsentRequest("consent_request_id_2", { xdm: { key: "value" } }, 101&)
 
     worker._consentQueue = [consentRequest1, consentRequest2]
     worker._queue = [edgeRequest1, edgeRequest2, edgeRequest3, edgeRequest4]

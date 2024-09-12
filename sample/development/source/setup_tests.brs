@@ -151,6 +151,7 @@ function _adb_test_functions() as dynamic
         ' test_edgeRequestWorker.brs
         TS_EdgeRequestWorker_BeforeEach
         TC_adb_EdgeRequestWorker_init
+        TC_adb_EdgeRequestWorker_QueueLimit
         TC_adb_EdgeRequestWorker_hasQueuedEvent
         TC_adb_EdgeRequestWorker_queue
         TC_adb_EdgeRequestWorker_queue_notEdgeRequest_doesNotQueue
