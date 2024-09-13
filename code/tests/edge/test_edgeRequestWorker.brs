@@ -32,31 +32,42 @@ end sub
 sub TC_adb_EdgeRequestWorker_QueueLimit()
     worker = _adb_testUtil_getEdgeRequestWorker()
 
-    for i = 0 to 99
-        edgeRequest = _adb_EdgeRequest(strI(i).trim(), { xdm: {} }, 1)
-        consentRequest = _adb_ConsentRequest(strI(i).trim(), { xdm: {} }, 1)
+    queueSize = 100
+    startIndex = 0
+    endIndex = 99
+    for i = 0 to queueSize-1
+        edgeRequest = _adb_EdgeRequest(strI(i+1).trim(), { xdm: {} }, 1)
+        consentRequest = _adb_ConsentRequest(strI(i+1).trim(), { xdm: {} }, 1)
 
         worker.queue(edgeRequest)
         worker.queue(consentRequest)
     end for
 
-    UTF_assertEqual(100, worker._queue.Count())
-    UTF_assertEqual(100, worker._consentQueue.Count())
+    UTF_assertEqual(queueSize, worker._queue.Count(), generateErrorMessage("Queue size", queueSize, worker._queue.Count()))
+    UTF_assertEqual(queueSize, worker._consentQueue.Count(), generateErrorMessage("Consent Queue size", queueSize, worker._consentQueue.Count()))
 
-    ' verify first request for both queues
-    UTF_assertEqual("0", worker._queue[0].getRequestId())
-    UTF_assertEqual("0", worker._consentQueue[0].getRequestId())
+    ' verify first & last request for both queues
+    UTF_assertEqual("1", worker._queue[startIndex].getRequestId(), generateErrorMessage("Request Id for First request in queue", "1", worker._queue[startIndex].getRequestId()))
+    UTF_assertEqual("1", worker._consentQueue[startIndex].getRequestId(), generateErrorMessage("Request Id for First request in consent queue", "1", worker._consentQueue[startIndex].getRequestId()))
+    UTF_assertEqual(strI(queueSize).trim(), worker._queue[endIndex].getRequestId(), generateErrorMessage("Request Id for Last request in queue", strI(queueSize).trim(), worker._queue[endIndex].getRequestId()))
+    UTF_assertEqual(strI(queueSize).trim(), worker._consentQueue[endIndex].getRequestId(), generateErrorMessage("Request Id for Last request in consent queue", strI(queueSize).trim(), worker._consentQueue[endIndex].getRequestId()))
 
-    ' add 101th request
-    edgeRequest = _adb_EdgeRequest("100", { xdm: {} }, 100)
-    consentRequest = _adb_ConsentRequest("100", { xdm: {} }, 100)
+    ' overflow the queue
+    requestId = strI(i).trim()
+    edgeRequest = _adb_EdgeRequest(strI(queueSize + 1).trim(), { xdm: {} }, 1)
+    consentRequest = _adb_ConsentRequest(strI(queueSize + 1).trim(), { xdm: {} }, 1)
 
     worker.queue(edgeRequest)
     worker.queue(consentRequest)
 
+    UTF_assertEqual(queueSize, worker._queue.Count(), generateErrorMessage("Queue size", queueSize, worker._queue.Count()))
+    UTF_assertEqual(queueSize, worker._consentQueue.Count(), generateErrorMessage("Consent Queue size", queueSize, worker._consentQueue.Count()))
+
     ' verify request with id:0 is removed and first request for both queues is now id:1
-    UTF_assertEqual("1", worker._queue[0].getRequestId())
-    UTF_assertEqual("1", worker._consentQueue[0].getRequestId())
+    UTF_assertEqual("2", worker._queue[startIndex].getRequestId(), generateErrorMessage("Request Id for First request in queue", "2", worker._queue[startIndex].getRequestId()))
+    UTF_assertEqual("2", worker._consentQueue[startIndex].getRequestId(), generateErrorMessage("Request Id for First request in consent queue", "2", worker._consentQueue[startIndex].getRequestId()))
+    UTF_assertEqual(strI(queueSize + 1).trim(), worker._queue[endIndex].getRequestId(), generateErrorMessage("Request Id for Last request in queue", strI(queueSize + 1).trim(), worker._queue[endIndex].getRequestId()))
+    UTF_assertEqual(strI(queueSize + 1).trim(), worker._consentQueue[endIndex].getRequestId(), generateErrorMessage("Request Id for Last request in consent queue", strI(queueSize + 1).trim(), worker._consentQueue[endIndex].getRequestId()))
 end sub
 
 ' ****************************** hasQueuedEvent tests ******************************
