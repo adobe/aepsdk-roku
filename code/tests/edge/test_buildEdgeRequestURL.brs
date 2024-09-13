@@ -14,19 +14,29 @@
 ' target: _adb_buildEdgeRequestURL()
 ' @Test
 sub TC_adb_buildEdgeRequestURL_validDomain()
-    url = _adb_buildEdgeRequestURL("config_id_1", "request_id_1", "/ee/v1/interact")
+    url = _adb_buildEdgeRequestURL("config_id_1", "request_id_1", "/v1/interact", invalid)
     UTF_assertEqual("https://edge.adobedc.net/ee/v1/interact?configId=config_id_1&requestId=request_id_1", url)
 
-    urlWithCustomDomain = _adb_buildEdgeRequestURL("config_id_2", "request_id_2", "/ee/v1/interact", "custom.domain.net")
+    urlWithCustomDomain = _adb_buildEdgeRequestURL("config_id_2", "request_id_2", "/v1/interact", invalid, "custom.domain.net")
     UTF_assertEqual("https://custom.domain.net/ee/v1/interact?configId=config_id_2&requestId=request_id_2", urlWithCustomDomain)
 end sub
 
 ' target: _adb_buildEdgeRequestURL()
 ' @Test
 sub TC_adb_buildEdgeRequestURL_validPathOverwriting()
-    url = _adb_buildEdgeRequestURL("config_id_1", "request_id_1", "/ee/v1/interact")
+    url = _adb_buildEdgeRequestURL("config_id_1", "request_id_1", "/v1/interact", invalid)
     UTF_assertEqual("https://edge.adobedc.net/ee/v1/interact?configId=config_id_1&requestId=request_id_1", url)
 
-    urlWithCustomDomain = _adb_buildEdgeRequestURL("config_id_2", "request_id_2", "/custom/path", "custom.domain.net")
-    UTF_assertEqual("https://custom.domain.net/custom/path?configId=config_id_2&requestId=request_id_2", urlWithCustomDomain)
+    urlWithCustomDomain = _adb_buildEdgeRequestURL("config_id_2", "request_id_2", "/custom/path", invalid, "custom.domain.net")
+    UTF_assertEqual("https://custom.domain.net/ee/custom/path?configId=config_id_2&requestId=request_id_2", urlWithCustomDomain)
+end sub
+
+' target: _adb_buildEdgeRequestURL()
+' @Test
+sub TC_adb_buildEdgeRequestURL_validLocationHint()
+    url = _adb_buildEdgeRequestURL("config_id_1", "request_id_1", "/v1/interact", "locationHint")
+    UTF_assertEqual("https://edge.adobedc.net/ee/locationHint/v1/interact?configId=config_id_1&requestId=request_id_1", url)
+
+    urlWithCustomDomain = _adb_buildEdgeRequestURL("config_id_2", "request_id_2", "/v1/interact", "locationHint", "custom.domain.net")
+    UTF_assertEqual("https://custom.domain.net/ee/locationHint/v1/interact?configId=config_id_2&requestId=request_id_2", urlWithCustomDomain)
 end sub

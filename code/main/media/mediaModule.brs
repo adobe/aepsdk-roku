@@ -16,14 +16,14 @@ function _adb_isMediaModule(module as object) as boolean
     return (module <> invalid and module.type = "com.adobe.module.media")
 end function
 
-function _adb_MediaModule(configurationModule as object, edgeRequestQueue as object) as object
-    if _adb_isConfigurationModule(configurationModule) = false then
+function _adb_MediaModule(configurationModule as object, edgeModule as object) as object
+    if not _adb_isConfigurationModule(configurationModule) then
         _adb_logError("MediaModule::_adb_MediaModule() - configurationModule is not valid.")
         return invalid
     end if
 
-    if _adb_isEdgeRequestQueue(edgeRequestQueue) = false then
-        _adb_logError("MediaModule::_adb_MediaModule() - edgeRequestQueue is not valid.")
+    if not _adb_isEdgeModule(edgeModule) then
+        _adb_logError("MediaModule::_adb_MediaModule() - edgeModule is not valid.")
         return invalid
     end if
 
@@ -35,9 +35,10 @@ function _adb_MediaModule(configurationModule as object, edgeRequestQueue as obj
 
         ' external dependencies
         _configurationModule: configurationModule,
-        _edgeRequestQueue: edgeRequestQueue,
+        _edgeModule: edgeModule,
         _sessionManager: _adb_MediaSessionManager(),
 
+        ''' Processes media API events dispatched by the event processor
         ' Event data example:
         ' {
         '     clientSessionId: "xx-xxxx-xxxx",
@@ -49,8 +50,10 @@ function _adb_MediaModule(configurationModule as object, edgeRequestQueue as obj
             eventType = eventData.xdmData.xdm.eventType
             clientSessionId = eventData.clientSessionId
 
-            if eventType <> m._CONSTANTS.MEDIA.EVENT_TYPE.SESSION_START and clientSessionId <> m._sessionManager.getActiveClientSessionId() then
-                _adb_logError("MediaModule::processEvent() - Cannot process the media event. It's clientSessionId (" + FormatJson(clientSessionId) + ") does not match the active clientSessionId (" + FormatJson(m._sessionManager.getActiveClientSessionId()) + ").")
+            ' If the eventType is not session start and the clientSessionId does not match the active clientSessionId, then ignore the event
+            ' In case of sessionStart, new session is created and the clientSessionId is set as active clientSessionId
+            if not _adb_stringEqualsIgnoreCase(eventType, m._CONSTANTS.MEDIA.EVENT_TYPE.SESSION_START) and clientSessionId <> m._sessionManager.getActiveClientSessionId() then
+                _adb_logError("MediaModule::processEvent() - Cannot process the media event(" + FormatJson(eventType) + "). It's clientSessionId (" + FormatJson(clientSessionId) + ") does not match the active clientSessionId (" + FormatJson(m._sessionManager.getActiveClientSessionId()) + ").")
                 return
             end if
 
@@ -68,7 +71,7 @@ function _adb_MediaModule(configurationModule as object, edgeRequestQueue as obj
             mediaHit = m._createMediaHit(requestId, eventType, eventData.xdmData, eventData.tsObject)
 
             if eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.SESSION_START
-                m._sessionManager.createSession(clientSessionId, m._configurationModule, sessionConfig, m._edgeRequestQueue)
+                m._sessionManager.createSession(clientSessionId, m._configurationModule, sessionConfig, m._edgeModule)
                 m._sessionManager.queue(mediaHit)
             else if eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.SESSION_END or eventType = m._CONSTANTS.MEDIA.EVENT_TYPE.SESSION_COMPLETE
                 m._sessionManager.queue(mediaHit)
@@ -78,6 +81,13 @@ function _adb_MediaModule(configurationModule as object, edgeRequestQueue as obj
             end if
 
         end sub,
+
+        ''' Handles responses dispatched by the event processor
+        processResponseEvent: function(event as object) as void
+            _adb_logVerbose("MediaModule::processResponseEvent() - Received response event:(" + chr(10) + FormatJson(event) + chr(10) + ")")
+
+            m._sessionManager.handleResponseEvent(event)
+        end function,
 
         _hasValidConfig: function() as boolean
             ' Check for required configuration values

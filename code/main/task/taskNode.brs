@@ -55,8 +55,8 @@ function _adb_isAEPTaskNode(taskNode as object) as boolean
         if types.requestEvent = "associativearray" and types.responseEvent = "associativearray"
             return true
         end if
-    catch ex
-        _adb_logError("TaskNode::_adb_isAEPTaskNode() - " + ex.message)
+    catch exception
+        _adb_logError("TaskNode::_adb_isAEPTaskNode() - " + exception.message)
     end try
     return false
 end function

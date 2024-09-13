@@ -15,8 +15,16 @@ sub init()
   m.dialog = m.top.findNode("messageDialog")
 
   m.ButtonGroup = m.top.findNode("ButtonGroup")
-  m.ButtonGroup.buttons = ["GetExperienceCloudId", "SendEventWithCallback", "ResetIdentities", "NewScreen(API)", "MediaTracking", "Shutdown", "ReInitSDK"]
+  m.ButtonGroup.buttons = ["GetExperienceCloudId", "SendEventWithCallback", "setConsent(y)", "setConsent(n)", "ResetIdentities", "NewScreen(API)", "MediaTracking", "Shutdown", "ReInitSDK"]
   m.ButtonGroup.observeField("buttonSelected", "onButtonSelected")
+
+  ' Position the button group in the center of the screen
+  di = CreateObject("roDeviceInfo")
+  display = di.GetDisplaySize()
+  buttonbox = m.ButtonGroup.boundingRect()
+  centerx = (display.w - buttonbox.width) / 2
+  centery = (display.h - buttonbox.height) / 2
+  m.ButtonGroup.translation = [ centerx, centery ]
 
   m.videoTimer = m.top.findNode("VideoTimer")
   m.videoTimer.control = "none"
@@ -115,12 +123,12 @@ sub _sendEventWithCallback()
 
   ''' Adding datastreamIdOverride and datastreamConfigOverride to the event data
   'data["config"] = {
-  '  "datastreamIdOverride": "<YOUR_DATASTREAM_ID>",
+  '  "datastreamIdOverride": "<DATASTREAM_ID_OVERRIDE>",
   '  "datastreamConfigOverride" : {
   '    "com_adobe_experience_platform": {
   '      "datasets": {
   '        "event": {
-  '          "datasetId": "<YOUR_DATASET_ID>"
+  '          "datasetId": "<DATASET_ID_OVERRIDE>"
   '        }
   '      }
   '    }
@@ -136,6 +144,27 @@ sub _sendEventWithCallback()
   end sub
 
   m.aepSdk.sendEvent(data, adbSendEventCallback, m)
+end sub
+
+sub _setConsent(collectConsetValue as string)
+  consentData = {
+    "consent": [
+        {
+            "standard": "Adobe",
+            "version": "2.0",
+            "value": {
+                "collect": {
+                    "val": collectConsetValue
+                },
+                "metadata": {
+                   "time": _adb_ISO8601_timestamp()
+                }
+            }
+        }
+    ]
+}
+
+  m.aepSdk.setConsent(consentData)
 end sub
 
 sub _shutdown()
@@ -167,20 +196,24 @@ function _extractLocationHint(jsonObj as object, defaultMessage as string) as st
 end function
 
 sub onButtonSelected()
-  ' 0: "GetExperienceCloudId", 1: "SendEventWithCallback", 2: "ResetIdentities"  3: "NewScreen(API)", 4: "MediaTracking", 5: "Shutdown", 6: "ReInitSDK
+  ' 0: "GetExperienceCloudId", 1: "SendEventWithCallback", 2: "setConsent(y)", 3: "setConsent(n)", 4: "ResetIdentities", 5: "NewScreen(API)", 6: "MediaTracking", 7: "Shutdown", 8: "ReInitSDK"
   if m.ButtonGroup.buttonSelected = 0
     _getECID()
   else if m.ButtonGroup.buttonSelected = 1
     _sendEventWithCallback()
   else if m.ButtonGroup.buttonSelected = 2
-    _resetIdentities()
+    _setConsent("y")
   else if m.ButtonGroup.buttonSelected = 3
-    _createAndShowNewScreen()
+    _setConsent("n")
   else if m.ButtonGroup.buttonSelected = 4
-    _showVideoScreen()
+    _resetIdentities()
   else if m.ButtonGroup.buttonSelected = 5
-    _shutdown()
+    _createAndShowNewScreen()
   else if m.ButtonGroup.buttonSelected = 6
+    _showVideoScreen()
+  else if m.ButtonGroup.buttonSelected = 7
+    _shutdown()
+  else if m.ButtonGroup.buttonSelected = 8
     _reInitSdk()
   end if
 end sub

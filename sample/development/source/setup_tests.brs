@@ -40,9 +40,21 @@ function _adb_test_functions() as dynamic
         TC_adb_optStringFromMap
         TC_adb_optIntFromMap
         'test_string.brs
+        TC_adb_isInvalidString
         TC_adb_isEmptyOrInvalidString
         TC_adb_isStringEndsWith
         TC_adb_isStringInArray
+        TC_adb_stringEqualsIgnoreCase
+        TC_adb_stringEquals
+        'test_int.brs
+        TC_adb_isValidInt_invalidInt
+        TC_adb_isValidInt_validInt
+        'test_longInt.brs
+        TC_adb_isValidLongInt_invalidLongInt
+        TC_adb_isValidLongInt_validLongInt
+        'test_positiveNumber.brs
+        TC_adb_isPositiveWholeNumber_invalid
+        TC_adb_isPositiveWholeNumber_valid
         'test_datetime.brs
         TC_adb_timestampInMillis
         TC_adb_ISO8601_timestamp
@@ -85,13 +97,32 @@ function _adb_test_functions() as dynamic
         TC_adb_ConfigurationModule_overwrittingMediaConfig
         TC_adb_ConfigurationModule_emptyMediaConfig
         TC_adb_ConfigurationModule_invalidMediaConfig
+        TC_adb_ConfigurationModule_validConsentConfig
+        TC_adb_ConfigurationModule_invalidConsentConfig
+
         ' test_identityModule.brs
         TS_identityModule_BeforeEach
+        TC_adb_IdentityModule_init
         TC_adb_IdentityModule_bad_init
-        TC_adb_IdentityModule_getECID_noSetECID_invalidConfiguration_returnsInvalid
-        TC_adb_IdentityModule_updateECID_validString_updatesECID
-        TC_adb_IdentityModule_updateECID_invalid_deletesECID
-        TC_adb_IdentityModule_resetIdentities_deletesECIDAndOtherIdentities
+        TC_adb_IdentityModule_getECID_persistedECID_returnsECID
+        TC_adb_IdentityModule_getECIDAsync_persistedECID_callsCallback
+        TC_adb_IdentityModule_getECIDAsync_ECIDnotPersisted_cachesCallback
+        TC_adb_IdentityModule_getECID_ECIDNotPersisted_queriesECID
+        TC_adb_IdentityModule_processResponseEvent_updatesECID_callsPendingCallback
+        TC_adb_IdentityModule_processResponseEvent_noECIDInResponse
+        TC_adb_IdentityModule_processResponseEvent_doesNotUpdateECIDIfAlreadyPresent
+        TC_adb_IdentityModule_processResponseEvent_invalidResponseEvent_ignored
+        ' test_identityState.brs
+        TS_identityState_BeforeEach
+        TS_identityState_AfterEach
+        TC_adb_IdentityState_init_noPersistedECID
+        TC_adb_IdentityState_init_persistedECID
+        TC_adb_IdentityState_resetIdentities
+        TC_adb_IdentityState_getECID_noPersistedECID
+        TC_adb_IdentityState_getECID_persistedECID
+        TC_adb_IdentityState_updateECID
+        TC_adb_IdentityState_updateECID_invalidECID
+        TC_adb_IdentityState_updateECID_emptyECID
         'test_adobeObject.brs
         TC_adb_AdobeObject
         'test_event.brs
@@ -99,19 +130,33 @@ function _adb_test_functions() as dynamic
         TC_adb_RequestEvent_empty_data
         TC_adb_ResponseEvent
         TC_adb_ResponseEvent_empty_data
+        TC_adb_IdentityResponseEvent
+        TC_adb_IdentityResponseEvent_empty_data
+        TC_adb_EdgeResponseEvent
+        TC_adb_EdgeResponseEvent_empty_data
     ]
     edge = [
         'test_buildEdgeRequestURL.brs
         TC_adb_buildEdgeRequestURL_validDomain
         TC_adb_buildEdgeRequestURL_validPathOverwriting
+        TC_adb_buildEdgeRequestURL_validLocationHint
         'test_implementationDetails.brs
         TC_adb_ImplementationDetails
+        ' test_edgeRequest.brs
+        TC_adb_EdgeRequest_init_valid
+        TC_adb_EdgeRequest_init_invalid
+        TC_adb_EdgeRequest_isValidEdgeRequest_valid
+        TC_adb_EdgeRequest_isValidEdgeRequest_invalid
+        TC_adb_EdgeRequest_isEdgeConsentRequest_valid
         ' test_edgeRequestWorker.brs
+        TS_EdgeRequestWorker_BeforeEach
         TC_adb_EdgeRequestWorker_init
+        TC_adb_EdgeRequestWorker_QueueLimit
         TC_adb_EdgeRequestWorker_hasQueuedEvent
         TC_adb_EdgeRequestWorker_queue
-        TC_adb_EdgeRequestWorker_queue_bad_input
+        TC_adb_EdgeRequestWorker_queue_notEdgeRequest_doesNotQueue
         TC_adb_EdgeRequestWorker_queue_limit
+        TC_adb_EdgeRequestWorker_queue_newRequest_after_RecoverableError_retriesImmediately
         TC_adb_EdgeRequestWorker_clear
         TC_adb_EdgeRequestWorker_processRequest_valid_response
         TC_adb_EdgeRequestWorker_processRequest_customMeta_valid_response
@@ -122,16 +167,82 @@ function _adb_test_functions() as dynamic
         TC_adb_EdgeRequestWorker_processRequest_invalidEventConfig_valid_response
         TC_adb_EdgeRequestWorker_processRequest_invalidDatastreamIdOverrideValue_valid_response
         TC_adb_EdgeRequestWorker_processRequest_invalidConfigOverrideValue_valid_response
+        TC_adb_EdgeRequestWorker_processRequest_validLocationHint_appendsLocationHintToRequestURL
+        TC_adb_EdgeRequestWorker_processRequest_validStateStore_appendsStateStoreToMeta
         TC_adb_EdgeRequestWorker_processRequest_overridesWithCustomMeta_valid_response
         TC_adb_EdgeRequestWorker_processRequest_invalid_response
         TC_adb_EdgeRequestWorker_processRequests
         TC_adb_EdgeRequestWorker_processRequests_empty_queue
         TC_adb_EdgeRequestWorker_processRequests_recoverableError_retriesAfterWaitTimeout
-        TC_adb_EdgeRequestWorker_queue_newRequest_after_RecoverableError_retriesImmediately
+        TC_adb_EdgeRequestWorker_processRequests_consentNo_dropsRequest
+        TC_adb_EdgeRequestWorker_processRequests_consentYes_sendsRequests
+        TC_adb_EdgeRequestWorker_processRequests_consentPending_queuesRequest
+        TC_adb_EdgeRequestWorker_processRequests_consentRequest_consentNo_sendsConsentRequests
+        TC_adb_EdgeRequestWorker_processRequests_consentRequest_consentPending_sendsRequests
+        TC_adb_EdgeRequestWorker_processRequests_edgeAndConsentRequest_consentYes_sendsInOrder
+        TC_adb_EdgeRequestWorker_isBlockedByConsent_returnsTrue
+        TC_adb_EdgeRequestWorker_isBlockedByConsent_returnsFalse
+        TC_adb_EdgeRequestWorker_shouldQueueRequest_returnsTrue
+        TC_adb_EdgeRequestWorker_shouldQueueRequest_returnsFalse
         'test_edgeModule.brs
         TC_adb_EdgeModule_init
         TC_adb_EdgeModule_processEvent
         TC_adb_EdgeModule_processQueuedRequests
+        'test_EdgeResponseManager.brs
+        TC_adb_EdgeResponseManager_Init
+        TC_adb_EdgeResponseManager_processResponse_validLocationHintResponse
+        TC_adb_EdgeResponseManager_processResponse_validStateStoreResponse
+        TC_adb_EdgeResponseManager_processResponse_responseWithTypeNotHandled
+        TC_adb_EdgeResponseManager_handleResetIdentities
+        'test_stateStoreManager.brs
+        TS_StateStoreManager_BeforeEach
+        TC_adb_StateStoreManager_Init
+        TC_adb_StateStoreManager_Init_stateStorePersisted_expired
+        TC_adb_StateStoreManager_Init_stateStorePersisted_notExpired
+        TC_adb_StateStoreManager_Init_stateStorePersisted_mixed
+        TC_adb_StateStoreManager_processStateStoreHandle_validHandle
+        TC_adb_StateStoreManager_processStateStoreHandle_invalidHandle
+        TC_adb_StateStoreManager_processStateStoreHandle_validHandle_maxAgeZeroOrless
+        TC_adb_StateStoreManager_deleteStateStore
+
+        'test_locationHintManager.brs
+        TS_LocationHintManager_BeforeEach
+        TS_LocationHintManager_AfterEach
+        TC_adb_LocationHintManager_init
+        TC_adb_LocationHintManager_Init_locationHintPersisted_notExpired
+        TC_adb_LocationHintManager_setLocationHint_validHintNoTTL
+        TC_adb_LocationHintManager_setLocationHint_validHintWithTTL
+        TC_adb_LocationHintManager_setLocationHint_invalid
+        TC_adb_LocationHintManager_islocationHintExpired
+        TC_adb_LocationHintManager_setLocationHint_validHintWithTTL
+        TC_adb_LocationHintManager_getLocationHint_noPersistedValue
+        TC_adb_LocationHintManager_getLocationHint_persistedValue_notExpired
+        TC_adb_LocationHintManager_getLocationHint_persistedValue_expired
+        TC_adb_LocationHintManager_getLocationHint_expiredTTL_callsDelete
+        TC_adb_LocationHintManager_processLocationHintHandle_invalidHandle
+        TC_adb_LocationHintManager_processLocationHintHandle_validHandle
+        TC_adb_LocationHintManager_delete
+    ]
+    consent = [
+        'test_consentModule.brs
+        TC_adb_ConsentModule_init
+        TC_adb_ConsentModule_processEvent_withCollectConsent_queuesEdgeRequest
+        TC_adb_ConsentModule_processEvent_withoutCollectConsent_queuesEdgeRequest
+        TC_adb_ConsentModule_processResponseEvent_validConsentHandle
+        TC_adb_ConsentModule_processResponseEvent_missingConsentPreferencesHandle
+        TC_adb_ConsentModule_processResponseEvent_invalidHandle
+        'test_consentState.brs
+        TS_consentState_SetUp
+        TS_consentState_BeforeEach
+        TS_consentState_TearDown
+        TC_adb_ConsentState_init
+        TC_adb_ConsentState_extractConsentFromConfiguration_valid
+        TC_adb_ConsentState_extractConsentFromConfiguration_invalid
+        TC_adb_ConsentState_setCollectConsent_cachesAndPersists
+        TC_adb_ConsentState_getCollectConsent_cached_returnsCachedValue
+        TC_adb_ConsentState_getCollectConsent_notCached_returnsPersistedValue
+        TC_adb_ConsentState_getCollectConsent_notPersisted_fetchesFromConfig
+        TC_adb_ConsentState_getCollectConsent_notPersisted_notInConfig_returnsInvalid
     ]
     media = [
         'test_mediaUtils.brs
@@ -216,6 +327,7 @@ function _adb_test_functions() as dynamic
     ]
     api = [
         'test_public_APIs.brs
+        TS_public_APIs_BeforeAll
         TS_public_APIs_BeforeEach
         TS_public_APIs_TearDown
         TC_APIs_getVersion
@@ -243,6 +355,9 @@ function _adb_test_functions() as dynamic
         TC_APIs_sendMediaEvent_invalidSession
         TC_APIs_sendMediaEvent_sessionEnd
         TC_adb_ClientMediaSession
+        TC_APIs_setConsent
+        TC_APIs_setConsent_invalid
+        TC_APIs_setConsent_emptyConsentList
     ]
     task = [
         'test_eventProcessor.brs
@@ -258,16 +373,19 @@ function _adb_test_functions() as dynamic
         TC_adb_eventProcessor_handleCreateMediaSession_invalid
         TC_adb_eventProcessor_hasXDMData
         TC_adb_eventProcessor_handleEvent_sendEvent
-        TC_adb_eventProcessor_sendResponseEvent
+        TC_adb_eventProcessor_sendResponseEvent_shouldBeDispatchedToTask
         TC_adb_eventProcessor_processQueuedRequests
         TC_adb_eventProcessor_processQueuedRequests_multiple
         TC_adb_eventProcessor_processQueuedRequests_bad_request
         TC_adb_eventProcessor_init
+        TC_adb_eventProcessor_dispatchResponseEventToRegisteredModules
+        TC_adb_eventProcessor_processQueuedRequests_dispatchesResponses
     ]
     functionList = []
     functionList.Append(common)
     functionList.Append(services)
     functionList.Append(core)
+    functionList.Append(consent)
     functionList.Append(edge)
     functionList.Append(media)
     functionList.Append(initSDK)

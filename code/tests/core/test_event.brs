@@ -70,3 +70,68 @@ sub TC_adb_ResponseEvent_empty_data()
     UTF_assertFalse(_adb_isEmptyOrInvalidString(event.uuid))
     UTF_assertFalse(_adb_isEmptyOrInvalidString(event.timestamp))
 end sub
+
+' target: _adb_IdentityResponseEvent()
+' @Test
+sub TC_adb_IdentityResponseEvent()
+    event = _adb_IdentityResponseEvent("parent_id", { key: "value" })
+
+    UTF_assertTrue(_adb_isIdentityResponseEvent(event), "Event should be an identity response event")
+    UTF_assertEqual("adobe", event.owner, generateErrorMessage("Event owner", "adobe", event.owner))
+    UTF_assertEqual("com.adobe.event.response", event.type, generateErrorMessage("Event type", "com.adobe.event.response", event.type))
+    UTF_assertEqual("com.adobe.module.identity", event.source, generateErrorMessage("Event source", "com.adobe.module.identity", event.source))
+    UTF_assertEqual("LongInteger", Type(event.timestampInMillis), "timestampInMillis is not a long int")
+    UTF_assertEqual("parent_id", event.parentId, generateErrorMessage("Event parentId", "parent_id", event.parentId))
+    UTF_assertEqual({ key: "value" }, event.data, generateErrorMessage("Event data", "{ key: value }", event.data))
+    UTF_assertFalse(_adb_isEmptyOrInvalidString(event.uuid), "Event uuid should not be empty or invalid")
+    UTF_assertFalse(_adb_isEmptyOrInvalidString(event.timestamp), "Event timestamp should not be empty or invalid")
+end sub
+
+' target: _adb_IdentityResponseEvent()
+' @Test
+sub TC_adb_IdentityResponseEvent_empty_data()
+    event = _adb_IdentityResponseEvent("parent_id")
+
+    UTF_assertTrue(_adb_isIdentityResponseEvent(event), "Event should be an identity response event")
+    UTF_assertEqual("adobe", event.owner, generateErrorMessage("Event owner", "adobe", event.owner))
+    UTF_assertEqual("com.adobe.event.response", event.type, generateErrorMessage("Event type", "com.adobe.event.response", event.type))
+    UTF_assertEqual("com.adobe.module.identity", event.source, generateErrorMessage("Event source", "com.adobe.module.identity", event.source))
+    UTF_assertEqual("LongInteger", Type(event.timestampInMillis), "timestampInMillis is not a long int")
+    UTF_assertEqual("parent_id", event.parentId, generateErrorMessage("Event parentId", "parent_id", event.parentId))
+    UTF_assertEqual({}, event.data, generateErrorMessage("Event data", "{ }", event.data))
+    UTF_assertFalse(_adb_isEmptyOrInvalidString(event.uuid), "Event uuid should not be empty or invalid")
+    UTF_assertFalse(_adb_isEmptyOrInvalidString(event.timestamp), "Event timestamp should not be empty or invalid")
+end sub
+
+' target: _adb_EdgeResponseEvent()
+' @Test
+sub TC_adb_EdgeResponseEvent()
+    event = _adb_EdgeResponseEvent("parent_id", { key: "value" })
+
+    UTF_assertTrue(_adb_isEdgeResponseEvent(event), "Event should be an identity response event")
+    UTF_assertEqual("adobe", event.owner, generateErrorMessage("Event owner", "adobe", event.owner))
+    UTF_assertEqual("com.adobe.event.response", event.type, generateErrorMessage("Event type", "com.adobe.event.response", event.type))
+    UTF_assertEqual("com.adobe.module.edge", event.source, generateErrorMessage("Event source", "com.adobe.module.edge", event.source))
+    UTF_assertEqual("LongInteger", Type(event.timestampInMillis), "timestampInMillis is not a long int")
+    UTF_assertEqual("parent_id", event.parentId, generateErrorMessage("Event parentId", "parent_id", event.parentId))
+    UTF_assertEqual({ key: "value" }, event.data, generateErrorMessage("Event data", "{ key: value }", event.data))
+    UTF_assertFalse(_adb_isEmptyOrInvalidString(event.uuid), "Event uuid should not be empty or invalid")
+    UTF_assertFalse(_adb_isEmptyOrInvalidString(event.timestamp), "Event timestamp should not be empty or invalid")
+
+end sub
+
+' target: _adb_EdgeResponseEvent()
+' @Test
+sub TC_adb_EdgeResponseEvent_empty_data()
+    event = _adb_EdgeResponseEvent("parent_id")
+
+    UTF_assertTrue(_adb_isEdgeResponseEvent(event), "Event should be an identity response event")
+    UTF_assertEqual("adobe", event.owner, generateErrorMessage("Event owner", "adobe", event.owner))
+    UTF_assertEqual("com.adobe.event.response", event.type, generateErrorMessage("Event type", "com.adobe.event.response", event.type))
+    UTF_assertEqual("com.adobe.module.edge", event.source, generateErrorMessage("Event source", "com.adobe.module.edge", event.source))
+    UTF_assertEqual("LongInteger", Type(event.timestampInMillis), "timestampInMillis is not a long int")
+    UTF_assertEqual("parent_id", event.parentId, generateErrorMessage("Event parentId", "parent_id", event.parentId))
+    UTF_assertEqual({}, event.data, "Event data should be empty")
+    UTF_assertFalse(_adb_isEmptyOrInvalidString(event.uuid), "Event uuid should not be empty or invalid")
+    UTF_assertFalse(_adb_isEmptyOrInvalidString(event.timestamp), "Event timestamp should not be empty or invalid")
+end sub

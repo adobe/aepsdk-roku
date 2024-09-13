@@ -16,16 +16,24 @@ NC='\033[0m'
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
+YELLOW='\033[1;33m'
+
+# Check if target version is passed as argument
+if [ -z "$1" ]; then
+    echo "${RED}[Error]${NC} Target version is not provided!"
+    echo "${YELLOW}Hint:${NC} Please provide a version number as an argument."
+    echo "${YELLOW}Hint:${NC} Usage: \"make check-version VERSION=1.0.0\""
+    exit 1
+fi
 
 echo "Target version - ${BLUE}$1${NC}"
-echo "------------------AEPRokuSDK-------------------"
 SOURCE_CODE_VERSION=$(cat ./AEPRokuSDK/AEPSDK.brs | egrep '\s*VERSION\s*=\s*\"(.*)\"' | sed -e 's/.*= //; s/,//g; s/"//g')
 echo "Souce code version - ${BLUE}${SOURCE_CODE_VERSION}${NC}"
 
 if [[ "$1" == "$SOURCE_CODE_VERSION" ]]; then
-    echo "${GREEN}Pass!${NC}"
+    echo "${GREEN}Pass!${NC} Version matches $1"
 else
-    echo "${RED}[Error]${NC} Version do not match!"
+    echo "${RED}[Error]${NC} Version do not match: $1 != $SOURCE_CODE_VERSION"
     exit -1
 fi
 exit 0

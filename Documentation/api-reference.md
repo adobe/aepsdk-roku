@@ -2,22 +2,25 @@
 
 This document lists the APIs provided by AEP Roku SDK, along with code samples for API usage.
 
-
+- Core APIs
+  - [AdobeAEPSDKInit](#AdobeAEPSDKInit)
+  - [getVersion](#getVersion)
+  - [setLogLevel](#setLogLevel)
+  - [shutdown](#shutdown)
+  - [updateConfiguration](#updateConfiguration)
+- Consent APIs
+  - [setConsent](#setConsent)
 - Edge APIs
-    - [AdobeAEPSDKInit](#AdobeAEPSDKInit)
-    - [getExperienceCloudId](#getExperienceCloudId)
-    - [getVersion](#getVersion)
-    - [resetIdentities](#resetIdentities)
-    - [sendEvent](#sendEvent)
-    - [(optional) setExperienceCloudId](#setExperienceCloudId)
-    - [setLogLevel](#setLogLevel)
-    - [shutdown](#shutdown)
-    - [updateConfiguration](#updateConfiguration)
+  - [sendEvent](#sendEvent)
+- Identitiy APIs
+  - [getExperienceCloudId](#getExperienceCloudId)
+  - [resetIdentities](#resetIdentities)
+  - [(optional) setExperienceCloudId](#setExperienceCloudId)
 - Media APIs
-    - [createMediaSession](#createMediaSession)
-    - [sendMediaEvent](#sendMediaEvent)
+  - [createMediaSession](#createMediaSession)
+  - [sendMediaEvent](#sendMediaEvent)
 
-## Edge APIs:
+## Core APIs:
 
 ### AdobeAEPSDKInit
 
@@ -68,36 +71,6 @@ m.aepSdk = AdobeAEPSDKInit()
 ```
 ---
 
-### getExperienceCloudId
-
-##### Syntax
-
-```brightscript
-getExperienceCloudId: function(callback as function, context = invalid as dynamic) as void
-```
-- `@param  callback as function(context, result): callback which will be called with provided context and ecid value`
-- `@param [optional] context as dynamic : context to be passed to the callback function`
-
-- `@return callback containing ECID string`
-
-> **Note**
-> The `getExperienceCloudId` API will fetch a new ECID if no ECID is found in persistence.
-
-> **Note**
-> If the AEP Roku SDK fails to receive the Edge response within 5 seconds, the callback function will not be executed. If the network request to fetch a new ECID fails, the callback will be called with an invalid value for the ECID.
-
-##### Example
-
-```brightscript
-adbEcidCallback = sub(context, ecid)
-  ' Handle the returned ECID value
-  print "getECID(): " + FormatJson(ecid)
-end sub
-
-m.aepSdk.getExperienceCloudId(adbEcidCallback, m)
-```
----
-
 ### getVersion
 
 ##### Syntax
@@ -116,23 +89,177 @@ sdkVersion = m.aepSdk.getVersion()
 
 ---
 
-### resetIdentities
-
-Call this function to reset the Adobe identities such as ECID from the AEP Roku SDK.
+### setLogLevel
 
 ##### Syntax
 
 ```brightscript
-resetIdentities: function() as void
+setLogLevel: function(level as integer) as void
+```
+
+- `@param level as integer : the accepted values are (VERBOSE: 0, DEBUG: 1, INFO: 2, WARNING: 3, ERROR: 4)`
+
+##### Example
+
+```brightscript
+ADB_CONSTANTS = AdobeAEPSDKConstants()
+m.aepSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
+```
+
+---
+
+### shutdown
+
+Call this function to shut down the AEP Roku SDK and drop further API calls.
+
+##### Syntax
+
+```brightscript
+shutdown: function() as void
 ```
 
 ##### Example
 
 ```brightscript
-m.aepSdk.resetIdentities()
+m.aepSdk.shutdown();
 ```
 
 ---
+
+### updateConfiguration
+
+> **Note**
+> Some public APIs need valid configuration to process the data and make the network call to Adobe Experience Edge Network. All the hits will be queued if no valid configuration is found. It is ideal to call updateConfiguration API with valid require configuration before any other public APIs.
+
+#### Configuration Keys
+
+- Required for all APIs
+
+| Constants | Raw value | Type | Required |
+| :-- | :--: | :--: | :--: |
+| `ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID` | "edge.configId" | String | **Yes**
+| `ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN` | "edge.domain" | String | **No**
+| `ADB_CONSTANTS.CONFIGURATION.CONSENT_DEFAULT` | "consent.default" | Map | **No**
+
+- Required for Media tracking APIs
+
+| Constants | Raw value | Type | Required |
+| :-- | :--: | :--: | :--: |
+| `ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL` | "edgemedia.channel" | String | **Yes**
+| `ADB_CONSTANTS.CONFIGURATION.MEDIA_PLAYER_NAME` | "edgemedia.playerName" | String | **Yes**
+| `ADB_CONSTANTS.CONFIGURATION.MEDIA_APP_VERSION` | "edgemedia.appVersion" | String | **No**
+
+##### Syntax
+
+```brightscript
+updateConfiguration: function(configuration as object) as void
+```
+
+- `@param configuration as object`
+
+##### Example
+
+```brightscript
+ADB_CONSTANTS = AdobeAEPSDKConstants()
+
+configuration = {}
+configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = "<YOUR_CONFIG_ID>"
+configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = "<YOUR_DOMAIN_NAME>"
+
+' This example sets the default consent to pending. You can later update the consent based on user preferences using the setConsent API.
+
+configuration[ADB_CONSTANTS.CONFIGURATION.CONSENT_DEFAULT] = {
+    "consents": {
+        "collect": {
+            "val": "p"
+        }
+    }
+}
+
+m.aepSdk.updateConfiguration(configuration)
+```
+
+The `EDGE_CONFIG_ID` value is presented as `Datastream ID` in the [Datastream details](https://experienceleague.adobe.com/docs/experience-platform/edge/datastreams/configure.html?lang=en#view-details) page.
+
+The `EDGE_DOMAIN` value is the first-party domain mapped to the Adobe-provisioned Edge Network domain. For more information, see this [documentation](https://developer.adobe.com/client-sdks/documentation/edge-network/#domain-configuration)
+
+## Consent APIs:
+
+### Configure default consent
+
+The default consent configuration determines how data collection consent is managed before invoking the [setConsent](#setconsent) API. This setting is particularly important to avoid unintentionally collecting data from users in regions where consent is required prior to data collection.
+
+By default, users are opted in for all purposes.
+
+#### Example: Setting default collect consent to pending before collecting actual user consent
+```brightscript
+ADB_CONSTANTS = AdobeAEPSDKConstants()
+
+configuration = {}
+
+' This example sets the default consent to pending. You can later update the consent based on user preferences using the setConsent API.
+
+configuration[ADB_CONSTANTS.CONFIGURATION.CONSENT_DEFAULT] = {
+    "consents": {
+        "collect": {
+            "val": "p"
+        }
+    }
+}
+
+m.aepSdk.updateConfiguration(configuration)
+```
+
+### setConsent
+
+Sends consent preferences to the Edge Network. For details on setting default consent before collecting user preferences, refer to the [Configure default consent](#configure-default-consent) section.
+
+> [!Important]
+> Please provide the entire payload with all the fields required by the [Adobe 2.0 Standard](https://github.com/adobe/xdm/blob/master/docs/reference/mixins/profile/profile-consents.schema.md).
+
+##### Syntax
+
+```brightscript
+setConsent: function(data as object) as void
+```
+
+- `@param data as object : an associative array that includes consent data to be sent to the edge network.`
+
+##### Example: setConsent using consent object following Adobe 2.0 Standard
+
+> [!Note]
+> The "time" field under "metadata" should contain ISO 8601 formatted with UTC(Z) time zone, millisecond precision date as shown below.
+
+> [!TIP]
+> Use the [`ToISOString("milliseconds")`](https://developer.roku.com/docs/references/brightscript/interfaces/ifdatetime.md#toisostringformat-as-string-as-string) to generate timestamp in the required format.
+
+```brightscript
+  currentDate = CreateObject("roDateTime")
+  timestampInISO8601 = currentDate.ToISOString("milliseconds")
+
+
+  collectConsentYes = {
+    "consent": [
+      {
+        "standard": "Adobe",
+        "version": "2.0",
+        "value": {
+          "metadata": {
+            ' pass timestamp in ISO format
+            "time": timestampInISO8601  ' sample value: "2023-10-03T17:23:04.443Z"
+          },
+          "collect": {
+            "val": "y"
+          }
+        }
+      }
+    ]
+  }
+
+  m.aepSdk.setConsent(collectConsentYes)
+```
+
+## Edge APIs:
 
 ### sendEvent
 
@@ -144,7 +271,7 @@ Sends an Experience event to Edge Network.
 sendEvent: function(data as object, callback = _adb_default_callback as function, context = invalid as dynamic) as void
 ```
 
-- `@param data as object : an associative array that includs data to be sent with the event. It's structure should follow:`
+- `@param data as object : an associative array that includes data to be sent with the event. It's structure should follow:`
   - `data.xdm (required) - xdm data following the XDM schema that is defined in the Schema Editor.`
   - `data.data (optional) - the free form non xdm data to be sent along with the event.`
 - `@param [optional] callback as function(context, result) : handle Edge response`
@@ -269,6 +396,37 @@ customIdentityMap = {
 
   m.aepSdk.sendEvent(data)
 ```
+
+## Identity APIs
+
+### getExperienceCloudId
+
+##### Syntax
+
+```brightscript
+getExperienceCloudId: function(callback as function, context = invalid as dynamic) as void
+```
+- `@param  callback as function(context, result): callback which will be called with provided context and ecid value`
+- `@param [optional] context as dynamic : context to be passed to the callback function`
+
+- `@return callback containing ECID string`
+
+> **Note**
+> The `getExperienceCloudId` API will fetch a new ECID if no ECID is found in persistence.
+
+> **Note**
+> If the AEP Roku SDK fails to receive the Edge response within 5 seconds, the callback function will not be executed. If the network request to fetch a new ECID fails, the callback will be called with an invalid value for the ECID.
+
+##### Example
+
+```brightscript
+adbEcidCallback = sub(context, ecid)
+  ' Handle the returned ECID value
+  print "getECID(): " + FormatJson(ecid)
+end sub
+
+m.aepSdk.getExperienceCloudId(adbEcidCallback, m)
+```
 ---
 
 ### setExperienceCloudId
@@ -334,91 +492,25 @@ function onAdbmobileApiResponse() as void
       endif
     end function
 ```
-
 ---
 
-### setLogLevel
+### resetIdentities
+
+Call this function to reset the Adobe identities such as ECID from the AEP Roku SDK.
 
 ##### Syntax
 
 ```brightscript
-setLogLevel: function(level as integer) as void
-```
-
-- `@param level as integer : the accepted values are (VERBOSE: 0, DEBUG: 1, INFO: 2, WARNING: 3, ERROR: 4)`
-
-##### Example
-
-```brightscript
-ADB_CONSTANTS = AdobeAEPSDKConstants()
-m.aepSdk.setLogLevel(ADB_CONSTANTS.LOG_LEVEL.VERBOSE)
-```
-
----
-
-### shutdown
-
-Call this function to shut down the AEP Roku SDK and drop further API calls.
-
-##### Syntax
-
-```brightscript
-shutdown: function() as void
+resetIdentities: function() as void
 ```
 
 ##### Example
 
 ```brightscript
-m.aepSdk.shutdown();
+m.aepSdk.resetIdentities()
 ```
 
 ---
-
-### updateConfiguration
-
-> **Note**
-> Some public APIs need valid configuration to process the data and make the network call to Adobe Experience Edge Network. All the hits will be queued if no valid configuration is found. It is ideal to call updateConfiguration API with valid require configuration before any other public APIs.
-
-#### Configuration Keys
-
-- Required for all APIs
-
-| Constants | Raw value | Type | Required |
-| :-- | :--: | :--: | :--: |
-| `ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID` | "edge.configId" | String | **Yes**
-| `ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN` | "edge.domain" | String | **No**
-
-- Required for Media tracking APIs
-
-| Constants | Raw value | Type | Required |
-| :-- | :--: | :--: | :--: |
-| `ADB_CONSTANTS.CONFIGURATION.MEDIA_CHANNEL` | "edgemedia.channel" | String | **Yes**
-| `ADB_CONSTANTS.CONFIGURATION.MEDIA_PLAYER_NAME` | "edgemedia.playerName" | String | **Yes**
-| `ADB_CONSTANTS.CONFIGURATION.MEDIA_APP_VERSION` | "edgemedia.appVersion" | String | **No**
-
-##### Syntax
-
-```brightscript
-updateConfiguration: function(configuration as object) as void
-```
-
-- `@param configuration as object`
-
-##### Example
-
-```brightscript
-ADB_CONSTANTS = AdobeAEPSDKConstants()
-
-configuration = {}
-configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_CONFIG_ID] = "<YOUR_CONFIG_ID>"
-configuration[ADB_CONSTANTS.CONFIGURATION.EDGE_DOMAIN] = "<YOUR_DOMAIN_NAME>"
-
-m.aepSdk.updateConfiguration(configuration)
-```
-
-The `EDGE_CONFIG_ID` value is presented as `Datastream ID` in the [Datastream details](https://experienceleague.adobe.com/docs/experience-platform/edge/datastreams/configure.html?lang=en#view-details) page.
-
-The `EDGE_DOMAIN` value is the first-party domain mapped to the Adobe-provisioned Edge Network domain. For more information, see this [documentation](https://developer.adobe.com/client-sdks/documentation/edge-network/#domain-configuration)
 
 ## Media APIs
 
@@ -542,3 +634,4 @@ playXDM = {
 
 m.aepSdk.sendMediaEvent(playXDM)
 ```
+
