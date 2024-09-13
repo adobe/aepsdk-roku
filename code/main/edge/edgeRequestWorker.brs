@@ -22,7 +22,7 @@ function _adb_EdgeRequestWorker(edgeResponseManager as object, consentState as o
         _lastFailedRequestTS: -1,
         _queue: [],
         _consentQueue: [],
-        _queue_size_max: 50,
+        _queue_size_max: 100,
         _edgeResponseManager: edgeResponseManager,
         _consentState: consentState,
 
