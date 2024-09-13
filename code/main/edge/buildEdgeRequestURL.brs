@@ -13,10 +13,20 @@
 
 ' ***************************** MODULE: buildEdgeRequestURL *******************************
 
-function _adb_buildEdgeRequestURL(configId as string, requestId as string, path as string, edgeDomain = invalid as dynamic) as string
+' Builds the URL for request to be sent to edge server
+'
+' @param configId - Datastream ID to send the request to
+' @param requestId - UUID denoting the request ID
+' @param path - Path to be appended to the URL (e.g. /v1/interact, /va/v1/sessionStart, /v1/privacy/set-consent)
+' @param locationHint - Location hint to be appended to the URL
+' @param edgeDomain - Edge domain to be used for the request
+'
+' @return URL for the request
+function _adb_buildEdgeRequestURL(configId as string, requestId as string, path as string, locationHint as dynamic, edgeDomain = invalid as dynamic) as string
     scheme = "https://"
     host = "edge.adobedc.net"
     query = "?configId=" + configId
+    pathPrefix = "/ee"
 
     if not _adb_isEmptyOrInvalidString(edgeDomain)
         host = edgeDomain
@@ -26,7 +36,15 @@ function _adb_buildEdgeRequestURL(configId as string, requestId as string, path 
         query = query + "&requestId=" + requestId
     end if
 
-    requestUrl = scheme + host + path + query
+    fullPath = pathPrefix
+    if not _adb_isEmptyOrInvalidString(locationHint)
+        fullPath = fullPath + "/" + locationHint
+    end if
+
+    fullPath = fullPath + path
+
+    requestUrl = scheme + host + fullPath + query
 
     return requestUrl
 end function
+

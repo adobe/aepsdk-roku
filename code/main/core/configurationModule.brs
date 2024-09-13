@@ -25,11 +25,15 @@ function _adb_ConfigurationModule() as object
         ' example: {"edge.configId":"1234567890", "edge.domain":"xyz.net"}
         _edge_configId: invalid,
         _edge_domain: invalid,
+        ' consent configuration
+        ' example: {"consent.default":{"consents":{"collect":{"val":"y"}}}}
+        _consent_default: invalid,
         ' media configuration
         ' example: {"edgemedia.channel":"channel_x", "edgemedia.playerName": "player_y", "edgemedia.appVersion": "1.0.0"}
         _media_channel: invalid,
         _media_playerName: invalid,
         _media_appVersion: invalid,
+
 
         updateConfiguration: function(configuration as object) as void
 
@@ -44,6 +48,12 @@ function _adb_ConfigurationModule() as object
             regexPattern = CreateObject("roRegex", "^((?!-)[A-Za-z0-9-]+(?<!-)\.)+[A-Za-z]{2,6}$", "")
             if not _adb_isEmptyOrInvalidString(domain) and regexPattern.isMatch(domain)
                 m._edge_domain = domain
+            end if
+
+            ' get the default consent map
+            defaultConsent = _adb_optMapFromMap(configuration, m._CONFIG_KEY.CONSENT_DEFAULT)
+            if not _adb_isEmptyOrInvalidMap(defaultConsent)
+                m._consent_default = defaultConsent
             end if
 
             ' update Media configuration
@@ -70,6 +80,10 @@ function _adb_ConfigurationModule() as object
             return m._edge_domain
         end function,
 
+        getDefaultConsent: function() as dynamic
+            return m._consent_default
+        end function,
+
         getMediaChannel: function() as dynamic
             return m._media_channel
         end function,
@@ -86,6 +100,7 @@ function _adb_ConfigurationModule() as object
             return {
                 edge_configId: m._edge_configId,
                 edge_domain: m._edge_domain,
+                consent_default: m._consent_default,
                 media_channel: m._media_channel,
                 media_playerName: m._media_playerName,
                 media_appVersion: m._media_appVersion

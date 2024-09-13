@@ -17,67 +17,86 @@ function _adb_isEdgeModule(module as object) as boolean
     return (module <> invalid and module.type = "com.adobe.module.edge")
 end function
 
-function _adb_EdgeModule(configurationModule as object, identityModule as object) as object
-    if _adb_isConfigurationModule(configurationModule) = false then
+function _adb_EdgeModule(configurationModule as object, identityState as object, consentState as object) as object
+    if not _adb_isConfigurationModule(configurationModule) then
         _adb_logError("EdgeModule::_adb_EdgeModule() - configurationModule is not valid.")
         return invalid
     end if
 
-    if _adb_isIdentityModule(identityModule) = false then
-        _adb_logError("EdgeModule::_adb_EdgeModule() - identityModule is not valid.")
+    if not _adb_isIdentityState(identityState) then
+        _adb_logError("EdgeModule::_adb_EdgeModule() - identityState is not valid.")
         return invalid
     end if
 
+    if not _adb_isConsentStateModule(consentState) then
+        _adb_logError("EdgeModule::_adb_EdgeModule() - consentState is not valid.")
+        return invalid
+    end if
+
+    edgeResponseManager = _adb_EdgeResponseManager()
+
     module = _adb_AdobeObject("com.adobe.module.edge")
     module.Append({
-        _EDGE_REQUEST_PATH: "/ee/v1/interact",
+        _EDGE_REQUEST_PATH: "/v1/interact",
+        _REQUEST_TYPE_EDGE: "edge",
         _configurationModule: configurationModule,
-        _identityModule: identityModule,
-        _edgeRequestWorker: _adb_EdgeRequestWorker(),
+        _identityState: identityState,
+        _edgeResponseManager: edgeResponseManager,
+        _edgeRequestWorker: _adb_EdgeRequestWorker(edgeResponseManager, consentState),
 
-        processEvent: function(requestId as string, eventData as object, timestampInMillis as longinteger) as dynamic
-            m._edgeRequestWorker.queue(requestId, eventData, timestampInMillis, {}, m._EDGE_REQUEST_PATH)
-            return m.processQueuedRequests()
+        ' sendEvent API triggers this API to queue edge requests
+        ' requestId: unique id for the request
+        ' eventData: data to be sent to edge
+        ' timestampInMillis: timestamp of the event
+        processEvent: function(requestId as string, eventData as object, timestampInMillis as longinteger, requestType = m._REQUEST_TYPE_EDGE as string) as void
+            _adb_logVerbose("EdgeModule::processEvent() - Received event:(" + chr(10) + FormatJson(eventData) + chr(10) + ")")
+            try
+                m.queueEdgeRequest(requestId, eventData, timestampInMillis, {}, m._EDGE_REQUEST_PATH, requestType)
+            catch exception
+                _adb_logError("EdgeModule::processEvent() - Error while queuing edge request: " + exception.message)
+            end try
         end function,
 
-        createEdgeRequestQueue: function(name as string) as object
-            return _adb_edgeRequestQueue(name, m)
+        ' Queues edge requests to be sent to Edge server
+        ' requestId: unique id for the request
+        ' eventData: data to be sent to edge
+        ' timestampInMillis: timestamp of the event
+        ' meta: meta data for the edge request
+        ' path: path to send the edge request to
+        queueEdgeRequest: function(requestId as string, eventData as object, timestampInMillis as longinteger, meta as object, path as string, requestType = m._REQUEST_TYPE_EDGE as string) as void
+            _adb_logVerbose("EdgeModule::queueEdgeRequest() - Queuing edge request with data: (" + FormatJson(eventData) + ").")
+            try
+                edgeRequest = _adb_EdgeRequest(requestId, eventData, timestampInMillis)
+                edgeRequest.setMeta(meta)
+                edgeRequest.setPath(path)
+                edgeRequest.setRequestType(requestType)
+
+                m._edgeRequestWorker.queue(edgeRequest)
+            catch exception
+                _adb_logError("EdgeModule::queueEdgeRequest() - Error while queuing edge request: " + exception.message)
+            end try
         end function,
 
-        _getEdgeConfig: function() as object
-            configId = m._configurationModule.getConfigId()
-            if _adb_isEmptyOrInvalidString(configId)
-                return invalid
-            end if
-            ecid = m._identityModule.getECID()
-            if _adb_isEmptyOrInvalidString(ecid)
-                return invalid
-            end if
-            return {
-                configId: configId,
-                ecid: ecid,
-                edgeDomain: m._configurationModule.getEdgeDomain()
-            }
-        end function,
-
+        ' Sends queued edge requests to edge
+        ' Returns list of edge responses for the requests
         processQueuedRequests: function() as object
             responseEvents = []
 
             if not m._edgeRequestWorker.hasQueuedEvent()
-                ''' no requests to process
+                ' no requests to process
                 return responseEvents
             end if
 
             edgeConfig = m._getEdgeConfig()
-            if edgeConfig = invalid
+            if _adb_isEmptyOrInvalidMap(edgeConfig)
                 return responseEvents
             end if
 
-            responses = m._edgeRequestWorker.processRequests(edgeConfig.configId, edgeConfig.ecid, edgeConfig.edgeDomain)
+            responses = m._edgeRequestWorker.processRequests(edgeConfig)
 
             for each edgeResponse in responses
                 if _adb_isEdgeResponse(edgeResponse) then
-                    responseEvent = _adb_ResponseEvent(edgeResponse.getRequestId(), {
+                    responseEvent = _adb_EdgeResponseEvent(edgeResponse.getRequestId(), {
                         code: edgeResponse.getResponseCode(),
                         message: edgeResponse.getResponseString()
                     })
@@ -89,9 +108,32 @@ function _adb_EdgeModule(configurationModule as object, identityModule as object
             return responseEvents
         end function,
 
+        resetIdentities: function() as void
+            _adb_logVerbose("EdgeModule::resetIdentities() - Resetting identities.")
+            m._edgeResponseManager.handleResetIdentities()
+        end function,
+
+        _getEdgeConfig: function() as object
+            configId = m._configurationModule.getConfigId()
+            if _adb_isEmptyOrInvalidString(configId)
+                return invalid
+            end if
+
+            ecid = m._identityState.getECID()
+
+            return {
+                configId: configId,
+                ecid: ecid,
+                edgeDomain: m._configurationModule.getEdgeDomain()
+            }
+        end function,
+
         dump: function() as object
             return {
                 requestQueue: m._edgeRequestWorker._queue
+                consentQueue: m._edgeRequestWorker._consentQueue
+                locationHint: m._edgeResponseManager.getLocationHint()
+                stateStore: m._edgeResponseManager.getStateStore()
             }
         end function
     })

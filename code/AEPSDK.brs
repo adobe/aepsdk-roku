@@ -20,6 +20,7 @@ function AdobeAEPSDKConstants() as object
         CONFIGURATION: {
             EDGE_CONFIG_ID: "edge.configId",
             EDGE_DOMAIN: "edge.domain",
+            CONSENT_DEFAULT: "consent.default",
             MEDIA_CHANNEL: "edgemedia.channel",
             MEDIA_PLAYER_NAME: "edgemedia.playerName",
             MEDIA_APP_VERSION: "edgemedia.appVersion",
@@ -227,12 +228,10 @@ function AdobeAEPSDKInit(taskNode = invalid as dynamic) as object
                 return
             end if
 
-            ' event data: { "xdm": xdmData, "data" : nonXdmdata }
             ' add a timestamp to the XDM data
             data.xdm.timestamp = _adb_ISO8601_timestamp()
             event = _adb_RequestEvent(m._private.cons.PUBLIC_API.SEND_EDGE_EVENT, data)
 
-            ' event.data.xdm.timestamp = event.getISOTimestamp()
             if callback <> _adb_defaultCallback then
                 ' store callback function
                 callbackInfo = {
@@ -243,6 +242,35 @@ function AdobeAEPSDKInit(taskNode = invalid as dynamic) as object
                 m._private.cachedCallbackInfo[event.uuid] = callbackInfo
                 _adb_logDebug("sendEvent() - Cached callback function for event with uuid: " + FormatJson(event.uuid))
             end if
+            m._private.dispatchEvent(event)
+        end function,
+
+        ' *************************************************************************************
+        '
+        ' set consent.
+        '
+        ' This function will send the consent data in XDM format following Adobe 2.0 standard to the Edge network.
+        '
+        '
+        ' @param data as object : containing consent XDM data following Adobe 2.0 standard
+        '
+        ' *************************************************************************************
+
+        setConsent: function(data as object) as void
+            _adb_logDebug("API: setConsent()")
+
+            if _adb_isEmptyOrInvalidMap(data) then
+                _adb_logError("setConsent() - Invalid event data, must be an associative array")
+                return
+            end if
+
+            if _adb_isEmptyOrInvalidArray(data.consent) then
+                _adb_logError("setConsent() - Invalid event data, consent data is required.")
+                return
+            end if
+
+            event = _adb_RequestEvent(m._private.cons.PUBLIC_API.SET_CONSENT, data)
+
             m._private.dispatchEvent(event)
         end function,
 
@@ -268,7 +296,7 @@ function AdobeAEPSDKInit(taskNode = invalid as dynamic) as object
                 _adb_logError("setExperienceCloudId() - Cannot set ECID, invalid ecid:(" + FormatJson(ecid) + ") passed.")
                 return
             end if
-            ' event data: { "ecid": ecid }
+
             data = {}
             data[m._private.cons.EVENT_DATA_KEY.ecid] = ecid
             event = _adb_RequestEvent(m._private.cons.PUBLIC_API.SET_EXPERIENCE_CLOUD_ID, data)
@@ -319,7 +347,6 @@ function AdobeAEPSDKInit(taskNode = invalid as dynamic) as object
         ' @param [optional] configuration as object : the session-level configuration
         '
         ' ****************************************************************************************************
-        ' TODO: let's add a link to the media docs later to present the XDM data structure
         createMediaSession: function(xdmData as object, configuration = {} as object) as void
             _adb_logDebug("API: createMediaSession()")
 
@@ -452,7 +479,6 @@ function _adb_ClientMediaSession() as object
         _clientSessionId: "",
         _currentPlayHead%: 0,
 
-        ' TODO: The playhead value in XDM is an integer type. if it allows int-64, we should change the type to longInteger.
         startNewSession: function(playhead as integer) as string
             m._resetSession()
             m._clientSessionId = _adb_generate_UUID()

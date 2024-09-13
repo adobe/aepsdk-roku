@@ -21,6 +21,7 @@ function _adb_InternalConstants() as object
             GET_EXPERIENCE_CLOUD_ID: "getExperienceCloudId",
             RESET_IDENTITIES: "resetIdentities",
             SEND_EDGE_EVENT: "sendEvent",
+            SET_CONSENT: "setConsent",
             SET_LOG_LEVEL: "setLogLevel",
             RESET_SDK: "resetSDK",
             CREATE_MEDIA_SESSION: "createMediaSession",
@@ -31,7 +32,10 @@ function _adb_InternalConstants() as object
             ECID: "ecid",
         },
         LOCAL_DATA_STORE_KEYS: {
-            ECID: "ecid"
+            ECID: "ecid",
+            CONSENT_COLLECT: "consent.collect",
+            LOCATION_HINT: "locationhint",
+            STATE_STORE: "statestore",
         },
         TASK: {
             REQUEST_EVENT: "requestEvent",
@@ -58,6 +62,16 @@ function _adb_InternalConstants() as object
                 SESSION_END: "media.sessionEnd",
                 SESSION_COMPLETE: "media.sessionComplete"
             }
+        },
+        REQUEST_TYPE: {
+            CONSENT: "consent",
+            EDGE: "edge"
+        },
+        OBJECT_TYPE: {
+            EDGE_REQUEST: "com.adobe.request.edge",
+        },
+        TIMESTAMP: {
+            INVALID_VALUE: -1&
         },
         CALLBACK_TIMEOUT_MS: 5000,
         EVENT_OWNER: "adobe",

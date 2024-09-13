@@ -6,6 +6,7 @@ link-sdk:
 	(ln -s ../../../../code/AEPSDK.brs ./source/adobe/AEPSDK.brs)
 	(ln -s ../../../../code/main/common ./source/adobe/common)
 	(ln -s ../../../../code/main/edge ./source/adobe/edge)
+	(ln -s ../../../../code/main/consent ./source/adobe/consent)
 	(ln -s ../../../../code/main/services ./source/adobe/services)
 	(ln -s ../../../../code/main/task ./source/adobe/task)
 	(ln -s ../../../../code/main/core ./source/adobe/core)

@@ -13,7 +13,7 @@
 
 ' ***************************** MODULE: MediaSession *******************************
 
-function _adb_MediaSession(clientSessionId as string, configurationModule as object, sessionConfig as object, edgeRequestQueue as object) as object
+function _adb_MediaSession(clientSessionId as string, configurationModule as object, sessionConfig as object, edgeModule as object) as object
     sessionObj = {
         _clientSessionId: invalid,
 
@@ -24,7 +24,6 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
 
         ' external dependencies
         _configurationModule: invalid,
-        _edgeRequestQueue: invalid,
 
         _isActive: true,
 
@@ -38,7 +37,7 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
         _lastHit: invalid, ''' to track last event, ts, playhead, etc.
         _sessionStartHit: invalid, ''' used for idle restart and long session restart
 
-        _MEDIA_PATH_PREFIX: "/ee/va/v1/",
+        _MEDIA_PATH_PREFIX: "/va/v1/",
         _SESSION_IDLE_THRESHOLD_SEC: 30 * 60, ' 30 minutes in pause state
         _LONG_SESSION_THRESHOLD_SEC: 24 * 60 * 60, ' 24 hours
 
@@ -57,10 +56,10 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
         _ERROR_TYPE_VA_EDGE_400: "https://ns.adobe.com/aep/errors/va-edge-0400-400"
         _HANDLE_TYPE_SESSION_START: "media-analytics:new-session"
 
-        _init: sub(clientSessionId as string, configurationModule as object, sessionConfig as object, edgeRequestQueue as object)
+        _init: sub(clientSessionId as string, configurationModule as object, sessionConfig as object, edgeModule as object)
             m._clientSessionId = clientSessionId
             m._configurationModule = configurationModule
-            m._edgeRequestQueue = edgeRequestQueue
+            m._edgeModule = edgeModule
 
             m._extractSessionConfiguration(sessionConfig)
         end sub,
@@ -125,7 +124,7 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
         tryDispatchMediaEvents: function() as void
             ' Process the queue and send the hits to edgeWorker
             while m._hitQueue.Count() <> 0
-                hit = m._hitQueue.Shift()
+                hit = m._hitQueue.GetEntry(0)
 
                 requestId = hit.requestId
                 tsInMillis = hit.tsObject.tsInMillis
@@ -150,12 +149,14 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
                     eventData.xdm["mediaCollection"]["sessionID"] = m._backendSessionId
                 end if
 
+                ' remove the hit from the queue since it has all the required data
+                m._hitQueue.Shift()
+
                 eventNameTokens = eventType.tokenize(".") ''' ex: eventType =  media.sessionStart
                 path = m._MEDIA_PATH_PREFIX + eventNameTokens[1] ''' ex: eventNameTokens[1] = sessionStart
                 meta = {}
 
-                m._edgeRequestQueue.add(requestId, eventData, tsInMillis, meta, path)
-                m._processEdgeRequestQueue()
+                m._edgeModule.queueEdgeRequest(requestId, eventData, tsInMillis, meta, path)
             end while
         end function,
 
@@ -194,53 +195,59 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
             return true
         end function,
 
-        _processEdgeRequestQueue: function() as void
-            ' Process the queue and send the hits to edgeWorker
-            ' EdgeRequestQueue.process and handle the responses
-            responses = m._edgeRequestQueue.processRequests()
-            ' the responses may include sessionStart response and media event response
-            for each edgeResponse in responses
-                if _adb_isEdgeResponse(edgeResponse) then
-                    try
-                        requestId = edgeResponse.getRequestId()
-                        responseCode = edgeResponse.getResponseCode()
-                        responseString = edgeResponse.getResponseString()
-
-                        ''' only handle the response for sessionStart event
-                        if m._sessionStartHit.requestId = requestId then
-                            ''' Use constants
-                            if responseCode >= m._RESPONSE_CODE_200 and responseCode < m._RESPONSE_CODE_300
-
-                                responseObj = ParseJson(responseString)
-
-                                ''' process the response handles
-                                if not _adb_isEmptyOrInvalidArray(responseObj.handle) then
-                                    m._processEdgeResponseHandles(responseObj.handle)
-                                end if
-
-                                ''' process the error responses
-                                if not _adb_isEmptyOrInvalidArray(responseObj.errors) then
-                                    m._processEdgeResponseErrors(responseObj.errors)
-                                end if
-                            else
-                                ''' Should execute this code when there is a non-recoverable error for sessionStart request
-                                ''' Abort the session
-                                m.close(true)
-                                _adb_logWarning("MediaSession::_processEdgeRequestQueue() - SessionStart request failed with unrecoverable error.")
+        ''' Handle the edge responses for the media events
+        processEdgeResponse: function(responseEvent as object) as void
+            if _adb_isEdgeResponseEvent(responseEvent) then
+                try
+                    requestId = responseEvent.parentId
+                    if requestId = invalid then
+                        _adb_logWarning("MediaSession::processEdgeResponse() - Invalid requestId in the edge response.")
                         return
-                            end if
+                    end if
 
+                    ''' only handle the response for sessionStart event
+                    if m._sessionStartHit = invalid or m._sessionStartHit.requestId <> requestId
+                        return
+                    end if
+
+                    eventData = responseEvent.data
+                    if _adb_isEmptyOrInvalidMap(eventData) then
+                        _adb_logWarning("MediaSession::processEdgeResponse() - Invalid eventData in the edge response.")
+                        return
+                    end if
+
+                    responseCode = eventData.code
+                    responseString = eventData.message
+
+                    ''' Use constants
+                    if responseCode >= m._RESPONSE_CODE_200 and responseCode < m._RESPONSE_CODE_300
+                        responseObj = ParseJson(responseString)
+
+                        ''' process the response handles
+                        if not _adb_isEmptyOrInvalidArray(responseObj.handle) then
+                            m._processEdgeResponseHandles(responseObj.handle)
                         end if
-                    catch ex
-                        _adb_logError("MediaSession::_processEdgeRequestQueue() - Failed to process the edge media response, the exception message: " + ex.Message)
-                    end try
-                end if
-            end for
-        end function,
+
+                        ''' process the error responses
+                        if not _adb_isEmptyOrInvalidArray(responseObj.errors) then
+                            m._processEdgeResponseErrors(responseObj.errors)
+                        end if
+                    else
+                        ''' Should execute this code when there is a non-recoverable error for sessionStart request
+                        ''' Abort the session
+                        m.close(true)
+                        _adb_logWarning("MediaSession::processEdgeResponse() - SessionStart request failed with unrecoverable error.")
+                        return
+                    end if
+                catch exception
+                    _adb_logError("MediaSession::processEdgeResponse() - Failed to process the edge media response, the exception message: " + exception.Message)
+                end try
+            end if
+        end function
 
         _processEdgeResponseHandles: function(handleList as object) as void
             for each handle in handleList
-                if handle.type = m._HANDLE_TYPE_SESSION_START
+                if _adb_stringEqualsIgnoreCase(handle.type, m._HANDLE_TYPE_SESSION_START)
                     payloadSessionId = handle.payload[0]["sessionId"]
 
                     if _adb_isEmptyOrInvalidString(payloadSessionId)
@@ -262,7 +269,7 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
 
         _processEdgeResponseErrors: function(errorList as object) as void
             for each error in errorList
-                if error.type = m._ERROR_TYPE_VA_EDGE_400
+                if _adb_stringEqualsIgnoreCase(error.type, m._ERROR_TYPE_VA_EDGE_400)
                     ''' abort the session if sessionStart fails
                     m.close(true)
                     _adb_logError("MediaSession::_processEdgeResponseErrors() - Closing the session as the SessionStart request failed.")
@@ -296,7 +303,7 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
         end function,
 
         _extractSessionStartData: function(mediaHit as object) as void
-            if mediaHit.eventType <> m._MEDIA_EVENT_TYPE.SESSION_START
+            if not _adb_stringEqualsIgnoreCase(mediaHit.eventType, m._MEDIA_EVENT_TYPE.SESSION_START)
                 return
             end if
 
@@ -305,10 +312,18 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
 
         ''' Called for sessionStart hit only
         _attachMediaConfig: function(xdmData as object) as object
-            xdmData.xdm["mediaCollection"]["sessionDetails"]["playerName"] = m._getPlayerName()
-            xdmData.xdm["mediaCollection"]["sessionDetails"]["channel"] = m._getChannelName()
-
+            playerName = m._getPlayerName()
+            channel = m._getChannelName()
             appVersion = m._getAppVersion()
+
+            if not _adb_isEmptyOrInvalidString(playerName)
+                xdmData.xdm["mediaCollection"]["sessionDetails"]["playerName"] = playerName
+            end if
+
+            if not _adb_isEmptyOrInvalidString(channel)
+                xdmData.xdm["mediaCollection"]["sessionDetails"]["channel"] = channel
+            end if
+
             if not _adb_isEmptyOrInvalidString(appVersion) then
                 xdmData.xdm["mediaCollection"]["sessionDetails"]["appVersion"] = appVersion
             end if
@@ -446,15 +461,15 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
             end if
         end function,
 
-        _getAppVersion: function() as string
+        _getAppVersion: function() as dynamic
             return m._configurationModule.getMediaAppVersion()
         end function,
 
-        _getPlayerName: function() as string
+        _getPlayerName: function() as dynamic
             return m._configurationModule.getMediaPlayerName()
         end function,
 
-        _getChannelName: function() as string
+        _getChannelName: function() as dynamic
             if m._sessionChannelName <> invalid
                 return m._sessionChannelName
             else
@@ -462,6 +477,6 @@ function _adb_MediaSession(clientSessionId as string, configurationModule as obj
             end if
         end function,
     }
-    sessionObj._init(clientSessionId, configurationModule, sessionConfig, edgeRequestQueue)
+    sessionObj._init(clientSessionId, configurationModule, sessionConfig, edgeModule)
     return sessionObj
 end function

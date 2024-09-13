@@ -46,7 +46,7 @@ sub onButtonSelected()
             }
         }
     }
-    m.aepSdk.sendEvent(orderPlacedData, sub(context, result)
+    m.aepSdk.sendEvent(orderPlacedData, sub(_context, _result)
         ' print "callback result: "
         ' print result
         ' print context
