@@ -225,8 +225,8 @@ function ADBTestRunner() as object
         _cacheSDKData: function() as void
             print("ADBTestRunner - cacheSDKData")
             m.originalSDKData = {
-                "ecid" : ADB_getPersistedECID(),
-                "statestore" : ADB_getPersistedStateStore(),
+                "ecid": ADB_getPersistedECID(),
+                "statestore": ADB_getPersistedStateStore(),
                 "locationhint": ADB_getPersistedLocationHint(),
                 "consent.collect": ADB_getPersistedConsent(),
             }
@@ -400,7 +400,7 @@ sub ADB_resetSDK(instance as object)
 end sub
 
 sub ADB_testSDKVersion() as string
-    return "1.3.0"
+    return "1.3.1"
 end sub
 
 function ADB_generateErrorMessage(message as string, expected as dynamic, actual as dynamic) as string
@@ -412,7 +412,7 @@ function ADB_generateErrorMessage(message as string, expected as dynamic, actual
         actual = FormatJson(actual)
     end if
 
-    return message + " Expected: (" + chr(10) + expected + chr(10) + ") Actual: ("+ chr(10) + actual + chr(10) +")"
+    return message + " Expected: (" + chr(10) + expected + chr(10) + ") Actual: (" + chr(10) + actual + chr(10) + ")"
 end function
 
 function _adb_integrationTestUtil_reset()
@@ -427,7 +427,7 @@ function _adb_integrationTestUtil_getHandle(handleType as string, responsePayloa
 
     handles = responsePayload.handle
     if _adb_isEmptyOrInvalidArray(handles) then
-      return handle
+        return handle
     end if
 
     for each item in handles
